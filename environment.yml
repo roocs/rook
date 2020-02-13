@@ -1,0 +1,14 @@
+name: roocswps
+channels:
+#- conda-forge
+- defaults
+dependencies:
+- pip
+- pywps=4.2
+- jinja2
+- click
+- psutil
+# tests
+- pytest
+#- pip:
+#  - -e git+https://github.com/geopython/pywps@master#egg=pywps
