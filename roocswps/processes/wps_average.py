@@ -2,15 +2,16 @@ from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
 
 
-class Subset(Process):
+class Average(Process):
     def __init__(self):
         inputs = [
-            LiteralInput('period', 'Time Period',
-                         abstract='Please enter the time period: 195001-190012',
-                         data_type='string'),
-            LiteralInput('area', 'Bounding Box',
-                         abstract='Please enter the bbox: -10, -10, 10, 10',
-                         data_type='string'),
+            LiteralInput('axes', 'Axes',
+                         abstract='Please choose an axes for averaging.',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='time',
+                         allowed_values=['time', 'latitude', 'longitude']),
         ]
         outputs = [
             ComplexOutput('output', 'Output',
@@ -18,10 +19,10 @@ class Subset(Process):
                           supported_formats=[FORMATS.TEXT]),
         ]
 
-        super(Subset, self).__init__(
+        super(Average, self).__init__(
             self._handler,
-            identifier='subset',
-            title='Subset',
+            identifier='average',
+            title='Average',
             version='1.0',
             inputs=inputs,
             outputs=outputs,
