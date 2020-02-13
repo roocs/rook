@@ -7,10 +7,14 @@ class Subset(Process):
         inputs = [
             LiteralInput('period', 'Time Period',
                          abstract='Please enter the time period: 195001-190012',
-                         data_type='string'),
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,),
             LiteralInput('area', 'Bounding Box',
                          abstract='Please enter the bbox: -10, -10, 10, 10',
-                         data_type='string'),
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,),
         ]
         outputs = [
             ComplexOutput('output', 'Output',
