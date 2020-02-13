@@ -22,6 +22,7 @@ class Subset(Process):
             self._handler,
             identifier='subset',
             title='Subset',
+            abstract='Run subsetting on climate data.',
             version='1.0',
             inputs=inputs,
             outputs=outputs,

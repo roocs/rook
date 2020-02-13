@@ -34,6 +34,7 @@ class Retrieve(Process):
             self._handler,
             identifier='retrieve',
             title='Retrieve',
+            abstract='Download climate data.',
             version='1.0',
             inputs=inputs,
             outputs=outputs,

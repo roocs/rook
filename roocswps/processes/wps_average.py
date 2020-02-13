@@ -23,6 +23,7 @@ class Average(Process):
             self._handler,
             identifier='average',
             title='Average',
+            abstract='Run averaging on climate data.',
             version='1.0',
             inputs=inputs,
             outputs=outputs,
