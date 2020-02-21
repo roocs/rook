@@ -11,4 +11,4 @@ dependencies:
 # tests
 - pytest
 #- pip:
-#  - -e git+https://github.com/geopython/pywps@master#egg=pywps
+#  - -e git+https://github.com/roocs/proto-lib-34e@master#egg=daops
