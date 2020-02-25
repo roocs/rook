@@ -1,5 +1,6 @@
 from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
+from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
 import daops
@@ -60,6 +61,7 @@ class Subset(Process):
             raise ProcessError('Data has not been pre-checked')
 
         config_args = {
+            'data_root_dir': configuration.get_config_value("data", "cmip5_archive_root"),
             'output_dir': self.workdir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
