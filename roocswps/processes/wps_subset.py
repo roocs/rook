@@ -59,13 +59,16 @@ class Subset(Process):
         if request.inputs['pre_checked'][0].data and not daops.is_characterised(data_refs, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
+        config_args = {
+            'output_dir': self.workdir,
+            # 'chunk_rules': dconfig.chunk_rules,
+            # 'filenamer': dconfig.filenamer,
+        }
         kwargs = translate_args(request)
+        kwargs.update(config_args)
 
         result = daops.subset(
             data_refs,
-            output_dir=self.workdir,
-            # chunk_rules=None,
-            # filenamer=None,
             **kwargs,
             )
         response.outputs['output'].file = result.file_paths[0]
