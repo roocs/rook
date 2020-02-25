@@ -5,6 +5,8 @@ from pywps.app.exceptions import ProcessError
 import daops
 import daops.config as dconfig
 
+from .utils import translate_args
+
 class Subset(Process):
     def __init__(self):
         inputs = [
@@ -57,31 +59,14 @@ class Subset(Process):
         if request.inputs['pre_checked'][0].data and not daops.is_characterised(data_refs, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
-        if 'time' in request.inputs:
-            value = request.inputs['time'][0].data
-            time = value.split('/')
-        else:
-            time = None
-
-        if 'space' in request.inputs:
-            value = request.inputs['space'][0].data
-            space = [float(_) for _ in value.split(',')]
-        else:
-            space = None
-
-        if 'level' in request.inputs:
-            level = request.inputs['level'][0].data
-        else:
-            level = None
+        kwargs = translate_args(request)
 
         result = daops.subset(
             data_refs,
-            time=time,
-            # space=space,
-            # level=level,
             output_dir=self.workdir,
             # chunk_rules=None,
             # filenamer=None,
+            **kwargs,
             )
         response.outputs['output'].file = result.file_paths[0]
         return response
