@@ -1,3 +1,5 @@
+import os
+
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
