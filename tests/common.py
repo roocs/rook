@@ -2,10 +2,15 @@ from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
 
+TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
+
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
+
+def resource_file(filepath):
+    return os.path.join(TESTS_HOME, 'testdata', filepath)
 
 class WpsTestClient(WpsClient):
 
