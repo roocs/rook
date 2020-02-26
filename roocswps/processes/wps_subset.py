@@ -4,7 +4,6 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
 import daops
-import daops.config as dconfig
 
 from .utils import translate_args
 
