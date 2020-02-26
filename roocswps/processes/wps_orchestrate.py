@@ -17,7 +17,7 @@ class Orchestrate(Process):
         outputs = [
             ComplexOutput('output', 'Output',
                           as_reference=True,
-                          supported_formats=[FORMATS.TEXT]),
+                          supported_formats=[FORMATS.NETCDF]),
         ]
 
         super(Orchestrate, self).__init__(
@@ -47,11 +47,13 @@ class Orchestrate(Process):
             if 'subset' in step:
                 if 'time' in step['subset']:
                     kwargs['time'] = step['subset']['time'].split('/')
+                if 'space' in step['subset']:
+                    kwargs['space'] = [float(item) for item in step['subset']['space'].split(',')]
                 kwargs.update(config_args)
                 result = daops.subset(
                     data_refs,
                     **kwargs,
                     )
-            # result.file_paths[0]
-        response.outputs['output'].data = 'not working yet'
+            data_refs = result.file_paths
+        response.outputs['output'].file = data_refs[0]
         return response
