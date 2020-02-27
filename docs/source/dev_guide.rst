@@ -40,6 +40,12 @@ First activate the ``roocswps`` Conda environment and install ``pytest``.
    OR
    $ make develop
 
+Configure the pywps configuration with path to test data.
+
+.. code-block:: console
+
+    $ export PYWPS_CFG=/path/to/test/pywps.cfg
+
 Run quick tests (skip slow and online):
 
 .. code-block:: console

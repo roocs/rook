@@ -3,12 +3,18 @@ channels:
 #- conda-forge
 - defaults
 dependencies:
+- python=3.7
 - pip
 - pywps=4.2
 - jinja2
 - click
 - psutil
+# daops
+- xarray>=0.15
+- dask
+- netcdf4
 # tests
 - pytest
-#- pip:
-#  - -e git+https://github.com/geopython/pywps@master#egg=pywps
+- pip:
+#  - -e git+https://github.com/roocs/proto-lib-34e@master#egg=daops
+  - -e git+https://github.com/cehbrecht/proto-lib-34e@pingudev#egg=daops

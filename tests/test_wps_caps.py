@@ -14,6 +14,5 @@ def test_wps_caps():
     assert sorted(names.split()) == [
         'average',
         'orchestrate',
-        'retrieve',
         'subset',
     ]
