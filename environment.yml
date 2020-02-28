@@ -1,7 +1,7 @@
 name: roocswps
 channels:
-#- conda-forge
-- defaults
+- conda-forge
+#- defaults
 dependencies:
 - python=3.7
 - pip
@@ -16,5 +16,4 @@ dependencies:
 # tests
 - pytest
 - pip:
-#  - -e git+https://github.com/roocs/proto-lib-34e@master#egg=daops
-  - -e git+https://github.com/cehbrecht/proto-lib-34e@pingudev#egg=daops
+  - -e git+https://github.com/roocs/proto-lib-34e@master#egg=daops
