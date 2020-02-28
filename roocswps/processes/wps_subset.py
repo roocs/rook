@@ -68,9 +68,6 @@ class Subset(Process):
         kwargs = translate_args(request)
         kwargs.update(config_args)
 
-        result = daops.subset(
-            data_refs,
-            **kwargs,
-            )
+        result = daops.subset(data_refs, **kwargs)
         response.outputs['output'].file = result.file_paths[0]
         return response
