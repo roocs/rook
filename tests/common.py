@@ -4,12 +4,33 @@ from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
 
+from jinja2 import Template
+import tempfile
+
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
+CFG_FILE = os.path.join(tempfile.tempdir, 'pywps_test.cfg')
 
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
+def write_cfg():
+    cfg_templ = """
+    [server]
+    allowedinputpaths=/
+
+    [logging]
+    level = DEBUG
+
+    [data]
+    cmip5_archive_root = {{ tests_home }}/../mini-esgf-data/test_data/badc/cmip5/data
+    cordex_archive_root = /data
+    """
+    cfg = Template(cfg_templ).render(tests_home=TESTS_HOME)
+    with open(CFG_FILE, 'w') as fp:
+        fp.write(cfg)
+
+write_cfg()
 
 def resource_file(filepath):
     return os.path.join(TESTS_HOME, 'testdata', filepath)
