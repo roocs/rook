@@ -1,0 +1,40 @@
+{
+    "doc": "pow(add(pow(u, 2), pow(v, 2)), 0.5)",
+    "inputs": {
+        "data_ref_u": ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.uas"],
+        "data_ref_v": ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.vas"]
+    },
+    "outputs": {
+      "windspeed": "windspeed/output"
+    },
+    "steps": {
+        "pow_u": {
+            "run": "pow",
+            "in": {
+                "data_ref": "inputs/data_ref_u",
+                "power": "2.0"
+            },
+        },
+        "pow_v": {
+            "run": "pow",
+            "in": {
+                "data_ref": "inputs/data_ref_v",
+                "power": "2.0"
+            },
+        },
+        "add": {
+           "run": "add",
+           "in": {
+                "a": "pow_u/output",
+                "b": "pow_v/output"
+            },
+        },
+        "windspeed": {
+            "run": "pow",
+            "in": {
+                "data_ref": "add/output",
+                "power": "0.5"
+            },
+        }
+    }
+}
