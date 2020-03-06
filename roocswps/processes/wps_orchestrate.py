@@ -6,6 +6,7 @@ from pywps import configuration
 
 import daops
 
+
 class Orchestrate(Process):
     def __init__(self):
         inputs = [

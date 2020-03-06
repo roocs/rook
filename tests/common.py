@@ -14,6 +14,7 @@ VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
+
 def write_cfg():
     cfg_templ = """
     [server]
@@ -30,10 +31,13 @@ def write_cfg():
     with open(CFG_FILE, 'w') as fp:
         fp.write(cfg)
 
+
 write_cfg()
+
 
 def resource_file(filepath):
     return os.path.join(TESTS_HOME, 'testdata', filepath)
+
 
 class WpsTestClient(WpsClient):
 

@@ -7,6 +7,7 @@ import daops
 
 from .utils import translate_args
 
+
 class Subset(Process):
     def __init__(self):
         inputs = [
