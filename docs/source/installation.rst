@@ -24,6 +24,12 @@ Check out code from the roocs wps demo GitHub repo and start the installation:
    $ git clone https://github.com/roocs/roocs-wps-demo.git
    $ cd roocswps
 
+Get the submodules with ESGF test data:
+
+.. code-block:: console
+
+   $ git submodule update --init
+
 Create Conda environment named `roocswps`:
 
 .. code-block:: console
