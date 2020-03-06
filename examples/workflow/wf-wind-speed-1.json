@@ -1,0 +1,50 @@
+{
+  "notes": [
+    "def add(a, b): return a + b",
+    "math.pow(add(math.pow(u, 2), math.pow(v, 2)), 0.5)",
+    "should 'workflow' section be a list or dictionary at top-level?"
+  ],
+  "workflow": {
+    "inputs": {
+      "data_refs": {
+        "input1": "cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.uas",
+        "input2": "cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.vas"
+      }
+    },
+    "workflow": [
+      {
+        "id": "math.pow",
+        "inputs": [
+          {
+            "id": "add",
+            "inputs": [
+              {
+                "id": "math.pow",
+                "inputs": [
+                  "@input1"
+                ],
+                "arguments": [
+                  2.0
+                ]
+              },
+              {
+                "id": "math.pow",
+                "inputs": [
+                  "@input2"
+                ],
+                "arguments": [
+                  2.0
+                ]
+              }
+            ],
+            "arguments": []
+          }
+        ],
+        "arguments": [
+          0.5
+        ]
+      }
+    ]
+  }
+}
+
