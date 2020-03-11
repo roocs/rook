@@ -36,13 +36,14 @@ def test_validate_tree_wf():
 def test_replace_inputs():
     wfdoc = workflow.load_wfdoc(TREE_WF)
     steps = workflow.replace_inputs(wfdoc)
-    assert steps['subset_tas']['in']['data_ref'] == ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"]
+    assert steps['subset_tas']['in']['data_ref'] == \
+        ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"]
 
 
 def test_build_tree():
     wfdoc = workflow.load_wfdoc(TREE_WF)
     tree = workflow.build_tree(wfdoc)
-    assert list(tree.edges) ==  [('root', 'output'), ('output', 'average_tas'), ('average_tas', 'subset_tas')]
+    assert list(tree.edges) == [('root', 'output'), ('output', 'average_tas'), ('average_tas', 'subset_tas')]
 
 
 def test_run_tree_wf():
