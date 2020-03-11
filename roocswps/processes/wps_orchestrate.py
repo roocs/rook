@@ -1,10 +1,8 @@
-import json
-
-from pywps import Process, ComplexInput, ComplexOutput
+from pywps import Process, ComplexInput, ComplexOutput, LiteralInput
 from pywps import FORMATS
 from pywps import configuration
 
-import daops
+from roocswps import workflow
 
 
 class Orchestrate(Process):
@@ -14,6 +12,12 @@ class Orchestrate(Process):
                          min_occurs=1,
                          max_occurs=1,
                          supported_formats=[FORMATS.JSON]),
+            LiteralInput('mode', 'Mode',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='tree',
+                         allowed_values=['tree', 'simple']),
         ]
         outputs = [
             ComplexOutput('output', 'Output',
@@ -34,27 +38,14 @@ class Orchestrate(Process):
         )
 
     def _handler(self, request, response):
-        config_args = {
-            'data_root_dir': configuration.get_config_value("data", "cmip5_archive_root"),
-            'output_dir': self.workdir,
-            # 'chunk_rules': dconfig.chunk_rules,
-            # 'filenamer': dconfig.filenamer,
-        }
-
-        wf = json.loads(request.inputs['workflow'][0].data)
-        data_refs = wf['inputs']['data_ref']
-        for step in wf['steps']:
-            kwargs = {}
-            if 'subset' in step:
-                if 'time' in step['subset']:
-                    kwargs['time'] = step['subset']['time'].split('/')
-                if 'space' in step['subset']:
-                    kwargs['space'] = [float(item) for item in step['subset']['space'].split(',')]
-                kwargs.update(config_args)
-                result = daops.subset(
-                    data_refs,
-                    **kwargs,
-                    )
-            data_refs = result.file_paths
-        response.outputs['output'].file = data_refs[0]
+        if request.inputs['mode'][0].data == 'simple':
+            wf = workflow.SimpleWorkflow(
+                data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
+                output_dir=self.workdir)
+        else:
+            wf = workflow.TreeWorkflow(
+                data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
+                output_dir=self.workdir)
+        output = wf.run(request.inputs['workflow'][0].file)
+        response.outputs['output'].file = output[0]
         return response
