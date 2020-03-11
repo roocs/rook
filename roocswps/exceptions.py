@@ -1,0 +1,2 @@
+class WorkflowValidationError(Exception):
+    pass

@@ -13,6 +13,8 @@ dependencies:
 - xarray>=0.15
 - dask
 - netcdf4
+# workflow
+- networkx
 # tests
 - pytest
 - pip:

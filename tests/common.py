@@ -8,7 +8,8 @@ from jinja2 import Template
 import tempfile
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
-CFG_FILE = os.path.join(tempfile.tempdir, 'pywps_test.cfg')
+CMIP5_ARCHIVE_ROOT = os.path.join(TESTS_HOME, "../mini-esgf-data/test_data/badc/cmip5/data")
+CFG_FILE = os.path.join(tempfile.gettempdir(), 'pywps_test.cfg')
 
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
@@ -24,10 +25,10 @@ def write_cfg():
     level = DEBUG
 
     [data]
-    cmip5_archive_root = {{ tests_home }}/../mini-esgf-data/test_data/badc/cmip5/data
+    cmip5_archive_root = {{ cmip5_archive_root }}
     cordex_archive_root = /data
     """
-    cfg = Template(cfg_templ).render(tests_home=TESTS_HOME)
+    cfg = Template(cfg_templ).render(cmip5_archive_root=CMIP5_ARCHIVE_ROOT)
     with open(CFG_FILE, 'w') as fp:
         fp.write(cfg)
 
