@@ -7,20 +7,21 @@ from .common import resource_file, CMIP5_ARCHIVE_ROOT
 
 SIMPLE_WF = resource_file("subset_simple_wf.json")
 TREE_WF = resource_file("subset_wf_1.json")
+TREE_WF_2 = resource_file("subset_wf_2.json")
 
 
 def test_validate_simple_wf():
     wfdoc = workflow.load_wfdoc(SIMPLE_WF)
     wf = workflow.SimpleWorkflow(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
-        output_dir=tempfile.gettempdir())
+        output_dir=tempfile.mkdtemp())
     assert wf.validate(wfdoc) is True
 
 
 def test_run_simple_wf():
     wf = workflow.SimpleWorkflow(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
-        output_dir=tempfile.gettempdir())
+        output_dir=tempfile.mkdtemp())
     output = wf.run(SIMPLE_WF)
     assert 'output.nc' in output[0]
 
@@ -29,7 +30,7 @@ def test_validate_tree_wf():
     wfdoc = workflow.load_wfdoc(TREE_WF)
     wf = workflow.TreeWorkflow(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
-        output_dir=tempfile.gettempdir())
+        output_dir=tempfile.mkdtemp())
     assert wf.validate(wfdoc) is True
 
 
@@ -49,6 +50,14 @@ def test_build_tree():
 def test_run_tree_wf():
     wf = workflow.TreeWorkflow(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
-        output_dir=tempfile.gettempdir())
+        output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF)
+    assert 'output.nc' in output[0]
+
+
+def test_run_tree_wf_2():
+    wf = workflow.TreeWorkflow(
+        data_root_dir=CMIP5_ARCHIVE_ROOT,
+        output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_2)
     assert 'output.nc' in output[0]

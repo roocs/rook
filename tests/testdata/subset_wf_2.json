@@ -1,0 +1,34 @@
+{
+      "doc": "subset+average",
+      "inputs": {
+          "tas": ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"]
+      },
+      "outputs": {
+          "output": "average_tas/output"
+      },
+      "steps": {
+          "subset_tas_1": {
+              "run": "subset",
+              "in": {
+                  "data_ref": "inputs/tas",
+                  "time": "2085-01-01/2120-12-30",
+                  "space": "-5.,49.,10.,65."
+              }
+          },
+          "subset_tas_2": {
+              "run": "subset",
+              "in": {
+                  "data_ref": "subset_tas_1/output",
+                  "time": "2090-01-01/2100-12-30",
+                  "space": "-5.,50.,10.,60."
+              }
+          },
+          "average_tas": {
+              "run": "average",
+              "in": {
+                  "data_ref": "subset_tas_2/output",
+                  "axes": "time"
+              }
+          }
+      }
+  }

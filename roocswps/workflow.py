@@ -1,3 +1,4 @@
+import os
 import daops
 import yaml
 from copy import deepcopy
@@ -44,12 +45,8 @@ def build_tree(wfdoc):
 
 class Workflow(object):
     def __init__(self, data_root_dir, output_dir):
-        self.config = {
-            'data_root_dir': data_root_dir,
-            'output_dir': output_dir,
-            # 'chunk_rules': dconfig.chunk_rules,
-            # 'filenamer': dconfig.filenamer,
-        }
+        self.subset_op = Subset(data_root_dir, output_dir)
+        self.average_op = Average(data_root_dir, output_dir)
 
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
@@ -61,22 +58,6 @@ class Workflow(object):
 
     def _run(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
-
-    def _run_subset(self, args, data_refs):
-        kwargs = {}
-        if 'time' in args:
-            kwargs['time'] = args['time'].split('/')
-        if 'space' in args:
-            kwargs['space'] = [float(item) for item in args['space'].split(',')]
-        kwargs.update(self.config)
-        result = daops.subset(
-            data_refs,
-            **kwargs,
-        )
-        return result.file_paths
-
-    def _run_average(self, args, data_refs):
-        return data_refs
 
 
 class SimpleWorkflow(Workflow):
@@ -91,16 +72,18 @@ class SimpleWorkflow(Workflow):
 
     def _run(self, wfdoc):
         data_refs = wfdoc['inputs']['data_ref']
+        count = 0
         for step in wfdoc['steps']:
-            data_refs = self._run_step(step, data_refs)
+            data_refs = self._run_step(f'{count}', step, data_refs)
+            count += 1
         return data_refs
 
-    def _run_step(self, step, data_refs):
+    def _run_step(self, step_id, step, data_refs):
         LOGGER.debug(f'run {step}')
         if 'subset' in step:
-            result = self._run_subset(step['subset'], data_refs)
+            result = self.subset_op.call(step_id, step['subset'], data_refs)
         elif 'average' in step:
-            result = self._run_average(step['average'], data_refs)
+            result = self.average_op.call(step_id, step['average'], data_refs)
         else:
             result = None
         return result
@@ -131,15 +114,50 @@ class TreeWorkflow(Workflow):
         for next_step_id in tree.neighbors(step_id):
             data_refs = self._run_tree(steps, tree, next_step_id)
         if step_id in steps:
-            data_refs = self._run_step(steps[step_id], data_refs)
+            data_refs = self._run_step(step_id, steps[step_id], data_refs)
         return data_refs
 
-    def _run_step(self, step, data_refs):
+    def _run_step(self, step_id, step, data_refs):
         LOGGER.debug(f'run {step}')
         if 'subset' == step['run']:
-            result = self._run_subset(step['in'], data_refs)
+            result = self.subset_op.call(step_id, step['in'], data_refs)
         elif 'average' == step['run']:
-            result = self._run_average(step['in'], data_refs)
+            result = self.average_op.call(step_id, step['in'], data_refs)
         else:
             result = None
         return result
+
+
+class Operator(object):
+    def __init__(self, data_root_dir, output_dir):
+        self.config = {
+            'data_root_dir': data_root_dir,
+            'output_dir': output_dir,
+            # 'chunk_rules': dconfig.chunk_rules,
+            # 'filenamer': dconfig.filenamer,
+        }
+
+    def call(self, name, args, data_refs):
+        pass
+
+
+class Subset(Operator):
+    def call(self, name, args, data_refs):
+        kwargs = {}
+        if 'time' in args:
+            kwargs['time'] = args['time'].split('/')
+        if 'space' in args:
+            kwargs['space'] = [float(item) for item in args['space'].split(',')]
+        kwargs.update(self.config)
+        kwargs['output_dir'] = os.path.join(self.config['output_dir'], name)
+        os.mkdir(kwargs['output_dir'])
+        result = daops.subset(
+            data_refs,
+            **kwargs,
+        )
+        return result.file_paths
+
+
+class Average(Operator):
+    def call(self, step_id, args, data_refs):
+        return data_refs
