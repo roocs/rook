@@ -1,6 +1,9 @@
 build:
     image: latest
 
+submodules:
+  exclude: all
+
 python:
     version: 3.6
 
