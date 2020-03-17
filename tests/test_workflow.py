@@ -8,6 +8,7 @@ from .common import resource_file, CMIP5_ARCHIVE_ROOT
 SIMPLE_WF = resource_file("subset_simple_wf.json")
 TREE_WF = resource_file("subset_wf_1.json")
 TREE_WF_2 = resource_file("subset_wf_2.json")
+TREE_WF_3 = resource_file("subset_wf_3.json")
 
 
 def test_validate_simple_wf():
@@ -60,4 +61,12 @@ def test_run_tree_wf_2():
         data_root_dir=CMIP5_ARCHIVE_ROOT,
         output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_2)
+    assert 'output.nc' in output[0]
+
+
+def test_run_tree_wf_3():
+    wf = workflow.TreeWorkflow(
+        data_root_dir=CMIP5_ARCHIVE_ROOT,
+        output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_3)
     assert 'output.nc' in output[0]

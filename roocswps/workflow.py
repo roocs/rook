@@ -1,10 +1,9 @@
-import os
-import daops
 import yaml
 from copy import deepcopy
 import networkx as nx
 
 from .exceptions import WorkflowValidationError
+from .operator import Subset, Average, Diff
 
 import logging
 LOGGER = logging.getLogger()
@@ -32,13 +31,13 @@ def build_tree(wfdoc):
     tree = nx.DiGraph()
     for output_id, output in wfdoc['outputs'].items():
         step_id = output.split('/')[0]
-        tree.add_edge('root', output_id)
-        tree.add_edge(output_id, step_id)
+        tree.add_edge('root', output_id, arg_id=None)
+        tree.add_edge(output_id, step_id, arg_id=None)
     for step_id, step in wfdoc['steps'].items():
         for arg_id, arg in step['in'].items():
             if arg.endswith('/output'):
                 prev_step_id = arg.split('/')[0]
-                tree.add_edge(step_id, prev_step_id)
+                tree.add_edge(step_id, prev_step_id, arg_id=arg_id)
     LOGGER.debug(f'tree: {tree.edges}')
     return tree
 
@@ -47,6 +46,7 @@ class Workflow(object):
     def __init__(self, data_root_dir, output_dir):
         self.subset_op = Subset(data_root_dir, output_dir)
         self.average_op = Average(data_root_dir, output_dir)
+        self.diff_op = Diff(data_root_dir, output_dir)
 
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
@@ -71,19 +71,19 @@ class SimpleWorkflow(Workflow):
         return True
 
     def _run(self, wfdoc):
-        data_refs = wfdoc['inputs']['data_ref']
-        count = 0
+        data_ref = wfdoc['inputs']['data_ref']
         for step in wfdoc['steps']:
-            data_refs = self._run_step(f'{count}', step, data_refs)
-            count += 1
-        return data_refs
+            data_ref = self._run_step(step, data_ref)
+        return data_ref
 
-    def _run_step(self, step_id, step, data_refs):
+    def _run_step(self, step, input):
         LOGGER.debug(f'run {step}')
         if 'subset' in step:
-            result = self.subset_op.call(step_id, step['subset'], data_refs)
+            step['subset']['data_ref'] = input
+            result = self.subset_op.call(step['subset'])
         elif 'average' in step:
-            result = self.average_op.call(step_id, step['average'], data_refs)
+            step['average']['data_ref'] = input
+            result = self.average_op.call(step['average'])
         else:
             result = None
         return result
@@ -107,57 +107,31 @@ class TreeWorkflow(Workflow):
         return self._run_tree(steps, tree, 'root')
 
     def _run_tree(self, steps, tree, step_id):
-        data_refs = None
-        if step_id in steps:
-            if 'data_ref' in steps[step_id]['in']:
-                data_refs = steps[step_id]['in']['data_ref']
+        tree_outputs = {}
         for next_step_id in tree.neighbors(step_id):
-            data_refs = self._run_tree(steps, tree, next_step_id)
+            data = tree.get_edge_data(step_id, next_step_id)
+            LOGGER.debug(f'data={data}')
+            tree_outputs[data['arg_id']] = self._run_tree(steps, tree, next_step_id)
+        outputs = None
+        LOGGER.debug(f'tree outputs={tree_outputs}')
         if step_id in steps:
-            data_refs = self._run_step(step_id, steps[step_id], data_refs)
-        return data_refs
+            outputs = self._run_step(steps[step_id], tree_outputs)
+        elif tree_outputs:
+            outputs = list(tree_outputs.values())[0]
+        LOGGER.debug(f'outputs={outputs}')
+        return outputs
 
-    def _run_step(self, step_id, step, data_refs):
-        LOGGER.debug(f'run {step}')
+    def _run_step(self, step, inputs=None):
+        LOGGER.debug(f'run step={step}, inputs={inputs}')
+        if inputs:
+            step['in'].update(inputs)
         if 'subset' == step['run']:
-            result = self.subset_op.call(step_id, step['in'], data_refs)
+            result = self.subset_op.call(step['in'])
         elif 'average' == step['run']:
-            result = self.average_op.call(step_id, step['in'], data_refs)
+            result = self.average_op.call(step['in'])
+        elif 'diff' == step['run']:
+            result = self.diff_op.call(step['in'])
         else:
             result = None
+        LOGGER.debug(f'run result={result}')
         return result
-
-
-class Operator(object):
-    def __init__(self, data_root_dir, output_dir):
-        self.config = {
-            'data_root_dir': data_root_dir,
-            'output_dir': output_dir,
-            # 'chunk_rules': dconfig.chunk_rules,
-            # 'filenamer': dconfig.filenamer,
-        }
-
-    def call(self, name, args, data_refs):
-        pass
-
-
-class Subset(Operator):
-    def call(self, name, args, data_refs):
-        kwargs = {}
-        if 'time' in args:
-            kwargs['time'] = args['time'].split('/')
-        if 'space' in args:
-            kwargs['space'] = [float(item) for item in args['space'].split(',')]
-        kwargs.update(self.config)
-        kwargs['output_dir'] = os.path.join(self.config['output_dir'], name)
-        os.mkdir(kwargs['output_dir'])
-        result = daops.subset(
-            data_refs,
-            **kwargs,
-        )
-        return result.file_paths
-
-
-class Average(Operator):
-    def call(self, step_id, args, data_refs):
-        return data_refs
