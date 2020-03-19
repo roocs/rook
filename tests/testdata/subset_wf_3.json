@@ -1,34 +1,32 @@
 {
-      "doc": "subset+diff",
-      "inputs": {
-          "tas": ["cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"]
+    'doc': "tree workflow with diff operator",
+    'inputs': {
+        'inm': ['cmip5.output1.INM.inmcm4.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga'],
+        'mpi': ['cmip5.output1.MPI-M.MPI-ESM-LR.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga']
+    },
+    "outputs": {
+          "output": "diff/output"
       },
-      "outputs": {
-          "output": "diff_tas/output"
-      },
-      "steps": {
-          "subset_tas_1": {
+    'steps': {
+        "subsetA": {
               "run": "subset",
               "in": {
-                  "data_ref": "inputs/tas",
-                  "time": "2085-01-01/2120-12-30",
-                  "space": "-5.,49.,10.,65."
+                  "data_ref": "inputs/inm",
+                  "time": "2085-01-01/2120-12-30"
               }
           },
-          "subset_tas_2": {
+          "subsetB": {
               "run": "subset",
               "in": {
-                  "data_ref": "subset_tas_1/output",
-                  "time": "2090-01-01/2100-12-30",
-                  "space": "-5.,50.,10.,60."
+                  "data_ref": "inputs/mpi",
+                  "time": "2085-01-01/2120-12-30"
               }
           },
-          "diff_tas": {
+          "diff": {
               "run": "diff",
               "in": {
-                  "data_ref_a": "subset_tas_1/output",
-                  "data_ref_b": "subset_tas_2/output",
+                  "data_ref_a": "subsetA/output",
+                  "data_ref_b": "subsetB/output",
               }
           }
-      }
-  }
+    }}
