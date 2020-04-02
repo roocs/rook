@@ -1,6 +1,6 @@
 # Configuration
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
-APP_NAME := roocswps
+APP_NAME := rook
 
 # end of configuration
 

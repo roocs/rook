@@ -1,4 +1,4 @@
-name: roocswps
+name: rook
 channels:
 - conda-forge
 #- defaults
@@ -19,3 +19,5 @@ dependencies:
 - pytest
 - pip:
   - -e git+https://github.com/roocs/proto-lib-34e@master#egg=daops
+#   - -e git+https://github.com/roocs/clisops#egg=clisops
+#   - -e git+https://github.com/roocs/daops@master#egg=daops

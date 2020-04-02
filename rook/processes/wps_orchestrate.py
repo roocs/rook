@@ -2,7 +2,7 @@ from pywps import Process, ComplexInput, ComplexOutput, LiteralInput
 from pywps import FORMATS
 from pywps import configuration
 
-from roocswps import workflow
+from rook import workflow
 
 
 class Orchestrate(Process):

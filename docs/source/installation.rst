@@ -17,12 +17,12 @@ Install from Conda
 Install from GitHub
 -------------------
 
-Check out code from the roocs wps demo GitHub repo and start the installation:
+Check out code from the rook GitHub repo and start the installation:
 
 .. code-block:: console
 
-   $ git clone https://github.com/roocs/roocs-wps-demo.git
-   $ cd roocswps
+   $ git clone https://github.com/roocs/rook.git
+   $ cd rook
 
 Get the submodules with ESGF test data:
 
@@ -30,14 +30,14 @@ Get the submodules with ESGF test data:
 
    $ git submodule update --init
 
-Create Conda environment named `roocswps`:
+Create Conda environment named `rook`:
 
 .. code-block:: console
 
    $ conda env create -f environment.yml
-   $ source activate roocswps
+   $ source activate rook
 
-Install roocs wps demo app:
+Install rook:
 
 .. code-block:: console
 
@@ -53,19 +53,19 @@ For development you can use this command:
   OR
   $ make develop
 
-Start roocs wps demo PyWPS service
-----------------------------------
+Start rook PyWPS service
+------------------------
 
-After successful installation you can start the service using the ``roocswps`` command-line.
+After successful installation you can start the service using the ``rook`` command-line.
 
 .. code-block:: console
 
-   $ roocswps --help # show help
-   $ roocswps start  # start service with default configuration
+   $ rook --help # show help
+   $ rook start  # start service with default configuration
 
    OR
 
-   $ roocswps start --daemon # start service as daemon
+   $ rook start --daemon # start service as daemon
    loading configuration
    forked process id: 42
 
@@ -101,19 +101,19 @@ You can also use the ``Makefile`` to start and stop the service:
   $ make stop
 
 
-Run roocs wps demo as Docker container
---------------------------------------
+Run rook as Docker container
+----------------------------
 
-You can also run roocs wps demo as a Docker container.
+You can also run rook as a Docker container.
 
 .. warning::
 
   TODO: Describe Docker container support.
 
-Use Ansible to deploy roocs wps demo on your System
----------------------------------------------------
+Use Ansible to deploy rook on your System
+-----------------------------------------
 
-Use the `Ansible playbook`_ for PyWPS to deploy roocs wps demo on your system.
+Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html

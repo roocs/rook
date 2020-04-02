@@ -10,6 +10,6 @@ Processes
 Say Hello
 ---------
 
-.. autoprocess:: roocswps.processes.wps_say_hello.SayHello
+.. autoprocess:: rook.processes.wps_say_hello.SayHello
    :docstring:
    :skiplines: 1

@@ -2,7 +2,7 @@ version: '3'
 services:
   wps:
     build: .
-    image: roocs/roocs-wps-demo
+    image: roocs/rook
     ports:
       - "5000:5000"
 

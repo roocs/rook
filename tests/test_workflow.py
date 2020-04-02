@@ -1,6 +1,6 @@
 import tempfile
 
-from roocswps import workflow
+from rook import workflow
 
 from .common import resource_file, CMIP5_ARCHIVE_ROOT
 

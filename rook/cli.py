@@ -19,7 +19,7 @@ PID_FILE = os.path.abspath(os.path.join(os.path.curdir, "pywps.pid"))
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 template_env = Environment(
-    loader=PackageLoader('roocswps', 'templates'),
+    loader=PackageLoader('rook', 'templates'),
     autoescape=True
 )
 
