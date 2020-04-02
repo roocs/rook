@@ -1,16 +1,16 @@
-roocs wps demo
-===============================
+rook
+====
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-   :target: http://roocs-wps-demo.readthedocs.io/en/latest/?badge=latest
+   :target: http://rook.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/roocs/roocs-wps-demo.svg?branch=master
-   :target: https://travis-ci.org/roocs/roocs-wps-demo
+.. image:: https://travis-ci.org/roocs/rook.svg?branch=master
+   :target: https://travis-ci.org/roocs/rook
    :alt: Travis Build
 
-.. image:: https://img.shields.io/github/license/roocs/roocs-wps-demo.svg
-    :target: https://github.com/roocs/roocs-wps-demo/blob/master/LICENSE.txt
+.. image:: https://img.shields.io/github/license/roocs/rook.svg
+    :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
     :alt: GitHub license
 
 .. image:: https://badges.gitter.im/bird-house/birdhouse.svg
@@ -18,16 +18,20 @@ roocs wps demo
     :alt: Join the chat at https://gitter.im/bird-house/birdhouse
 
 
-roocs wps demo (the bird)
-  *roocs wps demo is a bird ...*
+rook (the bird)
+  *The rook belongs to the crow familiy ...*
 
-A demostrator for a WPS service for roocs.
+rook
+  *Remote Operations On Klimadaten.*
+
+Rook is a Web Processing Service (WPS) of the roocs project
+to allow remote operations like subsetting on climate model data.
 
 Documentation
 -------------
 
-Learn more about roocs wps demo in its official documentation at
-https://roocs-wps-demo.readthedocs.io.
+Learn more about rook in its official documentation at
+https://rook.readthedocs.io.
 
 Contributing
 ------------
@@ -48,5 +52,5 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
-.. _`Developer Guide`: https://roocs-wps-demo.readthedocs.io/en/latest/dev_guide.html
-.. _bumpversion: https://roocs-wps-demo.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _`Developer Guide`: https://rook.readthedocs.io/en/latest/dev_guide.html
+.. _bumpversion: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version

@@ -31,11 +31,11 @@ Running tests
 
 Run tests using pytest_.
 
-First activate the ``roocswps`` Conda environment and install ``pytest``.
+First activate the ``rook`` Conda environment and install ``pytest``.
 
 .. code-block:: console
 
-   $ source activate roocswps
+   $ source activate rook
    $ pip install -r requirements_dev.txt  # if not already installed
    OR
    $ make develop
@@ -85,10 +85,10 @@ Update the Conda specification file to build identical environments_ on a specif
 .. code-block:: console
 
   $ conda env create -f environment.yml
-  $ source activate roocswps
+  $ source activate rook
   $ make clean
   $ make install
-  $ conda list -n roocswps --explicit > spec-file.txt
+  $ conda list -n rook --explicit > spec-file.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
@@ -96,7 +96,7 @@ Update the Conda specification file to build identical environments_ on a specif
 Bump a new version
 ------------------
 
-Make a new version of roocs wps demo in the following steps:
+Make a new version of rook in the following steps:
 
 * Make sure everything is commit to GitHub.
 * Update ``CHANGES.rst`` with the next version.

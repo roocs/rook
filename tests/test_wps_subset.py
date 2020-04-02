@@ -2,7 +2,7 @@ from pywps import Service
 from pywps.tests import client_for, assert_response_success
 
 from .common import get_output, CFG_FILE
-from roocswps.processes.wps_subset import Subset
+from rook.processes.wps_subset import Subset
 
 
 def test_wps_subset():

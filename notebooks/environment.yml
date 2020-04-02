@@ -1,5 +1,5 @@
 # conda env update -f environment.yml
-name: roocswps
+name: rook
 channels:
   - conda-forge
 dependencies:

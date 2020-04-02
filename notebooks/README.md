@@ -1,13 +1,13 @@
-# ROOCS WPS Examples with Birdy
+# ROOK Examples with Birdy
 
-JupterLab notebooks with hummingbird examples using birdy.
+JupterLab notebooks with rook examples using birdy.
 
 ## Installation
 
-Update roocswps conda environment:
+Update rook conda environment:
 
     $ conda env update -f environment.yml
-    $ source activate roocswps
+    $ source activate rook
 
 Install JupyterLab widget extension:
 

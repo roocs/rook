@@ -1,6 +1,6 @@
 include Makefile
 include *.txt
 include *.rst
-recursive-include roocswps *
+recursive-include rook *
 global-exclude __pycache__
 global-exclude *.py[co]

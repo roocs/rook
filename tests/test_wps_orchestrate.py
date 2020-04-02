@@ -2,7 +2,7 @@ from pywps import Service
 from pywps.tests import client_for, assert_response_success
 
 from .common import get_output, resource_file, CFG_FILE
-from roocswps.processes.wps_orchestrate import Orchestrate
+from rook.processes.wps_orchestrate import Orchestrate
 
 
 def test_wps_orchestrate_simple():

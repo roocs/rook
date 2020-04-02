@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# roocswps documentation build configuration file, created by
+# rook documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -51,7 +51,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'roocs wps demo'
+project = u'rook'
 copyright = u"2020, Carsten Ehbrecht"
 author = u"Carsten Ehbrecht"
 
@@ -113,7 +113,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'roocswpsdoc'
+htmlhelp_basename = 'rookdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -140,8 +140,8 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'roocswps.tex',
-     u'roocs wps demo Documentation',
+    (master_doc, 'rook.tex',
+     u'rook Documentation',
      u'Carsten Ehbrecht', 'manual'),
 ]
 
@@ -151,8 +151,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'roocswps',
-     u'roocs wps demo Documentation',
+    (master_doc, 'rook',
+     u'rook Documentation',
      [author], 1)
 ]
 
@@ -163,10 +163,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'roocswps',
-     u'roocs wps demo Documentation',
+    (master_doc, 'rook',
+     u'rook Documentation',
      author,
-     'roocswps',
+     'rook',
      'One line description of project.',
      'Miscellaneous'),
 ]

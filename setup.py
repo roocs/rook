@@ -12,7 +12,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 about = {}
-with open(os.path.join(here, 'roocswps', '__version__.py'), 'r') as f:
+with open(os.path.join(here, 'rook', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
 reqs = [line.strip() for line in open('requirements.txt')]
@@ -34,16 +34,16 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
 ]
 
-setup(name='roocswps',
+setup(name='rook',
       version=about['__version__'],
-      description="A demostrator for a WPS service for roocs.",
+      description="A WPS service for roocs.",
       long_description=README + '\n\n' + CHANGES,
       author=about['__author__'],
       author_email=about['__email__'],
-      url='https://github.com/roocs/roocs-wps-demo',
+      url='https://github.com/roocs/rook',
       classifiers=classifiers,
       license="Apache Software License 2.0",
-      keywords='wps pywps birdhouse roocswps',
+      keywords='wps pywps birdhouse roocs rook',
       packages=find_packages(),
       include_package_data=True,
       install_requires=reqs,
@@ -52,5 +52,5 @@ setup(name='roocswps',
       },
       entry_points={
           'console_scripts': [
-              'roocswps=roocswps.cli:cli',
+              'rook=rook.cli:cli',
           ]},)

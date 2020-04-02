@@ -24,17 +24,17 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Prepare env with Python version
-  - conda create -n roocswps python=$TRAVIS_PYTHON_VERSION
+  - conda create -n rook python=$TRAVIS_PYTHON_VERSION
   # Update now the env with our environment
   - conda env update -f environment.yml
-  - source activate roocswps
+  - source activate rook
   # Packages for testing
   - conda install pytest flake8
   # Install WPS
   - python setup.py install
 before_script:
   # Start WPS service on port 5000 on 0.0.0.0
-  - roocswps start --daemon --bind-host 0.0.0.0 --port 5000
+  - rook start --daemon --bind-host 0.0.0.0 --port 5000
   - sleep 2
 script:
   - pytest tests/
