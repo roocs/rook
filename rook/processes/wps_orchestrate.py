@@ -1,4 +1,4 @@
-from pywps import Process, ComplexInput, ComplexOutput, LiteralInput
+from pywps import Process, ComplexInput, ComplexOutput
 from pywps import FORMATS
 from pywps import configuration
 
