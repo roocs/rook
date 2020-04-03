@@ -20,10 +20,11 @@ def test_validate_simple_wf():
 
 
 def test_run_simple_wf():
+    wfdoc = workflow.load_wfdoc(SIMPLE_WF)
     wf = workflow.SimpleWorkflow(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
         output_dir=tempfile.mkdtemp())
-    output = wf.run(SIMPLE_WF)
+    output = wf.run(wfdoc)
     assert 'output.nc' in output[0]
 
 
@@ -49,24 +50,43 @@ def test_build_tree():
 
 
 def test_run_tree_wf():
+    wfdoc = workflow.load_wfdoc(TREE_WF)
     wf = workflow.TreeWorkflow(
+        data_root_dir=CMIP5_ARCHIVE_ROOT,
+        output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    assert 'output.nc' in output[0]
+
+
+def test_run_tree_wf_2():
+    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wf = workflow.TreeWorkflow(
+        data_root_dir=CMIP5_ARCHIVE_ROOT,
+        output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    assert 'output.nc' in output[0]
+
+
+def test_run_tree_wf_3():
+    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wf = workflow.TreeWorkflow(
+        data_root_dir=CMIP5_ARCHIVE_ROOT,
+        output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    assert 'output.nc' in output[0]
+
+
+def test_workflow_runner_tree():
+    wf = workflow.WorkflowRunner(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
         output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF)
     assert 'output.nc' in output[0]
 
 
-def test_run_tree_wf_2():
-    wf = workflow.TreeWorkflow(
+def test_workflow_runner_simple():
+    wf = workflow.WorkflowRunner(
         data_root_dir=CMIP5_ARCHIVE_ROOT,
         output_dir=tempfile.mkdtemp())
-    output = wf.run(TREE_WF_2)
-    assert 'output.nc' in output[0]
-
-
-def test_run_tree_wf_3():
-    wf = workflow.TreeWorkflow(
-        data_root_dir=CMIP5_ARCHIVE_ROOT,
-        output_dir=tempfile.mkdtemp())
-    output = wf.run(TREE_WF_3)
+    output = wf.run(SIMPLE_WF)
     assert 'output.nc' in output[0]

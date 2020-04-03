@@ -42,7 +42,23 @@ def build_tree(wfdoc):
     return tree
 
 
-class Workflow(object):
+class WorkflowRunner(object):
+    def __init__(self, data_root_dir, output_dir):
+        self.simple_wf = SimpleWorkflow(data_root_dir, output_dir)
+        self.tree_wf = TreeWorkflow(data_root_dir, output_dir)
+
+    def run(self, path):
+        wfdoc = load_wfdoc(path)
+        if 'steps' not in wfdoc:
+            raise WorkflowValidationError('steps missing')
+        if isinstance(wfdoc['steps'], list):
+            result = self.simple_wf.run(wfdoc)
+        else:
+            result = self.tree_wf.run(wfdoc)
+        return result
+
+
+class BaseWorkflow(object):
     def __init__(self, data_root_dir, output_dir):
         self.subset_op = Subset(data_root_dir, output_dir)
         self.average_op = Average(data_root_dir, output_dir)
@@ -51,8 +67,7 @@ class Workflow(object):
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
 
-    def run(self, path):
-        wfdoc = load_wfdoc(path)
+    def run(self, wfdoc):
         self.validate(wfdoc)
         return self._run(wfdoc)
 
@@ -60,7 +75,7 @@ class Workflow(object):
         raise NotImplementedError("implemented in subclass")
 
 
-class SimpleWorkflow(Workflow):
+class SimpleWorkflow(BaseWorkflow):
     def validate(self, wfdoc):
         if 'doc' not in wfdoc:
             raise WorkflowValidationError('doc missing')
@@ -89,7 +104,7 @@ class SimpleWorkflow(Workflow):
         return result
 
 
-class TreeWorkflow(Workflow):
+class TreeWorkflow(BaseWorkflow):
     def validate(self, wfdoc):
         if 'doc' not in wfdoc:
             raise WorkflowValidationError('doc missing')

@@ -12,12 +12,6 @@ class Orchestrate(Process):
                          min_occurs=1,
                          max_occurs=1,
                          supported_formats=[FORMATS.JSON]),
-            LiteralInput('mode', 'Mode',
-                         data_type='string',
-                         min_occurs=1,
-                         max_occurs=1,
-                         default='tree',
-                         allowed_values=['tree', 'simple']),
         ]
         outputs = [
             ComplexOutput('output', 'Output',
@@ -38,14 +32,9 @@ class Orchestrate(Process):
         )
 
     def _handler(self, request, response):
-        if request.inputs['mode'][0].data == 'simple':
-            wf = workflow.SimpleWorkflow(
-                data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
-                output_dir=self.workdir)
-        else:
-            wf = workflow.TreeWorkflow(
-                data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
-                output_dir=self.workdir)
+        wf = workflow.WorkflowRunner(
+            data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
+            output_dir=self.workdir)
         output = wf.run(request.inputs['workflow'][0].file)
         response.outputs['output'].file = output[0]
         return response
