@@ -10,8 +10,6 @@ branches:
     - master
 jobs:
   include:
-    - os: osx
-      language: shell
     - env: ALLOW_FAIL=true
       python: "3.8"
   allow_failures:
