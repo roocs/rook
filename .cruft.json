@@ -1,0 +1,23 @@
+{
+    "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
+    "commit": "90bbb155b26dc2b56eeababc8f4a1589c39c5812",
+    "context": {
+        "cookiecutter": {
+            "full_name": "Carsten Ehbrecht",
+            "email": "ehbrecht@dkrz.de",
+            "github_username": "roocs",
+            "project_name": "rook",
+            "project_slug": "rook",
+            "project_repo_name": "rook",
+            "project_readthedocs_name": "rook",
+            "project_short_description": "A WPS service for roocs.",
+            "version": "0.1.0",
+            "open_source_license": "Apache Software License 2.0",
+            "http_port": "5000",
+            "_copy_without_render": [
+                "rook/templates/*.cfg"
+            ],
+            "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
+        }
+    }
+}

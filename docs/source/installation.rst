@@ -37,7 +37,7 @@ Create Conda environment named `rook`:
    $ conda env create -f environment.yml
    $ source activate rook
 
-Install rook:
+Install rook app:
 
 .. code-block:: console
 

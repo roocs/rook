@@ -1,5 +1,5 @@
 rook
-====
+===============================
 
 .. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
    :target: http://rook.readthedocs.io/en/latest/?badge=latest
@@ -19,7 +19,7 @@ rook
 
 
 rook (the bird)
-  *The rook belongs to the crow familiy ...*
+  *The rook belongs to the crow family ...*
 
 rook
   *Remote Operations On Klimadaten.*
@@ -32,6 +32,9 @@ Documentation
 
 Learn more about rook in its official documentation at
 https://rook.readthedocs.io.
+
+Submit bug reports, questions and feature requests at
+https://github.com/roocs/rook/issues
 
 Contributing
 ------------

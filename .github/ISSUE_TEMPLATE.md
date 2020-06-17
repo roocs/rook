@@ -4,7 +4,7 @@ Describe what you were trying to get done or your feature request.
 
 ## Environment
 
-* roocs wps demo version used, if any:
+* rook version used, if any:
 * Python version, if any:
 * Operating System:
 
