@@ -1,6 +1,6 @@
 {
     "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-    "commit": "90bbb155b26dc2b56eeababc8f4a1589c39c5812",
+    "commit": "317c4fb328a8a15b34957db2f5d5f2b639dab95e",
     "context": {
         "cookiecutter": {
             "full_name": "Carsten Ehbrecht",
@@ -15,7 +15,7 @@
             "open_source_license": "Apache Software License 2.0",
             "http_port": "5000",
             "_copy_without_render": [
-                "rook/templates/*.cfg"
+                "{{cookiecutter.project_slug}}/templates/*.cfg"
             ],
             "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
         }
