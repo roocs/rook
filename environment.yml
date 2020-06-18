@@ -1,11 +1,12 @@
 name: rook
 channels:
 - conda-forge
-#- defaults
+- defaults
 dependencies:
 - python=3.7
 - pip
-- pywps=4.2
+- python>=3.6,<3.8
+- pywps>=4.2.4,<4.3
 - jinja2
 - click
 - psutil
