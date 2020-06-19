@@ -10,6 +10,8 @@ dependencies:
 - jinja2
 - click
 - psutil
+# tests
+- pytest
 # daops
 - xarray>=0.15
 - dask
