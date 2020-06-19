@@ -1,6 +1,6 @@
 {
     "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-    "commit": "317c4fb328a8a15b34957db2f5d5f2b639dab95e",
+    "commit": "5351c2fc8649454ec9986a01cd78d0c233c0d1ba",
     "context": {
         "cookiecutter": {
             "full_name": "Carsten Ehbrecht",
