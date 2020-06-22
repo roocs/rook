@@ -1,5 +1,5 @@
 import tempfile
-import daops
+import daops.ops
 
 
 class Operator(object):
@@ -26,7 +26,7 @@ class Subset(Operator):
             kwargs['data_refs'] = args['data_ref']
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
-        result = daops.subset(
+        result = daops.ops.subset(
             **kwargs,
         )
         return result.file_paths

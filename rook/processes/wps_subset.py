@@ -3,7 +3,8 @@ from pywps import FORMATS
 from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
-import daops
+import daops.ops
+from daops.utils import is_characterised
 
 from .utils import translate_args
 
@@ -23,7 +24,7 @@ class Subset(Process):
                          max_occurs=1,),
             LiteralInput('space', 'Bounding Box',
                          data_type='string',
-                         default='-5.,49.,10.,65',
+                         default='0.,49.,10.,65',
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('level', 'Level',
@@ -57,7 +58,7 @@ class Subset(Process):
 
     def _handler(self, request, response):
         data_refs = [dref.data for dref in request.inputs['data_ref']]
-        if request.inputs['pre_checked'][0].data and not daops.is_characterised(data_refs, require_all=True):
+        if request.inputs['pre_checked'][0].data and not is_characterised(data_refs, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
         config_args = {
@@ -69,6 +70,6 @@ class Subset(Process):
         kwargs = translate_args(request)
         kwargs.update(config_args)
 
-        result = daops.subset(data_refs, **kwargs)
+        result = daops.ops.subset(data_refs, **kwargs)
         response.outputs['output'].file = result.file_paths[0]
         return response
