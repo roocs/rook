@@ -45,10 +45,9 @@ class Average(Process):
     @staticmethod
     def _handler(request, response):
         # TODO: handle lazy load of daops
-        import daops.ops
         from daops.utils import is_characterised
         data_refs = [dref.data for dref in request.inputs['data_ref']]
-        if request.inputs['pre_checked'][0].data and not daops.is_characterised(data_refs, require_all=True):
+        if request.inputs['pre_checked'][0].data and not is_characterised(data_refs, require_all=True):
             raise ProcessError('Data has not been pre-checked')
         response.outputs['output'].data = 'not working yet'
         return response

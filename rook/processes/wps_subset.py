@@ -3,9 +3,6 @@ from pywps import FORMATS
 from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
-import daops.ops
-from daops.utils import is_characterised
-
 from .utils import translate_args
 
 
@@ -58,7 +55,7 @@ class Subset(Process):
 
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
-        import daops.ops
+        from daops.ops import subset
         from daops.utils import is_characterised
         data_refs = [dref.data for dref in request.inputs['data_ref']]
         if request.inputs['pre_checked'][0].data and not is_characterised(data_refs, require_all=True):
@@ -73,6 +70,6 @@ class Subset(Process):
         kwargs = translate_args(request)
         kwargs.update(config_args)
 
-        result = daops.ops.subset(data_refs, **kwargs)
+        result = subset(data_refs, **kwargs)
         response.outputs['output'].file = result.file_paths[0]
         return response
