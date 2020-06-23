@@ -1,5 +1,4 @@
 import tempfile
-import daops.ops
 
 
 class Operator(object):
@@ -17,6 +16,8 @@ class Operator(object):
 
 class Subset(Operator):
     def call(self, args):
+        # TODO: handle lazy load of daops
+        import daops.ops
         kwargs = {}
         if 'time' in args:
             kwargs['time'] = args['time'].split('/')
