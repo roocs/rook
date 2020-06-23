@@ -1,5 +1,4 @@
 import tempfile
-import daops.ops
 
 
 class Operator(object):
@@ -17,6 +16,8 @@ class Operator(object):
 
 class Subset(Operator):
     def call(self, args):
+        # TODO: handle lazy load of daops
+        from daops.ops import subset
         kwargs = {}
         if 'time' in args:
             kwargs['time'] = args['time'].split('/')
@@ -26,7 +27,7 @@ class Subset(Operator):
             kwargs['data_refs'] = args['data_ref']
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
-        result = daops.ops.subset(
+        result = subset(
             **kwargs,
         )
         return result.file_paths
