@@ -35,3 +35,9 @@ dependencies:
 - networkx
 # tests
 - pytest
+# wps deployment
+- gunicorn
+- psycopg2
+- pip:
+  - clisops>=0.2.0<0.3
+  - daops>=0.2.0<0.3
