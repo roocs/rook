@@ -3,7 +3,7 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=3.7
+#- python=3.7
 - pip
 - python>=3.6,<3.8
 - pywps>=4.2.4,<4.3
@@ -16,7 +16,7 @@ dependencies:
 - xarray>=0.15
 - dask
 - netcdf4
-- clisops>=0.2.0,<0.3
+- clisops>=0.3.0,<0.4
 # workflow
 - networkx
 # tests
