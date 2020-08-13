@@ -43,9 +43,9 @@ def build_tree(wfdoc):
 
 
 class WorkflowRunner(object):
-    def __init__(self, base_dir, output_dir):
-        self.simple_wf = SimpleWorkflow(base_dir, output_dir)
-        self.tree_wf = TreeWorkflow(base_dir, output_dir)
+    def __init__(self, project, output_dir):
+        self.simple_wf = SimpleWorkflow(project, output_dir)
+        self.tree_wf = TreeWorkflow(project, output_dir)
 
     def run(self, path):
         wfdoc = load_wfdoc(path)
@@ -59,10 +59,10 @@ class WorkflowRunner(object):
 
 
 class BaseWorkflow(object):
-    def __init__(self, base_dir, output_dir):
-        self.subset_op = Subset(base_dir, output_dir)
-        self.average_op = Average(base_dir, output_dir)
-        self.diff_op = Diff(base_dir, output_dir)
+    def __init__(self, project, output_dir):
+        self.subset_op = Subset(project, output_dir)
+        self.average_op = Average(project, output_dir)
+        self.diff_op = Diff(project, output_dir)
 
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
@@ -86,7 +86,7 @@ class SimpleWorkflow(BaseWorkflow):
         return True
 
     def _run(self, wfdoc):
-        data_ref = wfdoc['inputs']['data_ref']
+        data_ref = wfdoc['inputs']['collection']
         for step in wfdoc['steps']:
             data_ref = self._run_step(step, data_ref)
         return data_ref
@@ -94,10 +94,10 @@ class SimpleWorkflow(BaseWorkflow):
     def _run_step(self, step, input):
         LOGGER.debug(f'run {step}')
         if 'subset' in step:
-            step['subset']['data_ref'] = input
+            step['subset']['collection'] = input
             result = self.subset_op.call(step['subset'])
         elif 'average' in step:
-            step['average']['data_ref'] = input
+            step['average']['collection'] = input
             result = self.average_op.call(step['average'])
         else:
             result = None

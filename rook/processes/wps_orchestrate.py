@@ -33,7 +33,7 @@ class Orchestrate(Process):
 
     def _handler(self, request, response):
         wf = workflow.WorkflowRunner(
-            base_dir=configuration.get_config_value("data", "cmip5_archive_root"),
+            project='cmip5',
             output_dir=self.workdir)
         output = wf.run(request.inputs['workflow'][0].file)
         response.outputs['output'].file = output[0]

@@ -4,6 +4,7 @@ from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
 from .utils import translate_args
+from roocs_utils.parameter import parameterise
 
 
 class Subset(Process):
@@ -25,8 +26,8 @@ class Subset(Process):
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('level', 'Level',
-                         data_type='integer',
-                         default='1000',
+                         data_type='string',
+                         default='0/1000',
                          min_occurs=0,
                          max_occurs=10,),
             LiteralInput('pre_checked', 'Pre-Checked', data_type='boolean',
@@ -55,21 +56,24 @@ class Subset(Process):
 
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
-        from daops.ops import subset
+        from daops.ops.subset import subset
         from daops.utils import is_characterised
         collection = [data_ref.data for data_ref in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
         config_args = {
-            'base_dir': configuration.get_config_value("data", "cmip5_archive_root"),
+            'project': 'cmip5',
             'output_dir': self.workdir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
-        kwargs = translate_args(request)
+        # kwargs = translate_args(request)
+        kwargs = parameterise.parameterise_rook(collection=collection,
+                                                time=request.inputs['time'][0].data,
+                                                level=request.inputs['level'][0].data,
+                                                area=request.inputs['area'][0].data)
         kwargs.update(config_args)
-
-        result = subset(collection, **kwargs)
+        result = subset(**kwargs)
         response.outputs['output'].file = result.file_paths[0]
         return response

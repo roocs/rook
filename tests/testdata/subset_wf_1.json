@@ -10,14 +10,14 @@
           "subset_tas": {
               "run": "subset",
               "in": {
-                  "data_ref": "inputs/tas",
+                  "collection": "inputs/tas",
                   "time": "2085-01-01/2120-12-30"
               }
           },
           "average_tas": {
               "run": "average",
               "in": {
-                  "data_ref": "subset_tas/output",
+                  "collection": "subset_tas/output",
                   "axes": "time"
               }
           }

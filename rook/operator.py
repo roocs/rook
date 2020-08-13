@@ -1,10 +1,11 @@
 import tempfile
 
+from roocs_utils.parameter import parameterise
 
 class Operator(object):
-    def __init__(self, base_dir, output_dir):
+    def __init__(self, project, output_dir):
         self.config = {
-            'base_dir': base_dir,
+            'project': project,
             'output_dir': output_dir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
@@ -17,14 +18,11 @@ class Operator(object):
 class Subset(Operator):
     def call(self, args):
         # TODO: handle lazy load of daops
-        from daops.ops import subset
-        kwargs = {}
-        if 'time' in args:
-            kwargs['time'] = args['time'].split('/')
-        if 'area' in args:
-            kwargs['area'] = [float(item) for item in args['area'].split(',')]
-        if 'collection' in args:
-            kwargs['collection'] = args['collection']
+        from daops.ops.subset import subset
+        kwargs = parameterise.parameterise_rook(collection=args.get('collection'),
+                                                time=args.get('time'),
+                                                level=args.get('level'),
+                                                area=args.get('area'))
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
         result = subset(
@@ -40,4 +38,4 @@ class Average(Operator):
 
 class Diff(Operator):
     def call(self, args):
-        return args['data_ref_a']
+        return args['collection_a']
