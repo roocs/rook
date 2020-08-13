@@ -9,7 +9,7 @@ from .utils import translate_args
 class Subset(Process):
     def __init__(self):
         inputs = [
-            LiteralInput('data_ref', 'Data references',
+            LiteralInput('collection', 'Collection',
                          data_type='string',
                          default='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          min_occurs=1,
@@ -19,7 +19,7 @@ class Subset(Process):
                          default="2085-01-01/2120-12-30",
                          min_occurs=1,
                          max_occurs=1,),
-            LiteralInput('space', 'Bounding Box',
+            LiteralInput('area', 'Area',
                          data_type='string',
                          default='0.,49.,10.,65',
                          min_occurs=0,
@@ -57,7 +57,7 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops import subset
         from daops.utils import is_characterised
-        data_refs = [dref.data for dref in request.inputs['data_ref']]
+        data_refs = [dref.data for dref in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(data_refs, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
