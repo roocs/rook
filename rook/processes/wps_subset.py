@@ -57,12 +57,12 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops import subset
         from daops.utils import is_characterised
-        data_refs = [dref.data for dref in request.inputs['collection']]
-        if request.inputs['pre_checked'][0].data and not is_characterised(data_refs, require_all=True):
+        collection = [data_ref.data for data_ref in request.inputs['collection']]
+        if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
         config_args = {
-            'data_root_dir': configuration.get_config_value("data", "cmip5_archive_root"),
+            'base_dir': configuration.get_config_value("data", "cmip5_archive_root"),
             'output_dir': self.workdir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
@@ -70,6 +70,6 @@ class Subset(Process):
         kwargs = translate_args(request)
         kwargs.update(config_args)
 
-        result = subset(data_refs, **kwargs)
+        result = subset(collection, **kwargs)
         response.outputs['output'].file = result.file_paths[0]
         return response
