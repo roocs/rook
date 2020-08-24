@@ -86,10 +86,10 @@ class SimpleWorkflow(BaseWorkflow):
         return True
 
     def _run(self, wfdoc):
-        data_ref = wfdoc['inputs']['collection']
+        col = wfdoc['inputs']['collection']
         for step in wfdoc['steps']:
-            data_ref = self._run_step(step, data_ref)
-        return data_ref
+            col = self._run_step(step, col)
+        return col
 
     def _run_step(self, step, input):
         LOGGER.debug(f'run {step}')

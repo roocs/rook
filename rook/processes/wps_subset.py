@@ -58,7 +58,7 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
         from daops.utils import is_characterised
-        collection = [data_ref.data for data_ref in request.inputs['collection']]
+        collection = [col.data for col in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
 
@@ -69,10 +69,10 @@ class Subset(Process):
             # 'filenamer': dconfig.filenamer,
         }
         # kwargs = translate_args(request)
-        kwargs = parameterise.parameterise_rook(collection=collection,
-                                                time=request.inputs['time'][0].data,
-                                                level=request.inputs['level'][0].data,
-                                                area=request.inputs['area'][0].data)
+        kwargs = parameterise.parameterise(collection=collection,
+                                           time=request.inputs['time'][0].data,
+                                           level=request.inputs['level'][0].data,
+                                           area=request.inputs['area'][0].data)
         kwargs.update(config_args)
         result = subset(**kwargs)
         response.outputs['output'].file = result.file_paths[0]
