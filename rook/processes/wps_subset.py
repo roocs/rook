@@ -3,7 +3,6 @@ from pywps import FORMATS
 from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
-from .utils import translate_args
 from roocs_utils.parameter import parameterise
 
 
@@ -63,12 +62,11 @@ class Subset(Process):
             raise ProcessError('Data has not been pre-checked')
 
         config_args = {
-            'project': 'cmip5',
             'output_dir': self.workdir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
-        # kwargs = translate_args(request)
+
         kwargs = parameterise.parameterise(collection=collection,
                                            time=request.inputs['time'][0].data,
                                            level=request.inputs['level'][0].data,

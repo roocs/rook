@@ -2,10 +2,10 @@ import tempfile
 
 from roocs_utils.parameter import parameterise
 
+
 class Operator(object):
-    def __init__(self, project, output_dir):
+    def __init__(self, output_dir):
         self.config = {
-            'project': project,
             'output_dir': output_dir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,

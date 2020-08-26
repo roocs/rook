@@ -43,9 +43,9 @@ def build_tree(wfdoc):
 
 
 class WorkflowRunner(object):
-    def __init__(self, project, output_dir):
-        self.simple_wf = SimpleWorkflow(project, output_dir)
-        self.tree_wf = TreeWorkflow(project, output_dir)
+    def __init__(self, output_dir):
+        self.simple_wf = SimpleWorkflow(output_dir)
+        self.tree_wf = TreeWorkflow(output_dir)
 
     def run(self, path):
         wfdoc = load_wfdoc(path)
@@ -59,10 +59,10 @@ class WorkflowRunner(object):
 
 
 class BaseWorkflow(object):
-    def __init__(self, project, output_dir):
-        self.subset_op = Subset(project, output_dir)
-        self.average_op = Average(project, output_dir)
-        self.diff_op = Diff(project, output_dir)
+    def __init__(self, output_dir):
+        self.subset_op = Subset(output_dir)
+        self.average_op = Average(output_dir)
+        self.diff_op = Diff(output_dir)
 
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
