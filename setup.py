@@ -18,6 +18,19 @@ with open(os.path.join(here, 'rook', '__version__.py'), 'r') as f:
 
 reqs = [line.strip() for line in open('requirements.txt')]
 
+test_requirements = ["pytest", "tox"]
+
+docs_requirements = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "nbsphinx",
+    "pandoc",
+    "ipython",
+    "ipykernel",
+    "jupyter_client",
+    "matplotlib",
+]
+
 classifiers = [
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
@@ -52,6 +65,8 @@ setup(name='rook',
       # extras_require={
       #     "dev": dev_reqs,              # pip install ".[dev]"
       # },
+      tests_require=test_requirements,
+      extras_require={"docs": docs_requirements},
       entry_points={
           'console_scripts': [
               'rook=rook.cli:cli',
