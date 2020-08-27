@@ -17,6 +17,7 @@ with open(os.path.join(here, 'rook', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
 reqs = [line.strip() for line in open('requirements.txt')]
+dev_reqs = [line.strip() for line in open('requirements_dev.txt')]
 
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -49,9 +50,9 @@ setup(name='rook',
       packages=find_packages(),
       include_package_data=True,
       install_requires=[reqs, 'roocs_utils @ git+https://github.com/roocs/roocs-utils.git'],
-      # extras_require={
-      #     "dev": dev_reqs,              # pip install ".[dev]"
-      # },
+      extras_require={
+          "dev": dev_reqs,              # pip install ".[dev]"
+      },
       entry_points={
           'console_scripts': [
               'rook=rook.cli:cli',
