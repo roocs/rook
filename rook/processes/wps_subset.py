@@ -44,7 +44,7 @@ class Subset(Process):
             ComplexOutput('output_meta4', 'METALINK v4 output',
                           abstract='Metalink v4 document with references to NetCDF files.',
                           as_reference=True,
-                          supported_formats=[FORMATS.META4])
+                          supported_formats=[FORMATS.META4]),
         ]
 
         super(Subset, self).__init__(
