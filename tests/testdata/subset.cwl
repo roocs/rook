@@ -3,7 +3,7 @@
 cwlVersion: v1.0
 class: Workflow
 inputs:
-  data_ref: String
+  dset: String
 
 outputs:
   output:
@@ -14,5 +14,5 @@ steps:
   subset:
     run: daops.subset
     in:
-      data_ref: data_ref
+      dset: dset
     out: [output]
