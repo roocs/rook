@@ -40,7 +40,7 @@ def write_roocs_cfg():
     with open(ROOCS_CFG, 'w') as fp:
         fp.write(cfg)
     # point to roocs cfg in environment
-    os.environ['ROOCS_CFG'] = ROOCS_CFG
+    os.environ['ROOCS_CONFIG'] = ROOCS_CFG
 
 
 write_roocs_cfg()
