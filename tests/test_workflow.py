@@ -2,7 +2,7 @@ import tempfile
 
 from rook import workflow
 
-from .common import resource_file, CMIP5_ARCHIVE_ROOT
+from .common import resource_file
 
 
 SIMPLE_WF = resource_file("subset_simple_wf.json")

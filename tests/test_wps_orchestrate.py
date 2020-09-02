@@ -1,12 +1,12 @@
 from pywps import Service
 from pywps.tests import client_for, assert_response_success
 
-from .common import get_output, resource_file, CFG_FILE
+from .common import get_output, resource_file, PYWPS_CFG
 from rook.processes.wps_orchestrate import Orchestrate
 
 
 def test_wps_orchestrate_simple():
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[CFG_FILE]))
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
     datainputs = "workflow=@xlink:href=file://{0};mode=simple".format(
         resource_file('subset_simple_wf.json'))
     resp = client.get(
@@ -18,7 +18,7 @@ def test_wps_orchestrate_simple():
 
 
 def test_wps_orchestrate_tree():
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[CFG_FILE]))
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
     datainputs = "workflow=@xlink:href=file://{0};mode=tree".format(
         resource_file('subset_wf_1.json'))
     resp = client.get(
