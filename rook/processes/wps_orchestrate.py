@@ -1,6 +1,5 @@
 from pywps import Process, ComplexInput, ComplexOutput
 from pywps import FORMATS
-from pywps import configuration
 
 from rook import workflow
 

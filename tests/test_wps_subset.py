@@ -1,6 +1,5 @@
 from pywps import Service
 from pywps.tests import client_for, assert_response_success
-import pytest
 
 from .common import get_output, PYWPS_CFG
 from rook.processes.wps_subset import Subset
