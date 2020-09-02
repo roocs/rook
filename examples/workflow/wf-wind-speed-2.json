@@ -16,7 +16,7 @@
         "pow_u": {
             "run": "pow",
             "in": {
-                "data_ref": "data_ref_u",
+                "dset": "dset_u",
                 "power": "2.0"
             },
             "out": ["output"]
@@ -24,7 +24,7 @@
         "pow_v": {
             "run": "pow",
             "in": {
-                "data_ref": "data_ref_v",
+                "dset": "dset_v",
                 "power": "2.0"
             },
             "out": ["output"]
@@ -40,7 +40,7 @@
         "windspeed": {
             "run": "pow",
             "in": {
-                "data_ref": "add/output",
+                "dset": "add/output",
                 "power": "0.5"
             },
             "out": ["output"]

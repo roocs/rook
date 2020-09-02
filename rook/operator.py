@@ -1,30 +1,28 @@
 import tempfile
 
+from roocs_utils.parameter import parameterise
+
 
 class Operator(object):
-    def __init__(self, data_root_dir, output_dir):
+    def __init__(self, output_dir):
         self.config = {
-            'data_root_dir': data_root_dir,
             'output_dir': output_dir,
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
 
-    def call(self, args, data_refs):
+    def call(self, args, collection):
         raise NotImplementedError("implemented in subclass")
 
 
 class Subset(Operator):
     def call(self, args):
         # TODO: handle lazy load of daops
-        from daops.ops import subset
-        kwargs = {}
-        if 'time' in args:
-            kwargs['time'] = args['time'].split('/')
-        if 'space' in args:
-            kwargs['space'] = [float(item) for item in args['space'].split(',')]
-        if 'data_ref' in args:
-            kwargs['data_refs'] = args['data_ref']
+        from daops.ops.subset import subset
+        kwargs = parameterise.parameterise(collection=args.get('collection'),
+                                           time=args.get('time'),
+                                           level=args.get('level'),
+                                           area=args.get('area'))
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
         result = subset(
@@ -35,9 +33,9 @@ class Subset(Operator):
 
 class Average(Operator):
     def call(self, args):
-        return args['data_ref']
+        return args['collection']
 
 
 class Diff(Operator):
     def call(self, args):
-        return args['data_ref_a']
+        return args['collection_a']
