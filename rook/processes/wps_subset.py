@@ -1,6 +1,5 @@
 from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
-from pywps import configuration
 from pywps.app.exceptions import ProcessError
 
 from roocs_utils.parameter import parameterise
