@@ -1,6 +1,7 @@
 from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
+from pywps.inout.outputs import MetaLink4, MetaFile
 
 from roocs_utils.parameter import parameterise
 
@@ -36,8 +37,13 @@ class Subset(Process):
         ]
         outputs = [
             ComplexOutput('output', 'Output',
+                          abstract='A single NetCDF file.',
                           as_reference=True,
                           supported_formats=[FORMATS.NETCDF]),
+            ComplexOutput('output_meta4', 'METALINK v4 output',
+                          abstract='Metalink v4 document with references to NetCDF files.',
+                          as_reference=True,
+                          supported_formats=[FORMATS.META4]),
         ]
 
         super(Subset, self).__init__(
@@ -73,4 +79,11 @@ class Subset(Process):
         kwargs.update(config_args)
         result = subset(**kwargs)
         response.outputs['output'].file = result.file_paths[0]
+        # metalink document with collection of netcdf files
+        ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
+        for ncfile in result.file_paths:
+            mf = MetaFile('NetCDF file', 'NetCDF file', fmt=FORMATS.NETCDF)
+            mf.file = ncfile
+            ml4.append(mf)
+        response.outputs['output_meta4'].data = ml4.xml
         return response
