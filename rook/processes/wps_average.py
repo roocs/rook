@@ -47,8 +47,7 @@ class Average(Process):
             status_supported=True
         )
 
-    @staticmethod
-    def _handler(request, response):
+    def _handler(self, request, response):
         # TODO: handle lazy load of daops
         from daops.utils import is_characterised
         collection = [dset.data for dset in request.inputs['collection']]
