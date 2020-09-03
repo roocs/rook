@@ -11,22 +11,22 @@
         "subsetA": {
               "run": "subset",
               "in": {
-                  "data_ref": "inputs/inm",
+                  "collection": "inputs/inm",
                   "time": "2085-01-01/2120-12-30"
               }
           },
           "subsetB": {
               "run": "subset",
               "in": {
-                  "data_ref": "inputs/mpi",
+                  "collection": "inputs/mpi",
                   "time": "2085-01-01/2120-12-30"
               }
           },
           "diff": {
               "run": "diff",
               "in": {
-                  "data_ref_a": "subsetA/output",
-                  "data_ref_b": "subsetB/output",
+                  "collection_a": "subsetA/output",
+                  "collection_b": "subsetB/output",
               }
           }
     }}

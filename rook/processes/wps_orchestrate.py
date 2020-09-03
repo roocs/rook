@@ -38,7 +38,6 @@ class Orchestrate(Process):
 
     def _handler(self, request, response):
         wf = workflow.WorkflowRunner(
-            data_root_dir=configuration.get_config_value("data", "cmip5_archive_root"),
             output_dir=self.workdir)
         output = wf.run(request.inputs['workflow'][0].file)
         # single netcdf file as output

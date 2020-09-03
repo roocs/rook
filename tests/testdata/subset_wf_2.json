@@ -10,7 +10,7 @@
           "subset_tas_1": {
               "run": "subset",
               "in": {
-                  "data_ref": "inputs/tas",
+                  "collection": "inputs/tas",
                   "time": "2085-01-01/2120-12-30",
                   "space": "0.,49.,10.,65."
               }
@@ -18,7 +18,7 @@
           "subset_tas_2": {
               "run": "subset",
               "in": {
-                  "data_ref": "subset_tas_1/output",
+                  "collection": "subset_tas_1/output",
                   "time": "2090-01-01/2100-12-30",
                   "space": "0.,50.,10.,60."
               }
@@ -26,7 +26,7 @@
           "average_tas": {
               "run": "average",
               "in": {
-                  "data_ref": "subset_tas_2/output",
+                  "collection": "subset_tas_2/output",
                   "axes": "time"
               }
           }
