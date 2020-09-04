@@ -39,6 +39,8 @@ def write_roocs_cfg():
     cfg = Template(cfg_templ).render(base_dir=TESTS_HOME)
     with open(ROOCS_CFG, 'w') as fp:
         fp.write(cfg)
+    # point to roocs cfg in environment
+    os.environ['ROOCS_CONFIG'] = ROOCS_CFG
 
 
 def resource_file(filepath):
