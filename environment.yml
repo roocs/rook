@@ -13,6 +13,7 @@ dependencies:
 # tests
 - pytest
 # daops
+- udunits2>=2.2
 - xarray>=0.15
 - dask
 - netcdf4
