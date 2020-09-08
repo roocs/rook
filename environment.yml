@@ -23,6 +23,6 @@ dependencies:
 - pytest
 - pip:
   # - daops>=0.2.0<0.3
-  - -e git+https://github.com/roocs/roocs-utils.git@master#egg=roocs_utils
-  - -e git+https://github.com/roocs/clisops.git@master#egg=clisops
-  - -e git+https://github.com/roocs/daops.git@master#egg=daops
+  - -e git+https://github.com/roocs/roocs-utils.git@implement-split-outputs#egg=roocs_utils
+  - -e git+https://github.com/roocs/clisops.git@implement-split-outputs#egg=clisops
+  - -e git+https://github.com/roocs/daops.git@implement_split_method#egg=daops
