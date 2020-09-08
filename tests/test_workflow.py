@@ -23,7 +23,7 @@ def test_run_simple_wf():
     wf = workflow.SimpleWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
 
 
 def test_validate_tree_wf():
@@ -51,7 +51,7 @@ def test_run_tree_wf():
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
 
 
 def test_run_tree_wf_2():
@@ -59,7 +59,7 @@ def test_run_tree_wf_2():
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
 
 
 def test_run_tree_wf_3():
@@ -67,18 +67,18 @@ def test_run_tree_wf_3():
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
 
 
 def test_workflow_runner_tree():
     wf = workflow.WorkflowRunner(
         output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
 
 
 def test_workflow_runner_simple():
     wf = workflow.WorkflowRunner(
         output_dir=tempfile.mkdtemp())
     output = wf.run(SIMPLE_WF)
-    assert 'output.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0][0]
