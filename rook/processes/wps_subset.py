@@ -78,10 +78,10 @@ class Subset(Process):
                                            area=request.inputs['area'][0].data)
         kwargs.update(config_args)
         result = subset(**kwargs)
-        response.outputs['output'].file = result.file_paths[0][0]
+        response.outputs['output'].file = result.file_paths[0]
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
-        for ncfile in result.file_paths[0]:
+        for ncfile in result.file_paths:
             mf = MetaFile('NetCDF file', 'NetCDF file', fmt=FORMATS.NETCDF)
             mf.file = ncfile
             ml4.append(mf)

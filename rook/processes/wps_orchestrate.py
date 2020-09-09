@@ -40,10 +40,10 @@ class Orchestrate(Process):
             output_dir=self.workdir)
         output = wf.run(request.inputs['workflow'][0].file)
         # single netcdf file as output
-        response.outputs['output'].file = output[0][0]
+        response.outputs['output'].file = output[0]
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('workflow-result', 'Workflow result as NetCDF files.', workdir=self.workdir)
-        for ncfile in output[0]:
+        for ncfile in output:
             mf = MetaFile('NetCDF file', 'NetCDF file', fmt=FORMATS.NETCDF)
             mf.file = ncfile
             ml4.append(mf)
