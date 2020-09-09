@@ -14,6 +14,8 @@ dependencies:
 - pytest
 # daops
 - rtree>=0.9
+- cfunits
+- cftime>=1.2.1
 - udunits2>=2.2
 - xarray>=0.15
 - dask
