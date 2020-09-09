@@ -6,18 +6,19 @@ dependencies:
 #- python=3.7
 - pip
 - python>=3.6,<3.8
-- pywps>=4.2.4,<4.3
+- pywps>=4.2.7,<4.3
 - jinja2
 - click
 - psutil
 # tests
 - pytest
 # daops
+- rtree>=0.9
 - udunits2>=2.2
 - xarray>=0.15
 - dask
 - netcdf4
-- clisops>=0.3.0,<0.4
+# - clisops>=0.3.0,<0.4
 # workflow
 - networkx
 # tests
@@ -26,4 +27,4 @@ dependencies:
   # - daops>=0.2.0<0.3
   - -e git+https://github.com/roocs/roocs-utils.git@master#egg=roocs_utils
   - -e git+https://github.com/roocs/clisops.git@master#egg=clisops
-  - -e git+https://github.com/roocs/daops.git@implement_split_method#egg=daops
+  - -e git+https://github.com/roocs/daops.git@master#egg=daops
