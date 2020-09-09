@@ -12,7 +12,6 @@ def test_wps_orchestrate_simple():
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(
             datainputs))
-    print(resp.data)
     assert_response_success(resp)
     assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in get_output(resp.xml)['output']
 
@@ -24,6 +23,5 @@ def test_wps_orchestrate_tree():
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(
             datainputs))
-    print(resp.data)
     assert_response_success(resp)
     assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in get_output(resp.xml)['output']
