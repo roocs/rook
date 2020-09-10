@@ -15,20 +15,20 @@ class Subset(Process):
                          min_occurs=1,
                          max_occurs=10,),
             LiteralInput('time', 'Time Period',
+                         abstract='Example: 2085-01-01/2120-12-30',
                          data_type='string',
-                         default="2085-01-01/2120-12-30",
                          min_occurs=1,
                          max_occurs=1,),
             LiteralInput('area', 'Area',
+                         abstract="Example: 0.,49.,10.,65",
                          data_type='string',
-                         default='0.,49.,10.,65',
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('level', 'Level',
+                         abstract="Example: 0/1000",
                          data_type='string',
-                         default='0/1000',
                          min_occurs=0,
-                         max_occurs=10,),
+                         max_occurs=1,),
             LiteralInput('pre_checked', 'Pre-Checked', data_type='boolean',
                          abstract='Use checked data only.',
                          default='0',
@@ -72,10 +72,15 @@ class Subset(Process):
             # 'filenamer': dconfig.filenamer,
         }
 
-        kwargs = parameterise.parameterise(collection=collection,
-                                           time=request.inputs['time'][0].data,
-                                           level=request.inputs['level'][0].data,
-                                           area=request.inputs['area'][0].data)
+        subset_args = {
+            'collection': collection,
+            'time': request.inputs['time'][0].data
+        }
+        if 'level' in request.inputs:
+            subset_args['level'] = request.inputs['level'][0].data
+        if 'area' in request.inputs:
+            subset_args['area'] = request.inputs['area'][0].data
+        kwargs = parameterise.parameterise(**subset_args)
         kwargs.update(config_args)
         result = subset(**kwargs)
         response.outputs['output'].file = result.file_paths[0]
