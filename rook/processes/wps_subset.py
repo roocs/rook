@@ -10,8 +10,8 @@ class Subset(Process):
     def __init__(self):
         inputs = [
             LiteralInput('collection', 'Collection',
+                         abstract='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          data_type='string',
-                         default='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          min_occurs=1,
                          max_occurs=10,),
             LiteralInput('time', 'Time Period',
