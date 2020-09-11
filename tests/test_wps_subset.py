@@ -26,4 +26,5 @@ def test_wps_subset_missing_time():
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs))
-    assert_process_exception(resp, code='MissingParameterValue')
+    assert_response_success(resp)
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20051216-22991216.nc' in get_output(resp.xml)['output']

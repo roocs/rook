@@ -17,7 +17,7 @@ class Subset(Process):
             LiteralInput('time', 'Time Period',
                          abstract='Example: 2085-01-01/2120-12-30',
                          data_type='string',
-                         min_occurs=1,
+                         min_occurs=0,
                          max_occurs=1,),
             LiteralInput('area', 'Area',
                          abstract="Example: 0.,49.,10.,65",
@@ -74,8 +74,9 @@ class Subset(Process):
 
         subset_args = {
             'collection': collection,
-            'time': request.inputs['time'][0].data
         }
+        if 'time' in request.inputs:
+            subset_args['time'] = request.inputs['time'][0].data
         if 'level' in request.inputs:
             subset_args['level'] = request.inputs['level'][0].data
         if 'area' in request.inputs:
