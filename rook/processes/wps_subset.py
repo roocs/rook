@@ -13,7 +13,7 @@ class Subset(Process):
                          abstract='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=10,),
+                         max_occurs=1,),
             LiteralInput('time', 'Time Period',
                          abstract='Example: 2085-01-01/2120-12-30',
                          data_type='string',
