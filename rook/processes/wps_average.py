@@ -11,7 +11,7 @@ class Average(Process):
                          data_type='string',
                          default='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          min_occurs=1,
-                         max_occurs=10,),
+                         max_occurs=1,),
             LiteralInput('axes', 'Axes',
                          abstract='Please choose an axes for averaging.',
                          data_type='string',
@@ -26,10 +26,7 @@ class Average(Process):
                          max_occurs=1),
         ]
         outputs = [
-            ComplexOutput('output', 'Output',
-                          as_reference=True,
-                          supported_formats=[FORMATS.TEXT]),
-            ComplexOutput('output_meta4', 'METALINK v4 output',
+            ComplexOutput('output', 'METALINK v4 output',
                           abstract='Metalink v4 document with references to NetCDF files.',
                           as_reference=True,
                           supported_formats=[FORMATS.META4]),
@@ -53,12 +50,10 @@ class Average(Process):
         collection = [dset.data for dset in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
-        # single netcdf file as output
-        response.outputs['output'].data = 'not working yet'
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('average-result', 'Averaging result as NetCDF files.', workdir=self.workdir)
         mf = MetaFile('Text file', 'Dummy text file', fmt=FORMATS.TEXT)
         mf.data = 'not working yet'
         ml4.append(mf)
-        response.outputs['output_meta4'].data = ml4.xml
+        response.outputs['output'].data = ml4.xml
         return response

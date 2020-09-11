@@ -10,4 +10,4 @@ dependencies:
   - nodejs
   - birdy
   - pip:
-    - -e git+https://github.com/cehbrecht/pymetalink.git@patched#egg=metalink
+    - -e git+https://github.com/metalink-dev/pymetalink.git@master#egg=metalink
