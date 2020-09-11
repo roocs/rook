@@ -10,25 +10,25 @@ class Subset(Process):
     def __init__(self):
         inputs = [
             LiteralInput('collection', 'Collection',
+                         abstract='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
                          data_type='string',
-                         default='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
-                         min_occurs=1,
-                         max_occurs=10,),
-            LiteralInput('time', 'Time Period',
-                         data_type='string',
-                         default="2085-01-01/2120-12-30",
                          min_occurs=1,
                          max_occurs=1,),
-            LiteralInput('area', 'Area',
+            LiteralInput('time', 'Time Period',
+                         abstract='Example: 2085-01-01/2120-12-30',
                          data_type='string',
-                         default='0.,49.,10.,65',
+                         min_occurs=0,
+                         max_occurs=1,),
+            LiteralInput('area', 'Area',
+                         abstract="Example: 0.,49.,10.,65",
+                         data_type='string',
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('level', 'Level',
+                         abstract="Example: 0/1000",
                          data_type='string',
-                         default='0/1000',
                          min_occurs=0,
-                         max_occurs=10,),
+                         max_occurs=1,),
             LiteralInput('pre_checked', 'Pre-Checked', data_type='boolean',
                          abstract='Use checked data only.',
                          default='0',
@@ -72,10 +72,16 @@ class Subset(Process):
             # 'filenamer': dconfig.filenamer,
         }
 
-        kwargs = parameterise.parameterise(collection=collection,
-                                           time=request.inputs['time'][0].data,
-                                           level=request.inputs['level'][0].data,
-                                           area=request.inputs['area'][0].data)
+        subset_args = {
+            'collection': collection,
+        }
+        if 'time' in request.inputs:
+            subset_args['time'] = request.inputs['time'][0].data
+        if 'level' in request.inputs:
+            subset_args['level'] = request.inputs['level'][0].data
+        if 'area' in request.inputs:
+            subset_args['area'] = request.inputs['area'][0].data
+        kwargs = parameterise.parameterise(**subset_args)
         kwargs.update(config_args)
         result = subset(**kwargs)
         response.outputs['output'].file = result.file_paths[0]
