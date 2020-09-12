@@ -1,7 +1,9 @@
 from pywps import Process, ComplexInput, ComplexOutput
 from pywps import FORMATS
+from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4, MetaFile
 
+from ..utils import format_error_message
 from rook import workflow
 
 
@@ -33,9 +35,14 @@ class Orchestrate(Process):
         )
 
     def _handler(self, request, response):
-        wf = workflow.WorkflowRunner(
-            output_dir=self.workdir)
-        output = wf.run(request.inputs['workflow'][0].file)
+        try:
+            wf = workflow.WorkflowRunner(
+                output_dir=self.workdir)
+            output = wf.run(request.inputs['workflow'][0].file)
+        except Exception as e:
+            text = format_error_message(f"{e}")
+            # TODO: error message is validated by pywps
+            raise ProcessError(text)
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('workflow-result', 'Workflow result as NetCDF files.', workdir=self.workdir)
         for ncfile in output:

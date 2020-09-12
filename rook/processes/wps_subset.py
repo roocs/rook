@@ -3,6 +3,8 @@ from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4, MetaFile
 
+from ..utils import format_error_message
+
 from roocs_utils.parameter import parameterise
 
 
@@ -58,6 +60,7 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
         from daops.utils import is_characterised
+        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = [dset.data for dset in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
@@ -77,9 +80,14 @@ class Subset(Process):
             subset_args['level'] = request.inputs['level'][0].data
         if 'area' in request.inputs:
             subset_args['area'] = request.inputs['area'][0].data
-        kwargs = parameterise.parameterise(**subset_args)
-        kwargs.update(config_args)
-        result = subset(**kwargs)
+        try:
+            kwargs = parameterise.parameterise(**subset_args)
+            kwargs.update(config_args)
+            result = subset(**kwargs)
+        except Exception as e:
+            text = format_error_message(f"{e}")
+            # TODO: error message is validated by pywps
+            raise ProcessError(text)
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
         for ncfile in result.file_paths:
