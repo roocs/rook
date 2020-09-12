@@ -1,5 +1,6 @@
 from pywps import Process, ComplexInput, ComplexOutput
 from pywps import FORMATS
+from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 from ..utils import format_error_message
