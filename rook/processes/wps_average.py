@@ -9,7 +9,7 @@ class Average(Process):
         inputs = [
             LiteralInput('collection', 'Collection',
                          data_type='string',
-                         default='cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas',
+                         default='c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest',
                          min_occurs=1,
                          max_occurs=1,),
             LiteralInput('axes', 'Axes',
