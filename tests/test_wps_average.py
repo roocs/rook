@@ -7,7 +7,7 @@ from rook.processes.wps_average import Average
 
 def test_wps_average():
     client = client_for(Service(processes=[Average()]))
-    datainputs = "data_ref=cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"
+    datainputs = "data_ref=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=average&datainputs={}".format(
             datainputs))
