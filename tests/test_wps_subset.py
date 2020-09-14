@@ -11,8 +11,8 @@ from rook.processes.wps_subset import Subset
 
 def test_wps_subset_with_time():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"
-    datainputs += ";time=2085-01-01/2120-12-30"
+    datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
+    datainputs += ";time=1860-01-01/1900-12-30"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs))
@@ -22,7 +22,7 @@ def test_wps_subset_with_time():
 
 def test_wps_subset_missing_collection():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    # datainputs = "collection=cmip5.output1.MOHC.HadGEM2-ES.rcp85.mon.atmos.Amon.r1i1p1.latest.tas"
+    # datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
     datainputs = ""
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
