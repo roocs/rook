@@ -3,7 +3,6 @@ from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4, MetaFile
 
-from ..utils import format_error_message
 
 from roocs_utils.parameter import parameterise
 
@@ -85,9 +84,7 @@ class Subset(Process):
             kwargs.update(config_args)
             result = subset(**kwargs)
         except Exception as e:
-            text = format_error_message(f"{e}")
-            # TODO: error message is validated by pywps
-            raise ProcessError(text)
+            raise ProcessError(f"{e}")
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
         for ncfile in result.file_paths:
