@@ -5,9 +5,9 @@ os:
 python:
   - "3.6"
   - "3.7"
-branches:
-  only:
-    - master
+# branches:
+#   only:
+#     - master
 jobs:
   include:
     - env: ALLOW_FAIL=true
