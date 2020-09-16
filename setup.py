@@ -49,7 +49,12 @@ setup(name='rook',
       keywords='wps pywps birdhouse rook',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=[reqs, 'roocs_utils @ git+https://github.com/roocs/roocs-utils.git'],
+      install_requires=[
+          reqs,
+          'roocs_utils @ git+https://github.com/roocs/roocs-utils.git',
+          'clisops @ git+https://github.com/roocs/clisops.git',
+          'daops @ git+https://github.com/roocs/daops.git',
+      ],
       extras_require={
           "dev": dev_reqs,              # pip install ".[dev]"
       },

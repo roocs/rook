@@ -6,6 +6,3 @@ networkx
 xarray>=0.15
 dask[complete]
 netcdf4
-cfunits>=3.2.7
-clisops>=0.3.1<0.4
-daops>=0.2.0<0.3
