@@ -52,7 +52,7 @@ setup(name='rook',
       install_requires=[
           reqs,
           'roocs_utils @ git+https://github.com/roocs/roocs-utils.git',
-          'clisops @ git+https://github.com/roocs/clisops.git',
+          'clisops @ git+https://github.com/roocs/clisops.git@pingudev',
           'daops @ git+https://github.com/roocs/daops.git',
       ],
       extras_require={

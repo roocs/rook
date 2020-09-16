@@ -6,8 +6,6 @@ from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 
-from roocs_utils.parameter import parameterise
-
 import logging
 LOGGER = logging.getLogger()
 
@@ -64,8 +62,9 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
         from daops.utils import is_characterised
+        from roocs_utils.parameter import parameterise
         # show me the environment used by the process in debug mode
-        logging.debug(f"Environment used in subset: {os.environ}")
+        LOGGER.debug(f"Environment used in subset: {os.environ}")
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = [dset.data for dset in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
