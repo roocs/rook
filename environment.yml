@@ -4,8 +4,8 @@ channels:
 - defaults
 dependencies:
 - pip
-- python>=3.6,<3.8
-- pywps>=4.2.8,<4.3
+- python=3.7 # >=3.6,<3.8
+- pywps=4.2.8 # >=4.2.8,<4.3
 - jinja2
 - click
 - psutil
@@ -16,9 +16,9 @@ dependencies:
 - cfunits
 - cftime>=1.2.1
 - udunits2>=2.2
-- xarray>=0.15
-- dask
-- netcdf4
+- xarray>=0.16
+- dask>=2.26
+- netcdf4>=1.4
 # - clisops>=0.3.0,<0.4
 # workflow
 - networkx
