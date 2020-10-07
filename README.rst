@@ -55,5 +55,5 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
-.. _`Developer Guide`: https://rook.readthedocs.io/en/latest/dev_guide.html
-.. _bumpversion: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
+.. _bumpversion: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
