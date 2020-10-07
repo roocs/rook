@@ -43,7 +43,7 @@ extensions = [
     "sphinx.ext.todo",
     "pywps.ext_autodoc",
     "sphinx.ext.autosectionlabel",
-    "sphinx.ext.imgconverter",
+    # "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
 ]

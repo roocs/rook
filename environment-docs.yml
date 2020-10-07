@@ -1,5 +1,5 @@
 # conda env create -f environment-docs.yml
-name: rook-docs
+name: rook
 channels:
 - conda-forge
 - defaults
@@ -8,3 +8,5 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
+- nbconvert
+- pandoc

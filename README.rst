@@ -1,8 +1,8 @@
 rook
 ===============================
 
-.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-   :target: http://rook.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/rook-wps/badge/?version=latest
+   :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/roocs/rook.svg?branch=master
@@ -31,7 +31,7 @@ Documentation
 -------------
 
 Learn more about rook in its official documentation at
-https://rook.readthedocs.io.
+https://rook-wps.readthedocs.io.
 
 Submit bug reports, questions and feature requests at
 https://github.com/roocs/rook/issues
@@ -55,5 +55,5 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
-.. _`Developer Guide`: https://rook.readthedocs.io/en/latest/dev_guide.html
-.. _bumpversion: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
+.. _bumpversion: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
