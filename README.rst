@@ -1,8 +1,8 @@
 rook
 ===============================
 
-.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-   :target: http://rook.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/rook-wps/badge/?version=latest
+   :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
 .. image:: https://travis-ci.org/roocs/rook.svg?branch=master
