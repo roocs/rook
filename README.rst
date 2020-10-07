@@ -31,7 +31,7 @@ Documentation
 -------------
 
 Learn more about rook in its official documentation at
-https://rook.readthedocs.io.
+https://rook-wps.readthedocs.io.
 
 Submit bug reports, questions and feature requests at
 https://github.com/roocs/rook/issues
