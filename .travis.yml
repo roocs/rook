@@ -34,7 +34,7 @@ install:
   # Update now the env with our environment
   - conda env update -f environment.yml
   # Update env for building docs
-  - conda env update -f environment-docs.yml
+  # - conda env update -f environment-docs.yml
   - source activate rook
   # Packages for testing, generating docs and installing WPS
   - make develop
