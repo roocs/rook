@@ -42,7 +42,7 @@ before_script:
   - sleep 2
 script:
   - pytest
-  - make test-notebooks
+  # - make test-notebooks
   - flake8
   - make docs  # default html
   # - make SPHINXOPTS='-b epub' docs  # to match RtD
