@@ -7,9 +7,23 @@ Processes
     :local:
     :depth: 1
 
-Say Hello
----------
+Subset
+------
 
-.. autoprocess:: rook.processes.wps_say_hello.SayHello
+.. autoprocess:: rook.processes.wps_subset.Subset
+   :docstring:
+   :skiplines: 1
+
+Average
+-------
+
+.. autoprocess:: rook.processes.wps_average.Average
+   :docstring:
+   :skiplines: 1
+
+Orchestrate
+-----------
+
+.. autoprocess:: rook.processes.wps_orchestrate.Orchestrate
    :docstring:
    :skiplines: 1
