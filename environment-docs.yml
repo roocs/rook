@@ -8,3 +8,5 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
+- nbconvert
+- pandoc
