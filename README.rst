@@ -13,10 +13,6 @@ rook
     :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
     :alt: GitHub license
 
-.. image:: https://badges.gitter.im/bird-house/birdhouse.svg
-    :target: https://gitter.im/bird-house/birdhouse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-    :alt: Join the chat at https://gitter.im/bird-house/birdhouse
-
 
 rook (the bird)
   *The rook belongs to the crow family ...*
