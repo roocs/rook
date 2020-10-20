@@ -7,6 +7,7 @@
    installation
    configuration
    dev_guide
+   notebooks
    processes
    changes
 
