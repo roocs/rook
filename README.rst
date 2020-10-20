@@ -1,5 +1,5 @@
 rook
-===============================
+====
 
 .. image:: https://readthedocs.org/projects/rook-wps/badge/?version=latest
    :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
