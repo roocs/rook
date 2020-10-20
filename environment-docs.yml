@@ -7,5 +7,3 @@ dependencies:
 - python=3.7
 - pywps>=4.2
 - sphinx
-- nbsphinx
-- ipython

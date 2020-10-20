@@ -3,6 +3,7 @@ import os
 from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
+from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 
@@ -50,7 +51,10 @@ class Subset(Process):
             self._handler,
             identifier='subset',
             title='Subset',
-            abstract='Run subsetting on climate data.',
+            abstract='Run subsetting on climate model data. Calls daops operators.',
+            metadata=[
+                Metadata('DAOPS', 'https://github.com/roocs/daops'),
+            ],
             version='1.0',
             inputs=inputs,
             outputs=outputs,

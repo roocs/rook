@@ -45,7 +45,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     # "sphinx.ext.imgconverter",
     # "nbsphinx",
-    "IPython.sphinxext.ipython_console_highlighting",
+    # "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
@@ -58,7 +58,7 @@ autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
                         "numba", "parse", "siphon", "sklearn", "cftime",
                         "netCDF4", "bottleneck", "ocgis", "geotiff", "geos",
                         "hdf4", "hdf5", "zlib", "pyproj", "proj", "cartopy",
-                        "scikit-learn", "cairo"]
+                        "scikit-learn", "cairo", "networkx", "roocs_utils", "daops"]
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.

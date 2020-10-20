@@ -1,5 +1,5 @@
 rook
-===============================
+====
 
 .. image:: https://readthedocs.org/projects/rook-wps/badge/?version=latest
    :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
@@ -13,10 +13,6 @@ rook
     :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
     :alt: GitHub license
 
-.. image:: https://badges.gitter.im/bird-house/birdhouse.svg
-    :target: https://gitter.im/bird-house/birdhouse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-    :alt: Join the chat at https://gitter.im/bird-house/birdhouse
-
 
 rook (the bird)
   *The rook belongs to the crow family ...*
@@ -26,6 +22,8 @@ rook
 
 Rook is a Web Processing Service (WPS) of the roocs project
 to allow remote operations like subsetting on climate model data.
+This service provides a one-to-one mapping to the operations
+available in the daops_ library based on xarray.
 
 Documentation
 -------------
@@ -57,3 +55,4 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
 .. _bumpversion: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _daops: https://github.com/roocs/daops

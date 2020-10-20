@@ -1,6 +1,7 @@
 from pywps import Process, ComplexInput, ComplexOutput
 from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
+from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 from rook import workflow
@@ -25,7 +26,10 @@ class Orchestrate(Process):
             self._handler,
             identifier='orchestrate',
             title='Orchestrate',
-            abstract='Run a workflow',
+            abstract='Run a workflow with combined operations. A workflow can be build using the rooki client.',
+            metadata=[
+                Metadata('Rooki', 'https://github.com/roocs/rooki'),
+            ],
             version='1.0',
             inputs=inputs,
             outputs=outputs,

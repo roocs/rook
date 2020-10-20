@@ -1,13 +1,16 @@
-=======
+
 Credits
 =======
 
-Development Lead
-----------------
+Lead
+----
 
-* Carsten Ehbrecht <ehbrecht@dkrz.de>
+
+* Carsten Ehbrecht ehbrecht@dkrz.de
 
 Contributors
 ------------
 
-None yet. Why not be the first?
+
+* Eleanor Smith eleanor.smith@stfc.ac.uk
+* Ag Stephens ag.stephens@stfc.ac.uk
