@@ -1,6 +1,7 @@
 from pywps import Process, LiteralInput, ComplexOutput
 from pywps import FORMATS
 from pywps.app.exceptions import ProcessError
+from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 
@@ -36,7 +37,10 @@ class Average(Process):
             self._handler,
             identifier='average',
             title='Average',
-            abstract='Run averaging on climate data.',
+            abstract='Run averaging on climate model data. Calls daops operators.',
+            metadata=[
+                Metadata('DAOPS', 'https://github.com/roocs/daops'),
+            ],
             version='1.0',
             inputs=inputs,
             outputs=outputs,
