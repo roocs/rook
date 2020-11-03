@@ -6,3 +6,4 @@ networkx
 xarray>=0.15
 dask[complete]
 netcdf4
+roocs-utils>=0.1.4

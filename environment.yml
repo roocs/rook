@@ -24,3 +24,5 @@ dependencies:
 - networkx
 # tests
 - pytest
+- pip:
+    - roocs-utils>=0.1.4

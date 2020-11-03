@@ -19,7 +19,7 @@ class Subset(Operator):
     def call(self, args):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
-        kwargs = parameterise.parameterise(collection=args.get('collection'),
+        kwargs = parameterise(collection=args.get('collection'),
                                            time=args.get('time'),
                                            level=args.get('level'),
                                            area=args.get('area'))
