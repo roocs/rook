@@ -90,7 +90,7 @@ class Subset(Process):
         if 'area' in request.inputs:
             subset_args['area'] = request.inputs['area'][0].data
         try:
-            kwargs = parameterise.parameterise(**subset_args)
+            kwargs = parameterise(**subset_args)
             kwargs.update(config_args)
             result = subset(**kwargs)
         except Exception as e:
