@@ -1,10 +1,12 @@
 import os
 
 from pywps import Process, LiteralInput, ComplexOutput
-from pywps import FORMATS
+from pywps import FORMATS, Format
 from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
+
+from ..provenance import Provenance
 
 
 import logging
@@ -45,6 +47,14 @@ class Subset(Process):
                           abstract='Metalink v4 document with references to NetCDF files.',
                           as_reference=True,
                           supported_formats=[FORMATS.META4]),
+            ComplexOutput('prov', 'Provenance',
+                          abstract='Provenance document using W3C standard.',
+                          as_reference=True,
+                          supported_formats=[FORMATS.JSON]),
+            ComplexOutput('prov_plot', 'Provenance Diagram',
+                          abstract='Provenance document as diagram.',
+                          as_reference=True,
+                          supported_formats=[Format('image/png', extension='.png', encoding='base64')]),
         ]
 
         super(Subset, self).__init__(
@@ -102,4 +112,9 @@ class Subset(Process):
             mf.file = ncfile
             ml4.append(mf)
         response.outputs['output'].data = ml4.xml
+        # collect provenance
+        provenance = Provenance(self.workdir)
+        provenance.build('subset', subset_args, collection, ml4)
+        response.outputs['prov'].file = provenance.write_json()
+        response.outputs['prov_plot'].file = provenance.write_png()
         return response
