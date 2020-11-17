@@ -22,5 +22,8 @@ dependencies:
 # - clisops>=0.3.0,<0.4
 # workflow
 - networkx
+# provenance
+- prov>=2.0.0
+- graphviz
 # tests
 - pytest
