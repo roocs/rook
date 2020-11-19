@@ -1,7 +1,7 @@
 Changes
 *******
 
-0.2.0 (2020-10-21)
+0.2.0 (2020-11-19)
 ==================
 
 Changes:
@@ -11,6 +11,7 @@ Changes:
 * Using ``daops`` for subsetting operation.
 * Using a simple workflow implementation for combining operators.
 * Process outputs are provided as ``Metalink`` documents.
+* Added initial support for provenance documentation.
 
 
 0.1.0 (2020-04-03)
