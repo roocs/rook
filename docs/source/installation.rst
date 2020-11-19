@@ -49,7 +49,7 @@ For development you can use this command:
 
 .. code-block:: console
 
-  $ pip install -e .[dev]
+  $ pip install -e ".[dev]"
   OR
   $ make develop
 
