@@ -88,7 +88,7 @@ Update the Conda specification file to build identical environments_ on a specif
   $ source activate rook
   $ make clean
   $ make install
-  $ conda list -n rook --explicit > spec-file.txt
+  $ conda list -n rook --explicit > spec-list.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
