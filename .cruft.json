@@ -11,7 +11,7 @@
             "project_repo_name": "rook",
             "project_readthedocs_name": "rook",
             "project_short_description": "A WPS service for roocs.",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "open_source_license": "Apache Software License 2.0",
             "http_port": "5000",
             "_copy_without_render": [
