@@ -4,9 +4,6 @@ from prov.model import ProvDocument
 from prov.dot import prov_to_dot
 
 
-NS_URI_PREFIX = 'https://cds.climate.copernicus.eu/ns/'
-
-
 class Provenance(object):
     def __init__(self, output_dir):
         self.output_dir = output_dir
@@ -18,34 +15,43 @@ class Provenance(object):
         self.doc = ProvDocument()
         # Declaring namespaces for various prefixes
         self.doc.add_namespace('prov', uri='http://www.w3.org/ns/prov#')  # prov standard
-        self.doc.add_namespace('project', uri=NS_URI_PREFIX + 'project')  # copernicus, roocs
-        # http://www.w3.org/ns/prov#SoftwareAgent
-        self.doc.add_namespace('software', uri=NS_URI_PREFIX + 'software')  # rook, daops
-        self.doc.add_namespace('workflow', uri=NS_URI_PREFIX + 'workflow')  # workflow description
-        self.doc.add_namespace('operator', uri=NS_URI_PREFIX + 'operator')  # subset, aggregation etc
-        self.doc.add_namespace('parameter', uri=NS_URI_PREFIX + 'parameter')  # operator parameter
-        self.doc.add_namespace('collection', uri=NS_URI_PREFIX + 'collection')  # dataset collection
-        self.doc.add_namespace('file', uri=NS_URI_PREFIX + 'file')  # netcdf, plots, metalink
+        self.doc.add_namespace("dcterms", "http://purl.org/dc/terms/")  # dublin core
+        self.doc.add_namespace('copernicus', uri='https://copernicus.eu/ns/copernicus')  # copernicus cds
+        self.doc.add_namespace('roocs', uri='https://roocs.org/ns/roocs')  # copernicus cds
         # Define entities
-        project_cds = self.doc.agent('project:Copernicus Climate Data Store')
-        sw_rook = self.doc.agent(f'software:rook=={rook_version}', {'prov:type': 'prov:SoftwareAgent'})
+        project_cds = self.doc.agent('copernicus:CDS', {
+            'prov:type': 'prov:Organization',
+            'dcterms:title': 'Copernicus Climate Data Store',
+        })
+        sw_rook = self.doc.agent(f'roocs:rook', {
+            'prov:type': 'prov:SoftwareAgent',
+            'dcterms:source': f'https://github.com/roocs/rook/releases/tag/v{rook_version}',
+        })
         # Relate rook to project
         self.doc.wasAttributedTo(sw_rook, project_cds)
-        sw_daops = self.doc.agent(f'software:daops=={daops_version}', {'prov:type': 'prov:SoftwareAgent'})
-        attributes = {
-            'parameter:time': parameters.get('time'),
-            'prov:startedAtTime': "2020-11-17T09:15:00",
-            'prov:endedAtTime': "2020-11-17T09:30:00",
-        }
-        op = self.doc.activity(f'operator:{operator}', other_attributes=attributes)
+        sw_daops = self.doc.agent(f'roocs:daops', {
+            'prov:type': 'prov:SoftwareAgent',
+            'dcterms:source': f'https://github.com/roocs/daops/releases/tag/v{daops_version}',
+        })
+        op = self.doc.activity(f'roocs:{operator}', other_attributes={
+            'roocs:time': parameters.get('time'),
+            'prov:type': 'roocs:operator',
+            'prov:startedAtTime': "2020-11-24T09:15:00",
+            'prov:endedAtTime': "2020-11-24T09:30:00",
+        })
         # Inout collection
-        dataset = self.doc.entity(f'collection:{collection[0]}')
+        dataset = self.doc.entity(f'roocs:{collection[0]}', {
+            'prov:type': 'roocs:collection',
+        })
         # operator started by daops
         self.doc.start(op, starter=sw_daops, trigger=sw_rook)
         # Generated output file
         for mf in output.files:
             for url in mf.urls:
-                out = self.doc.entity(f'file:{url}')
+                out = self.doc.entity(f'roocs:output', {
+                    'dcterms:source': f'{url}',
+                    'dcterms:format': 'NetCDF',
+                })
                 self.doc.wasDerivedFrom(out, dataset, activity=op)
 
     def write_json(self):
