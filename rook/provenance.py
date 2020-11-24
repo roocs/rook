@@ -56,6 +56,9 @@ class Provenance(object):
                 })
                 self.doc.wasDerivedFrom(out, dataset, activity=op)
 
+    def add_workflow(self):
+        self.doc.entity("roocs:workflow", {"prov:type": "prov:Plan"})
+
     def write_json(self):
         outfile = os.path.join(self.output_dir, 'provenance.json')
         self.doc.serialize(outfile, format='json')
