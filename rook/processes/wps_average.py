@@ -1,8 +1,10 @@
 from pywps import Process, LiteralInput, ComplexOutput
-from pywps import FORMATS
+from pywps import FORMATS, Format
 from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
+
+from ..provenance import Provenance
 
 
 class Average(Process):
@@ -31,6 +33,14 @@ class Average(Process):
                           abstract='Metalink v4 document with references to NetCDF files.',
                           as_reference=True,
                           supported_formats=[FORMATS.META4]),
+            ComplexOutput('prov', 'Provenance',
+                          abstract='Provenance document using W3C standard.',
+                          as_reference=True,
+                          supported_formats=[FORMATS.JSON]),
+            ComplexOutput('prov_plot', 'Provenance Diagram',
+                          abstract='Provenance document as diagram.',
+                          as_reference=True,
+                          supported_formats=[Format('image/png', extension='.png', encoding='base64')]),
         ]
 
         super(Average, self).__init__(
@@ -54,10 +64,21 @@ class Average(Process):
         collection = [dset.data for dset in request.inputs['collection']]
         if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
             raise ProcessError('Data has not been pre-checked')
+        average_args = {
+            'collection': collection,
+        }
+        if 'axes' in request.inputs:
+            average_args['axes'] = request.inputs['axes'][0].data
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('average-result', 'Averaging result as NetCDF files.', workdir=self.workdir)
         mf = MetaFile('Text file', 'Dummy text file', fmt=FORMATS.TEXT)
         mf.data = 'not working yet'
         ml4.append(mf)
         response.outputs['output'].data = ml4.xml
+        # collect provenance
+        provenance = Provenance(self.workdir)
+        provenance.start()
+        provenance.add_operator('average', average_args, collection, ml4)
+        response.outputs['prov'].file = provenance.write_json()
+        response.outputs['prov_plot'].file = provenance.write_png()
         return response
