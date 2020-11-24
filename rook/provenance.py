@@ -23,13 +23,13 @@ class Provenance(object):
             'prov:type': 'prov:Organization',
             'dcterms:title': 'Copernicus Climate Data Store',
         })
-        sw_rook = self.doc.agent(f'roocs:rook', {
+        sw_rook = self.doc.agent('roocs:rook', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/rook/releases/tag/v{rook_version}',
         })
         # Relate rook to project
         self.doc.wasAttributedTo(sw_rook, project_cds)
-        sw_daops = self.doc.agent(f'roocs:daops', {
+        sw_daops = self.doc.agent('roocs:daops', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/daops/releases/tag/v{daops_version}',
         })
@@ -48,7 +48,7 @@ class Provenance(object):
         # Generated output file
         for mf in output.files:
             for url in mf.urls:
-                out = self.doc.entity(f'roocs:output', {
+                out = self.doc.entity('roocs:output', {
                     'dcterms:source': f'{url}',
                     'dcterms:format': 'NetCDF',
                 })
