@@ -9,7 +9,7 @@ class Provenance(object):
         self.output_dir = output_dir
         self.doc = None
 
-    def build(self, operator, parameters, collection, output):
+    def start(self):
         from daops import __version__ as daops_version
         from rook import __version__ as rook_version
         self.doc = ProvDocument()
@@ -23,16 +23,18 @@ class Provenance(object):
             'prov:type': 'prov:Organization',
             'dcterms:title': 'Copernicus Climate Data Store',
         })
-        sw_rook = self.doc.agent('roocs:rook', {
+        self.sw_rook = self.doc.agent('roocs:rook', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/rook/releases/tag/v{rook_version}',
         })
         # Relate rook to project
-        self.doc.wasAttributedTo(sw_rook, project_cds)
-        sw_daops = self.doc.agent('roocs:daops', {
+        self.doc.wasAttributedTo(self.sw_rook, project_cds)
+        self.sw_daops = self.doc.agent('roocs:daops', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/daops/releases/tag/v{daops_version}',
         })
+
+    def add_operator(self, operator, parameters, collection, output):
         op = self.doc.activity(f'roocs:{operator}', other_attributes={
             'roocs:time': parameters.get('time'),
             'prov:type': 'roocs:operator',
@@ -44,7 +46,7 @@ class Provenance(object):
             'prov:type': 'roocs:collection',
         })
         # operator started by daops
-        self.doc.start(op, starter=sw_daops, trigger=sw_rook)
+        self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
         for mf in output.files:
             for url in mf.urls:

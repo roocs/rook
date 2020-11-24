@@ -114,7 +114,8 @@ class Subset(Process):
         response.outputs['output'].data = ml4.xml
         # collect provenance
         provenance = Provenance(self.workdir)
-        provenance.build('subset', subset_args, collection, ml4)
+        provenance.start()
+        provenance.add_operator('subset', subset_args, collection, ml4)
         response.outputs['prov'].file = provenance.write_json()
         response.outputs['prov_plot'].file = provenance.write_png()
         return response
