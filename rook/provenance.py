@@ -48,13 +48,12 @@ class Provenance(object):
         # operator started by daops
         self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
-        for mf in output.files:
-            for url in mf.urls:
-                out = self.doc.entity('roocs:output', {
-                    'dcterms:source': f'{url}',
-                    'dcterms:format': 'NetCDF',
-                })
-                self.doc.wasDerivedFrom(out, dataset, activity=op)
+        for url in output:
+            out = self.doc.entity('roocs:output', {
+                'dcterms:source': f'{url}',
+                'dcterms:format': 'NetCDF',
+            })
+            self.doc.wasDerivedFrom(out, dataset, activity=op)
 
     def add_workflow(self):
         self.doc.entity("roocs:workflow", {"prov:type": "prov:Plan"})

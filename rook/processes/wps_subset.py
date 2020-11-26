@@ -115,7 +115,10 @@ class Subset(Process):
         # collect provenance
         provenance = Provenance(self.workdir)
         provenance.start()
-        provenance.add_operator('subset', subset_args, collection, ml4)
+        urls = []
+        for f in ml4.files:
+            urls.extend(f.urls)
+        provenance.add_operator('subset', subset_args, collection, urls)
         response.outputs['prov'].file = provenance.write_json()
         response.outputs['prov_plot'].file = provenance.write_png()
         return response

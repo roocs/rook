@@ -5,7 +5,6 @@ from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
 from rook import workflow
-from ..provenance import Provenance
 
 
 class Orchestrate(Process):
@@ -60,10 +59,6 @@ class Orchestrate(Process):
             mf.file = ncfile
             ml4.append(mf)
         response.outputs['output'].data = ml4.xml
-        # collect provenance
-        provenance = Provenance(self.workdir)
-        provenance.start()
-        provenance.add_workflow()
-        response.outputs['prov'].file = provenance.write_json()
-        response.outputs['prov_plot'].file = provenance.write_png()
+        response.outputs['prov'].file = wf.provenance.write_json()
+        response.outputs['prov_plot'].file = wf.provenance.write_png()
         return response

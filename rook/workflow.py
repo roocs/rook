@@ -4,6 +4,7 @@ import networkx as nx
 
 from .exceptions import WorkflowValidationError
 from .operator import Subset, Average, Diff
+from .provenance import Provenance
 
 import logging
 LOGGER = logging.getLogger()
@@ -52,18 +53,25 @@ class WorkflowRunner(object):
             raise WorkflowValidationError('steps missing')
         return self.workflow.run(wfdoc)
 
+    @property
+    def provenance(self):
+        return self.workflow.prov
+
 
 class BaseWorkflow(object):
     def __init__(self, output_dir):
         self.subset_op = Subset(output_dir)
         self.average_op = Average(output_dir)
         self.diff_op = Diff(output_dir)
+        self.prov = Provenance(output_dir)
 
     def validate(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
 
     def run(self, wfdoc):
         self.validate(wfdoc)
+        self.prov.start()
+        self.prov.add_workflow()
         return self._run(wfdoc)
 
     def _run(self, wfdoc):
@@ -108,6 +116,7 @@ class TreeWorkflow(BaseWorkflow):
             step['in'].update(inputs)
         if 'subset' == step['run']:
             result = self.subset_op.call(step['in'])
+            self.prov.add_operator('subset', step['in'], step['in']['collection'], result)
         elif 'average' == step['run']:
             result = self.average_op.call(step['in'])
         elif 'diff' == step['run']:
