@@ -45,9 +45,10 @@ class Provenance(object):
             'prov:startedAtTime': "2020-11-24T09:15:00",
             'prov:endedAtTime': "2020-11-24T09:30:00",
         })
-        # Inout collection
-        dataset = self.doc.entity(f'roocs:{collection[0]}', {
+        # input collection
+        dataset = self.doc.entity('roocs:input', {
             'prov:type': 'roocs:collection',
+            'prov:label': f'{collection[0]}',
         })
         # operator started by daops
         self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
@@ -59,7 +60,7 @@ class Provenance(object):
         # Generated output file
         for url in output:
             out = self.doc.entity('roocs:output', {
-                'dcterms:source': f'{url}',
+                'dcterms:source': f'{os.path.basename(url)}',
                 'dcterms:format': 'NetCDF',
             })
             self.doc.wasDerivedFrom(out, dataset, activity=op)
