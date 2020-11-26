@@ -44,28 +44,30 @@ class Provenance(object):
 
     def add_operator(self, operator, parameters, collection, output):
         op = self.doc.activity(f'roocs:{operator}', other_attributes={
+            'roocs:collection': f'{collection[0]}',
             'roocs:time': parameters.get('time'),
             'prov:type': 'roocs:operator',
         })
         # input collection
-        dataset = self.doc.entity(f'roocs:{collection[0]}', {
-            'prov:type': 'roocs:collection',
-            'prov:label': f'{collection[0]}',
-        })
+        # dataset = self.doc.entity(f'roocs:{collection[0]}', {
+        #     'prov:type': 'roocs:collection',
+        #     'prov:label': f'{collection[0]}',
+        # })
         # operator started by daops
-        self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         if self.workflow:
             self.doc.wasAssociatedWith(
                 op,
                 agent=self.sw_daops,
                 plan=self.workflow)
+        else:
+            self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
-        for url in output:
-            out = self.doc.entity(f'roocs:{os.path.basename(url)}', {
-                'dcterms:source': f'{os.path.basename(url)}',
-                'dcterms:format': 'NetCDF',
-            })
-            self.doc.wasDerivedFrom(out, dataset, activity=op)
+        # for url in output:
+        #     out = self.doc.entity(f'roocs:{os.path.basename(url)}', {
+        #         'dcterms:source': f'{os.path.basename(url)}',
+        #         'dcterms:format': 'NetCDF',
+        #     })
+        #     self.doc.wasDerivedFrom(out, dataset, activity=op)
 
     def write_json(self):
         outfile = os.path.join(self.output_dir, 'provenance.json')

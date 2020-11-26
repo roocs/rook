@@ -103,25 +103,25 @@ class TreeWorkflow(BaseWorkflow):
         outputs = None
         LOGGER.debug(f'tree outputs={tree_outputs}')
         if step_id in steps:
-            outputs = self._run_step(steps[step_id], tree_outputs)
+            outputs = self._run_step(step_id, steps[step_id], tree_outputs)
         elif tree_outputs:
             outputs = list(tree_outputs.values())[0]
         LOGGER.debug(f'outputs={outputs}')
         return outputs
 
-    def _run_step(self, step, inputs=None):
+    def _run_step(self, step_id, step, inputs=None):
         LOGGER.debug(f'run step={step}, inputs={inputs}')
         if inputs:
             step['in'].update(inputs)
         if 'subset' == step['run']:
             result = self.subset_op.call(step['in'])
-            self.prov.add_operator('subset', step['in'], step['in']['collection'], result)
+            self.prov.add_operator(step_id, step['in'], step['in']['collection'], result)
         elif 'average' == step['run']:
             result = self.average_op.call(step['in'])
-            self.prov.add_operator('average', step['in'], step['in']['collection'], result)
+            self.prov.add_operator(step_id, step['in'], step['in']['collection'], result)
         elif 'diff' == step['run']:
             result = self.diff_op.call(step['in'])
-            self.prov.add_operator('diff', step['in'], ['missing'], result)
+            self.prov.add_operator(step_id, step['in'], ['missing'], result)
         else:
             result = None
         LOGGER.debug(f'run result={result}')
