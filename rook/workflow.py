@@ -44,18 +44,13 @@ def build_tree(wfdoc):
 
 class WorkflowRunner(object):
     def __init__(self, output_dir):
-        self.simple_wf = SimpleWorkflow(output_dir)
-        self.tree_wf = TreeWorkflow(output_dir)
+        self.workflow = TreeWorkflow(output_dir)
 
     def run(self, path):
         wfdoc = load_wfdoc(path)
         if 'steps' not in wfdoc:
             raise WorkflowValidationError('steps missing')
-        if isinstance(wfdoc['steps'], list):
-            result = self.simple_wf.run(wfdoc)
-        else:
-            result = self.tree_wf.run(wfdoc)
-        return result
+        return self.workflow.run(wfdoc)
 
 
 class BaseWorkflow(object):
@@ -73,35 +68,6 @@ class BaseWorkflow(object):
 
     def _run(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
-
-
-class SimpleWorkflow(BaseWorkflow):
-    def validate(self, wfdoc):
-        if 'doc' not in wfdoc:
-            raise WorkflowValidationError('doc missing')
-        if 'inputs' not in wfdoc:
-            raise WorkflowValidationError('inputs missing')
-        if 'steps' not in wfdoc:
-            raise WorkflowValidationError('steps missing')
-        return True
-
-    def _run(self, wfdoc):
-        dset = wfdoc['inputs']['collection']
-        for step in wfdoc['steps']:
-            dset = self._run_step(step, dset)
-        return dset
-
-    def _run_step(self, step, input):
-        LOGGER.debug(f'run {step}')
-        if 'subset' in step:
-            step['subset']['collection'] = input
-            result = self.subset_op.call(step['subset'])
-        elif 'average' in step:
-            step['average']['collection'] = input
-            result = self.average_op.call(step['average'])
-        else:
-            result = None
-        return result
 
 
 class TreeWorkflow(BaseWorkflow):
