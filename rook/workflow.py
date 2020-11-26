@@ -70,8 +70,7 @@ class BaseWorkflow(object):
 
     def run(self, wfdoc):
         self.validate(wfdoc)
-        self.prov.start()
-        self.prov.add_workflow()
+        self.prov.start(workflow=True)
         return self._run(wfdoc)
 
     def _run(self, wfdoc):

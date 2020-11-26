@@ -8,8 +8,9 @@ class Provenance(object):
     def __init__(self, output_dir):
         self.output_dir = output_dir
         self.doc = None
+        self.workflow = None
 
-    def start(self):
+    def start(self, workflow=False):
         from daops import __version__ as daops_version
         from rook import __version__ as rook_version
         self.doc = ProvDocument()
@@ -33,6 +34,9 @@ class Provenance(object):
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/daops/releases/tag/v{daops_version}',
         })
+        # workflow
+        if workflow is True:
+            self.workflow = self.doc.entity("roocs:workflow", {"prov:type": "prov:Plan"})
 
     def add_operator(self, operator, parameters, collection, output):
         op = self.doc.activity(f'roocs:{operator}', other_attributes={
@@ -47,6 +51,11 @@ class Provenance(object):
         })
         # operator started by daops
         self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
+        if self.workflow:
+            self.doc.wasAssociatedWith(
+                op,
+                agent=self.sw_daops,
+                plan=self.workflow)
         # Generated output file
         for url in output:
             out = self.doc.entity('roocs:output', {
@@ -54,9 +63,6 @@ class Provenance(object):
                 'dcterms:format': 'NetCDF',
             })
             self.doc.wasDerivedFrom(out, dataset, activity=op)
-
-    def add_workflow(self):
-        self.doc.entity("roocs:workflow", {"prov:type": "prov:Plan"})
 
     def write_json(self):
         outfile = os.path.join(self.output_dir, 'provenance.json')
