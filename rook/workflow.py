@@ -118,8 +118,10 @@ class TreeWorkflow(BaseWorkflow):
             self.prov.add_operator('subset', step['in'], step['in']['collection'], result)
         elif 'average' == step['run']:
             result = self.average_op.call(step['in'])
+            self.prov.add_operator('average', step['in'], step['in']['collection'], result)
         elif 'diff' == step['run']:
             result = self.diff_op.call(step['in'])
+            self.prov.add_operator('diff', step['in'], ['missing'], result)
         else:
             result = None
         LOGGER.debug(f'run result={result}')

@@ -36,17 +36,19 @@ class Provenance(object):
         })
         # workflow
         if workflow is True:
-            self.workflow = self.doc.entity("roocs:workflow", {"prov:type": "prov:Plan"})
+            self.workflow = self.doc.entity(
+                "roocs:workflow", {"prov:type": "prov:Plan",
+                                   "prov:startedAtTime": "2020-11-26T09:15:00",
+                                   "prov:endedAtTime": "2020-11-26T09:30:00",
+                                   })
 
     def add_operator(self, operator, parameters, collection, output):
         op = self.doc.activity(f'roocs:{operator}', other_attributes={
             'roocs:time': parameters.get('time'),
             'prov:type': 'roocs:operator',
-            'prov:startedAtTime': "2020-11-24T09:15:00",
-            'prov:endedAtTime': "2020-11-24T09:30:00",
         })
         # input collection
-        dataset = self.doc.entity('roocs:input', {
+        dataset = self.doc.entity(f'roocs:{collection[0]}', {
             'prov:type': 'roocs:collection',
             'prov:label': f'{collection[0]}',
         })
@@ -59,7 +61,7 @@ class Provenance(object):
                 plan=self.workflow)
         # Generated output file
         for url in output:
-            out = self.doc.entity('roocs:output', {
+            out = self.doc.entity(f'roocs:{os.path.basename(url)}', {
                 'dcterms:source': f'{os.path.basename(url)}',
                 'dcterms:format': 'NetCDF',
             })
