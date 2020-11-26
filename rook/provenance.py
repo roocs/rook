@@ -15,44 +15,43 @@ class Provenance(object):
         from rook import __version__ as rook_version
         self.doc = ProvDocument()
         # Declaring namespaces for various prefixes
-        self.doc.add_namespace('prov', uri='http://www.w3.org/ns/prov#')  # prov standard
-        self.doc.add_namespace("dcterms", "http://purl.org/dc/terms/")  # dublin core
-        self.doc.add_namespace('copernicus', uri='https://copernicus.eu/ns/copernicus')  # copernicus cds
-        self.doc.add_namespace('roocs', uri='https://roocs.org/ns/roocs')  # copernicus cds
+        self.doc.set_default_namespace(uri='http://purl.org/roocs/prov#')
+        self.doc.add_namespace('prov', uri='http://www.w3.org/ns/prov#')
+        self.doc.add_namespace('provone', uri='http://purl.dataone.org/provone/2015/01/15/ontology#')
+        self.doc.add_namespace('dcterms', uri='http://purl.org/dc/terms/')
         # Define entities
-        project_cds = self.doc.agent('copernicus:CDS', {
+        project_cds = self.doc.agent(':copernicus_CDS', {
             'prov:type': 'prov:Organization',
             'dcterms:title': 'Copernicus Climate Data Store',
         })
-        self.sw_rook = self.doc.agent('roocs:rook', {
+        self.sw_rook = self.doc.agent(':rook', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/rook/releases/tag/v{rook_version}',
         })
-        # Relate rook to project
         self.doc.wasAttributedTo(self.sw_rook, project_cds)
-        self.sw_daops = self.doc.agent('roocs:daops', {
+        self.sw_daops = self.doc.agent(':daops', {
             'prov:type': 'prov:SoftwareAgent',
             'dcterms:source': f'https://github.com/roocs/daops/releases/tag/v{daops_version}',
         })
         # workflow
         if workflow is True:
             self.workflow = self.doc.entity(
-                "roocs:workflow", {"prov:type": "prov:Plan",
-                                   "prov:startedAtTime": "2020-11-26T09:15:00",
-                                   "prov:endedAtTime": "2020-11-26T09:30:00",
-                                   })
+                ":workflow", {"prov:type": "provone:Workflow"})
+            orchestrate = self.doc.activity(":orchestrate", other_attributes={
+                "prov:startedAtTime": "2020-11-26T09:15:00",
+                "prov:endedAtTime": "2020-11-26T09:30:00",
+            })
+            self.doc.wasAssociatedWith(orchestrate, agent=self.sw_rook, plan=self.workflow)
 
     def add_operator(self, operator, parameters, collection, output):
-        op = self.doc.activity(f'roocs:{operator}', other_attributes={
-            'roocs:collection': f'{collection[0]}',
-            'roocs:time': parameters.get('time'),
-            'prov:type': 'roocs:operator',
+        op = self.doc.activity(f':{operator}', other_attributes={
+            ':time': parameters.get('time'),
         })
-        # input collection
-        # dataset = self.doc.entity(f'roocs:{collection[0]}', {
-        #     'prov:type': 'roocs:collection',
-        #     'prov:label': f'{collection[0]}',
-        # })
+        # input data
+        op_in = self.doc.entity(f':{operator}_in', {
+            'prov:type': 'provone:Data',
+            'prov:value': f'{collection[0]}',
+        })
         # operator started by daops
         if self.workflow:
             self.doc.wasAssociatedWith(
@@ -62,12 +61,11 @@ class Provenance(object):
         else:
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
-        # for url in output:
-        #     out = self.doc.entity(f'roocs:{os.path.basename(url)}', {
-        #         'dcterms:source': f'{os.path.basename(url)}',
-        #         'dcterms:format': 'NetCDF',
-        #     })
-        #     self.doc.wasDerivedFrom(out, dataset, activity=op)
+        op_out = self.doc.entity(f':{operator}_out', {
+            'prov:type': 'provone:Data',
+            'prov:value': f'{os.path.basename(output[0])}',
+        })
+        self.doc.wasDerivedFrom(op_out, op_in, activity=op)
 
     def write_json(self):
         outfile = os.path.join(self.output_dir, 'provenance.json')
