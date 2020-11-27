@@ -50,6 +50,7 @@ setup(name='rook',
       packages=find_packages(),
       include_package_data=True,
       install_requires=[
+          'daops @ git+https://github.com/roocs/daops.git@apply_fixes_option'
           reqs,
       ],
       extras_require={
