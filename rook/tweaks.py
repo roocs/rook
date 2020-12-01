@@ -30,7 +30,7 @@ def subset(
     collection = parameters.get("collection")
     LOGGER.debug(f"collection={collection.tuple}")
     if collection.tuple and os.path.isfile(collection.tuple[0]):
-        collection = dict(files=collection)
+        collection = dict(files=collection.tuple)
     else:
         collection = consolidate.consolidate(
             collection, time=parameters.get("time")

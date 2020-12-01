@@ -39,19 +39,19 @@ def test_run_tree_wf():
 
 
 def test_run_tree_wf_2():
-    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wfdoc = workflow.load_wfdoc(TREE_WF_2)
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20900116-21001216.nc' in output[0]
 
 
 def test_run_tree_wf_3():
-    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wfdoc = workflow.load_wfdoc(TREE_WF_3)
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
+    assert 'zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc' in output[0]
 
 
 def test_workflow_runner_tree():
