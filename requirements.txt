@@ -7,7 +7,7 @@ xarray>=0.15
 dask[complete]
 netcdf4
 # daops>=0.3.0
-clisops>=0.4.0
-roocs-utils>=0.1.5
+# clisops>=0.4.0
+# roocs-utils>=0.1.5
 prov>=2.0.0
 pydot

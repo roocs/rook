@@ -51,6 +51,7 @@ setup(name='rook',
       include_package_data=True,
       install_requires=[
           "daops @ git+https://github.com/roocs/daops.git",
+          "clisops @ git+https://github.com/roocs/clisops.git",
           "roocs-utils @ git+https://github.com/roocs/roocs-utils.git",
           reqs,
       ],
