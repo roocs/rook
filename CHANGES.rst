@@ -1,6 +1,10 @@
 Changes
 *******
 
+Unreleased
+==========
+* ``apply_fixes`` option added for WPS processes and the ``Operator`` class.
+
 0.2.0 (2020-11-19)
 ==================
 
