@@ -5,7 +5,7 @@ class Operator(object):
     def __init__(self, output_dir, apply_fixes=True):
         self.config = {
             'output_dir': output_dir,
-            'apply_fixes': apply_fixes
+            # 'apply_fixes': apply_fixes
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
