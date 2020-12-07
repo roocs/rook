@@ -19,11 +19,14 @@ def replace_inputs(wfdoc):
     steps = {}
     for step_id, step in wfdoc['steps'].items():
         steps[step_id] = deepcopy(step)
+        steps[step_id]['in']['apply_fixes'] = False
         # replace inputs
         for arg_id, arg in step['in'].items():
             if arg.startswith('inputs/'):
                 input_id = arg.split('/')[1]
                 steps[step_id]['in'][arg_id] = wfdoc['inputs'][input_id]
+                # apply fixed only for input datasets
+                steps[step_id]['in']['apply_fixes'] = True
     LOGGER.debug(f'steps: {steps}')
     return steps
 

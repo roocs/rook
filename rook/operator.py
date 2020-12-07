@@ -22,7 +22,7 @@ class Subset(Operator):
                       time=args.get('time'),
                       level=args.get('level'),
                       area=args.get('area'),
-                      apply_fixes=False)
+                      apply_fixes=args.get('apply_fixes'))
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
         result = subset(
