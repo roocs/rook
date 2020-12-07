@@ -51,6 +51,9 @@ setup(name='rook',
       include_package_data=True,
       install_requires=[
           reqs,
+          "daops @ git+https://github.com/roocs/daops.git",
+          "clisops @ git+https://github.com/roocs/clisops.git",
+          "roocs-utils @ git+https://github.com/roocs/roocs-utils.git",
       ],
       extras_require={
           "dev": dev_reqs,              # pip install ".[dev]"

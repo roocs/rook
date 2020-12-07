@@ -19,8 +19,8 @@ dependencies:
 - xarray>=0.16
 - dask>=2.26
 - netcdf4>=1.4
-- daops>=0.3.0,<0.4
-- clisops>=0.4.0,<0.5
+# - daops>=0.3.0,<0.4
+# - clisops>=0.4.0,<0.5
 # workflow
 - networkx
 # provenance
