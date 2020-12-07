@@ -27,6 +27,11 @@ class Average(Process):
                          default='0',
                          min_occurs=1,
                          max_occurs=1),
+            LiteralInput('apply_fixes', 'Apply Fixes', data_type='boolean',
+                         abstract='Apply fixes to datasets.',
+                         default='1',
+                         min_occurs=1,
+                         max_occurs=1),
         ]
         outputs = [
             ComplexOutput('output', 'METALINK v4 output',

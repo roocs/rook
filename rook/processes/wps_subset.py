@@ -41,6 +41,11 @@ class Subset(Process):
                          default='0',
                          min_occurs=1,
                          max_occurs=1),
+            LiteralInput('apply_fixes', 'Apply Fixes', data_type='boolean',
+                         abstract='Apply fixes to datasets.',
+                         default='1',
+                         min_occurs=1,
+                         max_occurs=1),
         ]
         outputs = [
             ComplexOutput('output', 'METALINK v4 output',
@@ -85,6 +90,7 @@ class Subset(Process):
 
         config_args = {
             'output_dir': self.workdir,
+            'apply_fixes': request.inputs['apply_fixes'][0].data
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
