@@ -46,12 +46,15 @@ class Provenance(object):
     def add_operator(self, operator, parameters, collection, output):
         op = self.doc.activity(f':{operator}', other_attributes={
             ':time': parameters.get('time'),
+            ':apply_fixes': parameters.get('apply_fixes'),
         })
         # input data
-        op_in = self.doc.entity(f':{operator}_in', {
-            'prov:type': 'provone:Data',
-            'prov:value': f'{collection[0]}',
-        })
+        ds_in = os.path.basename(collection[0])
+        # ds_in_attrs = {
+        #     'prov:type': 'provone:Data',
+        #     'prov:value': f'{ds_in}',
+        # }
+        op_in = self.doc.entity(f':{ds_in}')
         # operator started by daops
         if self.workflow:
             self.doc.wasAssociatedWith(
@@ -61,10 +64,12 @@ class Provenance(object):
         else:
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
-        op_out = self.doc.entity(f':{operator}_out', {
-            'prov:type': 'provone:Data',
-            'prov:value': f'{os.path.basename(output[0])}',
-        })
+        ds_out = os.path.basename(output[0])
+        # ds_out_attrs = {
+        #     'prov:type': 'provone:Data',
+        #     'prov:value': f'{ds_out}',
+        # }
+        op_out = self.doc.entity(f':{ds_out}')
         self.doc.wasDerivedFrom(op_out, op_in, activity=op)
 
     def write_json(self):
