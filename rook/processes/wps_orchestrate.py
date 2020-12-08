@@ -6,6 +6,9 @@ from pywps.inout.outputs import MetaLink4, MetaFile
 
 from rook import workflow
 
+import logging
+LOGGER = logging.getLogger()
+
 
 class Orchestrate(Process):
     def __init__(self):
@@ -47,9 +50,13 @@ class Orchestrate(Process):
 
     def _handler(self, request, response):
         try:
+            wfdata = request.inputs['workflow'][0].data
+            # workaround for CDATA issue in pywps
+            wfdata = wfdata.replace("<![CDATA[", "").replace("]]>", "")
+            LOGGER.debug(f"wfdata={wfdata}")
             wf = workflow.WorkflowRunner(
                 output_dir=self.workdir)
-            output = wf.run(request.inputs['workflow'][0].file)
+            output = wf.run(wfdata)
         except Exception as e:
             raise ProcessError(f"{e}")
         # metalink document with collection of netcdf files

@@ -1,3 +1,4 @@
+import os
 import yaml
 from copy import deepcopy
 import networkx as nx
@@ -10,8 +11,11 @@ import logging
 LOGGER = logging.getLogger()
 
 
-def load_wfdoc(path):
-    wfdoc = yaml.load(open(path, "rb"))
+def load_wfdoc(data):
+    if os.path.isfile(data):
+        wfdoc = yaml.load(open(data, "rb"))
+    else:
+        wfdoc = yaml.load(data)
     return wfdoc
 
 
