@@ -5,26 +5,9 @@ from rook import workflow
 from .common import resource_file
 
 
-SIMPLE_WF = resource_file("subset_simple_wf.json")
 TREE_WF = resource_file("subset_wf_1.json")
 TREE_WF_2 = resource_file("subset_wf_2.json")
 TREE_WF_3 = resource_file("subset_wf_3.json")
-
-
-def test_validate_simple_wf():
-    wfdoc = workflow.load_wfdoc(SIMPLE_WF)
-    wf = workflow.SimpleWorkflow(
-        output_dir=tempfile.mkdtemp())
-    assert wf.validate(wfdoc) is True
-
-
-def test_run_simple_wf():
-    wfdoc = workflow.load_wfdoc(SIMPLE_WF)
-    wf = workflow.SimpleWorkflow(
-        output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
-    print('OUTPUT=', output)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
 
 
 def test_validate_tree_wf():
@@ -56,30 +39,23 @@ def test_run_tree_wf():
 
 
 def test_run_tree_wf_2():
-    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wfdoc = workflow.load_wfdoc(TREE_WF_2)
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
+    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20900116-21001216.nc' in output[0]
 
 
 def test_run_tree_wf_3():
-    wfdoc = workflow.load_wfdoc(TREE_WF)
+    wfdoc = workflow.load_wfdoc(TREE_WF_3)
     wf = workflow.TreeWorkflow(
         output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
+    assert 'zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc' in output[0]
 
 
 def test_workflow_runner_tree():
     wf = workflow.WorkflowRunner(
         output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF)
-    assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]
-
-
-def test_workflow_runner_simple():
-    wf = workflow.WorkflowRunner(
-        output_dir=tempfile.mkdtemp())
-    output = wf.run(SIMPLE_WF)
     assert 'tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc' in output[0]

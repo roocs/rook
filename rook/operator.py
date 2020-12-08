@@ -1,13 +1,11 @@
 import tempfile
 
-from roocs_utils.parameter import parameterise
-
 
 class Operator(object):
     def __init__(self, output_dir, apply_fixes=True):
         self.config = {
             'output_dir': output_dir,
-            'apply_fixes': apply_fixes
+            # 'apply_fixes': apply_fixes
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
@@ -20,10 +18,12 @@ class Subset(Operator):
     def call(self, args):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
-        kwargs = parameterise(collection=args.get('collection'),
-                              time=args.get('time'),
-                              level=args.get('level'),
-                              area=args.get('area'))
+        # from .tweaks import subset
+        kwargs = dict(collection=args.get('collection'),
+                      time=args.get('time'),
+                      level=args.get('level'),
+                      area=args.get('area'),
+                      apply_fixes=args.get('apply_fixes'))
         kwargs.update(self.config)
         kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
         result = subset(

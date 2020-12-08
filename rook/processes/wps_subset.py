@@ -81,7 +81,6 @@ class Subset(Process):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
         from daops.utils import is_characterised
-        from roocs_utils.parameter import parameterise
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in subset: {os.environ}")
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
@@ -106,9 +105,8 @@ class Subset(Process):
         if 'area' in request.inputs:
             subset_args['area'] = request.inputs['area'][0].data
         try:
-            kwargs = parameterise(**subset_args)
-            kwargs.update(config_args)
-            result = subset(**kwargs)
+            subset_args.update(config_args)
+            result = subset(**subset_args)
         except Exception as e:
             raise ProcessError(f"{e}")
         # metalink document with collection of netcdf files
@@ -120,7 +118,11 @@ class Subset(Process):
         response.outputs['output'].data = ml4.xml
         # collect provenance
         provenance = Provenance(self.workdir)
-        provenance.build('subset', subset_args, collection, ml4)
+        provenance.start()
+        urls = []
+        for f in ml4.files:
+            urls.extend(f.urls)
+        provenance.add_operator('subset', subset_args, collection, urls)
         response.outputs['prov'].file = provenance.write_json()
         response.outputs['prov_plot'].file = provenance.write_png()
         return response
