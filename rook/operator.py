@@ -6,6 +6,7 @@ class Operator(object):
         self.config = {
             'output_dir': output_dir,
             # 'apply_fixes': apply_fixes
+            # 'original_files': original_files
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
