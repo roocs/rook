@@ -5,7 +5,7 @@ class Inventory:
     def __init__(self, project):
         self.project = project
         self.inventory_url = f"https://raw.githubusercontent.com/cp4cds/c3s_34g_manifests" \
-                             f"/add_inventories/inventories/{self._project}/{self._project}_files_latest.yml"
+                             f"/master/inventories/c3s-cmip6//{self._project}/{self._project}_files_latest.yml"
 
     def open_inventory(self):
         file = urllib.request.urlopen(self.inventory_url)
