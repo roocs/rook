@@ -17,17 +17,18 @@ class Inventory:
         # ds_id = convert_to_ds_id(dset)
         ds_id = dset
         dict_list = self.open_inventory()
-        return ds_id, any(d['ds_id'] == ds_id for d in dict_list[1:])
+        return any(d['ds_id'] == ds_id for d in dict_list[1:])
 
 
 class BuildURL(Inventory):
-    def __init__(self, project, collection):
+    def __init__(self, project):
         super().__init__(project)
-        self.collection = collection
         self.file_url_prefix = f"https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_{self.project}/"
 
-    def get_file_list(self, ds_id):
+    def get_file_list(self, dset):
         dict_list = self.open_inventory()
+        # ds_id = convert_to_ds_id(dset)
+        ds_id = dset
         for d in dict_list:
             if d['ds_id'] == ds_id:
                 path = d['path']
@@ -36,8 +37,8 @@ class BuildURL(Inventory):
             else:
                 raise Exception(f"Cannot find dataset {ds_id}")
 
-    def construct_urls(self, ds_id):
-        path, files = self.get_file_list(ds_id)
+    def construct_urls(self, dset):
+        path, files = self.get_file_list(dset)
         path = path.split('/')[1:].join('/')
         file_urls = []
         for file in files:
