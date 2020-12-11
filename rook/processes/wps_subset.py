@@ -6,6 +6,7 @@ from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
+from ..director import Director
 from ..provenance import Provenance
 
 
@@ -85,17 +86,17 @@ class Subset(Process):
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
-        from daops.utils import is_characterised
+
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in subset: {os.environ}")
+
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = [dset.data for dset in request.inputs['collection']]
-        if request.inputs['pre_checked'][0].data and not is_characterised(collection, require_all=True):
-            raise ProcessError('Data has not been pre-checked')
 
         config_args = {
             'output_dir': self.workdir,
             'apply_fixes': request.inputs['apply_fixes'][0].data,
+            'pre_checked': request.inputs['pre_checked'][0].data,
             'original_files': request.inputs['original_files'][0].data
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
@@ -110,25 +111,46 @@ class Subset(Process):
             subset_args['level'] = request.inputs['level'][0].data
         if 'area' in request.inputs:
             subset_args['area'] = request.inputs['area'][0].data
-        try:
-            subset_args.update(config_args)
-            result = subset(**subset_args)
-        except Exception as e:
-            raise ProcessError(f"{e}")
+
+        subset_args.update(config_args)
+
+        # Ask director whether request should be rejected, use original files or apply WPS process
+        director = Director(collection, subset_args)
+        
+        # If original files should be returned...
+        if director.use_original_files:
+            result = daops.normalise.ResultSet()
+            
+            for ds_id, file_urls in director.get_file_urls():
+                result.add(ds_id, file_urls)
+                
+        # else: generate the new subset of files
+        else:
+            try:
+                result = subset(**subset_args)
+            except Exception as e:
+                raise ProcessError(f"{e}")
+
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
+
         for ncfile in result.file_paths:
             mf = MetaFile('NetCDF file', 'NetCDF file', fmt=FORMATS.NETCDF)
             mf.file = ncfile
             ml4.append(mf)
+
         response.outputs['output'].data = ml4.xml
+
         # collect provenance
         provenance = Provenance(self.workdir)
         provenance.start()
         urls = []
+
         for f in ml4.files:
             urls.extend(f.urls)
+
         provenance.add_operator('subset', subset_args, collection, urls)
         response.outputs['prov'].file = provenance.write_json()
         response.outputs['prov_plot'].file = provenance.write_png()
+
         return response
