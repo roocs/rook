@@ -115,9 +115,8 @@ class Subset(Process):
         subset_args.update(config_args)
 
         # Ask director whether request should be rejected, use original files or apply WPS process
-        
         director = Director(collection, subset_args)
-        import pdb;pdb.set_trace()
+
         # If original files should be returned...
         if director.use_original_files:
             result = daops.normalise.ResultSet()
