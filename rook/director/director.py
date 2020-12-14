@@ -14,8 +14,13 @@ class Director:
         self.coll = coll
         self.inputs = inputs
 
-        self.project = get_project_name(coll[0])
-        self.inv = Inventory(self.project)
+        # self.project = get_project_name(coll[0])
+        self.project = "c3s-cmip6"
+
+        try:
+            self.inv = Inventory(self.project)
+        except KeyError:
+            self.process_error()
 
         self.use_original_files = False
         self.original_file_urls = None
@@ -42,8 +47,7 @@ class Director:
         """
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
-            raise ProcessError('Some or all of the requested collection are not in the list'
-                               ' of available data.')
+            self.process_error()
 
         # If original files are requested then go straight there
         if self.inputs.get('original_files'):
@@ -65,6 +69,10 @@ class Director:
             pass
 
         # If we got here: then WPS will be used, because `self.use_original_files == False`
+
+    def process_error(self):
+        raise ProcessError('Some or all of the requested collection are not in the list'
+                           ' of available data.')
         
     def requires_fixes(self):
         for ds_id in self.inv.get_matches(self.coll):

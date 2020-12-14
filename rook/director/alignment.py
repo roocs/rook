@@ -44,9 +44,13 @@ class SubsetAlignmentChecker:
         exact_matches = []
 
         for fpath in self.input_files:
+            
             fstart, fend = self._get_file_times(fpath)
 
-            if fstart == start or fend == end:
+            if fstart == start:
+                exact_matches.append(fpath)
+
+            if fend == end:
                 exact_matches.append(fpath)
 
             if fstart >= start or fend <= end:
