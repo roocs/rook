@@ -44,7 +44,7 @@ class Subset(Process):
                          max_occurs=1),
             LiteralInput('apply_fixes', 'Apply Fixes', data_type='boolean',
                          abstract='Apply fixes to datasets.',
-                         default='1',
+                         default='0',
                          min_occurs=1,
                          max_occurs=1),
             LiteralInput('original_files', 'Original Files', data_type='boolean',

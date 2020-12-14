@@ -34,7 +34,7 @@ def test_inventory_cache_c3s_cmip6():
     assert(inv[0]['project'] == project)
 
 
-def Nteardown_module():
+def teardown_module():
     for f in os.listdir(dummy_inv_dir):
         fpath = os.path.join(dummy_inv_dir, f)
         os.remove(fpath)

@@ -14,7 +14,8 @@ class Director:
         self.coll = coll
         self.inputs = inputs
 
-        self.project = get_project_name(coll[0])
+        # self.project = get_project_name(coll[0])
+        self.project = "c3s-cmip6"
         self.inv = Inventory(self.project)
 
         self.use_original_files = False
