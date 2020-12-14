@@ -25,6 +25,7 @@ class Inventory:
     # def __contains__(self, dset):
     #     TODO:  ds_id = convert_to_ds_id(dset)
     #     return ds_id in self.contents
+    # where does this fit in ?
 
     def get_matches(self, coll):
         # If all datasets in the collection match the inventory then 
@@ -43,7 +44,7 @@ class Inventory:
     def contains(self, coll):
         # Return boolean based on whether all datasets in the collection
         # are in the inventory
-        return self.get_matches(coll) != False
+        return self.get_matches(coll) is not False
 
     def _get_files(self, coll, prefix=''):
         # Returns an ordered dictionary of {ds_id: [file_list]}

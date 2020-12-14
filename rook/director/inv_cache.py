@@ -39,7 +39,7 @@ class InventoryCache:
             return 
         
         # Download the real file
-        inventory_url = os.path.join(os.path.dirname(inventory_url), inv_name)
+        inventory_url = os.path.join(os.path.dirname(inventory_url), inv_name) # should this be inventory_url or something else?
         resp = request.get(inventory_url)
 
         # Write to cache file

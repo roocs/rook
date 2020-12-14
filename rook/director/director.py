@@ -95,7 +95,7 @@ class Director:
         required_files = OrderedDict()
 
         for ds_id, fpaths in files.items():
-            sac = SubsetAlignmentChecker(fpaths)
+            sac = SubsetAlignmentChecker(fpaths, self.inputs)
 
             if not sac.is_aligned:
                 self.use_original_files = False
