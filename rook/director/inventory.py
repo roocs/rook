@@ -17,8 +17,9 @@ class Inventory:
         self._load()
         
     def _load(self):
-        _contents = inventory_cache.get(self.project)
-        # need to read yaml file
+        with open(inventory_cache.get(self.project)) as file:
+            _contents = yaml.load(file, Loader=yaml.SafeLoader)
+
         self.base_dir = _contents[0]['base_dir']
         self.contents = dict([(dset['ds_id'], dset) for dset in _contents[1:]])
 

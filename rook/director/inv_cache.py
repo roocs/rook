@@ -52,7 +52,6 @@ class InventoryCache:
     def get(self, project):
         if project not in self.content:
             self._download(project)
-        
         return self.content[project]
 
 
