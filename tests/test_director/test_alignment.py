@@ -1,6 +1,7 @@
 import glob
 from rook.director.alignment import SubsetAlignmentChecker
-
+import dateutil.parser as parser
+import os
 
 class TestYearMonth:
 
@@ -75,3 +76,19 @@ class TestYearMonthDay:
         assert sac.is_aligned is True
         assert sac.aligned_files == self.test_paths
 
+
+def dummy_time_parse(fpath):
+    start, end = os.path.basename(fpath).split('.')[-2].split('_')[-1].split('-')
+    start, end = [each + '01' if len(each) == 6 else each for each in (start, end)]
+    start, end = [each[:8] + 'T' + each[8:]if len(each) == 12 else each for each in (start, end)]
+    start, end = parser.isoparse(start).isoformat(), parser.isoparse(end).isoformat()
+    
+    return start, end
+
+
+def test_parse_YMDhm():
+    fpath = "ScenarioMIP/AWI/AWI-CM-1-1-MR/ssp245/r1i1p1f1/3hr/tas/gn/v20190529" \
+            "/tas_3hr_AWI-CM-1-1-MR_ssp245_r1i1p1f1_gn_207301010300-207401010000.nc"
+    start, end = dummy_time_parse(fpath)
+    assert start == "2073-01-01T03:00:00"
+    assert end == "2074-01-01T00:00:00"

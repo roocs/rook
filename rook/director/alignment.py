@@ -1,8 +1,6 @@
 from roocs_utils.parameter import time_parameter
 import dateutil.parser as parser
 import os
-import re
-import datetime
 
 
 class SubsetAlignmentChecker:
@@ -34,9 +32,10 @@ class SubsetAlignmentChecker:
     def _get_file_times(self, fpath):
         # Use file name to get start and end (instead of reading files)
         start, end = os.path.basename(fpath).split('.')[-2].split('_')[-1].split('-')
-
         start, end = [each + '01' if len(each) == 6 else each for each in (start, end)]
+        start, end = [each[:8] + 'T' + each[8:] if len(each) == 12 else each for each in (start, end)]
         start, end = parser.isoparse(start).isoformat(), parser.isoparse(end).isoformat()
+
         return start, end
 
     def _check_time_alignment(self, start, end):
