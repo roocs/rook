@@ -18,7 +18,8 @@ class Subset(Process):
     def __init__(self):
         inputs = [
             LiteralInput('collection', 'Collection',
-                         abstract='c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest',
+                         abstract='A dataset identifier or list of comma separated identifiers'
+                                  'Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,),
@@ -44,7 +45,7 @@ class Subset(Process):
                          max_occurs=1),
             LiteralInput('apply_fixes', 'Apply Fixes', data_type='boolean',
                          abstract='Apply fixes to datasets.',
-                         default='1',
+                         default='0',
                          min_occurs=1,
                          max_occurs=1),
             LiteralInput('original_files', 'Original Files', data_type='boolean',
