@@ -32,7 +32,7 @@ class Average(Process):
                          default='1',
                          min_occurs=1,
                          max_occurs=1),
-            LiteralInput('original_fixes', 'Original Files', data_type='boolean',
+            LiteralInput('original_files', 'Original Files', data_type='boolean',
                          abstract='Return original files only.',
                          default='0',
                          min_occurs=1,
