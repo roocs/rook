@@ -17,8 +17,18 @@ class SubsetAlignmentChecker:
         if inputs.get('area', None) or inputs.get('level', None):
             return
 
-        start, end = time_parameter.TimeParameter(time).tuple
-        self._check_time_alignment(start, end)
+        time = inputs.get('time', None)
+
+        # add in a catch for if time tuple is None
+        # this means is_aligned = True and all files are needed
+        if time is None:
+            self.is_aligned = True
+            self.aligned_files = self.input_files
+            return
+
+        else:
+            start, end = time_parameter.TimeParameter(time).tuple
+            self._check_time_alignment(start, end)
 
     def _get_file_times(self, fpath):
         # Use file name to get start and end (instead of reading files)

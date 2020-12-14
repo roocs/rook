@@ -115,6 +115,7 @@ class Subset(Process):
         subset_args.update(config_args)
 
         # Ask director whether request should be rejected, use original files or apply WPS process
+        
         director = Director(collection, subset_args)
         
         # If original files should be returned...
