@@ -17,8 +17,12 @@ class Inventory:
         self._load()
         
     def _load(self):
-        _contents = inventory_cache.get(self.project)
-        # need to read yaml file
+        inv_path = inventory_cache.get(self.project)
+
+        # Read yaml file
+        with open(inv_path) as reader:
+            _contents = yaml.load(reader, Loader=yaml.SafeLoader)
+
         self.base_dir = _contents[0]['base_dir']
         self.contents = dict([(dset['ds_id'], dset) for dset in _contents[1:]])
 
@@ -26,6 +30,9 @@ class Inventory:
     #     TODO:  ds_id = convert_to_ds_id(dset)
     #     return ds_id in self.contents
     # where does this fit in ?
+
+    def __len__(self):
+        return len(self.contents)
 
     def get_matches(self, coll):
         # If all datasets in the collection match the inventory then 
