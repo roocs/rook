@@ -5,7 +5,7 @@ from roocs_utils import CONFIG
 
 
 INVENTORY_URL_TEMPLATE = "https://raw.githubusercontent.com/cp4cds/c3s_34g_manifests" \
-                         "/master/inventories/c3s-{project}/c3s-{project}_files_latest.yml"
+                         "/master/inventories/{project}/{project}_files_latest.yml"
 
 
 class InventoryCache:

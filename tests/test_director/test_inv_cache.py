@@ -20,20 +20,21 @@ def test_dummy_inventory_cache_exists():
     assert(isinstance(dummy_inv_cache, InventoryCache))
 
 
-def test_inventory_cache_exists():
-    dummy_inv_cache.get('cmip6')
+def test_inventory_cache_c3s_cmip6():
+    project = 'c3s-cmip6'
+    dummy_inv_cache.get(project)
 
     #TODO: Work out a way to dynamically find the above file
-    inv_path = os.path.join(dummy_inv_dir, 'c3s-cmip6_files_v20201201.yml')
+    inv_path = os.path.join(dummy_inv_dir, f'{project}_files_v20201201.yml')
 
     with open(inv_path) as reader:
         inv = yaml.load(reader)
 
-    assert(len(inv) == 1590)
-    assert(inv[0]['project'] == 'c3s-cmip6')
+    assert(len(inv) > 1500)
+    assert(inv[0]['project'] == project)
 
 
-def teardown_module():
+def Nteardown_module():
     for f in os.listdir(dummy_inv_dir):
         fpath = os.path.join(dummy_inv_dir, f)
         os.remove(fpath)
