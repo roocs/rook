@@ -31,6 +31,9 @@ class Inventory:
     #     return ds_id in self.contents
     # where does this fit in ?
 
+    def __len__(self):
+        return len(self.contents)
+
     def get_matches(self, coll):
         # If all datasets in the collection match the inventory then 
         # return all the matching records as a dictionary of contents
