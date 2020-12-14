@@ -30,7 +30,7 @@ class TestDirectorCMIP6:
         d = Director(self.collection, inputs)
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == ['https://data.mips.copernicus-climate.eu/thredds/fileServer'
-                                                            '/esg_cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
+                                                            '/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
                                                             '/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_'
                                                             'IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc']
 
@@ -46,7 +46,7 @@ class TestDirectorCMIP6:
         d = Director(self.collection, inputs)
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == ['https://data.mips.copernicus-climate.eu/thredds/fileServer'
-                                                            '/esg_cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
+                                                            '/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
                                                             '/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_'
                                                             'IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc']
 
@@ -62,7 +62,7 @@ class TestDirectorCMIP6:
         d = Director(self.collection, inputs)
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == ['https://data.mips.copernicus-climate.eu/thredds/fileServer'
-                                                            '/esg_cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
+                                                            '/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical'
                                                             '/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_'
                                                             'IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc']
 
