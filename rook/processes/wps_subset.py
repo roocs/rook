@@ -47,7 +47,7 @@ class Subset(Process):
                          default='1',
                          min_occurs=1,
                          max_occurs=1),
-            LiteralInput('original_fixes', 'Original Files', data_type='boolean',
+            LiteralInput('original_files', 'Original Files', data_type='boolean',
                          abstract='Return original files only.',
                          default='0',
                          min_occurs=1,
@@ -117,7 +117,7 @@ class Subset(Process):
         # Ask director whether request should be rejected, use original files or apply WPS process
         
         director = Director(collection, subset_args)
-        
+        import pdb;pdb.set_trace()
         # If original files should be returned...
         if director.use_original_files:
             result = daops.normalise.ResultSet()

@@ -5,7 +5,7 @@ from roocs_utils import CONFIG
 
 
 INVENTORY_URL_TEMPLATE = "https://raw.githubusercontent.com/cp4cds/c3s_34g_manifests" \
-                         "/master/inventories/{project}/{project}_files_latest.yml"
+                         "/master/inventories/c3s-{project}/c3s-{project}_files_latest.yml"
 
 
 class InventoryCache:
@@ -39,13 +39,13 @@ class InventoryCache:
             return 
         
         # Download the real file
-        inventory_url = os.path.join(os.path.dirname(inventory_url), inv_name) # should this be inventory_url or something else?
-        resp = request.get(inventory_url)
+        inventory_url = os.path.join(os.path.dirname(symlink_url), inv_name)
+        resp = requests.get(inventory_url)
 
         # Write to cache file
         cache_file = os.path.join(self.cache_dir, inv_name)
         with open(cache_file, 'w') as writer:
-            writer.write(resp)
+            writer.write(resp.text.strip())
 
         self.content[project] = cache_file
 
