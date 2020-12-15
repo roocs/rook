@@ -3,6 +3,7 @@ from pywps.app.exceptions import ProcessError
 
 from daops.utils import is_characterised, fixer
 from roocs_utils.project_utils import get_project_name
+from roocs_utils.exceptions import InvalidParameterValue
 
 from .inventory import Inventory
 from .alignment import SubsetAlignmentChecker
@@ -71,8 +72,8 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def process_error(self):
-        raise ProcessError('Some or all of the requested collection are not in the list'
-                           ' of available data.')
+        raise InvalidParameterValue('Some or all of the requested collection are not in the list '
+                                    'of available data.')
         
     def requires_fixes(self):
         for ds_id in self.inv.get_matches(self.coll):

@@ -24,17 +24,20 @@ class Subset(Process):
                          min_occurs=1,
                          max_occurs=1,),
             LiteralInput('time', 'Time Period',
-                         abstract='Example: 1860-01-01/1900-12-30',
+                         abstract='The time period to subset over separated by /'
+                                  'Example: 1860-01-01/1900-12-30',
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('area', 'Area',
-                         abstract="Example: 0.,49.,10.,65",
+                         abstract="The area to subset over as 4 comma separated values."
+                                  "Example: 0.,49.,10.,65",
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,),
             LiteralInput('level', 'Level',
-                         abstract="Example: 0/1000",
+                         abstract="The level range to subset over separated by a /"
+                                  "Example: 0/1000",
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,),
@@ -116,7 +119,10 @@ class Subset(Process):
         subset_args.update(config_args)
 
         # Ask director whether request should be rejected, use original files or apply WPS process
-        director = Director(collection, subset_args)
+        try:
+            director = Director(collection, subset_args)
+        except Exception as e:
+            raise ProcessError(f"{e}")
 
         # If original files should be returned...
         if director.use_original_files:
@@ -127,6 +133,8 @@ class Subset(Process):
                 
         # else: generate the new subset of files
         else:
+            del subset_args['pre_checked']
+            del subset_args['original_files']
             try:
                 result = subset(**subset_args)
             except Exception as e:

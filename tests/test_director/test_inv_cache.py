@@ -28,7 +28,7 @@ def test_inventory_cache_c3s_cmip6():
     inv_path = os.path.join(dummy_inv_dir, f'{project}_files_v20201201.yml')
 
     with open(inv_path) as reader:
-        inv = yaml.load(reader)
+        inv = yaml.load(reader, Loader=yaml.SafeLoader)
 
     assert(len(inv) > 1500)
     assert(inv[0]['project'] == project)
