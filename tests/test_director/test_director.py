@@ -1,7 +1,7 @@
 from rook.director import Director
 from pywps.app.exceptions import ProcessError
 import pytest
-
+from roocs_utils.exceptions import InvalidParameterValue
 
 # inputs = {"collection": None
 #           "area": None,
@@ -83,7 +83,7 @@ class TestDirector:
     def test_not_in_inventory(self):
         # not in inventory
         inputs = {}
-        with pytest.raises(ProcessError):
+        with pytest.raises(InvalidParameterValue):
             Director(self.collection, inputs)
 
 

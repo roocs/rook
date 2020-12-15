@@ -91,6 +91,5 @@ def test_parse_YMDhm():
     fpath = "ScenarioMIP/AWI/AWI-CM-1-1-MR/ssp245/r1i1p1f1/3hr/tas/gn/v20190529" \
             "/tas_3hr_AWI-CM-1-1-MR_ssp245_r1i1p1f1_gn_207301010300-207401010000.nc"
     start, end = dummy_time_parse(fpath)
-    print(start, end)
     assert start == "2073-01-01T03:00:00"
     assert end == "2074-01-01T00:00:00"

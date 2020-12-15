@@ -21,7 +21,7 @@ class Director:
         try:
             self.inv = Inventory(self.project)
         except KeyError:
-            self.process_error()
+            self.invalid_collection()
 
         self.use_original_files = False
         self.original_file_urls = None
@@ -48,7 +48,7 @@ class Director:
         """
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
-            self.process_error()
+            self.invalid_collection()
 
         # If original files are requested then go straight there
         if self.inputs.get('original_files'):
@@ -71,7 +71,7 @@ class Director:
 
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
-    def process_error(self):
+    def invalid_collection(self):
         raise InvalidParameterValue('Some or all of the requested collection are not in the list '
                                     'of available data.')
         
