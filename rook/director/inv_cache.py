@@ -26,9 +26,7 @@ class InventoryCache:
 
     def _download(self, project):
         # Get the file the symlink points to first
-        symlink_url = CONFIG.get(f"project:{project}", {}).get(
-            "inventory_url"
-        )
+        symlink_url = CONFIG.get(f"project:{project}", {}).get("inventory_url")
         inv_name = requests.get(symlink_url).text.strip()
 
         if inv_name in self.content:

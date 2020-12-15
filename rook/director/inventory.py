@@ -71,8 +71,6 @@ class Inventory:
 
     def get_file_urls(self, coll):
         # Returns an ordered dictionary of {ds_id: [file_list]}
-        download_dir = CONFIG.get(f"project:{self.project}", {}).get(
-            "data_node_root"
-        )
+        download_dir = CONFIG.get(f"project:{self.project}", {}).get("data_node_root")
 
         return self._get_files(coll, prefix=download_dir)
