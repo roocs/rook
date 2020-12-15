@@ -2,14 +2,9 @@ import os
 import yaml
 from collections import OrderedDict
 
-from roocs_utils import CONFIG
+from rook import CONFIG
 
 from .inv_cache import inventory_cache
-
-
-DOWNLOAD_DIR_TEMPLATE = (
-    "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_{project}/"
-)
 
 
 class Inventory:
@@ -78,6 +73,6 @@ class Inventory:
         # Returns an ordered dictionary of {ds_id: [file_list]}
         download_dir = CONFIG.get(f"project:{self.project}", {}).get(
             "data_node_root"
-        ) or DOWNLOAD_DIR_TEMPLATE.format(project=self.project)
+        )
 
         return self._get_files(coll, prefix=download_dir)

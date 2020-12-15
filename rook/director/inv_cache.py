@@ -1,13 +1,7 @@
 import os
 import requests
 
-from roocs_utils import CONFIG
-
-
-INVENTORY_URL_TEMPLATE = (
-    "https://raw.githubusercontent.com/cp4cds/c3s_34g_manifests"
-    "/master/inventories/{project}/{project}_files_latest.yml"
-)
+from rook import CONFIG
 
 
 class InventoryCache:
@@ -31,11 +25,9 @@ class InventoryCache:
             )
 
     def _download(self, project):
-        default_inv_url = INVENTORY_URL_TEMPLATE.format(project=project)
-
         # Get the file the symlink points to first
-        symlink_url = CONFIG.get(f"[project:{project}", {}).get(
-            "inventory_url", default_inv_url
+        symlink_url = CONFIG.get(f"project:{project}", {}).get(
+            "inventory_url"
         )
         inv_name = requests.get(symlink_url).text.strip()
 

@@ -32,9 +32,11 @@ class SubsetAlignmentChecker:
     def _get_file_times(self, fpath):
         # Use file name to get start and end (instead of reading files)
         start, end = os.path.basename(fpath).split(".")[-2].split("_")[-1].split("-")
-        start, end = [each + "01" if len(each) == 6 else each for each in (start, end)]
+
+        # parser should parse YYYYMM and YYYYMMDDhhmm but doesn't
+        start, end = [each[:6] + "01" + each[6:] if len(each) == 6 else each for each in (start, end)]
         start, end = [
-            each[:8] + "T" + each[8:] if len(each) == 12 else each
+            each[:8] + "T" + each[8:] if len(each) > 8 else each
             for each in (start, end)
         ]
         start, end = (
