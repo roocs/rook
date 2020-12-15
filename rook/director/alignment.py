@@ -47,22 +47,22 @@ class SubsetAlignmentChecker:
     def _check_time_alignment(self, start, end):
         # ...loop through the files to see if the `start` happens to match the start
         # of a file and the `end` happens to match the end of a file
-        exact_matches = []
+        exact_matches = 0
 
         for fpath in self.input_files:
 
             fstart, fend = self._get_file_times(fpath)
 
             if fstart == start:
-                exact_matches.append(fpath)
+                exact_matches += 1
 
             if fend == end:
-                exact_matches.append(fpath)
+                exact_matches += 1
 
             if fstart >= start or fend <= end:
                 self.aligned_files.append(fpath)
 
-        if len(exact_matches) != 2:
+        if exact_matches != 2:
             self.aligned_files.clear()
             return
 
