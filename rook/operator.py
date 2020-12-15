@@ -4,7 +4,7 @@ import tempfile
 class Operator(object):
     def __init__(self, output_dir, apply_fixes=True):
         self.config = {
-            'output_dir': output_dir,
+            "output_dir": output_dir,
             # 'apply_fixes': apply_fixes
             # 'original_files': original_files
             # 'chunk_rules': dconfig.chunk_rules,
@@ -19,14 +19,19 @@ class Subset(Operator):
     def call(self, args):
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
+
         # from .tweaks import subset
-        kwargs = dict(collection=args.get('collection'),
-                      time=args.get('time'),
-                      level=args.get('level'),
-                      area=args.get('area'),
-                      apply_fixes=args.get('apply_fixes'))
+        kwargs = dict(
+            collection=args.get("collection"),
+            time=args.get("time"),
+            level=args.get("level"),
+            area=args.get("area"),
+            apply_fixes=args.get("apply_fixes"),
+        )
         kwargs.update(self.config)
-        kwargs['output_dir'] = tempfile.mkdtemp(dir=self.config['output_dir'], prefix='subset_')
+        kwargs["output_dir"] = tempfile.mkdtemp(
+            dir=self.config["output_dir"], prefix="subset_"
+        )
         result = subset(
             **kwargs,
         )
@@ -35,9 +40,9 @@ class Subset(Operator):
 
 class Average(Operator):
     def call(self, args):
-        return args['collection']
+        return args["collection"]
 
 
 class Diff(Operator):
     def call(self, args):
-        return args['collection_a']
+        return args["collection_a"]

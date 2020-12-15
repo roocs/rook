@@ -2,7 +2,8 @@ from collections import OrderedDict
 from pywps.app.exceptions import ProcessError
 
 from daops.utils import is_characterised, fixer
-from roocs_utils.project_utils import get_project_name
+
+# from roocs_utils.project_utils import get_project_name
 from roocs_utils.exceptions import InvalidParameterValue
 
 from .inventory import Inventory
@@ -10,7 +11,6 @@ from .alignment import SubsetAlignmentChecker
 
 
 class Director:
-
     def __init__(self, coll, inputs):
         self.coll = coll
         self.inputs = inputs
@@ -51,19 +51,21 @@ class Director:
             self.invalid_collection()
 
         # If original files are requested then go straight there
-        if self.inputs.get('original_files'):
+        if self.inputs.get("original_files"):
             self.use_original_files = True
             self.original_file_urls = self.inv.get_file_urls(self.coll)
             return
 
         # Raise exception if "pre_checked" selected but data has not been characterised by dachar
-        if self.inputs.get('pre_checked') and not is_characterised(self.coll, require_all=True):
-            raise ProcessError('Data has not been pre-checked')
+        if self.inputs.get("pre_checked") and not is_characterised(
+            self.coll, require_all=True
+        ):
+            raise ProcessError("Data has not been pre-checked")
 
         # Check if fixes are required. If so, then return (and subset will be generated).
-        if self.inputs.get('apply_fixes') and self.requires_fixes():
-            return 
-        
+        if self.inputs.get("apply_fixes") and self.requires_fixes():
+            return
+
         # Finally, check if the subset requirements can align with whole datasets
         if self.request_aligns_with_files():
             # This call sets values for self.original_file_urls AND self.use_original_files
@@ -72,9 +74,11 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def invalid_collection(self):
-        raise InvalidParameterValue('Some or all of the requested collection are not in the list '
-                                    'of available data.')
-        
+        raise InvalidParameterValue(
+            "Some or all of the requested collection are not in the list "
+            "of available data."
+        )
+
     def requires_fixes(self):
         for ds_id in self.inv.get_matches(self.coll):
             fix = fixer.Fixer(ds_id)

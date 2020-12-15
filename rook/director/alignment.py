@@ -9,14 +9,14 @@ class SubsetAlignmentChecker:
         self.is_aligned = False
         self.aligned_files = []
 
-        self._deduce_alignment(inputs) # needs inputs - where are they coming from
+        self._deduce_alignment(inputs)  # needs inputs - where are they coming from
 
     def _deduce_alignment(self, inputs):
         # At present, we reject alignment if any "area" or "level" subset is requested
-        if inputs.get('area', None) or inputs.get('level', None):
+        if inputs.get("area", None) or inputs.get("level", None):
             return
 
-        time = inputs.get('time', None)
+        time = inputs.get("time", None)
 
         # add in a catch for if time tuple is None
         # this means is_aligned = True and all files are needed
@@ -31,10 +31,16 @@ class SubsetAlignmentChecker:
 
     def _get_file_times(self, fpath):
         # Use file name to get start and end (instead of reading files)
-        start, end = os.path.basename(fpath).split('.')[-2].split('_')[-1].split('-')
-        start, end = [each + '01' if len(each) == 6 else each for each in (start, end)]
-        start, end = [each[:8] + 'T' + each[8:] if len(each) == 12 else each for each in (start, end)]
-        start, end = parser.isoparse(start).isoformat(), parser.isoparse(end).isoformat()
+        start, end = os.path.basename(fpath).split(".")[-2].split("_")[-1].split("-")
+        start, end = [each + "01" if len(each) == 6 else each for each in (start, end)]
+        start, end = [
+            each[:8] + "T" + each[8:] if len(each) == 12 else each
+            for each in (start, end)
+        ]
+        start, end = (
+            parser.isoparse(start).isoformat(),
+            parser.isoparse(end).isoformat(),
+        )
 
         return start, end
 
@@ -44,7 +50,7 @@ class SubsetAlignmentChecker:
         exact_matches = []
 
         for fpath in self.input_files:
-            
+
             fstart, fend = self._get_file_times(fpath)
 
             if fstart == start:
