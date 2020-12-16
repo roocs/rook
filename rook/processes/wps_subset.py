@@ -111,7 +111,7 @@ class Subset(Process):
             raise ProcessError(f"{e}")
         # metalink document with collection of netcdf files
         ml4 = MetaLink4('subset-result', 'Subsetting result as NetCDF files.', workdir=self.workdir)
-        for ncfile in result.file_paths:
+        for ncfile in result.file_uris:
             mf = MetaFile('NetCDF file', 'NetCDF file', fmt=FORMATS.NETCDF)
             mf.file = ncfile
             ml4.append(mf)

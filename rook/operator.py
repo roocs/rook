@@ -29,7 +29,7 @@ class Subset(Operator):
         result = subset(
             **kwargs,
         )
-        return result.file_paths
+        return result.file_uris
 
 
 class Average(Operator):
