@@ -183,9 +183,14 @@ class Subset(Process):
         )
 
         # need to handle file URLS
-        for ncfile in result.file_uris:
+        for result in result.file_uris:
             mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
-            mf.file = ncfile
+
+            if director.use_original_files:
+                mf.url = result
+            else:
+                mf.file = result
+
             ml4.append(mf)
 
         response.outputs["output"].data = ml4.xml
