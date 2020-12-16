@@ -177,7 +177,7 @@ class Subset(Process):
             except Exception as e:
                 raise ProcessError(f"{e}")
 
-        # metalink document with collection of netcdf files
+        # metalink document with collection of netcdf files/ urls
         ml4 = MetaLink4(
             "subset-result", "Subsetting result as NetCDF files.", workdir=self.workdir
         )
@@ -190,7 +190,6 @@ class Subset(Process):
                 mf.url = result
             else:
                 mf.file = result
-
             ml4.append(mf)
 
         response.outputs["output"].data = ml4.xml
