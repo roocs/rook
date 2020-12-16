@@ -65,13 +65,12 @@ class Orchestrate(Process):
 
     def _handler(self, request, response):
         try:
-            wfdata = request.inputs['workflow'][0].data
+            wfdata = request.inputs["workflow"][0].data
             LOGGER.debug(f"type wfdata={type(wfdata)}, wfdata={wfdata}")
             # print(f"type wfdata={type(wfdata)}, wfdata={wfdata}")
             # workaround for CDATA issue in pywps
             # wfdata = wfdata.replace("<![CDATA[", "").replace("]]>", "")
-            wf = workflow.WorkflowRunner(
-                output_dir=self.workdir)
+            wf = workflow.WorkflowRunner(output_dir=self.workdir)
             output = wf.run(wfdata)
         except Exception as e:
             raise ProcessError(f"{e}")
