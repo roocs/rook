@@ -20,7 +20,7 @@ def test_inventory_c3s_cmip6():
     project = "c3s-cmip6"
     assert inv.project == project
     assert inv.base_dir == "/badc/cmip6/data"
-    assert len(inv) > 1500
+    assert len(inv) > 1400
 
 
 def test_inventory_contains():

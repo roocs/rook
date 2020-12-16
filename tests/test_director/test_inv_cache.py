@@ -30,7 +30,7 @@ def test_inventory_cache_c3s_cmip6():
     with open(inv_path) as reader:
         inv = yaml.load(reader, Loader=yaml.SafeLoader)
 
-    assert len(inv) > 1500
+    assert len(inv) > 1400
     assert inv[0]["project"] == project
 
 
