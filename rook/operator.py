@@ -1,4 +1,19 @@
+import os
 import tempfile
+
+
+def _resolve_collection_if_files(outputs):
+    # If multiple outputs are files with a common directory name, then
+    # return that as a single output
+
+    if len(outputs) > 1:
+        first_dir = os.path.dirname(outputs[0])
+
+        if all([os.path.isfile(output) for output in outputs]):
+            if os.path.dirname(os.path.commonprefix(outputs)) == first_dir:
+                return first_dir
+
+    return outputs[0]
 
 
 class Operator(object):
@@ -17,12 +32,15 @@ class Operator(object):
 
 class Subset(Operator):
     def call(self, args):
+        # Convert file list to directory if required
+        collection = _resolve_collection_if_files(args.get("collection"))
+
         # TODO: handle lazy load of daops
         from daops.ops.subset import subset
 
         # from .tweaks import subset
         kwargs = dict(
-            collection=args.get("collection"),
+            collection=collection,
             time=args.get("time"),
             level=args.get("level"),
             area=args.get("area"),
