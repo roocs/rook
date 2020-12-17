@@ -20,7 +20,7 @@ class Director:
 
         try:
             self.inv = Inventory(self.project)
-        except KeyError:
+        except Exception:
             self.invalid_collection()
 
         self.use_original_files = False
