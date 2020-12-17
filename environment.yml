@@ -27,3 +27,4 @@ dependencies:
 - graphviz
 # tests
 - pytest
+- python-dateutil>=2.8.1
