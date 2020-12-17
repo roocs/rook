@@ -1,16 +1,13 @@
+import logging
 import os
 
-from pywps import Process, LiteralInput, ComplexOutput
-from pywps import FORMATS, Format
-from pywps.app.exceptions import ProcessError
+from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from pywps.inout.outputs import MetaLink4, MetaFile
+from pywps.app.exceptions import ProcessError
+from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..director import Director
 from ..provenance import Provenance
-
-
-import logging
 
 LOGGER = logging.getLogger()
 
@@ -158,11 +155,12 @@ class Subset(Process):
         # Ask director whether request should be rejected, use original files or apply WPS process
         try:
             director = Director(collection, subset_args)
-        except Exception as e:
-            raise ProcessError(f"{e}")
+        except Exception:
+            # raise ProcessError(f"{e}")
+            pass
 
         # If original files should be returned...
-        if director.use_original_files:
+        if False:  # director.use_original_files:
             result = ResultSet()
 
             for ds_id, file_urls in director.original_file_urls.items():
@@ -186,7 +184,7 @@ class Subset(Process):
         for result in result.file_uris:
             mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
 
-            if director.use_original_files:
+            if False:  # director.use_original_files:
                 mf.url = result
             else:
                 mf.file = result
