@@ -126,15 +126,15 @@ class Subset(Process):
 
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
-#        from daops.ops.subset import subset
-#        from daops.utils.normalise import ResultSet
+        # from daops.ops.subset import subset
+        # from daops.utils.normalise import ResultSet
 
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in subset: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(request.inputs, 'collection', as_sequence=True,
-                                 must_exist=True)
+                                     must_exist=True)
 
         inputs = {
             "collection": collection,
@@ -146,63 +146,13 @@ class Subset(Process):
             "level": parse_wps_input(request.inputs, 'level', default=None),
             "area": parse_wps_input(request.inputs, 'area', default=None)
         }
-        # inputs.update(config_args)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_subset)
 
-        # # If original files should be returned, then add the files
-        # if director.use_original_files:
-        #     result = ResultSet()
-
-        #     for ds_id, file_urls in director.original_file_urls.items():
-        #         result.add(ds_id, file_urls)
-
-        #     file_uris = result.file_uris
-
-        # # else: generate the new subset of files
-        # else:
-        #     # del inputs["pre_checked"]
-        #     # del inputs["original_files"]
-        #     try:
-        #         file_uris = run_subset(inputs)
-        #     except Exception as e:
-        #         raise ProcessError(f"{e}")
-
-        ml4 = build_metalink("subset-result", "Subsetting result as NetCDF files.", 
-                             self.workdir, director.output_uris, 
+        ml4 = build_metalink("subset-result", "Subsetting result as NetCDF files.",
+                             self.workdir, director.output_uris,
                              as_urls=director.use_original_files)
 
-        # # metalink document with collection of netcdf files/ urls
-        # ml4_2 = MetaLink4(
-        #     "subset-result", "Subsetting result as NetCDF files.", workdir=self.workdir
-        # )
-
-        # # need to handle file URLS
-        # for file_uri in result.file_uris:
-        #     mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
-
-
-        #     if director.use_original_files:
-        #         mf.url = file_uri
-        #     else:
-        #         mf.file = file_uri
-        #     ml4_2.append(mf)
-
         populate_response(response, 'subset', self.workdir, inputs, collection, ml4)
-
-        # response.outputs["output"].data = ml4.xml
-
-        # # Collect provenance
-        # provenance = Provenance(self.workdir)
-        # provenance.start()
-        # urls = []
-
-        # for f in ml4.files:
-        #     urls.extend(f.urls)
-
-        # provenance.add_operator("subset", inputs, collection, urls)
-        # response.outputs["prov"].file = provenance.write_json()
-        # response.outputs["prov_plot"].file = provenance.write_png()
-
         return response

@@ -10,8 +10,8 @@ def run_average(args):
     kwargs['collection'] = resolve_collection_if_files(original_collection)
 
     # TODO: handle lazy load of daops
-    #from daops.ops.average import average
+    # from daops.ops.average import average
 
-    #result = average(**kwargs)
-    #return result.file_uris
+    # result = average(**kwargs)
+    # return result.file_uris
     return original_collection

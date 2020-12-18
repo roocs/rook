@@ -11,14 +11,16 @@
               "run": "subset",
               "in": {
                   "collection": "inputs/rlds",
-                  "time": "1985-01-01/2014-12-30"
+                  "time": "1985-01-01/2014-12-30",
+                  "area": "100.0,10.0,300.0,90.0"
               }
           },
           "subset_rlds_2": {
               "run": "subset",
               "in": {
                   "collection": "subset_rlds_1/output",
-                  "time": "1995-01-01/2000-12-30"
+                  "time": "1995-01-01/2000-12-30",
+                  "area": "101.,11.,299.,89."
               }
           },
           "average_rlds": {

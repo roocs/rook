@@ -39,18 +39,18 @@ class Operator(object):
             #
             # NOTE: output_uris might be file paths OR URLs
             #  If they are URLs: then any subsequent Operators will need to download them
-            #  How will we do that? 
+            #  How will we do that?
             #  In daops.utils.consolidate:
             #   - run a single:  `collection = consolidate_collection(collection)`
             #     - it would group a sequence of items into:
             #       1. dataset ids (from individual ids and/or id patterns)
             #       2. URLs to individual NC files
-            #         - analyse URLs and compare path and file names, 
+            #         - analyse URLs and compare path and file names,
             #           - if path and relevant parts of file name are the same:
             #               - group by inferred dataset in separate directories
             #         - implement by: 1. strip the last component of files
             #                         2. create collection object to group them
-            #                         3. download them into directories related to collection 
+            #                         3. download them into directories related to collection
             #       3. Directories
             #       4. File paths:
             #         - Group by common directory()
@@ -58,8 +58,6 @@ class Operator(object):
             #
             #   - then call the existing consolidate code that loops through each _dset_
             #
-
-
         return output_uris
 
     def _get_runner(self):
@@ -84,5 +82,3 @@ class Average(Operator):
 
 
 Diff = Average
-
-
