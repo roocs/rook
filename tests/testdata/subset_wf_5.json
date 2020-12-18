@@ -1,0 +1,32 @@
+{
+      "doc": "subset+average",
+      "inputs": {
+          "rlds": ["CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
+      },
+      "outputs": {
+          "output": "average_rlds/output"
+      },
+      "steps": {
+          "subset_rlds_1": {
+              "run": "subset",
+              "in": {
+                  "collection": "inputs/rlds",
+                  "time": "1985-01-01/2014-12-30"
+              }
+          },
+          "subset_rlds_2": {
+              "run": "subset",
+              "in": {
+                  "collection": "subset_rlds_1/output",
+                  "time": "1995-01-01/2000-12-30"
+              }
+          },
+          "average_rlds": {
+              "run": "average",
+              "in": {
+                  "collection": "subset_rlds_2/output",
+                  "axes": "time"
+              }
+          }
+      }
+  }

@@ -1,22 +1,15 @@
 import os
 import tempfile
 
-
-def _resolve_collection_if_files(outputs):
-    # If multiple outputs are files with a common directory name, then
-    # return that as a single output
-
-    if len(outputs) > 1:
-        first_dir = os.path.dirname(outputs[0])
-
-        if all([os.path.isfile(output) for output in outputs]):
-            if os.path.dirname(os.path.commonprefix(outputs)) == first_dir:
-                return first_dir
-
-    return outputs[0]
+from rook.utils.subset_utils import run_subset
+from rook.utils.average_utils import run_average
+from rook.director import wrap_director
 
 
 class Operator(object):
+    # Sub-classes require "prefix" property
+    prefix = NotImplemented
+
     def __init__(self, output_dir, apply_fixes=True):
         self.config = {
             "output_dir": output_dir,
@@ -26,41 +19,70 @@ class Operator(object):
             # 'filenamer': dconfig.filenamer,
         }
 
-    def call(self, args, collection):
-        raise NotImplementedError("implemented in subclass")
+    def call(self, args):
+        args.update(self.config)
+        args['output_dir'] = self._get_output_dir()
+        collection = args['collection']
+
+        # Quick hack to find out if collection is a list of files
+        runner = self._get_runner()
+
+        if os.path.isfile(collection[0]):
+            output_uris = runner(args)
+        else:
+            # Setting "original_files" to False, to force use of WPS in a workflow
+            args['original_files'] = False
+            director = wrap_director(collection, args, runner)
+            output_uris = director.output_uris
+
+            # In rook.operator, within the `Operator.call()` function, we need...
+            #
+            # NOTE: output_uris might be file paths OR URLs
+            #  If they are URLs: then any subsequent Operators will need to download them
+            #  How will we do that? 
+            #  In daops.utils.consolidate:
+            #   - run a single:  `collection = consolidate_collection(collection)`
+            #     - it would group a sequence of items into:
+            #       1. dataset ids (from individual ids and/or id patterns)
+            #       2. URLs to individual NC files
+            #         - analyse URLs and compare path and file names, 
+            #           - if path and relevant parts of file name are the same:
+            #               - group by inferred dataset in separate directories
+            #         - implement by: 1. strip the last component of files
+            #                         2. create collection object to group them
+            #                         3. download them into directories related to collection 
+            #       3. Directories
+            #       4. File paths:
+            #         - Group by common directory()
+            #         - so that xarray will attempt to aggregate them
+            #
+            #   - then call the existing consolidate code that loops through each _dset_
+            #
+
+
+        return output_uris
+
+    def _get_runner(self):
+        return NotImplementedError
+
+    def _get_output_dir(self):
+        return tempfile.mkdtemp(dir=self.config["output_dir"], prefix=f"{self.prefix}_")
 
 
 class Subset(Operator):
-    def call(self, args):
-        # Convert file list to directory if required
-        collection = _resolve_collection_if_files(args.get("collection"))
+    prefix = 'subset'
 
-        # TODO: handle lazy load of daops
-        from daops.ops.subset import subset
-
-        # from .tweaks import subset
-        kwargs = dict(
-            collection=collection,
-            time=args.get("time"),
-            level=args.get("level"),
-            area=args.get("area"),
-            apply_fixes=args.get("apply_fixes"),
-        )
-        kwargs.update(self.config)
-        kwargs["output_dir"] = tempfile.mkdtemp(
-            dir=self.config["output_dir"], prefix="subset_"
-        )
-        result = subset(
-            **kwargs,
-        )
-        return result.file_uris
+    def _get_runner(self):
+        return run_subset
 
 
 class Average(Operator):
-    def call(self, args):
-        return args["collection"]
+    prefix = 'average'
+
+    def _get_runner(self):
+        return run_average
 
 
-class Diff(Operator):
-    def call(self, args):
-        return args["collection_a"]
+Diff = Average
+
+

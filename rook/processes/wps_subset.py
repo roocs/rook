@@ -6,7 +6,11 @@ from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaFile, MetaLink4
 
-from ..director import Director
+from ..utils.input_utils import parse_wps_input
+from ..utils.subset_utils import run_subset
+from ..utils.metalink_utils import build_metalink
+from ..utils.response_utils import populate_response
+from ..director import wrap_director
 from ..provenance import Provenance
 
 LOGGER = logging.getLogger()
@@ -122,86 +126,83 @@ class Subset(Process):
 
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
-        from daops.ops.subset import subset
-        from daops.utils.normalise import ResultSet
+#        from daops.ops.subset import subset
+#        from daops.utils.normalise import ResultSet
 
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in subset: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
-        collection = [dset.data for dset in request.inputs["collection"]]
+        collection = parse_wps_input(request.inputs, 'collection', as_sequence=True,
+                                 must_exist=True)
 
-        config_args = {
-            "output_dir": self.workdir,
-            "apply_fixes": request.inputs["apply_fixes"][0].data,
-            "pre_checked": request.inputs["pre_checked"][0].data,
-            "original_files": request.inputs["original_files"][0].data
-            # 'chunk_rules': dconfig.chunk_rules,
-            # 'filenamer': dconfig.filenamer,
-        }
-
-        subset_args = {
+        inputs = {
             "collection": collection,
+            "output_dir": self.workdir,
+            "apply_fixes": parse_wps_input(request.inputs, 'apply_fixes', default=False),
+            "pre_checked": parse_wps_input(request.inputs, 'pre_checked', default=False),
+            "original_files": parse_wps_input(request.inputs, 'original_files', default=False),
+            "time": parse_wps_input(request.inputs, 'time', default=None),
+            "level": parse_wps_input(request.inputs, 'level', default=None),
+            "area": parse_wps_input(request.inputs, 'area', default=None)
         }
-        if "time" in request.inputs:
-            subset_args["time"] = request.inputs["time"][0].data
-        if "level" in request.inputs:
-            subset_args["level"] = request.inputs["level"][0].data
-        if "area" in request.inputs:
-            subset_args["area"] = request.inputs["area"][0].data
+        # inputs.update(config_args)
 
-        subset_args.update(config_args)
+        # Let the director manage the processing or redirection to original files
+        director = wrap_director(collection, inputs, run_subset)
 
-        # Ask director whether request should be rejected, use original files or apply WPS process
-        try:
-            director = Director(collection, subset_args)
-        except Exception:
-            # raise ProcessError(f"{e}")
-            pass
+        # # If original files should be returned, then add the files
+        # if director.use_original_files:
+        #     result = ResultSet()
 
-        # If original files should be returned...
-        if False:  # director.use_original_files:
-            result = ResultSet()
+        #     for ds_id, file_urls in director.original_file_urls.items():
+        #         result.add(ds_id, file_urls)
 
-            for ds_id, file_urls in director.original_file_urls.items():
-                result.add(ds_id, file_urls)
+        #     file_uris = result.file_uris
 
-        # else: generate the new subset of files
-        else:
-            del subset_args["pre_checked"]
-            del subset_args["original_files"]
-            try:
-                result = subset(**subset_args)
-            except Exception as e:
-                raise ProcessError(f"{e}")
+        # # else: generate the new subset of files
+        # else:
+        #     # del inputs["pre_checked"]
+        #     # del inputs["original_files"]
+        #     try:
+        #         file_uris = run_subset(inputs)
+        #     except Exception as e:
+        #         raise ProcessError(f"{e}")
 
-        # metalink document with collection of netcdf files/ urls
-        ml4 = MetaLink4(
-            "subset-result", "Subsetting result as NetCDF files.", workdir=self.workdir
-        )
+        ml4 = build_metalink("subset-result", "Subsetting result as NetCDF files.", 
+                             self.workdir, director.output_uris, 
+                             as_urls=director.use_original_files)
 
-        # need to handle file URLS
-        for result in result.file_uris:
-            mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
+        # # metalink document with collection of netcdf files/ urls
+        # ml4_2 = MetaLink4(
+        #     "subset-result", "Subsetting result as NetCDF files.", workdir=self.workdir
+        # )
 
-            if False:  # director.use_original_files:
-                mf.url = result
-            else:
-                mf.file = result
-            ml4.append(mf)
+        # # need to handle file URLS
+        # for file_uri in result.file_uris:
+        #     mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
 
-        response.outputs["output"].data = ml4.xml
 
-        # collect provenance
-        provenance = Provenance(self.workdir)
-        provenance.start()
-        urls = []
+        #     if director.use_original_files:
+        #         mf.url = file_uri
+        #     else:
+        #         mf.file = file_uri
+        #     ml4_2.append(mf)
 
-        for f in ml4.files:
-            urls.extend(f.urls)
+        populate_response(response, 'subset', self.workdir, inputs, collection, ml4)
 
-        provenance.add_operator("subset", subset_args, collection, urls)
-        response.outputs["prov"].file = provenance.write_json()
-        response.outputs["prov_plot"].file = provenance.write_png()
+        # response.outputs["output"].data = ml4.xml
+
+        # # Collect provenance
+        # provenance = Provenance(self.workdir)
+        # provenance.start()
+        # urls = []
+
+        # for f in ml4.files:
+        #     urls.extend(f.urls)
+
+        # provenance.add_operator("subset", inputs, collection, urls)
+        # response.outputs["prov"].file = provenance.write_json()
+        # response.outputs["prov_plot"].file = provenance.write_png()
 
         return response
