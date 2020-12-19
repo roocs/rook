@@ -4,6 +4,8 @@ from pywps.app.exceptions import ProcessError
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaLink4, MetaFile
 
+from ..utils.metalink_utils import build_metalink
+
 from rook import workflow
 
 import logging
@@ -71,18 +73,26 @@ class Orchestrate(Process):
             # workaround for CDATA issue in pywps
             # wfdata = wfdata.replace("<![CDATA[", "").replace("]]>", "")
             wf = workflow.WorkflowRunner(output_dir=self.workdir)
-            output = wf.run(wfdata)
+            file_uris = wf.run(wfdata)
         except Exception as e:
             raise ProcessError(f"{e}")
-        # metalink document with collection of netcdf files
-        ml4 = MetaLink4(
-            "workflow-result", "Workflow result as NetCDF files.", workdir=self.workdir
-        )
-        for ncfile in output:
-            mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
-            mf.file = ncfile
-            ml4.append(mf)
+
+        # Metalink document with collection of netcdf files
+        # ml4 = MetaLink4(
+        #     "workflow-result", "Workflow result as NetCDF files.", workdir=self.workdir
+        # )
+
+        ml4 = build_metalink("workflow-result", "Workflow result as NetCDF files.",
+                             self.workdir, file_uris,
+                             as_urls=False)
+
+        # for ncfile in output:
+        #     mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)
+        #     mf.file = ncfile
+        #     ml4.append(mf)
+
         response.outputs["output"].data = ml4.xml
         response.outputs["prov"].file = wf.provenance.write_json()
         response.outputs["prov_plot"].file = wf.provenance.write_png()
+
         return response

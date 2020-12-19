@@ -12,7 +12,7 @@
               "in": {
                   "collection": "inputs/tas",
                   "time": "2085-01-01/2120-12-30",
-                  "space": "0.,49.,10.,65."
+                  "area": "0.,0.,200.,90."
               }
           },
           "subset_tas_2": {
@@ -20,7 +20,7 @@
               "in": {
                   "collection": "subset_tas_1/output",
                   "time": "2090-01-01/2100-12-30",
-                  "space": "0.,50.,10.,60."
+                  "area": "0.,0.,199.,89."
               }
           },
           "average_tas": {

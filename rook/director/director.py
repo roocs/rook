@@ -2,15 +2,28 @@ from collections import OrderedDict
 from pywps.app.exceptions import ProcessError
 
 from daops.utils import is_characterised, fixer
+from daops.utils.normalise import ResultSet
 
 # from roocs_utils.project_utils import get_project_name
 from roocs_utils.exceptions import InvalidParameterValue
 
 from .inventory import Inventory
 from .alignment import SubsetAlignmentChecker
+from ..utils.input_utils import clean_inputs
+
+
+def wrap_director(collection, inputs, runner):
+    # Ask director whether request should be rejected, use original files or apply WPS process
+    try:
+        director = Director(collection, inputs)
+        director.process(runner)
+        return director
+    except Exception as e:
+        raise ProcessError(f"{e}")
 
 
 class Director:
+
     def __init__(self, coll, inputs):
         self.coll = coll
         self.inputs = inputs
@@ -122,3 +135,26 @@ class Director:
         self.original_file_urls = required_files
 
         return True
+
+    def process(self, runner):
+        # Either packages up orginal files (URLs) or
+        # runs the process to generate the outputs
+
+        # If original files should be returned, then add the files
+        if self.use_original_files:
+            result = ResultSet()
+
+            for ds_id, file_urls in self.original_file_urls.items():
+                result.add(ds_id, file_urls)
+
+            file_uris = result.file_uris
+
+        # else: generate the new subset of files
+        else:
+            clean_inputs(self.inputs)
+            try:
+                file_uris = runner(self.inputs)
+            except Exception as e:
+                raise ProcessError(f"{e}")
+
+        self.output_uris = file_uris
