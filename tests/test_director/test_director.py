@@ -16,7 +16,7 @@ from roocs_utils.exceptions import InvalidParameterValue
 class TestDirectorCMIP6:
 
     collection = [
-        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+        "c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     ]
 
     def test_project(self):

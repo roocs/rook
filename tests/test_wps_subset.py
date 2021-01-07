@@ -20,7 +20,7 @@ def test_wps_subset_no_inv():
 
 def test_wps_subset_cmip6():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+    datainputs = "collection=c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;area=1,1,300,89"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
@@ -33,7 +33,7 @@ def test_wps_subset_cmip6():
 
 def test_wps_subset_cmip6_original_files():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+    datainputs = "collection=c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;original_files=1"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(

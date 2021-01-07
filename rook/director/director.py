@@ -4,12 +4,13 @@ from pywps.app.exceptions import ProcessError
 from daops.utils import is_characterised, fixer
 from daops.utils.normalise import ResultSet
 
-# from roocs_utils.project_utils import get_project_name
+from roocs_utils.project_utils import get_project_name
 from roocs_utils.exceptions import InvalidParameterValue
 
 from .inventory import Inventory
 from .alignment import SubsetAlignmentChecker
 from ..utils.input_utils import clean_inputs
+from rook import CONFIG
 
 
 def wrap_director(collection, inputs, runner):
@@ -28,16 +29,18 @@ class Director:
         self.coll = coll
         self.inputs = inputs
 
-        # self.project = get_project_name(coll[0])
-        self.project = "c3s-cmip6"
+        self.project = get_project_name(coll[0])
+        # self.project = "c3s-cmip6"
 
-        try:
-            self.inv = Inventory(self.project)
-        except Exception:
-            self.invalid_collection()
+        if CONFIG[f"project:{self.project}"]["use_inventory"] is True:
+            try:
+                self.inv = Inventory(self.project)
+            except Exception:
+                self.invalid_collection()
 
         self.use_original_files = False
         self.original_file_urls = None
+        self.output_uris = None
         self._resolve()
 
     def _resolve(self):
@@ -59,6 +62,13 @@ class Director:
             ProcessError: [description]
             ProcessError: [description]
         """
+        # skip if use_inventory is false
+        if CONFIG[f"project:{self.project}"]["use_inventory"] is False:
+            # include extra bits in here?
+            # if self.inputs.get("original_files"):
+            #     self.use_original_files = True
+            return
+
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
             self.invalid_collection()
