@@ -32,16 +32,17 @@ class Director:
         self.project = get_project_name(coll[0])
         # self.project = "c3s-cmip6"
 
-        if CONFIG[f"project:{self.project}"]["use_inventory"] is True:
+        self.use_original_files = False
+        self.original_file_urls = None
+        self.output_uris = None
+
+        if CONFIG[f"project:{self.project}"].get("use_inventory"):
             try:
                 self.inv = Inventory(self.project)
             except Exception:
                 self.invalid_collection()
 
-        self.use_original_files = False
-        self.original_file_urls = None
-        self.output_uris = None
-        self._resolve()
+            self._resolve()
 
     def _resolve(self):
         """
@@ -62,12 +63,7 @@ class Director:
             ProcessError: [description]
             ProcessError: [description]
         """
-        # skip if use_inventory is false
-        if CONFIG[f"project:{self.project}"]["use_inventory"] is False:
-            # include extra bits in here?
-            # if self.inputs.get("original_files"):
-            #     self.use_original_files = True
-            return
+        #
 
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
