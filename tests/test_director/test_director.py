@@ -85,11 +85,13 @@ class TestDirector:
 
     collection = ["CMIP6.CMIP.NCAR.CESM2.amip.r3i1p1f1.Amon.cl.gn.v20190319"]
 
-    def test_not_in_inventory(self):
-        # not in inventory
-        inputs = {}
-        with pytest.raises(InvalidParameterValue):
-            Director(self.collection, inputs)
+    def test_no_inventory(self):
+        # use_inventory for CMIP6 is set to False
+        inputs = {"time": "1850-01-01/2014-12-01"}
+        d = Director(self.collection, inputs)
+        assert d.use_original_files == False
+        assert d.original_file_urls == None
+        assert d.output_uris == None
 
 
 # need to test a  different dataset that has been characterised:
