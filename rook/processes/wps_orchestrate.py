@@ -1,14 +1,13 @@
-from pywps import Process, ComplexInput, ComplexOutput
-from pywps import FORMATS, Format
-from pywps.app.exceptions import ProcessError
-from pywps.app.Common import Metadata
-from pywps.inout.outputs import MetaLink4, MetaFile
+import logging
 
-from ..utils.metalink_utils import build_metalink
+from pywps import FORMATS, ComplexInput, ComplexOutput, Format, Process
+from pywps.app.Common import Metadata
+from pywps.app.exceptions import ProcessError
+from pywps.inout.outputs import MetaFile, MetaLink4
 
 from rook import workflow
 
-import logging
+from ..utils.metalink_utils import build_metalink
 
 LOGGER = logging.getLogger()
 
@@ -82,9 +81,13 @@ class Orchestrate(Process):
         #     "workflow-result", "Workflow result as NetCDF files.", workdir=self.workdir
         # )
 
-        ml4 = build_metalink("workflow-result", "Workflow result as NetCDF files.",
-                             self.workdir, file_uris,
-                             as_urls=False)
+        ml4 = build_metalink(
+            "workflow-result",
+            "Workflow result as NetCDF files.",
+            self.workdir,
+            file_uris,
+            as_urls=False,
+        )
 
         # for ncfile in output:
         #     mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)

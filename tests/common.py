@@ -1,11 +1,10 @@
 import os
+import tempfile
 
+from jinja2 import Template
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
-
-from jinja2 import Template
-import tempfile
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
 PYWPS_CFG = os.path.join(TESTS_HOME, "pywps.cfg")
@@ -51,7 +50,7 @@ class WpsTestClient(WpsClient):
     def get(self, *args, **kwargs):
         query = "?"
         for key, value in kwargs.items():
-            query += "{0}={1}&".format(key, value)
+            query += "{}={}&".format(key, value)
         return super(WpsTestClient, self).get(query)
 
 

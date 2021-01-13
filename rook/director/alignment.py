@@ -1,6 +1,7 @@
-from roocs_utils.parameter import time_parameter
-import dateutil.parser as parser
 import os
+
+import dateutil.parser as parser
+from roocs_utils.parameter import time_parameter
 
 
 class SubsetAlignmentChecker:

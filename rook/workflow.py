@@ -1,13 +1,13 @@
+import logging
 import os
-import yaml
 from copy import deepcopy
+
 import networkx as nx
+import yaml
 
 from .exceptions import WorkflowValidationError
-from .operator import Subset, Average, Diff
+from .operator import Average, Diff, Subset
 from .provenance import Provenance
-
-import logging
 
 LOGGER = logging.getLogger()
 

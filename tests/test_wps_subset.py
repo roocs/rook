@@ -1,8 +1,9 @@
 from pywps import Service
-from pywps.tests import client_for, assert_response_success, assert_process_exception
+from pywps.tests import assert_process_exception, assert_response_success, client_for
 
-from .common import get_output, PYWPS_CFG
 from rook.processes.wps_subset import Subset
+
+from .common import PYWPS_CFG, get_output
 
 
 # Would expect this to raise an error

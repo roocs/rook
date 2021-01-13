@@ -1,6 +1,5 @@
 from rook.director.inventory import Inventory
 
-
 inv = None
 ds_id = "c3s-cmip6.ScenarioMIP.NCC.NorESM2-LM.ssp245.r1i1p1f1.Amon.hfss.gn.v20191108"
 

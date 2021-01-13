@@ -1,4 +1,5 @@
 import os
+
 from pywps.app.exceptions import ProcessError
 
 
@@ -21,7 +22,7 @@ def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=No
 
 def clean_inputs(inputs):
     "Remove common arguments not required in processing calls."
-    to_remove = ('pre_checked', 'original_files')
+    to_remove = ("pre_checked", "original_files")
 
     for key in to_remove:
         if key in inputs:

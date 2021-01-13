@@ -1,7 +1,9 @@
 import glob
-from rook.director.alignment import SubsetAlignmentChecker
-import dateutil.parser as parser
 import os
+
+import dateutil.parser as parser
+
+from rook.director.alignment import SubsetAlignmentChecker
 
 
 class TestYearMonth:

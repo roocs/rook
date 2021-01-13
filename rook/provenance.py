@@ -1,7 +1,7 @@
 import os
 
-from prov.model import ProvDocument
 from prov.dot import prov_to_dot
+from prov.model import ProvDocument
 
 
 class Provenance(object):
@@ -12,6 +12,7 @@ class Provenance(object):
 
     def start(self, workflow=False):
         from daops import __version__ as daops_version
+
         from rook import __version__ as rook_version
 
         self.doc = ProvDocument()

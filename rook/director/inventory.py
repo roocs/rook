@@ -1,6 +1,7 @@
 import os
-import yaml
 from collections import OrderedDict
+
+import yaml
 
 from rook import CONFIG
 
@@ -20,7 +21,7 @@ class Inventory:
             _contents = yaml.load(reader, Loader=yaml.SafeLoader)
 
         self.base_dir = _contents[0]["base_dir"]
-        self.contents = dict([(dset["ds_id"], dset) for dset in _contents[1:]])
+        self.contents = {dset["ds_id"]: dset for dset in _contents[1:]}
 
     # def __contains__(self, dset):
     #     TODO:  ds_id = convert_to_ds_id(dset)

@@ -1,9 +1,9 @@
 import os
 import tempfile
 
-from rook.utils.subset_utils import run_subset
-from rook.utils.average_utils import run_average
 from rook.director import wrap_director
+from rook.utils.average_utils import run_average
+from rook.utils.subset_utils import run_subset
 
 
 class Operator(object):
@@ -21,8 +21,8 @@ class Operator(object):
 
     def call(self, args):
         args.update(self.config)
-        args['output_dir'] = self._get_output_dir()
-        collection = args['collection']
+        args["output_dir"] = self._get_output_dir()
+        collection = args["collection"]
 
         # Quick hack to find out if collection is a list of files
         runner = self._get_runner()
@@ -31,7 +31,7 @@ class Operator(object):
             output_uris = runner(args)
         else:
             # Setting "original_files" to False, to force use of WPS in a workflow
-            args['original_files'] = False
+            args["original_files"] = False
             director = wrap_director(collection, args, runner)
             output_uris = director.output_uris
 
@@ -68,14 +68,14 @@ class Operator(object):
 
 
 class Subset(Operator):
-    prefix = 'subset'
+    prefix = "subset"
 
     def _get_runner(self):
         return run_subset
 
 
 class Average(Operator):
-    prefix = 'average'
+    prefix = "average"
 
     def _get_runner(self):
         return run_average

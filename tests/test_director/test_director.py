@@ -1,7 +1,8 @@
-from rook.director import Director
-from pywps.app.exceptions import ProcessError
 import pytest
+from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
+
+from rook.director import Director
 
 # inputs = {"collection": None
 #           "area": None,
@@ -89,9 +90,9 @@ class TestDirector:
         # use_inventory for CMIP6 is set to False
         inputs = {"time": "1850-01-01/2014-12-01"}
         d = Director(self.collection, inputs)
-        assert d.use_original_files == False
-        assert d.original_file_urls == None
-        assert d.output_uris == None
+        assert d.use_original_files is False
+        assert d.original_file_urls is None
+        assert d.output_uris is None
 
 
 # need to test a  different dataset that has been characterised:

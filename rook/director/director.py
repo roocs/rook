@@ -1,16 +1,16 @@
 from collections import OrderedDict
-from pywps.app.exceptions import ProcessError
 
-from daops.utils import is_characterised, fixer
+from daops.utils import fixer, is_characterised
 from daops.utils.normalise import ResultSet
-
-from roocs_utils.project_utils import get_project_name
+from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
+from roocs_utils.project_utils import get_project_name
 
-from .inventory import Inventory
-from .alignment import SubsetAlignmentChecker
-from ..utils.input_utils import clean_inputs
 from rook import CONFIG
+
+from ..utils.input_utils import clean_inputs
+from .alignment import SubsetAlignmentChecker
+from .inventory import Inventory
 
 
 def wrap_director(collection, inputs, runner):
@@ -24,7 +24,6 @@ def wrap_director(collection, inputs, runner):
 
 
 class Director:
-
     def __init__(self, coll, inputs):
         self.coll = coll
         self.inputs = inputs

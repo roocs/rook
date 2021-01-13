@@ -5,7 +5,7 @@
 
 import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.rst")).read()
@@ -53,9 +53,9 @@ setup(
     install_requires=[
         reqs,
         "pywps @ git+https://github.com/geopython/pywps.git@pywps-4.2",
-        "daops @ git+https://github.com/roocs/daops.git",
-        "clisops @ git+https://github.com/roocs/clisops.git",
-        "roocs-utils @ git+https://github.com/roocs/roocs-utils.git",
+        "daops @ git+https://github.com/roocs/daops.git@c3s_mapping",
+        "clisops @ git+https://github.com/roocs/clisops.git@c3s_mapping",
+        "roocs-utils @ git+https://github.com/roocs/roocs-utils.git@c3s_mapper",
     ],
     extras_require={
         "dev": dev_reqs,  # pip install ".[dev]"
