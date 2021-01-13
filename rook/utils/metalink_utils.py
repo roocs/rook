@@ -15,7 +15,7 @@ def build_metalink(
     for file_uri in file_uris:
         mf = MetaFile(file_desc, file_desc, fmt=file_type_map.get(file_type, file_type))
 
-        if as_urls:  # should this be not as_urls
+        if as_urls:
             mf.url = file_uri
         else:
             mf.file = file_uri
