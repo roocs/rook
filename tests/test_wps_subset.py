@@ -55,3 +55,16 @@ def test_wps_subset_missing_collection():
         )
     )
     assert_process_exception(resp, code="MissingParameterValue")
+
+
+def test_wps_subset_time_invariant_dataset():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = "collection=CMIP6.ScenarioMIP.IPSL.IPSL-CM6A-LR.ssp119.r1i1p1f1.fx.mrsofc.gr.v20190410"
+    datainputs += ";area=1,1,300,89"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
