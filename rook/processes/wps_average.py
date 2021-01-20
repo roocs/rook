@@ -1,9 +1,19 @@
+import logging
+import os
+
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaFile, MetaLink4
 
+from ..director import wrap_director
 from ..provenance import Provenance
+from ..utils.input_utils import parse_wps_input
+from ..utils.metalink_utils import build_metalink
+from ..utils.response_utils import populate_response
+from ..utils.average_utils import run_average
+
+LOGGER = logging.getLogger()
 
 
 class Average(Process):
@@ -18,14 +28,14 @@ class Average(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "axes",
-                "Axes",
-                abstract="Please choose an axes for averaging.",
+                "dims",
+                "Dimensions",
+                abstract="Please specify dimensions for averaging.",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
                 default="time",
-                allowed_values=["time", "latitude", "longitude"],
+                allowed_values=["time", "latitude", "longitude", "level"],
             ),
             LiteralInput(
                 "pre_checked",
@@ -98,33 +108,42 @@ class Average(Process):
 
     def _handler(self, request, response):
         # TODO: handle lazy load of daops
-        from daops.utils import is_characterised
 
-        collection = [dset.data for dset in request.inputs["collection"]]
-        if request.inputs["pre_checked"][0].data and not is_characterised(
-            collection, require_all=True
-        ):
-            raise ProcessError("Data has not been pre-checked")
-        average_args = {
-            "collection": collection,
-        }
-        if "axes" in request.inputs:
-            average_args["axes"] = request.inputs["axes"][0].data
-        # metalink document with collection of netcdf files
-        ml4 = MetaLink4(
-            "average-result", "Averaging result as NetCDF files.", workdir=self.workdir
+        # show me the environment used by the process in debug mode
+        LOGGER.debug(f"Environment used in average: {os.environ}")
+
+        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
+        collection = parse_wps_input(
+            request.inputs, "collection", as_sequence=True, must_exist=True
         )
-        mf = MetaFile("Text file", "Dummy text file", fmt=FORMATS.TEXT)
-        mf.data = "not working yet"
-        ml4.append(mf)
-        response.outputs["output"].data = ml4.xml
-        # collect provenance
-        provenance = Provenance(self.workdir)
-        provenance.start()
-        urls = []
-        for f in ml4.files:
-            urls.extend(f.urls)
-        provenance.add_operator("average", average_args, collection, urls)
-        response.outputs["prov"].file = provenance.write_json()
-        response.outputs["prov_plot"].file = provenance.write_png()
+
+        inputs = {
+            "collection": collection,
+            "output_dir": self.workdir,
+            "apply_fixes": parse_wps_input(
+                request.inputs, "apply_fixes", default=False
+            ),
+            "pre_checked": parse_wps_input(
+                request.inputs, "pre_checked", default=False
+            ),
+            "original_files": parse_wps_input(
+                request.inputs, "original_files", default=False
+            ),
+            "dims": parse_wps_input(
+                request.inputs, "dims", default=None, as_sequence=True
+            ),
+        }
+
+        # Let the director manage the processing or redirection to original files
+        director = wrap_director(collection, inputs, run_average)
+
+        ml4 = build_metalink(
+            "average-result",
+            "Averaging result as NetCDF files.",
+            self.workdir,
+            director.output_uris,
+            as_urls=director.use_original_files,
+        )
+
+        populate_response(response, "average", self.workdir, inputs, collection, ml4)
         return response

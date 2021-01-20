@@ -8,7 +8,8 @@ from .common import get_output
 
 def test_wps_average():
     client = client_for(Service(processes=[Average()]))
-    datainputs = "data_ref=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
+    datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
+    datainputs += ";dims=time"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=average&datainputs={}".format(
             datainputs

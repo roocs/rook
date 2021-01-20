@@ -6,12 +6,10 @@ from .input_utils import resolve_collection_if_files
 def run_average(args):
     # Convert file list to directory if required
     kwargs = deepcopy(args)
-    original_collection = args.get("collection")
-    kwargs["collection"] = resolve_collection_if_files(original_collection)
+    kwargs["collection"] = resolve_collection_if_files(args.get("collection"))
 
     # TODO: handle lazy load of daops
-    # from daops.ops.average import average
+    from daops.ops.average import average_over_dims
 
-    # result = average(**kwargs)
-    # return result.file_uris
-    return original_collection
+    result = average_over_dims(**kwargs)
+    return result.file_uris
