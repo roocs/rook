@@ -6,6 +6,8 @@ Unreleased
 * ``apply_fixes`` and ``original_files`` option added for WPS processes and the ``Operator`` class.
 * ``director`` module added. This makes decisions on what is returned - NetCDF files or original file URLs.
 * ``python-dateutil>=2.8.1`` added as a new dependency.
+* Allow no inventory option when processing datasets
+* c3s-cmip6 dataset ids must now be identified by the use of ``c3s-cmip6``
 
 0.2.0 (2020-11-19)
 ==================
