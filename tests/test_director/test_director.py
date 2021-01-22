@@ -32,12 +32,12 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
 
-    def test_pre_checked_not_charactersied(self):
+    def test_pre_checked_not_characterised(self):
         # raise exception
         inputs = {"pre_checked": True}
         with pytest.raises(ProcessError):
@@ -50,7 +50,7 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
@@ -68,7 +68,7 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
