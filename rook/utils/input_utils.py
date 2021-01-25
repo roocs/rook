@@ -39,7 +39,7 @@ def resolve_collection_if_files(coll):
         # Interpret as a sequence of files
         first_dir = os.path.dirname(coll[0])
         files = [fpath.split("/")[-1] for fpath in coll]
-        file_glob = ",".join(files)
+        file_glob = ";".join(files)
 
         # If all are valid file paths and they are all in one directory then return it
         try:

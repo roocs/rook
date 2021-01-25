@@ -35,7 +35,7 @@ class Operator(object):
             output_uris = runner(kwargs)
         else:
             # Setting "original_files" to False, to force use of WPS in a workflow
-            args["original_files"] = False  # think this can be removed?
+            args["original_files"] = False  # can be removed?
             director = wrap_director(collection, args, runner)
             output_uris = director.output_uris
 
