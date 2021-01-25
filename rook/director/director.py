@@ -62,8 +62,6 @@ class Director:
             ProcessError: [description]
             ProcessError: [description]
         """
-        #
-
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
             self.invalid_collection()
@@ -142,9 +140,8 @@ class Director:
         return True
 
     def process(self, runner):
-        # Either packages up orginal files (URLs) or
+        # Either packages up original files (URLs) or
         # runs the process to generate the outputs
-
         # If original files should be returned, then add the files
         if self.use_original_files:
             result = ResultSet()

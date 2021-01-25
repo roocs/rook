@@ -1,7 +1,9 @@
 import os
 import tempfile
+from copy import deepcopy
 
 from rook.director import wrap_director
+from rook.utils.input_utils import resolve_input
 from rook.utils.average_utils import run_average
 from rook.utils.subset_utils import run_subset
 
@@ -22,16 +24,18 @@ class Operator(object):
     def call(self, args):
         args.update(self.config)
         args["output_dir"] = self._get_output_dir()
-        collection = args["collection"]
+        collection = args["collection"]  # collection is a list
 
-        # Quick hack to find out if collection is a list of files
         runner = self._get_runner()
 
-        if os.path.isfile(collection[0]):
-            output_uris = runner(args)
+        # Quick hack to find out if collection is a list of files
+        if os.path.isfile(collection[0]):  # should this check something else?
+            kwargs = deepcopy(args)
+            kwargs["collection"] = resolve_input(args.get("collection"))
+            output_uris = runner(kwargs)
         else:
             # Setting "original_files" to False, to force use of WPS in a workflow
-            args["original_files"] = False
+            args["original_files"] = False  # think this can be removed?
             director = wrap_director(collection, args, runner)
             output_uris = director.output_uris
 
