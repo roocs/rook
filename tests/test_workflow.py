@@ -68,7 +68,7 @@ def test_run_tree_wf_4():
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
     assert (
-        os.path.basename(output[0])
+        os.path.basename(output)
         == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
     )
 
@@ -78,7 +78,7 @@ def test_run_tree_wf_5():
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
     assert (
-        os.path.basename(output[0])
+        os.path.basename(output)
         == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950116-20001216.nc"
     )
 
@@ -95,6 +95,6 @@ def test_workflow_runner_tree():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_4)
     assert (
-        os.path.basename(output[0])
+        os.path.basename(output)
         == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
     )
