@@ -83,8 +83,7 @@ class Orchestrate(Process):
         # )
 
         ml4 = build_metalink("workflow-result", "Workflow result as NetCDF files.",
-                             self.workdir, file_uris,
-                             as_urls=False)
+                             self.workdir, file_uris)
 
         # for ncfile in output:
         #     mf = MetaFile("NetCDF file", "NetCDF file", fmt=FORMATS.NETCDF)

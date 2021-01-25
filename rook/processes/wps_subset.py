@@ -151,8 +151,7 @@ class Subset(Process):
         director = wrap_director(collection, inputs, run_subset)
 
         ml4 = build_metalink("subset-result", "Subsetting result as NetCDF files.",
-                             self.workdir, director.output_uris,
-                             as_urls=director.use_original_files)
+                             self.workdir, director.output_uris)
 
         populate_response(response, 'subset', self.workdir, inputs, collection, ml4)
         return response
