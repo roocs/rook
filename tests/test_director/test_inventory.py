@@ -66,7 +66,7 @@ def test_inventory_get_file_urls():
 
     expected_file = (
         "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/"
-        "CMIP/ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/"
+        "ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/"
         "hfss/gn/v20191108/hfss_Amon_NorESM2-LM_ssp245_r1i1p1f1_gn_201501-202012.nc"
     )
     assert first_file == expected_file
