@@ -7,7 +7,6 @@ file_type_map = {"NetCDF": FORMATS.NETCDF}
 
 
 def build_metalink(identity, description, workdir, file_uris, file_type="NetCDF"):
-
     ml4 = MetaLink4(identity, description, workdir=workdir)
     file_desc = f"{file_type} file"
 

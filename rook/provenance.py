@@ -82,8 +82,8 @@ class Provenance(object):
             self.doc.wasAssociatedWith(op, agent=self.sw_daops, plan=self.workflow)
         else:
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
-        # Generated output file
 
+        # Generated output file
         ds_out = os.path.basename(output[0])
         # ds_out_attrs = {
         #     'prov:type': 'provone:Data',

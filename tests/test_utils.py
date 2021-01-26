@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from rook.utils.input_utils import mapped_urls, resolve_input
+from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.metalink_utils import build_metalink
 
 from .common import TESTS_HOME
@@ -34,35 +34,46 @@ def test_build_metalink(tmpdir):
     assert "file://" in ml4.files[2].url
 
 
-def test_mapped_urls():
-    coll = [
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
-        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
-        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
-    ]
-    dsets = mapped_urls(coll)
-    assert dsets == [
-        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1/historical/r1i1p1f1/Amon/rlus"
-        f"/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
-        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1/historical/r1i1p1f1/Amon/rlus"
-        f"/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
-    ]
-
-
-@pytest.mark.skipif(os.path.isdir("/badc") is False, reason="data not available")
-def test_resolve_input():
+def test_resolve_to_file_paths_files():
     coll = [
         "/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
         "/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
     ]
-    res = resolve_input(coll)
+    res = resolve_to_file_paths(coll)
 
-    assert (
-        res
-        == "/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1/historical/r1i1p1f1/Amon/rlus/gr/v20191211"
-        "/{rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc;"
-        "rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc}"
-    )
+    assert res == coll
+
+
+def test_resolve_to_file_paths_mixed():
+    coll = [
+        "/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
+    ]
+
+    with pytest.raises(Exception) as exc:
+        resolve_to_file_paths(coll)
+        assert (
+            str(exc.value)
+            == "Collections containing file paths and URLs are not accepted."
+        )
+
+
+def test_resolve_to_file_paths_urls():
+    coll = [
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
+    ]
+
+    res = resolve_to_file_paths(coll)
+    assert res == [
+        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
+        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
+        "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
+    ]
