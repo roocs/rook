@@ -13,6 +13,7 @@ TREE_WF_3 = resource_file("subset_wf_3.json")
 TREE_WF_4 = resource_file("subset_wf_4.json")
 TREE_WF_5 = resource_file("subset_wf_5.json")
 TREE_WF_6 = resource_file("subset_wf_6.json")
+TREE_WF_COL_ONLY = resource_file("subset_wf_collection_only.json")
 
 
 def test_validate_tree_wf():
@@ -82,7 +83,15 @@ def test_run_tree_wf_6():
     wfdoc = workflow.load_wfdoc(TREE_WF_6)
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
+    assert 'https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6' in output[0]
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
+
+
+def test_run_tree_wf_collection_only():
+    wfdoc = workflow.load_wfdoc(TREE_WF_COL_ONLY)
+    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc" in output[0]
 
 
 def test_workflow_runner_tree():
