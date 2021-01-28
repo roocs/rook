@@ -1,9 +1,12 @@
 import os
 import tempfile
+from copy import deepcopy
 
 from rook.director import wrap_director
+from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.average_utils import run_average
 from rook.utils.subset_utils import run_subset
+from roocs_utils.utils.file_utils import is_file_list, FileMapper
 
 
 class Operator(object):
@@ -22,42 +25,22 @@ class Operator(object):
     def call(self, args):
         args.update(self.config)
         args["output_dir"] = self._get_output_dir()
-        collection = args["collection"]
+        collection = args["collection"]  # collection is a list
 
-        # Quick hack to find out if collection is a list of files
         runner = self._get_runner()
 
-        if os.path.isfile(collection[0]):
-            output_uris = runner(args)
+        if is_file_list(collection):
+            # This block is called if this is NOT the first stage of a workflow, and
+            # the collection will be a file list (one or more files)
+            kwargs = deepcopy(args)
+            file_paths = resolve_to_file_paths(args.get("collection"))
+            kwargs["collection"] = FileMapper(file_paths)
+            output_uris = runner(kwargs)  # this needs to be in a list
         else:
-            # Setting "original_files" to False, to force use of WPS in a workflow
-            args["original_files"] = False
+            # This block is called when this is the first stage of a workflow
             director = wrap_director(collection, args, runner)
             output_uris = director.output_uris
 
-            # In rook.operator, within the `Operator.call()` function, we need...
-            #
-            # NOTE: output_uris might be file paths OR URLs
-            #  If they are URLs: then any subsequent Operators will need to download them
-            #  How will we do that?
-            #  In daops.utils.consolidate:
-            #   - run a single:  `collection = consolidate_collection(collection)`
-            #     - it would group a sequence of items into:
-            #       1. dataset ids (from individual ids and/or id patterns)
-            #       2. URLs to individual NC files
-            #         - analyse URLs and compare path and file names,
-            #           - if path and relevant parts of file name are the same:
-            #               - group by inferred dataset in separate directories
-            #         - implement by: 1. strip the last component of files
-            #                         2. create collection object to group them
-            #                         3. download them into directories related to collection
-            #       3. Directories
-            #       4. File paths:
-            #         - Group by common directory()
-            #         - so that xarray will attempt to aggregate them
-            #
-            #   - then call the existing consolidate code that loops through each _dset_
-            #
         return output_uris
 
     def _get_runner(self):
