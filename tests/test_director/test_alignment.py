@@ -12,13 +12,15 @@ class TestYearMonth:
         "tests/mini-esgf-data/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
         "/r1i1p1/latest/tas/*.nc"
     )
-    test_paths = glob.glob(test_path)
+    test_paths = sorted(glob.glob(test_path))
 
     def test_no_subset(self):
         inputs = {}
         sac = SubsetAlignmentChecker(self.test_paths, inputs)
         assert sac.is_aligned is True
         assert sac.aligned_files == self.test_paths
+        print(sac.aligned_files)
+        print(self.test_paths)
 
     def test_area_subset(self):
         inputs = {"area": "0.,49.,10.,65"}
@@ -48,10 +50,12 @@ class TestYearMonth:
 class TestYearMonthDay:
 
     test_path = (
-        "tests/mini-esgf-data/test_data/group_workspaces/jasmin2/cp4cds1/vol1/data/c3s-cmip5/output1/ICHEC/"
+        "tests/mini-esgf-data/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
         "EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231/*.nc"
     )
-    test_paths = glob.glob(test_path)
+    # Actual range in files is: 18500101-20091130
+
+    test_paths = sorted(glob.glob(test_path))
 
     def test_no_subset(self):
         inputs = {}
@@ -77,8 +81,46 @@ class TestYearMonthDay:
         assert sac.is_aligned is False
         assert sac.aligned_files == []
 
-    def test_time_subset_match(self):
+    def test_time_subset_matches_exact_range(self):
+        """Tests alignment of full dataset where:
+        - Real range: 18500101-20091130
+        - Start: 18500101 (exact start)
+        - End:   20091130 (exact end)
+        """
         inputs = {"time": "1850-01-01/2009-11-30"}
+        sac = SubsetAlignmentChecker(self.test_paths, inputs)
+        assert sac.is_aligned is True
+        assert sac.aligned_files == self.test_paths
+
+    def test_time_subset_matches_before_to_end(self):
+        """Tests alignment of full dataset where:
+        - Real range: 18500101-20091130
+        - Start: 17000101 (before)
+        - End:   20091130 (exact end)
+        """
+        inputs = {"time": "1700-01-01/2009-11-30"}
+        sac = SubsetAlignmentChecker(self.test_paths, inputs)
+        assert sac.is_aligned is True
+        assert sac.aligned_files == self.test_paths
+
+    def test_time_subset_mathces_start_to_after(self):
+        """Tests alignment of full dataset where:
+        - Real range: 18500101-20091130
+        - Start: 18500101 (exact start)
+        - End:   29991230 (after)
+        """
+        inputs = {"time": "1850-01-01/2999-12-30"}
+        sac = SubsetAlignmentChecker(self.test_paths, inputs)
+        assert sac.is_aligned is True
+        assert sac.aligned_files == self.test_paths
+
+    def test_time_subset_matches_before_to_after(self):
+        """Tests alignment of full dataset where:
+        - Real range: 18500101-20091130
+        - Start: 17000101 (before)
+        - End:   29991230 (after)
+        """
+        inputs = {"time": "1700-01-01/2999-12-30"}
         sac = SubsetAlignmentChecker(self.test_paths, inputs)
         assert sac.is_aligned is True
         assert sac.aligned_files == self.test_paths
