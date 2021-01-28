@@ -5,7 +5,6 @@ from roocs_utils.parameter import time_parameter
 
 
 class SubsetAlignmentChecker:
-
     def __init__(self, input_files, inputs):
         self.input_files = sorted(input_files)
         self.is_aligned = False
@@ -56,7 +55,7 @@ class SubsetAlignmentChecker:
         Loops through all data files to check if the `start` and `end` can be aligned
         with the exact start or end time in the file(s).
 
-        If both the `start` and the `end` are aligned then the following properties 
+        If both the `start` and the `end` are aligned then the following properties
         are set:
          - self.aligned_files = [list of matching files in range]
          - self.is_aligned = True
@@ -98,7 +97,7 @@ class SubsetAlignmentChecker:
             if fstart >= start or fend <= end:
                 self.aligned_files.append(fpath)
 
-        # If there were not 
+        # If there were not
         if matches != 2:
             self.aligned_files.clear()
             return
