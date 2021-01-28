@@ -1,5 +1,9 @@
 import os
+
 from pywps.app.exceptions import ProcessError
+from roocs_utils.project_utils import url_to_file_path
+from roocs_utils.exceptions import InvalidProject
+from rook import CONFIG
 
 
 def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=None):
@@ -20,25 +24,28 @@ def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=No
 
 
 def clean_inputs(inputs):
-    "Remove common arguments not required in processing calls."
-    to_remove = ('pre_checked', 'original_files')
+    """Remove common arguments not required in processing calls."""
+    to_remove = ("pre_checked", "original_files")
 
     for key in to_remove:
         if key in inputs:
             del inputs[key]
 
 
-def resolve_collection_if_files(coll):
-    # If multiple inputs are files with a common directory name, then
-    # return that as a single output
+def resolve_to_file_paths(coll):
+    # if a mixed collection
+    if not all([item.startswith("http") or item.startswith("/") for item in coll]):
+        raise Exception("Collections containing file paths and URLs are not accepted.")
 
-    if len(coll) > 1:
-        # Interpret as a sequence of files
-        first_dir = os.path.dirname(coll[0])
+    # if all URLs
+    if all([item.startswith("http") for item in coll]):
+        try:
+            file_paths = [url_to_file_path(item) for item in coll]
+        except InvalidProject:
+            raise Exception("The URLs could not be mapped to file paths")
 
-        # If all are valid file paths and they are all in one directory then return it
-        if all([os.path.isfile(item) for item in coll]):
-            if os.path.dirname(os.path.commonprefix(coll)) == first_dir:
-                return first_dir
+    # otherwise they are all file paths
+    else:
+        file_paths = coll
 
-    return coll[0]
+    return file_paths

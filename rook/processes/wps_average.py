@@ -1,8 +1,7 @@
-from pywps import Process, LiteralInput, ComplexOutput
-from pywps import FORMATS, Format
-from pywps.app.exceptions import ProcessError
+from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from pywps.inout.outputs import MetaLink4, MetaFile
+from pywps.app.exceptions import ProcessError
+from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..provenance import Provenance
 

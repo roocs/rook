@@ -1,15 +1,16 @@
 from collections import OrderedDict
-from pywps.app.exceptions import ProcessError
 
-from daops.utils import is_characterised, fixer
+from daops.utils import fixer, is_characterised
 from daops.utils.normalise import ResultSet
-
-# from roocs_utils.project_utils import get_project_name
+from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
+from roocs_utils.project_utils import get_project_name
 
-from .inventory import Inventory
-from .alignment import SubsetAlignmentChecker
+from rook import CONFIG
+
 from ..utils.input_utils import clean_inputs
+from .alignment import SubsetAlignmentChecker
+from .inventory import Inventory
 
 
 def wrap_director(collection, inputs, runner):
@@ -23,22 +24,24 @@ def wrap_director(collection, inputs, runner):
 
 
 class Director:
-
     def __init__(self, coll, inputs):
         self.coll = coll
         self.inputs = inputs
 
-        # self.project = get_project_name(coll[0])
-        self.project = "c3s-cmip6"
-
-        try:
-            self.inv = Inventory(self.project)
-        except Exception:
-            self.invalid_collection()
+        self.project = get_project_name(coll[0])
+        # self.project = "c3s-cmip6"
 
         self.use_original_files = False
         self.original_file_urls = None
-        self._resolve()
+        self.output_uris = None
+
+        if CONFIG[f"project:{self.project}"].get("use_inventory"):
+            try:
+                self.inv = Inventory(self.project)
+            except Exception:
+                self.invalid_collection()
+
+            self._resolve()
 
     def _resolve(self):
         """
@@ -137,9 +140,8 @@ class Director:
         return True
 
     def process(self, runner):
-        # Either packages up orginal files (URLs) or
+        # Either packages up original files (URLs) or
         # runs the process to generate the outputs
-
         # If original files should be returned, then add the files
         if self.use_original_files:
             result = ResultSet()

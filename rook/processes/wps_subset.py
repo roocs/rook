@@ -6,12 +6,12 @@ from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaFile, MetaLink4
 
-from ..utils.input_utils import parse_wps_input
-from ..utils.subset_utils import run_subset
-from ..utils.metalink_utils import build_metalink
-from ..utils.response_utils import populate_response
 from ..director import wrap_director
 from ..provenance import Provenance
+from ..utils.input_utils import parse_wps_input
+from ..utils.metalink_utils import build_metalink
+from ..utils.response_utils import populate_response
+from ..utils.subset_utils import run_subset
 
 LOGGER = logging.getLogger()
 
@@ -133,25 +133,36 @@ class Subset(Process):
         LOGGER.debug(f"Environment used in subset: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
-        collection = parse_wps_input(request.inputs, 'collection', as_sequence=True,
-                                     must_exist=True)
+        collection = parse_wps_input(
+            request.inputs, "collection", as_sequence=True, must_exist=True
+        )
 
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(request.inputs, 'apply_fixes', default=False),
-            "pre_checked": parse_wps_input(request.inputs, 'pre_checked', default=False),
-            "original_files": parse_wps_input(request.inputs, 'original_files', default=False),
-            "time": parse_wps_input(request.inputs, 'time', default=None),
-            "level": parse_wps_input(request.inputs, 'level', default=None),
-            "area": parse_wps_input(request.inputs, 'area', default=None)
+            "apply_fixes": parse_wps_input(
+                request.inputs, "apply_fixes", default=False
+            ),
+            "pre_checked": parse_wps_input(
+                request.inputs, "pre_checked", default=False
+            ),
+            "original_files": parse_wps_input(
+                request.inputs, "original_files", default=False
+            ),
+            "time": parse_wps_input(request.inputs, "time", default=None),
+            "level": parse_wps_input(request.inputs, "level", default=None),
+            "area": parse_wps_input(request.inputs, "area", default=None),
         }
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_subset)
 
-        ml4 = build_metalink("subset-result", "Subsetting result as NetCDF files.",
-                             self.workdir, director.output_uris)
+        ml4 = build_metalink(
+            "subset-result",
+            "Subsetting result as NetCDF files.",
+            self.workdir,
+            director.output_uris,
+        )
 
-        populate_response(response, 'subset', self.workdir, inputs, collection, ml4)
+        populate_response(response, "subset", self.workdir, inputs, collection, ml4)
         return response
