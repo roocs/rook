@@ -142,7 +142,6 @@ class Average(Process):
             "Averaging result as NetCDF files.",
             self.workdir,
             director.output_uris,
-            as_urls=director.use_original_files,
         )
 
         populate_response(response, "average", self.workdir, inputs, collection, ml4)
