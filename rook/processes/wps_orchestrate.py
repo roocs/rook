@@ -86,7 +86,6 @@ class Orchestrate(Process):
             "Workflow result as NetCDF files.",
             self.workdir,
             file_uris,
-            as_urls=False,
         )
 
         # for ncfile in output:

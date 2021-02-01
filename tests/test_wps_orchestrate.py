@@ -16,6 +16,5 @@ def test_wps_orchestrate():
             datainputs
         )
     )
-
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
