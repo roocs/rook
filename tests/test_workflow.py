@@ -97,7 +97,7 @@ def test_run_tree_wf_collection_only():
     wfdoc = workflow.load_wfdoc(TREE_WF_COL_ONLY)
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc" in output[0]
+    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20141216.nc" in output[0]
 
 
 def test_workflow_runner_tree():
