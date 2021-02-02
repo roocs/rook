@@ -1,8 +1,7 @@
 from rook.director.inventory import Inventory
 
-
 inv = None
-ds_id = "CMIP6.ScenarioMIP.NCC.NorESM2-LM.ssp245.r1i1p1f1.Amon.hfss.gn.v20191108"
+ds_id = "c3s-cmip6.ScenarioMIP.NCC.NorESM2-LM.ssp245.r1i1p1f1.Amon.hfss.gn.v20191108"
 
 
 def setup_module():
@@ -19,7 +18,7 @@ def test_inventory_c3s_cmip6():
 
     project = "c3s-cmip6"
     assert inv.project == project
-    assert inv.base_dir == "/badc/cmip6/data"
+    assert inv.base_dir == "/badc/cmip6/data/CMIP6"
     assert len(inv) > 1400
 
 
@@ -33,7 +32,7 @@ def test_inventory_get_matches():
 
     expected = {
         "ds_id": ds_id,
-        "path": "CMIP6/ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/hfss/gn/v20191108",
+        "path": "ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/hfss/gn/v20191108",
         "size": 61055040,
         "files": """hfss_Amon_NorESM2-LM_ssp245_r1i1p1f1_gn_201501-202012.nc
 hfss_Amon_NorESM2-LM_ssp245_r1i1p1f1_gn_202101-203012.nc
@@ -67,7 +66,7 @@ def test_inventory_get_file_urls():
 
     expected_file = (
         "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/"
-        "CMIP6/ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/"
+        "ScenarioMIP/NCC/NorESM2-LM/ssp245/r1i1p1f1/Amon/"
         "hfss/gn/v20191108/hfss_Amon_NorESM2-LM_ssp245_r1i1p1f1_gn_201501-202012.nc"
     )
     assert first_file == expected_file

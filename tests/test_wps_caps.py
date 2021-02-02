@@ -1,7 +1,8 @@
 from pywps import Service
 
-from .common import client_for
 from rook.processes import processes
+
+from .common import client_for
 
 
 def test_wps_caps():

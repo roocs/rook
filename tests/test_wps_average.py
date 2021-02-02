@@ -1,8 +1,9 @@
 from pywps import Service
-from pywps.tests import client_for, assert_response_success
+from pywps.tests import assert_response_success, client_for
+
+from rook.processes.wps_average import Average
 
 from .common import get_output
-from rook.processes.wps_average import Average
 
 
 def test_wps_average():

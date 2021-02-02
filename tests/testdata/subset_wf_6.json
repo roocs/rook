@@ -1,8 +1,8 @@
 {
     "doc": "tree workflow with diff operator",
     "inputs": {
-        "model1": ["CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"],
-        "model2": ["CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
+        "model1": ["c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"],
+        "model2": ["c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
     },
     "outputs": {
           "output": "diff/output"

@@ -1,7 +1,8 @@
-from rook.director import Director
-from pywps.app.exceptions import ProcessError
 import pytest
+from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
+
+from rook.director import Director
 
 # inputs = {"collection": None
 #           "area": None,
@@ -16,7 +17,7 @@ from roocs_utils.exceptions import InvalidParameterValue
 class TestDirectorCMIP6:
 
     collection = [
-        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+        "c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     ]
 
     def test_project(self):
@@ -31,12 +32,12 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
 
-    def test_pre_checked_not_charactersied(self):
+    def test_pre_checked_not_characterised(self):
         # raise exception
         inputs = {"pre_checked": True}
         with pytest.raises(ProcessError):
@@ -49,7 +50,7 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
@@ -67,7 +68,7 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical"
+            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
             "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
             "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
         ]
@@ -85,11 +86,13 @@ class TestDirector:
 
     collection = ["CMIP6.CMIP.NCAR.CESM2.amip.r3i1p1f1.Amon.cl.gn.v20190319"]
 
-    def test_not_in_inventory(self):
-        # not in inventory
-        inputs = {}
-        with pytest.raises(InvalidParameterValue):
-            Director(self.collection, inputs)
+    def test_no_inventory(self):
+        # use_inventory for CMIP6 is set to False
+        inputs = {"time": "1850-01-01/2014-12-01"}
+        d = Director(self.collection, inputs)
+        assert d.use_original_files is False
+        assert d.original_file_urls is None
+        assert d.output_uris is None
 
 
 # need to test a  different dataset that has been characterised:

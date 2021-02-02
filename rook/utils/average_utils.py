@@ -1,17 +1,13 @@
 from copy import deepcopy
 
-from .input_utils import resolve_collection_if_files
-
 
 def run_average(args):
     # Convert file list to directory if required
-    kwargs = deepcopy(args)
     original_collection = args.get("collection")
-    kwargs['collection'] = resolve_collection_if_files(original_collection)
-
     # TODO: handle lazy load of daops
     # from daops.ops.average import average
 
-    # result = average(**kwargs)
+    # result = average(args)
     # return result.file_uris
-    return original_collection
+    # just to get orchestrate to work as average not implemented yet
+    return original_collection.file_paths
