@@ -1,13 +1,13 @@
 {
-    'doc': "tree workflow with diff operator",
-    'inputs': {
-        'inm': ['cmip5.output1.INM.inmcm4.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga'],
-        'mpi': ['cmip5.output1.MPI-M.MPI-ESM-LR.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga']
+    "doc": "tree workflow with diff operator",
+    "inputs": {
+        "inm": ["cmip5.output1.INM.inmcm4.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga"],
+        "mpi": ["cmip5.output1.MPI-M.MPI-ESM-LR.rcp45.mon.ocean.Omon.r1i1p1.latest.zostoga"]
     },
     "outputs": {
           "output": "diff/output"
       },
-    'steps': {
+    "steps": {
         "subsetA": {
               "run": "subset",
               "in": {
