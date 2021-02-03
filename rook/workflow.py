@@ -81,7 +81,9 @@ class BaseWorkflow(object):
     def run(self, wfdoc):
         self.validate(wfdoc)
         self.prov.start(workflow=True)
-        return self._run(wfdoc)
+        outputs = self._run(wfdoc)
+        self.prov.stop(workflow=True)
+        return outputs
 
     def _run(self, wfdoc):
         raise NotImplementedError("implemented in subclass")

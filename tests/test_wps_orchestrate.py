@@ -48,7 +48,9 @@ def test_wps_orchestrate_prov():
         )
     )
     assert_response_success(resp)
-    doc = prov.read(get_output(resp.xml)["prov"][len("file://"):])
+    file_uri = get_output(resp.xml)["prov"]
+    print(file_uri)
+    doc = prov.read(file_uri[len("file://"):])
     print(doc.get_provn())
     assert (
         'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="0" %% xsd:boolean])'
@@ -66,3 +68,5 @@ def test_wps_orchestrate_prov():
         'wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, average_rlds, -, -)'  # noqa
         in doc.get_provn()
     )
+    assert 'prov:startedAtTime' in doc.get_provn()
+    assert 'prov:endedAtTime' in doc.get_provn()
