@@ -1,3 +1,5 @@
+import prov
+
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
@@ -30,6 +32,27 @@ def test_wps_subset_cmip6():
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
+
+
+def test_wps_subset_cmip6_prov():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = "collection=c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+    datainputs += ";time=1860-01-01/1900-12-30;area=1,1,300,89"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://"):])
+    assert (
+        'activity(subset, -, -, [time="1860-01-01/1900-12-30", area="1,1,300,89", apply_fixes="0" %% xsd:boolean])'
+        in doc.get_provn()
+    )
+    assert (
+        'wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18600116-19001216.nc, c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset, -, -)'  # noqa
+        in doc.get_provn()
+    )
 
 
 def test_wps_subset_cmip6_original_files():
