@@ -70,3 +70,28 @@ def test_wps_orchestrate_prov():
     )
     assert 'prov:startedAtTime' in doc.get_provn()
     assert 'prov:endedAtTime' in doc.get_provn()
+
+
+def test_wps_orchestrate_prov_with_fixes():
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+    datainputs = "workflow=@xlink:href=file://{}".format(
+        resource_file("wf_cmip6_subset_average_with_fixes.json")
+    )
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    file_uri = get_output(resp.xml)["prov"]
+    print(file_uri)
+    doc = prov.read(file_uri[len("file://"):])
+    print(doc.get_provn())
+    assert (
+        'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="1" %% xsd:boolean])'
+        in doc.get_provn()
+    )
+    assert (
+        'activity(average_rlds, -, -, [axes="time", apply_fixes="0" %% xsd:boolean])'
+        in doc.get_provn()
+    )

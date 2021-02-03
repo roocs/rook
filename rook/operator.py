@@ -13,17 +13,17 @@ class Operator(object):
     # Sub-classes require "prefix" property
     prefix = NotImplemented
 
-    def __init__(self, output_dir, apply_fixes=False):
+    def __init__(self, output_dir):
         self.config = {
             "output_dir": output_dir,
-            "apply_fixes": apply_fixes,
+            # "apply_fixes": apply_fixes,
             # 'original_files': original_files
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
         }
 
     def call(self, args):
-        args.update(self.config)
+        # args.update(self.config)
         args["output_dir"] = self._get_output_dir()
         collection = args["collection"]  # collection is a list
 
