@@ -25,7 +25,7 @@ def test_wps_orchestrate():
 def test_wps_orchestrate_subset_collection_only():
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
     datainputs = "workflow=@xlink:href=file://{0}".format(
-        resource_file("subset_wf_collection_only.json")
+        resource_file("wf_cmip6_subset_collection_only.json")
     )
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(

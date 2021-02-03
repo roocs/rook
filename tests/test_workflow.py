@@ -86,8 +86,8 @@ def test_run_tree_wf_6():
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
-def test_run_tree_wf_collection_only():
-    wfdoc = resource_file("subset_wf_collection_only.json")
+def test_run_wf_collection_only():
+    wfdoc = resource_file("wf_cmip6_subset_collection_only.json")
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
     assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20141216.nc" in output[0]
