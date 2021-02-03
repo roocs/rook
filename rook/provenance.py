@@ -64,7 +64,7 @@ class Provenance(object):
 
     def add_operator(self, operator, parameters, collection, output):
         other_attributes = {}
-        for param in ["time", "area", "level", "apply_fixes"]:
+        for param in ["time", "area", "level", "axes", "apply_fixes"]:
             if param in parameters:
                 other_attributes[f":{param}"] = parameters[param]
         op = self.doc.activity(
