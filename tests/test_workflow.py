@@ -12,7 +12,6 @@ TREE_WF_2 = resource_file("subset_wf_2.json")
 TREE_WF_3 = resource_file("subset_wf_3.json")
 TREE_WF_5 = resource_file("subset_wf_5.json")
 TREE_WF_6 = resource_file("subset_wf_6.json")
-TREE_WF_COL_ONLY = resource_file("subset_wf_collection_only.json")
 
 
 def test_validate_tree_wf():
@@ -41,59 +40,54 @@ def test_build_tree():
 
 @pytest.mark.xfail(reason="Uses cmip5 - needs mock inventory in order to work")
 def test_run_tree_wf(fake_inv):
-    wfdoc = workflow.load_wfdoc(TREE_WF)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF)
     assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850116-21201216.nc" in output[0]
 
 
 @pytest.mark.xfail(reason="Fails because of clisops subset: see rook issue: #82")
 def test_run_tree_wf_2():
-    wfdoc = workflow.load_wfdoc(TREE_WF_2)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_2)
     assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20900116-21001216.nc" in output[0]
 
 
 @pytest.mark.xfail(reason="Uses cmip5 - needs mock inventory in order to work")
 def test_run_tree_wf_3():
-    wfdoc = workflow.load_wfdoc(TREE_WF_3)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_3)
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
 def test_run_wf_cmip6_subset_average():
-    wfdoc = workflow.load_wfdoc(resource_file("wf_cmip6_subset_average.json"))
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
+    wfdoc = resource_file("wf_cmip6_subset_average.json")
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
     assert (
-        os.path.basename(output[0])
-        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
+        in output[0]
     )
 
 
 def test_run_tree_wf_5():
-    wfdoc = workflow.load_wfdoc(TREE_WF_5)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_5)
     assert (
-        os.path.basename(output[0])
-        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950116-20001216.nc"
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950116-20001216.nc"
+        in output[0]
     )
 
 
 @pytest.mark.xfail(reason="Uses Diff operator - not implemented.")
 def test_run_tree_wf_6():
-    wfdoc = workflow.load_wfdoc(TREE_WF_6)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
-    output = wf.run(wfdoc)
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(TREE_WF_6)
     assert 'https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6' in output[0]
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
 def test_run_tree_wf_collection_only():
-    wfdoc = workflow.load_wfdoc(TREE_WF_COL_ONLY)
-    wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
+    wfdoc = resource_file("subset_wf_collection_only.json")
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
     assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20141216.nc" in output[0]
