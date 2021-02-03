@@ -64,7 +64,7 @@ class Provenance(object):
 
     def stop(self, workflow=False):
         if workflow is True:
-            orchestrate = self.doc.activity(
+            self.doc.activity(
                 ":orchestrate",
                 other_attributes={
                     "prov:endedAtTime": datetime.now().isoformat(timespec='seconds'),
