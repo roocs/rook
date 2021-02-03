@@ -13,10 +13,10 @@ class Operator(object):
     # Sub-classes require "prefix" property
     prefix = NotImplemented
 
-    def __init__(self, output_dir, apply_fixes=True):
+    def __init__(self, output_dir, apply_fixes=False):
         self.config = {
             "output_dir": output_dir,
-            # 'apply_fixes': apply_fixes
+            "apply_fixes": apply_fixes,
             # 'original_files': original_files
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,

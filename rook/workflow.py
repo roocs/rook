@@ -31,7 +31,9 @@ def replace_inputs(wfdoc):
                 input_id = arg.split("/")[1]
                 steps[step_id]["in"][arg_id] = wfdoc["inputs"][input_id]
                 # apply fixed only for input datasets
-                steps[step_id]["in"]["apply_fixes"] = True
+                # steps[step_id]["in"]["apply_fixes"] = True
+                # quick-fix for issue #110
+                steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
     return steps
 
