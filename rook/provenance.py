@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from prov.dot import prov_to_dot
 from prov.model import ProvDocument
@@ -12,7 +13,6 @@ class Provenance(object):
 
     def start(self, workflow=False):
         from daops import __version__ as daops_version
-
         from rook import __version__ as rook_version
 
         self.doc = ProvDocument()
@@ -54,21 +54,31 @@ class Provenance(object):
             orchestrate = self.doc.activity(
                 ":orchestrate",
                 other_attributes={
-                    "prov:startedAtTime": "2020-11-26T09:15:00",
-                    "prov:endedAtTime": "2020-11-26T09:30:00",
+                    "prov:startedAtTime": datetime.now().isoformat(timespec='seconds'),
+                    # "prov:endedAtTime": "2020-11-26T09:30:00",
                 },
             )
             self.doc.wasAssociatedWith(
                 orchestrate, agent=self.sw_rook, plan=self.workflow
             )
 
+    def stop(self, workflow=False):
+        if workflow is True:
+            self.doc.activity(
+                ":orchestrate",
+                other_attributes={
+                    "prov:endedAtTime": datetime.now().isoformat(timespec='seconds'),
+                },
+            )
+
     def add_operator(self, operator, parameters, collection, output):
+        other_attributes = {}
+        for param in ["time", "area", "level", "axes", "apply_fixes"]:
+            if param in parameters:
+                other_attributes[f":{param}"] = parameters[param]
         op = self.doc.activity(
             f":{operator}",
-            other_attributes={
-                ":time": parameters.get("time"),
-                ":apply_fixes": parameters.get("apply_fixes"),
-            },
+            other_attributes=other_attributes,
         )
         # input data
         ds_in = os.path.basename(collection[0])

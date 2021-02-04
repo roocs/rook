@@ -22,18 +22,21 @@ def load_wfdoc(data):
 
 def replace_inputs(wfdoc):
     steps = {}
+    start_steps = []
     for step_id, step in wfdoc["steps"].items():
         steps[step_id] = deepcopy(step)
-        steps[step_id]["in"]["apply_fixes"] = False
         # replace inputs
         for arg_id, arg in step["in"].items():
-            if arg.startswith("inputs/"):
+            if isinstance(arg, str) and arg.startswith("inputs/"):
                 input_id = arg.split("/")[1]
                 steps[step_id]["in"][arg_id] = wfdoc["inputs"][input_id]
-                # apply fixed only for input datasets
-                # steps[step_id]["in"]["apply_fixes"] = True
-                # quick-fix for issue #110
-                steps[step_id]["in"]["apply_fixes"] = False
+                start_steps.append(step_id)
+    for step_id, step in steps.items():
+        # fixes are only applied to start steps
+        if step_id in start_steps:
+            steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get("apply_fixes", False)
+        else:
+            steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
     return steps
 
@@ -46,7 +49,7 @@ def build_tree(wfdoc):
         tree.add_edge(output_id, step_id, arg_id=None)
     for step_id, step in wfdoc["steps"].items():
         for arg_id, arg in step["in"].items():
-            if arg.endswith("/output"):
+            if isinstance(arg, str) and arg.endswith("/output"):
                 prev_step_id = arg.split("/")[0]
                 tree.add_edge(step_id, prev_step_id, arg_id=arg_id)
     LOGGER.debug(f"tree: {tree.edges}")
@@ -81,7 +84,9 @@ class BaseWorkflow(object):
     def run(self, wfdoc):
         self.validate(wfdoc)
         self.prov.start(workflow=True)
-        return self._run(wfdoc)
+        outputs = self._run(wfdoc)
+        self.prov.stop(workflow=True)
+        return outputs
 
     def _run(self, wfdoc):
         raise NotImplementedError("implemented in subclass")
