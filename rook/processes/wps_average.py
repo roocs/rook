@@ -35,7 +35,6 @@ class Average(Process):
                 min_occurs=1,
                 max_occurs=1,
                 default="time",
-                allowed_values=["time", "latitude", "longitude", "level"],
             ),
             LiteralInput(
                 "pre_checked",
@@ -129,9 +128,7 @@ class Average(Process):
             "original_files": parse_wps_input(
                 request.inputs, "original_files", default=False
             ),
-            "dims": parse_wps_input(
-                request.inputs, "dims", default=None, as_sequence=True
-            ),
+            "dims": parse_wps_input(request.inputs, "dims", default=None),
         }
 
         # Let the director manage the processing or redirection to original files

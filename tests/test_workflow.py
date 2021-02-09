@@ -70,7 +70,7 @@ def test_run_tree_wf_4():
     output = wf.run(wfdoc)
     assert (
         os.path.basename(output[0])
-        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
+        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg_t.nc"
     )
 
 
@@ -80,7 +80,7 @@ def test_run_tree_wf_5():
     output = wf.run(wfdoc)
     assert (
         os.path.basename(output[0])
-        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950116-20001216.nc"
+        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg_t.nc"
     )
 
 
@@ -89,7 +89,10 @@ def test_run_tree_wf_6():
     wfdoc = workflow.load_wfdoc(TREE_WF_6)
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert 'https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6' in output[0]
+    assert (
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6"
+        in output[0]
+    )
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
@@ -97,7 +100,10 @@ def test_run_tree_wf_collection_only():
     wfdoc = workflow.load_wfdoc(TREE_WF_COL_ONLY)
     wf = workflow.TreeWorkflow(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20141216.nc" in output[0]
+    assert (
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20141216.nc"
+        in output[0]
+    )
 
 
 def test_workflow_runner_tree():
@@ -105,5 +111,5 @@ def test_workflow_runner_tree():
     output = wf.run(TREE_WF_4)
     assert (
         os.path.basename(output[0])
-        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"
+        == "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg_t.nc"
     )

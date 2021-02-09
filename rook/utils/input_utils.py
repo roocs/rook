@@ -7,7 +7,6 @@ from rook import CONFIG
 
 
 def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=None):
-
     if not inputs.get(key):
         if must_exist:
             raise ProcessError(f'Required input "{key}" must be provided.')

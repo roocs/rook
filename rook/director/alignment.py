@@ -10,7 +10,7 @@ class SubsetAlignmentChecker:
         self.is_aligned = False
         self.aligned_files = []
 
-        self._deduce_alignment(inputs)  # needs inputs - where are they coming from
+        self._deduce_alignment(inputs)
 
     def _deduce_alignment(self, inputs):
         # At present, we reject alignment if any "area" or "level" subset is requested
