@@ -55,6 +55,28 @@ def test_wps_subset_cmip6_prov():
     )
 
 
+def test_wps_subset_cmip6_multiple_files_prov():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = "collection=c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+    datainputs += ";time=1850-01-01/2013-12-30"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://"):])
+    print(doc.get_provn())
+    assert (
+        'activity(subset, -, -, [time="1850-01-01/2013-12-30", apply_fixes="0" %% xsd:boolean])'
+        in doc.get_provn()
+    )
+    assert (
+        'wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500116-20131216.nc, c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset, -, -)'  # noqa
+        in doc.get_provn()
+    )
+
+
 def test_wps_subset_cmip6_original_files():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"

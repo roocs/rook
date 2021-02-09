@@ -17,6 +17,9 @@ xpath_ns = get_xpath_ns(VERSION)
 
 def write_roocs_cfg():
     cfg_templ = """
+    [clisops:write]
+    file_size_limit = 1MB
+
     [project:cmip5]
     base_dir = {{ base_dir }}/mini-esgf-data/test_data/badc/cmip5/data/cmip5
 
