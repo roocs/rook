@@ -94,13 +94,14 @@ class Provenance(object):
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
 
         # Generated output file
-        ds_out = os.path.basename(output[0])
-        # ds_out_attrs = {
-        #     'prov:type': 'provone:Data',
-        #     'prov:value': f'{ds_out}',
-        # }
-        op_out = self.doc.entity(f":{ds_out}")
-        self.doc.wasDerivedFrom(op_out, op_in, activity=op)
+        for out in output:
+            ds_out = os.path.basename(out)
+            # ds_out_attrs = {
+            #     'prov:type': 'provone:Data',
+            #     'prov:value': f'{ds_out}',
+            # }
+            op_out = self.doc.entity(f":{ds_out}")
+            self.doc.wasDerivedFrom(op_out, op_in, activity=op)
 
     def write_json(self):
         outfile = os.path.join(self.output_dir, "provenance.json")

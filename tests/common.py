@@ -17,14 +17,20 @@ xpath_ns = get_xpath_ns(VERSION)
 
 def write_roocs_cfg():
     cfg_templ = """
+    [clisops:write]
+    file_size_limit = 100KB
+
     [project:cmip5]
     base_dir = {{ base_dir }}/mini-esgf-data/test_data/badc/cmip5/data/cmip5
+    use_inventory = False
 
     [project:cmip6]
     base_dir = {{ base_dir }}/mini-esgf-data/test_data/badc/cmip6/data/CMIP6
+    use_inventory = False
 
     [project:cordex]
     base_dir = {{ base_dir }}/mini-esgf-data/test_data/badc/cordex/data/cordex
+    use_inventory = False
 
     [project:c3s-cmip5]
     base_dir = {{ base_dir }}/mini-esgf-data/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5
