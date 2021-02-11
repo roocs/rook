@@ -4,6 +4,7 @@ import xarray as xr
 import dateutil.parser as parser
 from roocs_utils.parameter import time_parameter
 from roocs_utils.utils.time_utils import to_isoformat
+from roocs_utils.project_utils import url_to_file_path
 
 
 class SubsetAlignmentChecker:
@@ -34,6 +35,11 @@ class SubsetAlignmentChecker:
 
     def _get_file_times(self, fpath):
         # get start and end times from the time dimension in the file
+
+        # convert url to file path if needed
+        if fpath.startswith("https"):
+            fpath = url_to_file_path(fpath)
+
         ds = xr.open_dataset(fpath, use_cftime=True)
         start = to_isoformat(ds.time.values[0])
         end = to_isoformat(ds.time.values[-1])
