@@ -37,7 +37,7 @@ class SubsetAlignmentChecker:
         # get start and end times from the time dimension in the file
 
         # convert url to file path if needed
-        if fpath.startswith("https"):
+        if fpath.startswith("http"):
             fpath = url_to_file_path(fpath)
 
         ds = xr.open_dataset(fpath, use_cftime=True)
