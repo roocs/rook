@@ -27,7 +27,7 @@ Overview of PROV
 
 The `W3C PROV Primer`_ document gives an overview of the `W3C PROV`_ standard.
 
-.. image:: prov-overview.png
+.. image:: _images/prov-overview.png
 
 A PROV document consists of *agents*, *activities* and *entities*.
 These can be connected via PROV *relations* like *wasDerivedFrom*.
@@ -86,7 +86,7 @@ like ``prov:SoftwareAgent``. These are for example:
 Subset Example
 ++++++++++++++
 
-.. image:: prov-subset.png
+.. image:: _images/prov-subset.png
 
 The *activity* ``subset`` is started by the software *agent* ``daops`` (Python library)
 which was triggered by ``rook`` (data-reduction service).
@@ -97,7 +97,7 @@ using the *activity* ``subset``.
 Workflow Example
 ++++++++++++++++
 
-.. image:: prov-workflow.png
+.. image:: _images/prov-workflow.png
 
 W3C PROV Plans
   Activities may follow pre-defined procedures, such as recipes, tutorials, instructions, or workflows.
@@ -148,7 +148,7 @@ The response of the process includes a provenance document in PROV-JSON_ format:
 
 This provenance document can also be displayed as an image:
 
-.. image:: prov-example.png
+.. image:: _images/prov-example.png
    :alt: Provenance Example
 
 
