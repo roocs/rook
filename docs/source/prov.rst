@@ -10,20 +10,20 @@ Provenance
 Introduction
 ------------
 
-The *rook* processes are recording provenance information about the process execution details.
+The *rook* processes are recording `provenance information`_ about the process execution details.
 This information includes:
 
-* used software and versions (rook, daops, ...)
-* applied operators like subset or average
+* used software and versions (``rook``, ``daops``, ...)
+* applied operators like ``subset`` and ``average``
 * used input data and parameters (cmip6 dataset, time, area)
-* generated outputs (netcdf files)
+* generated outputs (NetCDF files)
 * execution time (start-time and end-time)
 
 This information is described with the `W3C PROV`_ standard and using
 the `Python PROV Library`_
 
-Short overview of PROV
-----------------------
+Overview of PROV
+----------------
 
 The `W3C PROV Primer`_ document gives an overview of the `W3C PROV`_ standard.
 
@@ -48,7 +48,9 @@ Activities
 ++++++++++
 
 W3C PROV
-    *Activities* are how entities come into existence.
+    *Activities* are how entities come into existence
+    and how their attributes change to become new entities,
+    often making use of previously existing entities to achieve this.
 
 In *rook* we use *activities* for:
 
@@ -59,7 +61,9 @@ Agent
 +++++
 
 W3C PROV
-    An *agent* takes a role in an activity.
+    An *agent* takes a role in an activity such that the agent can be assigned
+    some degree of responsibility for the activity taking place.
+    An agent can be a person, a piece of software or an organisation.
 
 In *rook* we use *agents* for:
 
@@ -72,7 +76,8 @@ Namespaces
 W3C PROV
     Using URIs and namespaces, a provenance record can draw from multiple sources on the Web.
 
-We use currently the following namespaces:
+We use namespaces to use existing PROV vocabularies
+like ``prov:SoftwareAgent``. These are for example:
 
 * PROV (by W3C): https://www.w3.org/ns/prov/
 * PROVONE (by DataONE_): https://purl.dataone.org/provone/2015/01/15/ontology
@@ -154,6 +159,7 @@ The ESMValTool_ project is recording provenance information of scientific workfl
 
 The Climate4Impact_ project is using provenance to record the workflow of data staging and creating Jupyter notebooks.
 
+.. _`provenance information`: https://www.dataone.org/uploads/DWS2015Provenance.pdf
 .. _`Python PROV Library`: https://pypi.org/project/prov/
 .. _`W3C PROV`: https://www.w3.org/TR/prov-dm/
 .. _`W3C PROV Primer`: https://www.w3.org/TR/2013/NOTE-prov-primer-20130430/
