@@ -30,9 +30,12 @@ Example: Workflow with Subsetting Operators
 The rooki_ client for ``rook`` has example notebooks_ for process executions
 and displaying the provenance information.
 
-You can run the ``orchestrate`` process to execute a workflow with subsetting operators:
+You can run the ``orchestrate`` process to execute a workflow with subsetting operators
+and show the provenance document:
 
 .. code-block:: python
+  :linenos:
+  :emphasize-lines: 14-17
 
   from rooki import operators as ops
   wf = ops.Subset(
@@ -49,19 +52,20 @@ You can run the ``orchestrate`` process to execute a workflow with subsetting op
   resp.download_urls()
   # show URL to provenance document
   resp.provenance()
+  # show URL to provenance image
+  resp.provenance_image()
 
-The response of the process includes a provenance document in PROV-JSON format:
+The response of the process includes a provenance document in PROV-JSON_ format:
 
 .. literalinclude:: prov-example.json
   :language: JSON
 
 
-This document can also be displayed as an image:
+This provenance document can also be displayed as an image:
 
-.. figure:: prov-example.png
+.. image:: prov-example.png
    :alt: Provenance Example
 
-   Provenance information displayed as an image.
 
 
 Related work in other Projects
@@ -73,6 +77,7 @@ The Climate4Impact_ project is using provenance to record the workflow of data s
 
 .. _`Python PROV Library`: https://pypi.org/project/prov/
 .. _`W3C Provenance`: https://www.w3.org/TR/prov-dm/
+.. _PROV-JSON: https://openprovenance.org/prov-json/
 .. _rooki: https://rooki.readthedocs.io/en/latest/
 .. _notebooks: https://nbviewer.jupyter.org/github/roocs/rooki/tree/master/notebooks/demo/
 .. _ESMValTool: https://docs.esmvaltool.org/en/latest/community/diagnostic.html?highlight=provenance#recording-provenance
