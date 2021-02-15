@@ -3,6 +3,8 @@ Changes
 
 Unreleased
 ==========
+
+* Updated PyWPS 4.4.0 (#120).
 * ``apply_fixes`` and ``original_files`` option added for WPS processes and the ``Operator`` class.
 * ``director`` module added. This makes decisions on what is returned - NetCDF files or original file URLs.
 * ``python-dateutil>=2.8.1`` added as a new dependency.
