@@ -1,0 +1,79 @@
+{
+  "prefix": {
+    "provone": "http://purl.dataone.org/provone/2015/01/15/ontology#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "default": "http://purl.org/roocs/prov#"
+  },
+  "agent": {
+    "copernicus_CDS": {
+      "prov:type": "prov:Organization",
+      "dcterms:title": "Copernicus Climate Data Store"
+    },
+    "rook": {
+      "prov:type": "prov:SoftwareAgent",
+      "dcterms:source": "https://github.com/roocs/rook/releases/tag/v0.2.0"
+    },
+    "daops": {
+      "prov:type": "prov:SoftwareAgent",
+      "dcterms:source": "https://github.com/roocs/daops/releases/tag/v0.3.0"
+    }
+  },
+  "wasAttributedTo": {
+    "_:id1": {
+      "prov:entity": "rook",
+      "prov:agent": "copernicus_CDS"
+    }
+  },
+  "entity": {
+    "workflow": {
+      "prov:type": "provone:Workflow"
+    },
+    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.day.tas.gr1.v20190619": {},
+    "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20160101-20201229.nc": [{}, {}],
+    "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20170101-20171229.nc": {}
+  },
+  "activity": {
+    "orchestrate": [{
+      "prov:startedAtTime": "2021-02-15T13:24:33"
+    }, {
+      "prov:endedAtTime": "2021-02-15T13:24:57"
+    }],
+    "subset_tas_1": {
+      "time": "2016-01-01/2020-12-30",
+      "apply_fixes": false
+    },
+    "subset_tas_2": {
+      "time": "2017-01-01/2017-12-30",
+      "apply_fixes": false
+    }
+  },
+  "wasAssociatedWith": {
+    "_:id2": {
+      "prov:activity": "orchestrate",
+      "prov:agent": "rook",
+      "prov:plan": "workflow"
+    },
+    "_:id3": {
+      "prov:activity": "subset_tas_1",
+      "prov:agent": "daops",
+      "prov:plan": "workflow"
+    },
+    "_:id5": {
+      "prov:activity": "subset_tas_2",
+      "prov:agent": "daops",
+      "prov:plan": "workflow"
+    }
+  },
+  "wasDerivedFrom": {
+    "_:id4": {
+      "prov:generatedEntity": "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20160101-20201229.nc",
+      "prov:usedEntity": "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.day.tas.gr1.v20190619",
+      "prov:activity": "subset_tas_1"
+    },
+    "_:id6": {
+      "prov:generatedEntity": "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20170101-20171229.nc",
+      "prov:usedEntity": "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20160101-20201229.nc",
+      "prov:activity": "subset_tas_2"
+    }
+  }
+}
