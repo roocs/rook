@@ -7,22 +7,61 @@ Provenance
     :local:
     :depth: 1
 
-Overview
---------
+Introduction
+------------
 
-The ``rook`` processes are collecting provenance information about the process execution details.
+The *rook* processes are recording provenance information about the process execution details.
 This information includes:
 
-* used software and versions
-* applied operators
-* used input data and parameters
-* generated outputs
+* used software and versions (rook, daops, ...)
+* applied operators like subset or average
+* used input data and parameters (cmip6 dataset, time, area)
+* generated outputs (netcdf files)
 * execution time (start-time and end-time)
 
-This information is described with the `W3C Provenance`_ standard and using
+This information is described with the `W3C PROV`_ standard and using
 the `Python PROV Library`_
 
+Short overview of PROV
+----------------------
 
+The `W3C PROV Primer`_ document gives an overview of the `W3C PROV`_ standard.
+
+.. image:: prov-overview.png
+
+Entities
+++++++++
+
+W3C PROV
+      In PROV, physical, digital, conceptual, or other kinds of thing are called *entities*.
+
+In *rook* we use *entities* for:
+
+* workflow description,
+* input datasets and
+* resulting output NetCDF files.
+
+Activities
+++++++++++
+
+W3C PROV
+    *Activities* are how entities come into existence.
+
+In *rook* we use *activities* for:
+
+* operators like ``subset`` and ``average``.
+* processes like ``orchestrate`` to run a workflow.
+
+Agent
++++++
+
+W3C PROV
+    An *agent* takes a role in an activity.
+
+In *rook* we use *agents* for:
+
+* software like *rook* and *daops*,
+* organisations like *Copernicus Climate Data Store*.
 
 Example: Workflow with Subsetting Operators
 -------------------------------------------
@@ -76,7 +115,8 @@ The ESMValTool_ project is recording provenance information of scientific workfl
 The Climate4Impact_ project is using provenance to record the workflow of data staging and creating Jupyter notebooks.
 
 .. _`Python PROV Library`: https://pypi.org/project/prov/
-.. _`W3C Provenance`: https://www.w3.org/TR/prov-dm/
+.. _`W3C PROV`: https://www.w3.org/TR/prov-dm/
+.. _`W3C PROV Primer`: https://www.w3.org/TR/2013/NOTE-prov-primer-20130430/
 .. _PROV-JSON: https://openprovenance.org/prov-json/
 .. _rooki: https://rooki.readthedocs.io/en/latest/
 .. _notebooks: https://nbviewer.jupyter.org/github/roocs/rooki/tree/master/notebooks/demo/
