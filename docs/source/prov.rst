@@ -29,6 +29,9 @@ The `W3C PROV Primer`_ document gives an overview of the `W3C PROV`_ standard.
 
 .. image:: prov-overview.png
 
+A PROV document consists of *agents*, *activities* and *entities*.
+These can be connected via PROV *relations* like *wasDerivedFrom*.
+
 Entities
 ++++++++
 
@@ -62,6 +65,44 @@ In *rook* we use *agents* for:
 
 * software like *rook* and *daops*,
 * organisations like *Copernicus Climate Data Store*.
+
+Namespaces
+++++++++++
+
+W3C PROV
+    Using URIs and namespaces, a provenance record can draw from multiple sources on the Web.
+
+We use currently the following namespaces:
+
+* PROV (by W3C): https://www.w3.org/ns/prov/
+* PROVONE (by DataONE_): https://purl.dataone.org/provone/2015/01/15/ontology
+* dcterms (Dublin Core Metadata): https://dublincore.org/specifications/dublin-core/dcmi-terms/
+
+Subset Example
+++++++++++++++
+
+.. image:: prov-subset.png
+
+The *activity* ``subset`` is started by the software *agent* ``daops`` (Python library)
+which was triggered by ``rook`` (data-reduction service).
+
+The NetCDF file ``tas_day_...nc`` *entity* was derived from ``c3s-cmip6`` dataset *entity*
+using the *activity* ``subset``.
+
+Workflow Example
+++++++++++++++++
+
+.. image:: prov-workflow.png
+
+W3C PROV Plans
+  Activities may follow pre-defined procedures, such as recipes, tutorials, instructions, or workflows.
+  PROV refers to these, in general, as *plans*.
+
+In W3C PROV workflows are named *plans*.
+
+The *activity* ``orchestrate`` is started by the *agent* ``rook``. It uses
+a workflow document ``entity`` (*plan*) which consists of a ``subset`` and ``average``
+*activity*. These activities are started by the software *agent* ``daops``.
 
 Example: Workflow with Subsetting Operators
 -------------------------------------------
@@ -106,7 +147,6 @@ This provenance document can also be displayed as an image:
    :alt: Provenance Example
 
 
-
 Related work in other Projects
 ------------------------------
 
@@ -118,6 +158,7 @@ The Climate4Impact_ project is using provenance to record the workflow of data s
 .. _`W3C PROV`: https://www.w3.org/TR/prov-dm/
 .. _`W3C PROV Primer`: https://www.w3.org/TR/2013/NOTE-prov-primer-20130430/
 .. _PROV-JSON: https://openprovenance.org/prov-json/
+.. _DataONE: https://www.dataone.org/
 .. _rooki: https://rooki.readthedocs.io/en/latest/
 .. _notebooks: https://nbviewer.jupyter.org/github/roocs/rooki/tree/master/notebooks/demo/
 .. _ESMValTool: https://docs.esmvaltool.org/en/latest/community/diagnostic.html?highlight=provenance#recording-provenance
