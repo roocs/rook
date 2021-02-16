@@ -111,7 +111,7 @@ class Director:
             coll = [dset1, dset2]
             inputs = {'time': '1999-01-01/2000-12-31'}
 
-        If dset1 and dset2 have files that exactly start/end on those times, then:
+        If input datasets have files that exactly start/end on those times, then:
             - return True (and the original files are provided).
 
         If, however, there are other subset options OR one of the datasets does not
