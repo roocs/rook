@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from prov.dot import prov_to_dot
 from prov.model import ProvDocument
@@ -12,7 +13,6 @@ class Provenance(object):
 
     def start(self, workflow=False):
         from daops import __version__ as daops_version
-
         from rook import __version__ as rook_version
 
         self.doc = ProvDocument()
@@ -54,21 +54,31 @@ class Provenance(object):
             orchestrate = self.doc.activity(
                 ":orchestrate",
                 other_attributes={
-                    "prov:startedAtTime": "2020-11-26T09:15:00",
-                    "prov:endedAtTime": "2020-11-26T09:30:00",
+                    "prov:startedAtTime": datetime.now().isoformat(timespec='seconds'),
+                    # "prov:endedAtTime": "2020-11-26T09:30:00",
                 },
             )
             self.doc.wasAssociatedWith(
                 orchestrate, agent=self.sw_rook, plan=self.workflow
             )
 
+    def stop(self, workflow=False):
+        if workflow is True:
+            self.doc.activity(
+                ":orchestrate",
+                other_attributes={
+                    "prov:endedAtTime": datetime.now().isoformat(timespec='seconds'),
+                },
+            )
+
     def add_operator(self, operator, parameters, collection, output):
+        other_attributes = {}
+        for param in ["time", "area", "level", "axes", "apply_fixes"]:
+            if param in parameters:
+                other_attributes[f":{param}"] = parameters[param]
         op = self.doc.activity(
             f":{operator}",
-            other_attributes={
-                ":time": parameters.get("time"),
-                ":apply_fixes": parameters.get("apply_fixes"),
-            },
+            other_attributes=other_attributes,
         )
         # input data
         ds_in = os.path.basename(collection[0])
@@ -84,13 +94,14 @@ class Provenance(object):
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
 
         # Generated output file
-        ds_out = os.path.basename(output[0])
-        # ds_out_attrs = {
-        #     'prov:type': 'provone:Data',
-        #     'prov:value': f'{ds_out}',
-        # }
-        op_out = self.doc.entity(f":{ds_out}")
-        self.doc.wasDerivedFrom(op_out, op_in, activity=op)
+        for out in output:
+            ds_out = os.path.basename(out)
+            # ds_out_attrs = {
+            #     'prov:type': 'provone:Data',
+            #     'prov:value': f'{ds_out}',
+            # }
+            op_out = self.doc.entity(f":{ds_out}")
+            self.doc.wasDerivedFrom(op_out, op_in, activity=op)
 
     def write_json(self):
         outfile = os.path.join(self.output_dir, "provenance.json")

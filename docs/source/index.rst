@@ -9,6 +9,7 @@
    dev_guide
    notebooks
    processes
+   prov
    changes
 
 Indices and tables

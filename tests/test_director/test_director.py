@@ -63,7 +63,7 @@ class TestDirectorCMIP6:
 
     def test_time_subset_aligned(self):
         # original files
-        inputs = {"time": "1850-01-01/2014-12-01"}
+        inputs = {"time": "1850-01-01/2014-12-31"}
         d = Director(self.collection, inputs)
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [

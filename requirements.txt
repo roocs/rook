@@ -1,4 +1,4 @@
-pywps>=4.2.10,<4.3
+pywps>=4.4.0,<4.5
 jinja2
 click
 psutil
@@ -8,7 +8,10 @@ dask[complete]
 netcdf4
 python-dateutil>=2.8.1
 # daops>=0.3.0
+daops @ git+https://github.com/roocs/daops.git
 # clisops>=0.4.0
+clisops @ git+https://github.com/roocs/clisops.git
 # roocs-utils>=0.1.5
+roocs-utils @ git+https://github.com/roocs/roocs-utils.git@master#egg=roocs-utils
 prov>=2.0.0
 pydot
