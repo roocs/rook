@@ -183,7 +183,7 @@ class TestYearMonthDay0000:
         f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
         f"/r1i1p1/latest/tas/*.nc"
     )
-    
+
     @pytest.fixture
     def get_files(self, load_test_data):
         test_paths = sorted(glob.glob(self.test_path))

@@ -18,6 +18,7 @@ xpath_ns = get_xpath_ns(VERSION)
 MINI_ESGF_CACHE_DIR = Path.home() / ".mini-esgf-data"
 MINI_ESGF_MASTER_DIR = os.path.join(MINI_ESGF_CACHE_DIR, "master")
 
+
 def write_roocs_cfg():
     cfg_templ = """
     [clisops:write]
