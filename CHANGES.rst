@@ -4,12 +4,21 @@ Changes
 Unreleased
 ==========
 
+0.3.0 (2021-02-24)
+==================
+
+* Fixed testdata using git-python (#123).
+* Removed xfail where not needed (#121).
 * Updated PyWPS 4.4.0 (#120).
-* ``apply_fixes`` and ``original_files`` option added for WPS processes and the ``Operator`` class.
-* ``director`` module added. This makes decisions on what is returned - NetCDF files or original file URLs.
+* Updated provenance (#112, #114 ,#119).
+* Fixed subset alignment (#117).
+* ``apply_fixes`` and ``original_files`` option added for WPS processes and the ``Operator`` class (#111).
+* Replaced travis with GitHub CI (#104).
+* ``director`` module added. This makes decisions on what is returned - NetCDF files or original file URLs (#77, #83)
 * ``python-dateutil>=2.8.1`` added as a new dependency.
 * Allow no inventory option when processing datasets
-* c3s-cmip6 dataset ids must now be identified by the use of ``c3s-cmip6``
+* c3s-cmip6 dataset ids must now be identified by the use of ``c3s-cmip6`` (#87).
+* Fixed workflow (#79, #75, #71).
 
 0.2.0 (2020-11-19)
 ==================
