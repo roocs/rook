@@ -4,15 +4,15 @@ import pytest
 from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.metalink_utils import build_metalink
 
-from .common import TESTS_HOME
+from .common import TESTS_HOME, MINI_ESGF_MASTER_DIR
 
-test_dir = f"{TESTS_HOME}/mini-esgf-data/test_data"
+test_dir = f"{MINI_ESGF_MASTER_DIR}/test_data"
 
 
-def test_build_metalink(tmpdir):
+def test_build_metalink(tmpdir, load_test_data):
     cmip6_nc = os.path.join(
-        TESTS_HOME,
-        "mini-esgf-data/test_data/badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/SImon/siconc"
+        test_dir,
+        "badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/SImon/siconc"
         "/gn/latest/siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_185001-185412.nc",
     )  # noqa
     ml4 = build_metalink(
@@ -62,7 +62,7 @@ def test_resolve_to_file_paths_mixed():
         )
 
 
-def test_resolve_to_file_paths_urls():
+def test_resolve_to_file_paths_urls(load_test_data):
     coll = [
         "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
