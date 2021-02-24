@@ -54,7 +54,7 @@ class Provenance(object):
             orchestrate = self.doc.activity(
                 ":orchestrate",
                 other_attributes={
-                    "prov:startedAtTime": datetime.now().isoformat(timespec='seconds'),
+                    "prov:startedAtTime": datetime.now().isoformat(timespec="seconds"),
                     # "prov:endedAtTime": "2020-11-26T09:30:00",
                 },
             )
@@ -67,13 +67,13 @@ class Provenance(object):
             self.doc.activity(
                 ":orchestrate",
                 other_attributes={
-                    "prov:endedAtTime": datetime.now().isoformat(timespec='seconds'),
+                    "prov:endedAtTime": datetime.now().isoformat(timespec="seconds"),
                 },
             )
 
     def add_operator(self, operator, parameters, collection, output):
         other_attributes = {}
-        for param in ["time", "area", "level", "axes", "apply_fixes"]:
+        for param in ["time", "area", "level", "dims", "apply_fixes"]:
             if param in parameters:
                 other_attributes[f":{param}"] = parameters[param]
         op = self.doc.activity(
