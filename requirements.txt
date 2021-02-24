@@ -7,7 +7,6 @@ xarray>=0.16
 cf-xarray>=0.4.0,<0.5.0
 dask[complete]
 netcdf4
-python-dateutil>=2.8.1
 daops>=0.4.0
 clisops>=0.6.1
 roocs-utils>=0.2.1
