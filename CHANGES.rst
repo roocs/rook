@@ -4,6 +4,11 @@ Changes
 Unreleased
 ==========
 
+0.3.1 (2021-02-24)
+==================
+
+* Pin ``cf_xarray <0.5.0`` ... does not work with daops/clisops.
+
 0.3.0 (2021-02-24)
 ==================
 
