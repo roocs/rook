@@ -6,8 +6,8 @@ networkx
 xarray>=0.16
 dask[complete]
 netcdf4
-# daops>=0.4.0
-daops @ git+https://github.com/roocs/daops.git@add_average#egg=daops
+daops>=0.5.0
+# daops @ git+https://github.com/roocs/daops.git@add_average#egg=daops
 clisops>=0.6.1
 roocs-utils>=0.2.1
 prov>=2.0.0
