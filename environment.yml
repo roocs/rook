@@ -24,4 +24,4 @@ dependencies:
 - prov>=2.0.0
 - graphviz
 #- pip:
-#    - daops @ git+https://github.com/roocs/daops.git@add_average#egg=daops
+#    - daops @ git+https://github.com/roocs/daops.git@master#egg=daops
