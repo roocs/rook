@@ -27,7 +27,7 @@
               "run": "average",
               "in": {
                   "collection": "subset_tas_2/output",
-                  "axes": "time"
+                  "dims": "time"
               }
           }
       }

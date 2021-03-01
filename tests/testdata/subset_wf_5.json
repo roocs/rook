@@ -26,7 +26,7 @@
               "run": "average",
               "in": {
                   "collection": "subset_rlds_2/output",
-                  "axes": "time"
+                  "dims": "time"
               }
           }
       }

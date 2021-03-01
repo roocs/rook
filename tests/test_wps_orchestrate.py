@@ -24,7 +24,7 @@ def test_wps_orchestrate():
 
 def test_wps_orchestrate_subset_collection_only():
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "workflow=@xlink:href=file://{0}".format(
+    datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_cmip6_subset_collection_only.json")
     )
     resp = client.get(
@@ -50,26 +50,26 @@ def test_wps_orchestrate_prov():
     assert_response_success(resp)
     file_uri = get_output(resp.xml)["prov"]
     print(file_uri)
-    doc = prov.read(file_uri[len("file://"):])
+    doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
     assert (
         'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="0" %% xsd:boolean])'
         in doc.get_provn()
     )
     assert (
-        'activity(average_rlds, -, -, [axes="time", apply_fixes="0" %% xsd:boolean])'
+        'activity(average_rlds, -, -, [dims="time", apply_fixes="0" %% xsd:boolean])'
         in doc.get_provn()
     )
     assert (
-        'wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset_rlds, -, -)'  # noqa
+        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset_rlds, -, -)"  # noqa
         in doc.get_provn()
     )
     assert (
-        'wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, average_rlds, -, -)'  # noqa
+        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc, rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, average_rlds, -, -)"  # noqa
         in doc.get_provn()
     )
-    assert 'prov:startedAtTime' in doc.get_provn()
-    assert 'prov:endedAtTime' in doc.get_provn()
+    assert "prov:startedAtTime" in doc.get_provn()
+    assert "prov:endedAtTime" in doc.get_provn()
 
 
 def test_wps_orchestrate_prov_with_fixes():
@@ -85,13 +85,13 @@ def test_wps_orchestrate_prov_with_fixes():
     assert_response_success(resp)
     file_uri = get_output(resp.xml)["prov"]
     print(file_uri)
-    doc = prov.read(file_uri[len("file://"):])
+    doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
     assert (
         'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="1" %% xsd:boolean])'
         in doc.get_provn()
     )
     assert (
-        'activity(average_rlds, -, -, [axes="time", apply_fixes="0" %% xsd:boolean])'
+        'activity(average_rlds, -, -, [dims="time", apply_fixes="0" %% xsd:boolean])'
         in doc.get_provn()
     )

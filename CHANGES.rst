@@ -3,6 +3,11 @@ Changes
 
 Unreleased
 ==========
+* Removed cfunits, udunits2, cf-xarray and python-dateutil as dependencies.
+* Use daops>=0.5.0
+* Renamed axes input of ``wps_average.Average`` to dims
+* Prepared wps_average to work with daops.ops.average
+
 
 0.3.1 (2021-02-24)
 ==================
