@@ -14,6 +14,7 @@ from rook.director import Director
 #           }
 
 
+@pytest.mark.xfail(reason="need a new test dataset")
 class TestDirectorCMIP6:
 
     collection = [

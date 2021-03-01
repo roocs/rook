@@ -1,7 +1,7 @@
 {
       "doc": "subset+average",
       "inputs": {
-          "rlds": ["c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
+          "rlds": ["CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
       },
       "outputs": {
           "output": "average_rlds/output"
