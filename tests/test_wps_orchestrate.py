@@ -61,7 +61,7 @@ def test_wps_orchestrate_prov():
         in doc.get_provn()
     )
     assert (
-        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset_rlds, -, -)"  # noqa
+        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset_rlds, -, -)"  # noqa
         in doc.get_provn()
     )
     assert (
