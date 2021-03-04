@@ -82,6 +82,10 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
+        # TODO: quick fix for average. Don't use original files for average operator
+        if "dims" in self.inputs:
+            return
+
         # Finally, check if the subset requirements can align with whole datasets
         if self.request_aligns_with_files():
             # This call sets values for self.original_file_urls AND self.use_original_files
