@@ -5,9 +5,9 @@ rook
    :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/roocs/rook.svg?branch=master
-   :target: https://travis-ci.org/roocs/rook
-   :alt: Travis Build
+.. image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/roocs/rook/actions
+    :alt: Build Status
 
 .. image:: https://img.shields.io/github/license/roocs/rook.svg
     :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
