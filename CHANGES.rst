@@ -13,7 +13,7 @@ Unreleased
 * Added wps_average to work with daops.ops.average (#126)
 * Fixed tests for new inventory (#127)
 * Use ``apply_fixes=False`` for average (#129)
-* Added smoke tests (#131)
+* Added smoke tests (#131, #134)
 
 0.3.1 (2021-02-24)
 ==================
