@@ -1,7 +1,6 @@
 import os
 import pytest
 
-from git import Repo
 
 from tests.common import write_roocs_cfg, MINI_ESGF_CACHE_DIR
 
@@ -21,6 +20,8 @@ def load_test_data():
     This fixture ensures that the required test data repository
     has been cloned to the cache directory within the home directory.
     """
+    from git import Repo
+
     branch = "master"
     target = os.path.join(MINI_ESGF_CACHE_DIR, branch)
 

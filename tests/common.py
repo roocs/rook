@@ -1,5 +1,6 @@
 import os
-import tempfile
+
+# import tempfile
 
 from jinja2 import Template
 from pathlib import Path
@@ -9,7 +10,7 @@ from pywps.tests import WpsClient, WpsTestResponse
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
 PYWPS_CFG = os.path.join(TESTS_HOME, "pywps.cfg")
-ROOCS_CFG = os.path.join(tempfile.gettempdir(), "roocs.ini")
+ROOCS_CFG = os.path.join(TESTS_HOME, ".roocs.ini")
 
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
