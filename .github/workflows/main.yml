@@ -38,3 +38,8 @@ jobs:
     - name: Build docs 🏗️
       run: make docs
       if: matrix.python-version == 3.6
+    - name: Run smoke tests ⚙️
+      run: |
+        export PYWPS_CFG=$PWD/etc/smoke-pywps.cfg
+        make smoke
+      if: matrix.python-version == 3.6
