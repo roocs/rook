@@ -17,15 +17,15 @@ CMIP5_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
 
-WF_SUBSET_AVERAGE_CMIP5 = json.dumps(
+WF_SUBSET_AVERAGE = json.dumps(
     {
-        "doc": "subset+average on cmip5 tas",
-        "inputs": {"ds": [CMIP5_COLLECTION]},
+        "doc": "subset+average on cmip6 rlds",
+        "inputs": {"ds": [CMIP6_COLLECTION]},
         "outputs": {"output": "average_ds/output"},
         "steps": {
             "subset_ds": {
                 "run": "subset",
-                "in": {"collection": "inputs/ds", "time": "1900-01-01/1900-12-31"},
+                "in": {"collection": "inputs/ds", "time": "2020-01-01/2020-12-31"},
             },
             "average_ds": {
                 "run": "average",
@@ -94,14 +94,14 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
 
 
 def test_smoke_execute_average_time(wps):
-    inputs = [("collection", CMIP5_COLLECTION), ("dims", "time")]
+    inputs = [("collection", CMIP6_COLLECTION), ("dims", "time")]
     url = wps.execute("average", inputs)
-    assert "tas_day_EC-EARTH_historical_r1i1p1_avg-t.nc" in url
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in url
 
 
 def test_smoke_execute_orchestrate(wps):
     inputs = [
-        ("workflow", ComplexDataInput(WF_SUBSET_AVERAGE_CMIP5)),
+        ("workflow", ComplexDataInput(WF_SUBSET_AVERAGE)),
     ]
     url = wps.execute("orchestrate", inputs)
-    assert "tas_day_EC-EARTH_historical_r1i1p1_avg-t.nc" in url
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in url
