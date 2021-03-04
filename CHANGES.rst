@@ -3,11 +3,17 @@ Changes
 
 Unreleased
 ==========
+
+0.4.0 (2021-03-04)
+==================
+
 * Removed cfunits, udunits2, cf-xarray and python-dateutil as dependencies.
 * Use daops>=0.5.0
 * Renamed axes input of ``wps_average.Average`` to dims
-* Prepared wps_average to work with daops.ops.average
-
+* Added wps_average to work with daops.ops.average (#126)
+* Fixed tests for new inventory (#127)
+* Use ``apply_fixes=False`` for average (#129)
+* Added smoke tests (#131)
 
 0.3.1 (2021-02-24)
 ==================
