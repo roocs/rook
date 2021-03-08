@@ -30,3 +30,17 @@ def test_wps_average_time_lat():
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
+
+
+def test_wps_average_c3s_cmip6():
+    # test the case where the inventory is used
+    client = client_for(Service(processes=[Average()]))
+    datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
+    datainputs += ";dims=time,latitude"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=average&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "output" in get_output(resp.xml)

@@ -54,15 +54,6 @@ class Average(Process):
                 min_occurs=1,
                 max_occurs=1,
             ),
-            LiteralInput(
-                "original_files",
-                "Original Files",
-                data_type="boolean",
-                abstract="Return original files only.",
-                default="0",
-                min_occurs=1,
-                max_occurs=1,
-            ),
         ]
         outputs = [
             ComplexOutput(
@@ -124,9 +115,6 @@ class Average(Process):
             ),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
-            ),
-            "original_files": parse_wps_input(
-                request.inputs, "original_files", default=False
             ),
             "dims": parse_wps_input(request.inputs, "dims", default=None),
         }
