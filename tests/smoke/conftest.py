@@ -1,5 +1,7 @@
 import pytest
 
+import requests
+
 from owslib.wps import WebProcessingService, monitorExecution
 from pywps import configuration as config
 
@@ -25,11 +27,13 @@ class RookWPS:
         return self.wps.describeprocess(identifier)
 
     def execute(self, identifier, inputs):
-        outputs = [("output", False, None)]
+        outputs = [("output", True, None)]
         execution = self.wps.execute(identifier, inputs, output=outputs)
         monitorExecution(execution)
         assert execution.isSucceded() is True
-        xml = execution.processOutputs[0].data[0]
+        assert len(execution.processOutputs) > 0
+        ml_url = execution.processOutputs[0].reference
+        xml = requests.get(ml_url).text
         url = parse_metalink(xml)
         return url
 
