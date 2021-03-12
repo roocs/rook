@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wps:Execute service="WPS" version="1.0.0" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0
+../wpsExecute_request.xsd">
+    <ows:Identifier>{{ identifier }}</ows:Identifier>
+    <wps:DataInputs>
+        {% for name, value in inputs %}
+        <wps:Input>
+            <ows:Identifier>{{ name }}</ows:Identifier>
+            <wps:Data>
+                <wps:LiteralData>{{ value }}</wps:LiteralData>
+            </wps:Data>
+        </wps:Input>
+        {% endfor %}
+        {% for name, value in complex_inputs %}
+        <wps:Input>
+            <ows:Identifier>{{ name }}</ows:Identifier>
+            <wps:Data>
+                <wps:ComplexData mimeType="application/json" encoding="UTF-8" schema="http://schemas.opengis.net/gml/3.1.1/base/feature.xsd">{{ value }}</wps:ComplexData>
+            </wps:Data>
+        </wps:Input>
+        {% endfor %}
+    </wps:DataInputs>
+    <wps:ResponseForm>
+        <wps:ResponseDocument storeExecuteResponse="true" status="true">
+            <wps:Output asReference="true">
+                <ows:Identifier>output</ows:Identifier>
+            </wps:Output>
+        </wps:ResponseDocument>
+    </wps:ResponseForm>
+</wps:Execute>
