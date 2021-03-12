@@ -14,9 +14,9 @@ LOGGER = logging.getLogger()
 
 def load_wfdoc(data):
     if os.path.isfile(data):
-        wfdoc = yaml.load(open(data, "rb"))
+        wfdoc = yaml.load(open(data, "rb"), Loader=yaml.SafeLoader)
     else:
-        wfdoc = yaml.load(data)
+        wfdoc = yaml.load(data, Loader=yaml.SafeLoader)
     return wfdoc
 
 
@@ -34,7 +34,9 @@ def replace_inputs(wfdoc):
     for step_id, step in steps.items():
         # fixes are only applied to start steps
         if step_id in start_steps:
-            steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get("apply_fixes", False)
+            steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
+                "apply_fixes", False
+            )
         else:
             steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
