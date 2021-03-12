@@ -26,7 +26,7 @@ def test_inventory_cache_c3s_cmip6():
     dummy_inv_cache.get(project)
 
     # TODO: Work out a way to dynamically find the above file
-    inv_path = os.path.join(dummy_inv_dir, f"{project}_files_v20210301.yml")
+    inv_path = os.path.join(dummy_inv_dir, f"{project}_files_v20210311.yml")
 
     with open(inv_path) as reader:
         inv = yaml.load(reader, Loader=yaml.SafeLoader)
