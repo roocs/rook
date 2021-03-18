@@ -24,6 +24,7 @@ def test_wps_orchestrate():
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+# @pytest.mark.skip(reason="fix metalink?")
 def test_wps_orchestrate_subset_collection_only():
     # TODO: this test is slow (25secs) ... but should be fast (1sec)
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))

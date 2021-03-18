@@ -10,7 +10,8 @@ from rook.exceptions import InvalidCollection
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
-from .inventory import Inventory
+from rook.catalog import get_catalog
+from rook.exceptions import InvalidCollection
 
 
 def wrap_director(collection, inputs, runner):
@@ -34,10 +35,11 @@ class Director:
         self.use_original_files = False
         self.original_file_urls = None
         self.output_uris = None
+        self.search_result = None
 
         if CONFIG[f"project:{self.project}"].get("use_inventory"):
             try:
-                self.inv = Inventory(self.project)
+                self.catalog = get_catalog(self.project)
             except Exception:
                 raise InvalidCollection()
 
@@ -62,14 +64,18 @@ class Director:
             ProcessError: [description]
             ProcessError: [description]
         """
-        # Raise exception if any of the data is not in the inventory
-        if not self.inv.contains(self.coll):
+        # search
+        self.search_result = self.catalog.search(
+            collection=self.coll, time=self.inputs.get("time")
+        )
+        # Raise exception if any of the dataset ids is not in the inventory
+        if len(self.search_result) != len(self.coll):
             raise InvalidCollection()
 
         # If original files are requested then go straight there
         if self.inputs.get("original_files"):
+            self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
-            self.original_file_urls = self.inv.get_file_urls(self.coll)
             return
 
         # Raise exception if "pre_checked" selected but data has not been characterised by dachar
@@ -94,7 +100,7 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        for ds_id in self.inv.get_matches(self.coll):
+        for ds_id in self.search_result.files():
             fix = fixer.Fixer(ds_id)
 
             if fix.pre_processor or fix.post_processors:
@@ -118,11 +124,10 @@ class Director:
 
         return: boolean
         """
-        files = self.inv.get_file_urls(self.coll)
         required_files = OrderedDict()
 
-        for ds_id, fpaths in files.items():
-            sac = SubsetAlignmentChecker(fpaths, self.inputs)
+        for ds_id, urls in self.search_result.download_urls().items():
+            sac = SubsetAlignmentChecker(urls, self.inputs)
 
             if not sac.is_aligned:
                 self.use_original_files = False
@@ -152,6 +157,11 @@ class Director:
         # else: generate the new subset of files
         else:
             clean_inputs(self.inputs)
+            # use search result if available
+            if self.search_result:
+                self.inputs["collection"] = []
+                for ds_id, file_uris in self.search_result.files().items():
+                    self.inputs["collection"].extend(file_uris)
             try:
                 file_uris = runner(self.inputs)
             except Exception as e:
