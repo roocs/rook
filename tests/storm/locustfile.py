@@ -31,7 +31,7 @@ WF_SUBSET_AVERAGE = json.dumps(
 
 
 class RookUser(HttpUser):
-    host = "http://localhost:5000/wps"
+    host = "http://localhost:5000"
     wait_time = between(1, 10)
 
     @task(1)

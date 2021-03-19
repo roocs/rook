@@ -14,5 +14,6 @@ cruft
 black
 pre-commit
 GitPython>=3.1.12
+pyquery
 locust
 jinja2
