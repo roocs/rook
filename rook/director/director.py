@@ -7,11 +7,10 @@ from roocs_utils.project_utils import get_project_name
 
 from rook import CONFIG
 from rook.exceptions import InvalidCollection
+from rook.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
-from rook.catalog import get_catalog
-from rook.exceptions import InvalidCollection
 
 
 def wrap_director(collection, inputs, runner):
