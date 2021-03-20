@@ -74,7 +74,7 @@ class TestDirectorCMIP6:
         ]
 
     def test_only_time_no_match(self):
-        inputs = {"time": "1900-03-12/2000-03-12"}
+        inputs = {"time": "2015-01-01/2100-11-30"}
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
 

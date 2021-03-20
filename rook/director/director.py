@@ -3,10 +3,10 @@ from collections import OrderedDict
 from daops.utils import fixer, is_characterised
 from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
-from roocs_utils.exceptions import InvalidParameterValue
 from roocs_utils.project_utils import get_project_name
 
 from rook import CONFIG
+from rook.exceptions import InvalidCollection
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
@@ -39,7 +39,7 @@ class Director:
             try:
                 self.inv = Inventory(self.project)
             except Exception:
-                self.invalid_collection()
+                raise InvalidCollection()
 
             self._resolve()
 
@@ -64,7 +64,7 @@ class Director:
         """
         # Raise exception if any of the data is not in the inventory
         if not self.inv.contains(self.coll):
-            self.invalid_collection()
+            raise InvalidCollection()
 
         # If original files are requested then go straight there
         if self.inputs.get("original_files"):
@@ -92,12 +92,6 @@ class Director:
             pass
 
         # If we got here: then WPS will be used, because `self.use_original_files == False`
-
-    def invalid_collection(self):
-        raise InvalidParameterValue(
-            "Some or all of the requested collection are not in the list "
-            "of available data."
-        )
 
     def requires_fixes(self):
         for ds_id in self.inv.get_matches(self.coll):
