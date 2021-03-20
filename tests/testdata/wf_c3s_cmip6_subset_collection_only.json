@@ -1,0 +1,17 @@
+{
+      "doc": "subset collection only",
+      "inputs": {
+          "rlds": ["c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"]
+      },
+      "outputs": {
+          "output": "subset_rlds/output"
+      },
+      "steps": {
+          "subset_rlds": {
+              "run": "subset",
+              "in": {
+                  "collection": "inputs/rlds",
+              }
+          },
+      }
+  }

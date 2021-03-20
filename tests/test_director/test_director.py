@@ -14,11 +14,10 @@ from rook.director import Director
 #           }
 
 
-@pytest.mark.skip(reason="need a new test dataset")
 class TestDirectorCMIP6:
 
     collection = [
-        "c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+        "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     ]
 
     def test_project(self):
@@ -33,9 +32,9 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
-            "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
-            "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
+            "/esg_c3s-cmip6"
+            "/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619"
+            "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
         ]
 
     def test_pre_checked_not_characterised(self):
@@ -64,14 +63,14 @@ class TestDirectorCMIP6:
 
     def test_time_subset_aligned(self):
         # original files
-        inputs = {"time": "1850-01-01/2014-12-31"}
+        inputs = {"time": "2015-01-01/2100-12-31"}
         d = Director(self.collection, inputs)
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [
             "https://data.mips.copernicus-climate.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
-            "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
-            "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
+            "/esg_c3s-cmip6"
+            "/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619"
+            "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
         ]
 
     def test_only_time_no_match(self):

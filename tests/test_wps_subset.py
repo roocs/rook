@@ -1,3 +1,5 @@
+import pytest
+
 import prov
 
 from pywps import Service
@@ -7,7 +9,10 @@ from rook.processes.wps_subset import Subset
 
 from .common import PYWPS_CFG, get_output
 
-import pytest
+
+C3S_CMIP6_MON_COLLECTION = (
+    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
+)
 
 
 def test_wps_subset_cmip6_no_inv():
@@ -20,7 +25,7 @@ def test_wps_subset_cmip6_no_inv():
         )
     )
     # assert resp.status_code == 200
-    # print(resp.data)
+    print(resp.data)
     # assert_response_success(resp)
     assert (
         "Process error: Some or all of the requested collection are not in the list of available data"
@@ -28,10 +33,10 @@ def test_wps_subset_cmip6_no_inv():
     )
 
 
-def test_wps_subset_cmip6():
+def test_wps_subset_c3s_cmip6():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
-    datainputs += ";time=1860-01-01/1900-12-30;area=1,1,300,89"
+    datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
+    datainputs += ";time=2015-01-01/2015-12-30;area=1,1,300,89"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs
@@ -101,9 +106,9 @@ def test_wps_subset_cmip6_original_files():
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_cmip6_collection_only():
+def test_wps_subset_c3s_cmip6_collection_only():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
+    datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs
