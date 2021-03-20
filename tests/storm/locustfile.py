@@ -1,32 +1,10 @@
-import json
-from locust import HttpUser, between, task
+from locust import HttpUser, between, task, tag
 
-from tests.storm.common import execute_async
-
-CMIP6_MON_COLLECTION = (
-    "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
-)
-
-CMIP6_DAY_COLLECTION = (
-    "CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.day.tas.gn.v20190710"
-)
-
-WF_SUBSET_AVERAGE = json.dumps(
-    {
-        "doc": "subset+average on cmip6",
-        "inputs": {"ds": [CMIP6_DAY_COLLECTION]},
-        "outputs": {"output": "average_ds/output"},
-        "steps": {
-            "subset_ds": {
-                "run": "subset",
-                "in": {"collection": "inputs/ds", "time": "1860-01-01/1900-12-31"},
-            },
-            "average_ds": {
-                "run": "average",
-                "in": {"collection": "subset_ds/output", "dims": "time"},
-            },
-        },
-    }
+from tests.storm.common import (
+    execute_async,
+    C3S_CMIP6_DAY_COLLECTION,
+    C3S_CMIP6_MON_COLLECTION,
+    WF_C3S_CMIP6_SUBSET_AVERAGE,
 )
 
 
@@ -34,7 +12,8 @@ class RookUser(HttpUser):
     host = "http://localhost:5000"
     wait_time = between(1, 10)
 
-    @task(1)
+    @tag("meta")
+    @task
     def health(self):
         query = "/health"
 
@@ -42,7 +21,8 @@ class RookUser(HttpUser):
             if "<ows:Title>rook</ows:Title>" not in response.text:
                 response.failure("Health response not as expected")
 
-    @task(1)
+    @tag("meta")
+    @task
     def capabilities(self):
         query = "/wps?service=WPS&request=GetCapabilities"
 
@@ -52,7 +32,8 @@ class RookUser(HttpUser):
             if "<ows:Title>rook</ows:Title>" not in response.text:
                 response.failure("Capabilities does not match expected XML")
 
-    @task(1)
+    @tag("meta")
+    @task
     def describe_process_subset(self):
         query = (
             "/wps?service=WPS&version=1.0.0&request=DescribeProcess&identifier=subset"
@@ -65,7 +46,8 @@ class RookUser(HttpUser):
                     "Process description for subset does not match expected XML"
                 )
 
-    @task(1)
+    @tag("subset")
+    @task
     def execute_async_subset(self):
         execute_async(
             client=self.client,
@@ -74,13 +56,14 @@ class RookUser(HttpUser):
             inputs=[
                 (
                     "collection",
-                    CMIP6_MON_COLLECTION,
+                    C3S_CMIP6_DAY_COLLECTION,
                 ),
                 ("time", "1900-01-01/1900-12-30"),
             ],
         )
 
-    @task(1)
+    @tag("average")
+    @task
     def execute_async_average(self):
         execute_async(
             client=self.client,
@@ -89,13 +72,14 @@ class RookUser(HttpUser):
             inputs=[
                 (
                     "collection",
-                    CMIP6_MON_COLLECTION,
+                    C3S_CMIP6_MON_COLLECTION,
                 ),
                 ("dims", "time"),
             ],
         )
 
-    @task(1)
+    @tag("workflow")
+    @task
     def execute_async_orchestrate(self):
         execute_async(
             client=self.client,
@@ -104,7 +88,7 @@ class RookUser(HttpUser):
             complex_inputs=[
                 (
                     "workflow",
-                    WF_SUBSET_AVERAGE,
+                    WF_C3S_CMIP6_SUBSET_AVERAGE,
                 ),
             ],
         )

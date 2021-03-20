@@ -1,0 +1,3 @@
+locust
+pyquery
+jinja2
