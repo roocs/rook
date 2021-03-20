@@ -14,7 +14,6 @@ def build_metalink(identity, description, workdir, file_uris, file_type="NetCDF"
     for file_uri in file_uris:
         mf = MetaFile(file_desc, file_desc, fmt=file_type_map.get(file_type, file_type))
 
-        print(file_uri)
         if urlparse(file_uri).scheme in ["http", "https"]:
             mf.url = file_uri
             # TODO: size calculation takes too long. Set size from inventory/catalog.
