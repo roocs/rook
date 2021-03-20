@@ -23,5 +23,5 @@ dependencies:
 # provenance
 - prov>=2.0.0
 - graphviz
-- pip:
-  - pywps @ git+https://github.com/geopython/pywps.git@pywps-4.4#egg=pywps
+#- pip:
+#  - pywps @ git+https://github.com/geopython/pywps.git@pywps-4.4#egg=pywps
