@@ -1,3 +1,5 @@
+import pytest
+
 import prov
 
 from pywps import Service
@@ -23,9 +25,10 @@ def test_wps_orchestrate():
 
 
 def test_wps_orchestrate_subset_collection_only():
+    # TODO: this test is slow (25secs) ... but should be fast (1sec)
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
     datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_cmip6_subset_collection_only.json")
+        resource_file("wf_c3s_cmip6_subset_collection_only.json")
     )
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(
