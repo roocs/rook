@@ -50,7 +50,7 @@ def test_run_tree_wf_2():
     assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_avg-t" in output[0]
 
 
-@pytest.mark.xfail(reason="Uses Diff operator - not implemented.")
+@pytest.mark.skip(reason="Uses Diff operator - not implemented.")
 def test_run_tree_wf_3():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_3)
@@ -70,7 +70,7 @@ def test_run_tree_wf_5():
     assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc" in output[0]
 
 
-@pytest.mark.xfail(reason="Uses Diff operator - not implemented.")
+@pytest.mark.skip(reason="Uses Diff operator - not implemented.")
 def test_run_tree_wf_6():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_6)
@@ -81,6 +81,7 @@ def test_run_tree_wf_6():
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
+@pytest.mark.skip(reason="needs patched pywps version 4.4.1")
 def test_run_wf_collection_only():
     wfdoc = resource_file("wf_cmip6_subset_collection_only.json")
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())

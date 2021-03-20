@@ -125,7 +125,7 @@ def test_wps_subset_missing_collection():
     assert_process_exception(resp, code="MissingParameterValue")
 
 
-@pytest.mark.xfail(reason="need a new test dataset")
+@pytest.mark.skip(reason="need a new test dataset")
 def test_wps_subset_time_invariant_dataset():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.IPSL.IPSL-CM6A-LR.ssp119.r1i1p1f1.fx.mrsofc.gr.v20190410"
