@@ -9,8 +9,8 @@ dependencies:
 - jinja2
 - click
 - psutil
-# tests
-- pytest
+- requests
+# daops
 - cftime>=1.2.1
 - xarray>=0.16
 - dask>=2.26
@@ -22,6 +22,7 @@ dependencies:
 - networkx
 # provenance
 - prov>=2.0.0
+- pydot
 - graphviz
-#- pip:
-#  - pywps @ git+https://github.com/geopython/pywps.git@pywps-4.4#egg=pywps
+# tests
+- pytest
