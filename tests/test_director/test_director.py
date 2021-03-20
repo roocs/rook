@@ -3,6 +3,7 @@ from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
 
 from rook.director import Director
+from rook.exceptions import InvalidCollection
 
 # inputs = {"collection": None
 #           "area": None,
@@ -77,6 +78,16 @@ class TestDirectorCMIP6:
         inputs = {"time": "2015-01-01/2100-11-30"}
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
+
+    def test_invalid_collection(self):
+        inputs = {"time": "2015-01-01/2100-11-30"}
+        with pytest.raises(InvalidCollection):
+            Director(
+                [
+                    "c3s-cmip6.ScenarioMIP.INM.INVALID.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
+                ],
+                inputs,
+            )
 
 
 # Any combinations ?
