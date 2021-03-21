@@ -4,6 +4,18 @@ Changes
 Unreleased
 ==========
 
+0.4.1 (2021-03-21)
+==================
+
+* Updated pywps 4.4.1 (#162, #154, #151).
+* Use pywps ``storage_copy_function=link`` (#154).
+* Updated director with InvalidCollection error (#153).
+* Added locust (storm) tests (#141, #149, #155).
+* Updated smoke tests (#134, #137).
+* Cleaned requirements (#152).
+* Fixed warning in workflow yaml loaded (#142).
+* Removed original files option for average and added test (#136).
+
 0.4.0 (2021-03-04)
 ==================
 
