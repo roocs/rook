@@ -1,5 +1,6 @@
 import sqlalchemy
 from sqlalchemy.types import Integer, Text, String, DateTime
+import pandas as pd
 
 from pywps.dblog import get_session
 
@@ -34,6 +35,7 @@ class DBCatalog(Catalog):
         df = self.intake_catalog.load()
         # workaround for NaN values when no time axis (fx datasets)
         sdf = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
+        sdf = sdf.set_index("ds_id")
         # db connection
         session = get_session()
         try:
@@ -41,7 +43,7 @@ class DBCatalog(Catalog):
                 self.table_name,
                 session.connection(),
                 if_exists="replace",
-                index=False,
+                index=True,
                 chunksize=500,
             )
             session.commit()
