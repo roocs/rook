@@ -9,11 +9,11 @@ import pytest
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
 
-CMIP6_MON_COLLECTION = (
+C3S_CMIP6_MON_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 )
 
-CMIP6_DAY_COLLECTION = (
+C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
 )
 
@@ -24,7 +24,7 @@ CMIP5_COLLECTION = (
 WF_SUBSET_AVERAGE = json.dumps(
     {
         "doc": "subset+average on cmip6 rlds",
-        "inputs": {"ds": [CMIP6_MON_COLLECTION]},
+        "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
         "outputs": {"output": "average_ds/output"},
         "steps": {
             "subset_ds": {
@@ -74,7 +74,10 @@ def test_smoke_describe_process_orchestrate(wps):
 
 
 def test_smoke_execute_subset(wps, tmp_path):
-    inputs = [("collection", CMIP6_MON_COLLECTION), ("time", "2020-01-01/2020-12-30")]
+    inputs = [
+        ("collection", C3S_CMIP6_MON_COLLECTION),
+        ("time", "2020-01-01/2020-12-30"),
+    ]
     url = wps.execute("subset", inputs)
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in url
     ds = open_dataset(url, tmp_path)
@@ -82,14 +85,24 @@ def test_smoke_execute_subset(wps, tmp_path):
 
 
 def test_smoke_execute_subset_original_files(wps):
-    inputs = [("collection", CMIP6_DAY_COLLECTION)]
+    inputs = [
+        ("collection", C3S_CMIP6_DAY_COLLECTION),
+        ("time", "2020-01-01/2020-12-30"),
+        ("original_files", "1"),
+    ]
+    url = wps.execute("subset", inputs)
+    assert "data.mips.copernicus-climate.eu" in url
+
+
+def test_smoke_execute_subset_collection_only(wps):
+    inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
     url = wps.execute("subset", inputs)
     assert "data.mips.copernicus-climate.eu" in url
 
 
 def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
     inputs = [
-        ("collection", CMIP6_MON_COLLECTION),
+        ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
         ("area", "-50,-50,50,50"),
     ]
@@ -98,7 +111,7 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
 
 
 def test_smoke_execute_average_time(wps):
-    inputs = [("collection", CMIP6_MON_COLLECTION), ("dims", "time")]
+    inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("dims", "time")]
     url = wps.execute("average", inputs)
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in url
 
