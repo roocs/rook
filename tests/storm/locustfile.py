@@ -10,7 +10,7 @@ from tests.storm.common import (
 
 class RookUser(HttpUser):
     host = "http://localhost:5000"
-    wait_time = between(1, 10)
+    wait_time = between(2, 10)
 
     @tag("meta")
     @task
@@ -59,6 +59,38 @@ class RookUser(HttpUser):
                     C3S_CMIP6_DAY_COLLECTION,
                 ),
                 ("time", "1900-01-01/1900-12-30"),
+            ],
+        )
+
+    @tag("subset", "collection_only")
+    @task
+    def execute_async_subset_collection_only(self):
+        execute_async(
+            client=self.client,
+            name="execute_async_subset_col_only",
+            identifier="subset",
+            inputs=[
+                (
+                    "collection",
+                    C3S_CMIP6_DAY_COLLECTION,
+                ),
+            ],
+        )
+
+    @tag("subset", "original_files")
+    @task
+    def execute_async_subset_original_files(self):
+        execute_async(
+            client=self.client,
+            name="execute_async_subset_orig_files",
+            identifier="subset",
+            inputs=[
+                (
+                    "collection",
+                    C3S_CMIP6_DAY_COLLECTION,
+                ),
+                ("time", "1900-01-01/1900-12-30"),
+                ("original_files", "1"),
             ],
         )
 

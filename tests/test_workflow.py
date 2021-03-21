@@ -91,3 +91,15 @@ def test_wf_c3s_cmip6_collection_only():
         "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_18500101-18501231.nc"
     )
     assert output[0] == expected_url
+
+
+def test_wf_c3s_cmip6_original_files():
+    wfdoc = resource_file("wf_c3s_cmip6_subset_original_files.json")
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    expected_url = (
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/"
+        "CMIP/SNU/SAM0-UNICON/historical/r1i1p1f1/day/pr/gn/v20190323/"
+        "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_18500101-18501231.nc"
+    )
+    assert output[0] == expected_url

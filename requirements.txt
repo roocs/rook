@@ -1,5 +1,4 @@
-# pywps>=4.4.0,<4.5
-pywps @ git+https://github.com/geopython/pywps.git@pywps-4.4#egg=pywps
+pywps>=4.4.1,<4.5
 jinja2
 click
 psutil
