@@ -208,7 +208,7 @@ https://conda.anaconda.org/conda-forge/noarch/elasticsearch-7.11.0-pyh44b312d_0.
 https://conda.anaconda.org/conda-forge/noarch/owslib-0.23.0-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/rdflib-5.0.0-py37h89c1867_3.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/roocs-utils-0.2.1-pyh6c4a22f_0.tar.bz2
-https://conda.anaconda.org/conda-forge/noarch/clisops-0.6.1-pyh44b312d_0.tar.bz2
+https://conda.anaconda.org/conda-forge/noarch/clisops-0.6.2-pyh44b312d_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/prov-2.0.0-pyhd3deb0d_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/pywps-4.4.1-pyh6c4a22f_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/daops-0.5.0-pyh44b312d_0.tar.bz2
