@@ -78,9 +78,10 @@ def test_smoke_execute_subset(wps, tmp_path):
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
     ]
-    url = wps.execute("subset", inputs)
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in url
-    ds = open_dataset(url, tmp_path)
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
     assert "rlds" in ds.variables
 
 
@@ -90,14 +91,17 @@ def test_smoke_execute_subset_original_files(wps):
         ("time", "2020-01-01/2020-12-30"),
         ("original_files", "1"),
     ]
-    url = wps.execute("subset", inputs)
-    assert "data.mips.copernicus-climate.eu" in url
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
 def test_smoke_execute_subset_collection_only(wps):
     inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
-    url = wps.execute("subset", inputs)
-    assert "data.mips.copernicus-climate.eu" in url
+    urls = wps.execute("subset", inputs)
+    print(urls)
+    assert len(urls) == 2
+    assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
 def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
@@ -106,19 +110,30 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
         ("time", "2020-01-01/2020-12-30"),
         ("area", "-50,-50,50,50"),
     ]
-    url = wps.execute("subset", inputs)
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in url
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
 
 
-def test_smoke_execute_average_time(wps):
+def test_smoke_execute_c3s_cmip6_mon_average_time(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("dims", "time")]
-    url = wps.execute("average", inputs)
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in url
+    urls = wps.execute("average", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_day_average_time(wps):
+    inputs = [("collection", C3S_CMIP6_DAY_COLLECTION), ("dims", "time")]
+    urls = wps.execute("average", inputs)
+    print(urls)
+    assert len(urls) == 1
+    assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_SUBSET_AVERAGE)),
     ]
-    url = wps.execute("orchestrate", inputs)
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in url
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
