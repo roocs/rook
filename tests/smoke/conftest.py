@@ -30,12 +30,13 @@ class RookWPS:
         outputs = [("output", True, None)]
         execution = self.wps.execute(identifier, inputs, output=outputs)
         monitorExecution(execution)
+        print(execution.errors)
         assert execution.isSucceded() is True
         assert len(execution.processOutputs) > 0
         ml_url = execution.processOutputs[0].reference
         xml = requests.get(ml_url).text
-        url = parse_metalink(xml)
-        return url
+        urls = parse_metalink(xml)
+        return urls
 
 
 @pytest.fixture

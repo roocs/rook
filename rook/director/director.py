@@ -4,6 +4,7 @@ from daops.utils import fixer, is_characterised
 from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
 from roocs_utils.project_utils import get_project_name
+from roocs_utils.utils.file_utils import FileMapper
 
 from rook import CONFIG
 from rook.exceptions import InvalidCollection
@@ -160,7 +161,7 @@ class Director:
             if self.search_result:
                 self.inputs["collection"] = []
                 for ds_id, file_uris in self.search_result.files().items():
-                    self.inputs["collection"].extend(file_uris)
+                    self.inputs["collection"].append(FileMapper(file_uris))
             try:
                 file_uris = runner(self.inputs)
             except Exception as e:

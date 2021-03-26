@@ -23,5 +23,5 @@ def open_dataset(url, tmp_path):
 def parse_metalink(xml):
     xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
     tree = etree.fromstring(xml_.encode())
-    url = tree.xpath("//metaurl")[0].text
-    return url
+    urls = [m.text for m in tree.xpath("//metaurl")]
+    return urls

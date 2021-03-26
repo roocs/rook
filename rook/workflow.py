@@ -131,15 +131,13 @@ class TreeWorkflow(BaseWorkflow):
         if inputs:
             step["in"].update(inputs)
         if "subset" == step["run"]:
+            collection = step["in"]["collection"]
             result = self.subset_op.call(step["in"])
-            self.prov.add_operator(
-                step_id, step["in"], step["in"]["collection"], result
-            )
+            self.prov.add_operator(step_id, step["in"], collection, result)
         elif "average" == step["run"]:
+            collection = step["in"]["collection"]
             result = self.average_op.call(step["in"])
-            self.prov.add_operator(
-                step_id, step["in"], step["in"]["collection"], result
-            )
+            self.prov.add_operator(step_id, step["in"], collection, result)
         elif "diff" == step["run"]:
             result = self.diff_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], ["missing"], result)
