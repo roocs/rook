@@ -4,6 +4,15 @@ Changes
 Unreleased
 ==========
 
+0.5.0 (2021-04-01)
+==================
+
+* Updated pywps 4.4.2.
+* Updated clisops 0.6.3.
+* Updated roocs-utils 0.3.0.
+* Use ``FileMapper`` for search results (#169).
+* Using intake catalog (#148).
+
 0.4.2 (2021-03-22)
 ==================
 
