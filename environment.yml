@@ -5,7 +5,7 @@ channels:
 dependencies:
 - pip
 - python=3.7 # >=3.6,<3.8
-- pywps>=4.4.1,<4.5
+- pywps>=4.4.2,<4.5
 - jinja2
 - click
 - psutil
@@ -16,8 +16,8 @@ dependencies:
 - dask>=2.26
 - netcdf4>=1.4
 - daops>=0.5.0,<0.6
-- clisops>=0.6.2,<0.7
-- roocs-utils>=0.2.1,<0.3
+- clisops>=0.6.3,<0.7
+- roocs-utils>=0.3.0,<0.4
 # workflow
 - networkx
 # provenance
