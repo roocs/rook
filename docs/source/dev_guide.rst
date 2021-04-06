@@ -24,6 +24,18 @@ Run the Sphinx docs generator:
 
   $ make docs
 
+Add pre-commit hooks
+--------------------
+
+Before committing your changes, we ask that you install `pre-commit` in your environment.
+`Pre-commit` runs git hooks that ensure that your code resembles that of the project
+and catches and corrects any small errors or inconsistencies when you `git commit`:
+
+.. code-block:: console
+
+     $ conda install -c conda-forge pre_commit
+     $ pre-commit install
+
 .. _testing:
 
 Running tests
