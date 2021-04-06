@@ -41,6 +41,14 @@ You can find information about contributing in our `Developer Guide`_.
 
 Please use bumpversion_ to release a new version.
 
+Tests
+-----
+
+The ``tests`` folder includes additional tests for a deployed rook service.
+
+* Smoke test: ensure service is operational. The ``tests/smoke/README.md``.
+* Storm test: load-test using locust_. The ``tests/storm/README.md``.
+
 License
 -------
 
@@ -56,3 +64,4 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
 .. _bumpversion: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 .. _daops: https://github.com/roocs/daops
+.. _locust: https://locust.io/

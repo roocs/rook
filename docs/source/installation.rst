@@ -24,12 +24,6 @@ Check out code from the rook GitHub repo and start the installation:
    $ git clone https://github.com/roocs/rook.git
    $ cd rook
 
-Get the submodules with ESGF test data:
-
-.. code-block:: console
-
-   $ git submodule update --init
-
 Create Conda environment named `rook`:
 
 .. code-block:: console
@@ -52,6 +46,18 @@ For development you can use this command:
   $ pip install -e ".[dev]"
   OR
   $ make develop
+
+Configure roocs
+---------------
+
+``rook`` is using daops_ for the operations. It needs a ``roocs.ini`` configuration file.
+You can overwrite the defaults by setting the environment variable ``ROOCS_CONFIG``.
+
+.. code-block:: console
+
+  $ export ROOCS_CONFIG=~/.roocs.ini
+
+There is an example in ``etc/sample-roocs.ini``.
 
 Start rook PyWPS service
 ------------------------
@@ -117,3 +123,4 @@ Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
+.. _daops: https://github.com/roocs/daops
