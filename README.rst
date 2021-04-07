@@ -46,8 +46,8 @@ Tests
 
 The ``tests`` folder includes additional tests for a deployed rook service.
 
-* Smoke test: ensure service is operational. The ``tests/smoke/README.md``.
-* Storm test: load-test using locust_. The ``tests/storm/README.md``.
+* Smoke test: ensure service is operational. See ``tests/smoke/README.md``.
+* Storm test: load-test using locust_. See ``tests/storm/README.md``.
 
 License
 -------
