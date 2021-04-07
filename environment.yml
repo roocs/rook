@@ -26,6 +26,7 @@ dependencies:
 - graphviz
 # catalog
 - intake
+- fsspec<0.9
 - pandas
 - aiohttp
 # tests
