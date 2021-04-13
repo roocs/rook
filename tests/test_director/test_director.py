@@ -3,7 +3,7 @@ from pywps.app.exceptions import ProcessError
 from roocs_utils.exceptions import InvalidParameterValue
 
 from rook.director import Director
-from rook.exceptions import InvalidCollection
+from roocs_utils.exceptions import InvalidCollection
 
 # inputs = {"collection": None
 #           "area": None,

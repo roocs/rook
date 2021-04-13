@@ -7,8 +7,8 @@ from roocs_utils.project_utils import get_project_name
 from roocs_utils.utils.file_utils import FileMapper
 
 from rook import CONFIG
-from rook.exceptions import InvalidCollection
-from rook.catalog import get_catalog
+from roocs_utils.exceptions import InvalidCollection
+from daops.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
