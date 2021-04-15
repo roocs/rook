@@ -15,9 +15,9 @@ dependencies:
 - xarray>=0.16
 - dask>=2.26
 - netcdf4>=1.4
-- daops>=0.5.0,<0.6
+# - daops>=0.5.0,<0.6
 - clisops>=0.6.3,<0.7
-- roocs-utils>=0.3.0,<0.4
+# - roocs-utils>=0.3.0,<0.4
 # workflow
 - networkx
 # provenance
@@ -31,3 +31,6 @@ dependencies:
 - aiohttp
 # tests
 - pytest
+- pip:
+  - roocs-utils @ git+https://github.com/roocs/roocs-utils.git@master#egg=roocs-utils
+  - daops @ git+https://github.com/roocs/daops.git@master#egg=daops
