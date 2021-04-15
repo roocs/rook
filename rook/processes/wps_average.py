@@ -22,19 +22,19 @@ class Average(Process):
             LiteralInput(
                 "collection",
                 "Collection",
+                abstract="A dataset identifier or list of comma separated identifiers"
+                "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
                 data_type="string",
-                default="c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
                 min_occurs=1,
                 max_occurs=1,
             ),
             LiteralInput(
                 "dims",
                 "Dimensions",
-                abstract="Please specify dimensions for averaging.",
+                abstract="Diimensions to avergae over. " "Example: time",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
-                default="time",
             ),
             LiteralInput(
                 "pre_checked",
