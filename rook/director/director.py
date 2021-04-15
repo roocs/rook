@@ -37,7 +37,7 @@ class Director:
         self.output_uris = None
         self.search_result = None
 
-        if CONFIG[f"project:{self.project}"].get("use_inventory"):
+        if CONFIG[f"project:{self.project}"].get("use_catalog"):
             try:
                 self.catalog = get_catalog(self.project)
             except Exception:
