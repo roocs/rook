@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Inventory urls removed from ``etc/roocs.ini``. Intake catalog urls now live in daops.
+* Intake catalog search functionality moved to daops.
+
 0.5.0 (2021-04-01)
 ==================
 

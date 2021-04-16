@@ -24,11 +24,6 @@ dependencies:
 - prov>=2.0.0
 - pydot
 - graphviz
-# catalog
-- intake
-- fsspec<0.9
-- pandas
-- aiohttp
 # tests
 - pytest
 - pip:
