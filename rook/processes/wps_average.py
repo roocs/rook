@@ -31,7 +31,7 @@ class Average(Process):
             LiteralInput(
                 "dims",
                 "Dimensions",
-                abstract="Diimensions to average over. Example: time",
+                abstract="Dimensions to average over. Example: time",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
