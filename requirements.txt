@@ -17,3 +17,8 @@ networkx
 # provenance
 prov>=2.0.0
 pydot
+# catalog
+intake
+fsspec<0.9
+pandas
+aiohttp
