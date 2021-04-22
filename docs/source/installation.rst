@@ -59,6 +59,8 @@ You can overwrite the defaults by setting the environment variable ``ROOCS_CONFI
 
 There is an example in ``etc/sample-roocs.ini``.
 
+For more information on the configuration settings, see https://roocs-utils.readthedocs.io/en/latest/configuration.html
+
 Start rook PyWPS service
 ------------------------
 

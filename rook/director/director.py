@@ -7,7 +7,7 @@ from roocs_utils.project_utils import get_project_name
 from roocs_utils.utils.file_utils import FileMapper
 
 from rook import CONFIG
-from rook.exceptions import InvalidCollection
+from roocs_utils.exceptions import InvalidCollection
 from rook.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs
@@ -37,7 +37,7 @@ class Director:
         self.output_uris = None
         self.search_result = None
 
-        if CONFIG[f"project:{self.project}"].get("use_inventory"):
+        if CONFIG[f"project:{self.project}"].get("use_catalog"):
             try:
                 self.catalog = get_catalog(self.project)
             except Exception:

@@ -1,12 +1,16 @@
-import sqlalchemy
-from sqlalchemy.types import Integer, Text, String, DateTime
 import pandas as pd
-
+import sqlalchemy
 from pywps.dblog import get_session
+from sqlalchemy.types import DateTime
+from sqlalchemy.types import Integer
+from sqlalchemy.types import String
+from sqlalchemy.types import Text
 
-from .base import Catalog
-from .intake import IntakeCatalog
-from .util import parse_time, MIN_DATETIME, MAX_DATETIME
+from daops.catalog.base import Catalog
+from daops.catalog.intake import IntakeCatalog
+from daops.catalog.util import MAX_DATETIME
+from daops.catalog.util import MIN_DATETIME
+from daops.catalog.util import parse_time
 
 
 class DBCatalog(Catalog):
@@ -35,7 +39,13 @@ class DBCatalog(Catalog):
         df = self.intake_catalog.load()
         # workaround for NaN values when no time axis (fx datasets)
         sdf = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
+
+        # needed when catalog created from catalog_maker instead of above
+        # sdf = df.replace({"start_time": {"undefined": MIN_DATETIME}})
+        # sdf = df.replace({"end_time": {"undefined": MAX_DATETIME}})
+
         sdf = sdf.set_index("ds_id")
+
         # db connection
         session = get_session()
         try:
@@ -56,6 +66,7 @@ class DBCatalog(Catalog):
         """
         self.update()
         start, end = parse_time(time)
+
         session = get_session()
         try:
             if len(collection) > 1:
@@ -63,12 +74,14 @@ class DBCatalog(Catalog):
                     f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "
                     f"and end_time>='{start}' and start_time<='{end}'"
                 )
+
             else:
                 query_ = (
                     f"SELECT * FROM {self.table_name} WHERE ds_id='{collection[0]}' "
                     f"and end_time>='{start}' and start_time<='{end}'"
                 )
             result = session.execute(query_).fetchall()
+
         except Exception:
             result = []
         finally:
