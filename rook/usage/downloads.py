@@ -2,8 +2,11 @@ from datetime import datetime
 import gzip
 import os
 import glob
+from urllib.parse import urlparse
 import ipaddress
 import pandas as pd
+
+from pywps import configuration as config
 
 from .base import Usage
 
@@ -123,8 +126,13 @@ def parse_record(line):
 
 
 class Downloads(Usage):
+    def __init__(self):
+        self.output_path = urlparse(config.get_config_value("server", "outputurl")).path
+        print(self.output_path)
+        self.http_log_path = config.get_config_value("logging", "http_log_path")
+
     def collect(self, time_start=None, time_end=None, outdir=None):
-        log_files = sorted(glob.glob("/var/log/nginx/access.log*"))
+        log_files = sorted(glob.glob(os.path.join(self.http_log_path, "access.log*")))
         records = []
         for f in log_files:
             if f.endswith(".gz"):
@@ -136,13 +144,13 @@ class Downloads(Usage):
                     record = parse_record(line.decode())
                 except NotFoundError:
                     continue
-                if not record["request"].startswith("/outputs"):
+                if not record["request"].startswith(self.output_path):
                     continue
                 records.append(record)
             logfile.close()
         df = pd.DataFrame(records)
         df = df.loc[
-            df["request"].str.contains(r"/outputs/rook/.*/.*\.nc", regex=True)
+            df["request"].str.contains(rf"{self.output_path}/.*/.*\.nc", regex=True)
         ]  # noqa
         # df['datetime'] = pd.to_datetime(df['datetime'])
         if time_start:
