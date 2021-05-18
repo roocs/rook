@@ -38,18 +38,18 @@ class DBCatalog(Catalog):
     def to_db(self):
         df = self.intake_catalog.load()
         # workaround for NaN values when no time axis (fx datasets)
-        sdf = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
+        df = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
 
-        # needed when catalog created from catalog_maker instead of above
-        # sdf = df.replace({"start_time": {"undefined": MIN_DATETIME}})
-        # sdf = df.replace({"end_time": {"undefined": MAX_DATETIME}})
+        # needed when catalog created from catalog_maker instead of above - can remove the above eventually
+        df = df.replace({"start_time": {"undefined": MIN_DATETIME}})
+        df = df.replace({"end_time": {"undefined": MAX_DATETIME}})
 
-        sdf = sdf.set_index("ds_id")
+        df = df.set_index("ds_id")
 
         # db connection
         session = get_session()
         try:
-            sdf.to_sql(
+            df.to_sql(
                 self.table_name,
                 session.connection(),
                 if_exists="replace",
