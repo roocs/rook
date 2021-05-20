@@ -6,7 +6,7 @@ pytest-notebook
 nbsphinx
 nbval>=0.9.6
 nbconvert
-sphinx>=1.7
+sphinx>=1.7,<=3.5.4
 bumpversion
 twine
 cruft
