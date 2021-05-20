@@ -1,8 +1,8 @@
 Changes
 *******
 
-Unreleased
-==========
+0.6.0 (2021-05-20)
+==================
 
 * Inventory urls removed from ``etc/roocs.ini``. Intake catalog url now lives in daops. (#175)
 * Intake catalog base and search functionality moved to daops. Database intake implementation remains in rook. (#175)
