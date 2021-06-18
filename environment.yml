@@ -5,7 +5,7 @@ channels:
 dependencies:
 - pip
 - python=3.7 # >=3.6,<3.8
-- pywps>=4.4.2,<4.5
+- pywps>=4.4.3,<4.5
 - jinja2
 - click
 - psutil
@@ -29,5 +29,7 @@ dependencies:
 - fsspec<0.9
 - pandas
 - aiohttp
+# dashboard
+- bokeh
 # tests
 - pytest

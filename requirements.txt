@@ -1,4 +1,4 @@
-pywps>=4.4.2,<4.5
+pywps>=4.4.3,<4.5
 jinja2
 click
 psutil
@@ -22,3 +22,6 @@ intake
 fsspec<0.9
 pandas
 aiohttp
+# dashboard
+bokeh
+humanize
