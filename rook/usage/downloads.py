@@ -1,3 +1,4 @@
+import subprocess
 from datetime import datetime
 import gzip
 import os
@@ -128,18 +129,18 @@ def parse_record(line):
 class Downloads(Usage):
     def __init__(self):
         self.output_path = urlparse(config.get_config_value("server", "outputurl")).path
-        print(self.output_path)
         self.http_log_path = config.get_config_value("logging", "http_log_path")
 
     def collect(self, time_start=None, time_end=None, outdir=None):
         log_files = sorted(glob.glob(os.path.join(self.http_log_path, "access.log*")))
+        return self.parse(log_files, time_start, time_end, outdir)
+
+    def parse(self, log_files, time_start=None, time_end=None, outdir=None):
         records = []
         for f in log_files:
-            if f.endswith(".gz"):
-                logfile = gzip.open(f)
-            else:
-                logfile = open(f, "rb")
-            for line in logfile.readlines():
+            p = subprocess.run(["zgrep", self.output_path, f], stdout=subprocess.PIPE)
+            lines = p.stdout.split(b"\n")
+            for line in lines:
                 try:
                     record = parse_record(line.decode())
                 except NotFoundError:
@@ -147,7 +148,6 @@ class Downloads(Usage):
                 if not record["request"].startswith(self.output_path):
                     continue
                 records.append(record)
-            logfile.close()
         df = pd.DataFrame(records)
         df = df.loc[
             df["request"].str.contains(rf"{self.output_path}/.*/.*\.nc", regex=True)
