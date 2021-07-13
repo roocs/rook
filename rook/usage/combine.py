@@ -19,12 +19,19 @@ URLS = {
 def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
     resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=SYNC)
+    # requests
     df = pd.read_csv(
         resp.processOutputs[0].reference, parse_dates=["time_start", "time_end"]
     )
     df["site"] = site
     df["URL"] = URLS[site]
-    return df
+    # downloads
+    df_downloads = pd.read_csv(
+        resp.processOutputs[1].reference, parse_dates=["datetime"]
+    )
+    df_downloads["site"] = site
+    df_downloads["URL"] = URLS[site]
+    return df, df_downloads
 
 
 def format_time(time_start=None, time_end=None):
@@ -48,17 +55,24 @@ class Combine(Usage):
     def collect(self, time_start=None, time_end=None, outdir=None):
         time = format_time(time_start, time_end)
         df_list = []
+        df_downloads_list = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             jobs = {executor.submit(get_usage, site, time): site for site in self.sites}
             for future in concurrent.futures.as_completed(jobs):
                 site = jobs[future]
                 try:
-                    df = future.result()
+                    df, df_downloads = future.result()
                 except Exception:
                     raise Exception(f"usage collection for site={site} failed.")
                 else:
                     df_list.append(df)
+                    df_downloads_list.append(df_downloads)
+        # dump usage
         cdf = pd.concat(df_list, ignore_index=True)
-        fname = os.path.join(outdir, "wpsusage.csv")
-        cdf.to_csv(fname, index=False)
-        return fname
+        fusage = os.path.join(outdir, "usage.csv")
+        cdf.to_csv(fusage, index=False)
+        # dump downloads
+        cdf = pd.concat(df_downloads_list, ignore_index=True)
+        fdownloads = os.path.join(outdir, "downloads.csv")
+        cdf.to_csv(fdownloads, index=False)
+        return fusage, fdownloads

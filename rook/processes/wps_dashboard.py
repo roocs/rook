@@ -70,12 +70,13 @@ class DashboardProcess(Process):
             time_start = time_end = None
         try:
             usage = Combine(site=request.inputs["site"][0].data)
-            usage_file = usage.collect(
+            fusage, fdownloads = usage.collect(
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
             response.update_status("Combine completed.", 80)
             dashboard = Dashboard(output_dir=self.workdir)
-            dashboard.load(url=usage_file, filter="orchestrate")
+            dashboard.load(url=fusage, filter="orchestrate")
+            dashboard.load_downloads(url=fdownloads)
             response.outputs["dashboard"].file = dashboard.write()
             response.update_status("Dashboard completed.", 90)
         except Exception as e:

@@ -11,7 +11,7 @@
               "run": "subset",
               "in": {
                   "collection": "inputs/rlds",
-                  "time": "1850-01-01/1860-12-30",
+                  "time": "1850-01-01/1860-12-31",
                   "original_files": "1",
               }
           },

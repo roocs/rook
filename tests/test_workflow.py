@@ -102,4 +102,4 @@ def test_wf_c3s_cmip6_original_files():
         "CMIP/SNU/SAM0-UNICON/historical/r1i1p1f1/day/pr/gn/v20190323/"
         "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_18500101-18501231.nc"
     )
-    assert output[0] == expected_url
+    assert expected_url in output
