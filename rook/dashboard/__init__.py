@@ -1,1 +1,1 @@
-from .base import Dashboard
+from .dashboard import Dashboard
