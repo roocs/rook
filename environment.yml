@@ -28,6 +28,7 @@ dependencies:
 - intake
 - fsspec<0.9
 - pandas<1.3.0
+- dask<2021.7.0
 - aiohttp
 # dashboard
 - bokeh
