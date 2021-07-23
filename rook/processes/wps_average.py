@@ -7,7 +7,6 @@ from pywps.app.exceptions import ProcessError
 from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..director import wrap_director
-from ..provenance import Provenance
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
