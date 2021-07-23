@@ -13,7 +13,9 @@ def test_prov_simple(tmpdir):
         "subset", {"time": "2010/2012"}, ["tas_2010_2020.nc"], ["tas_2010_2012.nc"]
     )
     doc = prov.json()
-    assert doc["agent"]["id:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
+    assert (
+        doc["agent"]["roocs:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
+    )
 
 
 def test_prov_workflow(tmpdir):
@@ -27,4 +29,6 @@ def test_prov_workflow(tmpdir):
     )
     prov.stop()
     doc = prov.json()
-    assert doc["agent"]["id:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
+    assert (
+        doc["agent"]["roocs:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
+    )

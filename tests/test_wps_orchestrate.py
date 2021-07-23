@@ -55,24 +55,18 @@ def test_wps_orchestrate_prov():
     print(file_uri)
     doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
+    assert 'roocs:time="1985-01-01/2014-12-30"' in doc.get_provn()
+    assert 'roocs:dims="time"' in doc.get_provn()
     assert (
-        'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="0" %% xsd:boolean])'
+        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, roocs:CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"  # noqa
         in doc.get_provn()
     )
     assert (
-        'activity(average_rlds, -, -, [dims="time", apply_fixes="0" %% xsd:boolean])'
+        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc, roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"  # noqa
         in doc.get_provn()
     )
-    assert (
-        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803, subset_rlds, -, -)"  # noqa
-        in doc.get_provn()
-    )
-    assert (
-        "wasDerivedFrom(rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc, rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, average_rlds, -, -)"  # noqa
-        in doc.get_provn()
-    )
-    assert "prov:startedAtTime" in doc.get_provn()
-    assert "prov:endedAtTime" in doc.get_provn()
+    # assert "prov:startTime" in doc.get_provn()
+    # assert "prov:endTime" in doc.get_provn()
 
 
 def test_wps_orchestrate_prov_with_fixes():
@@ -90,11 +84,5 @@ def test_wps_orchestrate_prov_with_fixes():
     print(file_uri)
     doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
-    assert (
-        'activity(subset_rlds, -, -, [time="1985-01-01/2014-12-30", apply_fixes="1" %% xsd:boolean])'
-        in doc.get_provn()
-    )
-    assert (
-        'activity(average_rlds, -, -, [dims="time", apply_fixes="0" %% xsd:boolean])'
-        in doc.get_provn()
-    )
+    assert 'time="1985-01-01/2014-12-30"' in doc.get_provn()
+    assert 'dims="time"' in doc.get_provn()
