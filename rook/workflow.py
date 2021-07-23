@@ -87,7 +87,7 @@ class BaseWorkflow(object):
         self.validate(wfdoc)
         self.prov.start(workflow=True)
         outputs = self._run(wfdoc)
-        self.prov.stop(workflow=True)
+        self.prov.stop()
         return outputs
 
     def _run(self, wfdoc):
