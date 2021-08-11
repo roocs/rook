@@ -1,4 +1,4 @@
-pywps>=4.4.3,<4.5
+pywps>=4.4.5,<4.5
 jinja2
 click
 psutil
