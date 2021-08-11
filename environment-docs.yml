@@ -5,5 +5,5 @@ channels:
 - defaults
 dependencies:
 - python=3.7
-- pywps>=4.2
-- sphinx<=3.5.4
+- pywps>=4.4
+- sphinx
