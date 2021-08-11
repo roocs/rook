@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.6.2 (2021-08-11)
+==================
+
+* Update pywps 4.4.5 (#186).
+* Updated provenance types and ids (#184).
+* Update dashboard (#183).
+
 0.6.1 (2021-06-18)
 ==================
 
