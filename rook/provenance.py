@@ -20,7 +20,7 @@ PROVONE_DATA = PROVONE["Data"]
 PROVONE_EXECUTION = PROVONE["Execution"]
 
 # dcterms namespace
-DCTERMS = Namespace("dcterms", uri="http://purl.org/dc/terms/")
+DCTERMS = Namespace("dct", uri="http://purl.org/dc/terms/")
 DCTERMS_SOURCE = DCTERMS["source"]
 
 # roocs namespace
