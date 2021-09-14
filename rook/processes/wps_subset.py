@@ -30,8 +30,19 @@ class Subset(Process):
             LiteralInput(
                 "time",
                 "Time Period",
-                abstract="The time period to subset over separated by /"
-                "Example: 1860-01-01/1900-12-30",
+                abstract="The time interval (start/end) to subset over separated by '/'"
+                " or a list of time points separated by ','."
+                " The format is according to the ISO-8601 standard."
+                " Example: 1860-01-01/1900-12-30 or 1860-01-01, 1870-01-01, 1880-01-01",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
+                "time_components",
+                "Time Components",
+                abstract="Optional time components to describe parts of the time period (like seasons)."
+                " Example: month:01,02,03 or year:1970,1980|month=01,02,03",
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
@@ -129,7 +140,7 @@ class Subset(Process):
         # from daops.utils.normalise import ResultSet
 
         # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in subset: {os.environ}")
+        # LOGGER.debug(f"Environment used in subset: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
@@ -149,6 +160,8 @@ class Subset(Process):
                 request.inputs, "original_files", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
+            # TODO: use time_components when available
+            # "time_components": parse_wps_input(request.inputs, "time_components", default=None),
             "level": parse_wps_input(request.inputs, "level", default=None),
             "area": parse_wps_input(request.inputs, "area", default=None),
         }
