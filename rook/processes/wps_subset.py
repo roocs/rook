@@ -41,7 +41,7 @@ class Subset(Process):
             LiteralInput(
                 "time_components",
                 "Time Components",
-                abstract="Optional time components to describe parts of the time period (like seasons)."
+                abstract="Optional time components to describe parts of the time period (e.g. year, month and day)."
                 " Example: month:01,02,03 or year:1970,1980|month=01,02,03",
                 data_type="string",
                 min_occurs=0,
