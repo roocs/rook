@@ -116,7 +116,9 @@ class Average(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
+            # TODO: update average parameters
             # "dims": parse_wps_input(request.inputs, "dims", default=None),
+            "dims": "time"
         }
 
         # Let the director manage the processing or redirection to original files
