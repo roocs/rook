@@ -28,9 +28,10 @@ class Average(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "dims",
-                "Dimensions",
-                abstract="Dimensions to average over. Example: time",
+                "aggregation",
+                "Aggregation",
+                abstract="Aggregation type used for averaging. Example: annual",
+                allowed_values=["annual", "monthly"],
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
@@ -115,7 +116,7 @@ class Average(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            "dims": parse_wps_input(request.inputs, "dims", default=None),
+            # "dims": parse_wps_input(request.inputs, "dims", default=None),
         }
 
         # Let the director manage the processing or redirection to original files
