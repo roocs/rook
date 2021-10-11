@@ -4,11 +4,8 @@ click
 psutil
 # daops
 daops>=0.6.0
-# daops @ git+https://github.com/roocs/daops.git@master#egg=daops
 clisops>=0.6.5
-# clisops @ git+https://github.com/roocs/clisops.git
 roocs-utils>=0.4.2
-# roocs-utils @ git+https://github.com/roocs/roocs-utils.git@master#egg=roocs-utils
 xarray>=0.16
 dask[complete]
 netcdf4
