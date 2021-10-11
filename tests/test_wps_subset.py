@@ -46,6 +46,20 @@ def test_wps_subset_c3s_cmip6():
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.xfail(reason="subset with time series not working")
+def test_wps_subset_c3s_cmip6_time_series():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
+    datainputs += ";time=2015-01-16,2016-01-16"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+
+
 def test_wps_subset_c3s_cmip6_time_components():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
