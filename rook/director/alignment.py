@@ -22,7 +22,7 @@ class SubsetAlignmentChecker:
 
         time = inputs.get("time", None)
 
-        # add in a catch for if time tuple is None
+        # add in a catch for if time bounds are None
         # this means is_aligned = True and all files are needed
         if time is None:
             self.is_aligned = True
@@ -30,7 +30,7 @@ class SubsetAlignmentChecker:
             return
 
         else:
-            start, end = time_parameter.TimeParameter(time).tuple
+            start, end = time_parameter.TimeParameter(time).get_bounds()
             self._check_time_alignment(start, end)
 
     def _get_file_times(self, fpath):

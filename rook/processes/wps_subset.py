@@ -42,7 +42,7 @@ class Subset(Process):
                 "time_components",
                 "Time Components",
                 abstract="Optional time components to describe parts of the time period (e.g. year, month and day)."
-                " Example: month:01,02,03 or year:1970,1980|month=01,02,03",
+                " Example: month:01,02,03 or year:1970,1980|month:01,02,03",
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
@@ -160,8 +160,7 @@ class Subset(Process):
                 request.inputs, "original_files", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
-            # TODO: use time_components when available
-            # "time_components": parse_wps_input(request.inputs, "time_components", default=None),
+            "time_components": parse_wps_input(request.inputs, "time_components", default=None),
             "level": parse_wps_input(request.inputs, "level", default=None),
             "area": parse_wps_input(request.inputs, "area", default=None),
         }
