@@ -15,6 +15,7 @@ dependencies:
 - xarray>=0.16
 - dask>=2.26
 - netcdf4>=1.4
+- bottleneck>=1.3.1,<1.4
 #- daops>=0.6.0,<0.7
 #- clisops>=0.6.5,<0.7
 #- roocs-utils>=0.4.2,<0.5
@@ -34,3 +35,7 @@ dependencies:
 - bokeh
 # tests
 - pytest
+- pip:
+  - roocs-utils @ git+https://github.com/roocs/roocs-utils.git@subset-by-point-carsten#egg=roocs-utils
+  - clisops @ git+https://github.com/roocs/clisops.git@subset-by-point-carsten#egg=clisops
+  - daops @ git+https://github.com/roocs/daops.git@subset-by-point-carsten#egg=daops
