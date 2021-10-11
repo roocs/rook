@@ -16,8 +16,8 @@ class SubsetAlignmentChecker:
         self._deduce_alignment(inputs)
 
     def _deduce_alignment(self, inputs):
-        # At present, we reject alignment if any "area" or "level" subset is requested
-        if inputs.get("area", None) or inputs.get("level", None):
+        # At present, we reject alignment if any "time_components", "area" or "level" subset is requested
+        if inputs.get("time_components", None) or inputs.get("area", None) or inputs.get("level", None):
             return
 
         time = inputs.get("time", None)
