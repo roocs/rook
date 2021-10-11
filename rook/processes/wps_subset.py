@@ -60,7 +60,8 @@ class Subset(Process):
                 "level",
                 "Level",
                 abstract="The level range to subset over separated by a /"
-                "Example: 0/1000",
+                " or a list of level values separated by ','."
+                "Example: 1000/2000 or 1000, 2000, 3000",
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
@@ -135,14 +136,6 @@ class Subset(Process):
         )
 
     def _handler(self, request, response):
-        # TODO: handle lazy load of daops
-        # from daops.ops.subset import subset
-        # from daops.utils.normalise import ResultSet
-
-        # show me the environment used by the process in debug mode
-        # LOGGER.debug(f"Environment used in subset: {os.environ}")
-
-        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
