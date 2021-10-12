@@ -66,7 +66,9 @@ class Director:
         """
         # search
         self.search_result = self.catalog.search(
-            collection=self.coll, time=self.inputs.get("time")
+            collection=self.coll,
+            time=self.inputs.get("time"),
+            time_components=self.inputs.get("time_components")
         )
         # Raise exception if any of the dataset ids is not in the inventory
         if len(self.search_result) != len(self.coll):
