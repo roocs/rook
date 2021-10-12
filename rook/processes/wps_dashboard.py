@@ -64,7 +64,7 @@ class DashboardProcess(Process):
         response.update_status("Dashboard started.", 0)
         if "time" in request.inputs:
             time = request.inputs["time"][0].data
-            time_start, time_end = time_parameter.TimeParameter(time).tuple
+            time_start, time_end = time_parameter.TimeParameter(time).get_bounds()
         else:
             time = None
             time_start = time_end = None
