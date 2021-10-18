@@ -111,14 +111,11 @@ class TestYearMonthDay1200:
         - Real range: 18500101-20091130
         - Start: 18500101 (exact start)
         - End:   20091130 (exact end)
-
-        Is not aligned as the hour is set to 00:00:00 when not provided and the time stamp
-        for these files is 12:00:00.
         """
         inputs = {"time": "1850-01-01/2009-11-30"}
         sac = SubsetAlignmentChecker(get_files, inputs)
-        assert sac.is_aligned is False
-        assert sac.aligned_files == []
+        assert sac.is_aligned is True
+        assert sac.aligned_files == get_files
 
     def test_time_subset_matches_before_to_end(self, get_files):
         """Tests alignment of full dataset where:
