@@ -3,9 +3,9 @@ jinja2
 click
 psutil
 # daops
-daops>=0.6.0
-clisops>=0.6.5
-roocs-utils>=0.4.2
+daops>=0.7.0,<0.8
+clisops>=0.7.0,<0.8
+roocs-utils>=0.5.0,<0.6
 xarray>=0.16
 dask[complete]
 netcdf4
