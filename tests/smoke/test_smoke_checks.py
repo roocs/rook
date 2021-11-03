@@ -85,6 +85,19 @@ def test_smoke_execute_subset(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
+def test_smoke_execute_subset_by_point(wps, tmp_path):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_COLLECTION),
+        ("time", "2020-01-01/2020-12-30"),
+        ("time_components", "month:jan,feb,mar"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20200316.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "rlds" in ds.variables
+
+
 def test_smoke_execute_subset_original_files(wps):
     inputs = [
         ("collection", C3S_CMIP6_DAY_COLLECTION),

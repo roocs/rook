@@ -1,7 +1,9 @@
 import os
 import pytest
 
-from rook.utils.input_utils import resolve_to_file_paths
+from pywps.app import WPSRequest
+
+from rook.utils.input_utils import resolve_to_file_paths, parse_wps_input
 from rook.utils.metalink_utils import build_metalink
 
 from .common import TESTS_HOME, MINI_ESGF_MASTER_DIR
@@ -77,3 +79,41 @@ def test_resolve_to_file_paths_urls(load_test_data):
         f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
     ]
+
+
+def test_parse_wps_input():
+    obj = {
+        'operation': 'execute',
+        'version': '1.0.0',
+        'language': 'eng',
+        'identifier': 'subset',
+        'identifiers': 'subset',  # TODO: why identifierS?
+        'store_execute': True,
+        'status': True,
+        'lineage': True,
+        'inputs': {
+            'time': [{
+                'identifier': 'time',
+                'type': 'literal',
+                'data_type': 'string',
+                'allowed_values': [{'type': 'anyvalue'}],
+                'data': '1970/1980',
+            }],
+            'time_components': [{
+                'identifier': 'time',
+                'type': 'literal',
+                'data_type': 'string',
+                'allowed_values': [{'type': 'anyvalue'}],
+                'data': 'year:1970,1980|month=01,02,03',
+            }],
+        },
+        'outputs': {},
+        'raw': False
+    }
+
+    request = WPSRequest()
+    request.json = obj
+
+    assert parse_wps_input(request.inputs, "time", default=None) == "1970/1980"
+    assert parse_wps_input(request.inputs, "time_components", default=None) == \
+        "year:1970,1980|month=01,02,03"

@@ -60,12 +60,12 @@ class DBCatalog(Catalog):
         finally:
             session.close()
 
-    def _query(self, collection, time=None):
+    def _query(self, collection, time=None, time_components=None):
         """
         https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause
         """
         self.update()
-        start, end = parse_time(time)
+        start, end = parse_time(time, time_components)
 
         session = get_session()
         try:
