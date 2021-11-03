@@ -75,7 +75,8 @@ class Usage(Process):
             # response.outputs["downloads"].file = usage.collect(
             #     time_start=time_start, time_end=time_end, outdir=self.workdir
             # )
-            response.outputs["downloads"].data = ""
+            emtpy_csv = "remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent"  # noqa
+            response.outputs["downloads"].data = emtpy_csv
             response.update_status("Downloads usage completed.", 90)
         except Exception as e:
             raise ProcessError(f"{e}")
