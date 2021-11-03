@@ -32,6 +32,6 @@ dependencies:
 - dask<2021.7.0
 - aiohttp
 # dashboard
-- bokeh
+- bokeh=2.4.1
 # tests
 - pytest
