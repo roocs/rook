@@ -70,10 +70,12 @@ class Usage(Process):
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
             response.update_status("WPSUsage completed.", 50)
-            usage = Downloads()
-            response.outputs["downloads"].file = usage.collect(
-                time_start=time_start, time_end=time_end, outdir=self.workdir
-            )
+            # TODO: improve downloads usage collection
+            # usage = Downloads()
+            # response.outputs["downloads"].file = usage.collect(
+            #     time_start=time_start, time_end=time_end, outdir=self.workdir
+            # )
+            response.outputs["downloads"].data = ""
             response.update_status("Downloads usage completed.", 90)
         except Exception as e:
             raise ProcessError(f"{e}")
