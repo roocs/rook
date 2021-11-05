@@ -10,6 +10,11 @@ from roocs_utils.parameter import time_parameter
 
 LOGGER = logging.getLogger()
 
+EMPTY_CSV = """\
+remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent
+127.0.0.1,1000000000,2021-01-01 12:00:00,+0200,GET,dummy.nc,HTTP/1.1,200,1000000,-,python
+""" # noqa
+
 
 class Usage(Process):
     def __init__(self):
@@ -64,17 +69,26 @@ class Usage(Process):
         else:
             time = None
             time_start = time_end = None
+        # usage
         try:
             usage = WPSUsage()
             response.outputs["wpsusage"].file = usage.collect(
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
             response.update_status("WPSUsage completed.", 50)
-            usage = Downloads()
-            response.outputs["downloads"].file = usage.collect(
-                time_start=time_start, time_end=time_end, outdir=self.workdir
-            )
-            response.update_status("Downloads usage completed.", 90)
         except Exception as e:
             raise ProcessError(f"{e}")
+        # downloads
+        try:
+            usage = Downloads()
+            downloads_csv = usage.collect(
+                time_start=time_start, time_end=time_end, outdir=self.workdir
+            )
+            response.outputs["downloads"].file = downloads_csv
+        except Exception:
+            LOGGER.exception("downloads collection failed")
+            response.outputs["downloads"].data = EMPTY_CSV
+        finally:
+            response.update_status("Downloads usage completed.", 90)
+
         return response

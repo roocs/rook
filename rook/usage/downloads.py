@@ -148,6 +148,8 @@ class Downloads(Usage):
                 if not record["request"].startswith(self.output_path):
                     continue
                 records.append(record)
+        if not records:
+            raise NotFoundError("could not find any records")
         df = pd.DataFrame(records)
         df = df.loc[
             df["request"].str.contains(rf"{self.output_path}/.*/.*\.nc", regex=True)
