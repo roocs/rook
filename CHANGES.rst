@@ -1,6 +1,15 @@
 Changes
 *******
 
+0.7.0 (2021-11-08)
+==================
+
+* Added "subset-by-point" (#190).
+* Updated to clisops 0.7.0.
+* Updated to daops 0.7.0. 
+* Updated dashboard (#195).
+* Updated provenance namespace (#188).
+
 0.6.2 (2021-08-11)
 ==================
 
