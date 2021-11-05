@@ -12,7 +12,7 @@ LOGGER = logging.getLogger()
 
 EMPTY_CSV = """\
 remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent
-127.0.0.1,2434211838,2021-01-01 12:00:00,+0200,GET,tas_day_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_avg-t.nc,HTTP/1.1,200,58095,-,python
+127.0.0.1,1000000000,2021-01-01 12:00:00,+0200,GET,dummy.nc,HTTP/1.1,200,1000000,-,python
 """ # noqa
 
 
@@ -81,12 +81,14 @@ class Usage(Process):
         # downloads
         try:
             usage = Downloads()
-            response.outputs["downloads"].file = usage.collect(
+            downloads_csv = usage.collect(
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
-            response.update_status("Downloads usage completed.", 90)
-        except Exception as e:
-            LOGGER.error(f"downloads collection failed: {e}")
+            response.outputs["downloads"].file = downloads_csv
+        except Exception:
+            LOGGER.exception("downloads collection failed")
             response.outputs["downloads"].data = EMPTY_CSV
+        finally:
+            response.update_status("Downloads usage completed.", 90)
 
         return response
