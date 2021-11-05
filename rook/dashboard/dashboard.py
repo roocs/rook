@@ -56,8 +56,8 @@ class Dashboard:
         script_p2, plot_2 = ConcurrencyPlot(self.df).components()
         script_p3, plot_3 = DurationPlot(self.df).components()
         script_p4, plot_4 = PulsePlot(self.df).components()
-        script_p5, plot_5 = DownloadsPlot(self.df_downloads).components()
-        script_p6, plot_6 = TransferPlot(self.df_downloads).components()
+        # script_p5, plot_5 = DownloadsPlot(self.df_downloads).components()
+        # script_p6, plot_6 = TransferPlot(self.df_downloads).components()
         script_t1, table_1 = OverviewTable(self.df, self.df_downloads).components()
         script_t2, table_2 = MessageTable(self.df).components()
         return template.render(
@@ -71,10 +71,10 @@ class Dashboard:
             script_p3=script_p3,
             plot_4=plot_4,
             script_p4=script_p4,
-            plot_5=plot_5,
-            script_p5=script_p5,
-            plot_6=plot_6,
-            script_p6=script_p6,
+            # plot_5=plot_5,
+            # script_p5=script_p5,
+            # plot_6=plot_6,
+            # script_p6=script_p6,
             table_1=table_1,
             script_t1=script_t1,
             table_2=table_2,
