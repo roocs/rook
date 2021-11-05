@@ -23,7 +23,7 @@ class DashboardProcess(Process):
                 min_occurs=1,
                 max_occurs=1,
                 default="local",
-                allowed_values=["local", "ceda", "dkrz", "all"],
+                allowed_values=["local", "ceda", "ipsl", "dkrz", "all"],
             ),
             LiteralInput(
                 "time",

@@ -11,6 +11,7 @@ from .base import Usage
 
 URLS = {
     "local": config.get_config_value("server", "url"),
+    "ipsl": "http://copernicus-wps.ipsl.upmc.fr/wps",
     "dkrz": "http://rook3.cloud.dkrz.de/wps",
     "ceda": "http://rook-wps1.ceda.ac.uk/wps",
 }
