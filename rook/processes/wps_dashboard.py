@@ -76,7 +76,7 @@ class DashboardProcess(Process):
             response.update_status("Combine completed.", 80)
             dashboard = Dashboard(output_dir=self.workdir)
             dashboard.load(url=fusage, filter="orchestrate")
-            dashboard.load_downloads(url=fdownloads)
+            # dashboard.load_downloads(url=fdownloads)
             response.outputs["dashboard"].file = dashboard.write()
             response.update_status("Dashboard completed.", 90)
         except Exception as e:
