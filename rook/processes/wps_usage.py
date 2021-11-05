@@ -12,7 +12,7 @@ LOGGER = logging.getLogger()
 
 EMPTY_CSV = """\
 remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent
-127.0.0.1,2434211838,2021-11-01 12:00:00,+0200,GET,tas_day_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_avg-t.nc,HTTP/1.1,200,58095,-,python
+127.0.0.1,2434211838,2021-01-01 12:00:00,+0200,GET,tas_day_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_avg-t.nc,HTTP/1.1,200,58095,-,python
 """ # noqa
 
 
