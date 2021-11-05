@@ -25,13 +25,13 @@ class OverviewTable(TableView):
         cdf = concurrent_requests(self.df)
         running = cdf.groupby(pd.Grouper(key="time", freq="1D")).running.max()
         # downloads
-        # downloads = self.df_downloads.groupby(
-        #     pd.Grouper(key="datetime", freq="1D")
-        # ).request_type.count()
+        downloads = self.df_downloads.groupby(
+            pd.Grouper(key="datetime", freq="1D")
+        ).request_type.count()
         # data transfer
-        # tdf = self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D")).sum()
-        # tdf["size"] = tdf["size"].apply(lambda x: x / 1024 ** 3)
-        # transfer = tdf["size"]
+        tdf = self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D")).sum()
+        tdf["size"] = tdf["size"].apply(lambda x: x / 1024 ** 3)
+        transfer = tdf["size"]
         data_ = dict(
             property=[
                 "Total Requests",
@@ -39,10 +39,10 @@ class OverviewTable(TableView):
                 "Requests per day (min/max/median)",
                 "Duration (min/max/median)",
                 "Concurrency per day (min/max/median)",
-                # "Downloads per day (min/max/median)",
-                # "Data transfer per day (min/max/median)",
-                # "Total data transfer",
-                # "Data transfer per request",
+                "Downloads per day (min/max/median)",
+                "Data transfer per day (min/max/median)",
+                "Total data transfer",
+                "Data transfer per request",
             ],
             value=[
                 total,
@@ -50,10 +50,10 @@ class OverviewTable(TableView):
                 f"{counts.min()} / {counts.max()} / {counts.median()}",
                 f"{duration.min()} / {duration.max()} / {duration.median()}",
                 f"{running.min()} / {running.max()} / {running.median()}",
-                # f"{downloads.min()} / {downloads.max()} / {downloads.median()}",
-                # f"{transfer.min():.2f} GB / {transfer.max():.2f} GB / {transfer.median():.2f} GB",
-                # f"{transfer.sum():.2f} GB",
-                # f"{transfer.sum() / (total - failed):.2f} GB",
+                f"{downloads.min()} / {downloads.max()} / {downloads.median()}",
+                f"{transfer.min():.2f} GB / {transfer.max():.2f} GB / {transfer.median():.2f} GB",
+                f"{transfer.sum():.2f} GB",
+                f"{transfer.sum() / (total - failed):.2f} GB",
             ],
         )
         return data_
