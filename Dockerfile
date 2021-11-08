@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 FROM continuumio/miniconda3
 MAINTAINER https://github.com/roocs/rook
-LABEL Description="rook WPS" Vendor="Birdhouse" Version="0.6.2"
+LABEL Description="rook WPS" Vendor="Birdhouse" Version="0.7.0"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
