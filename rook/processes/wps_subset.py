@@ -80,7 +80,7 @@ class Subset(Process):
                 "Apply Fixes",
                 data_type="boolean",
                 abstract="Apply fixes to datasets.",
-                default="0",
+                default="1",
                 min_occurs=1,
                 max_occurs=1,
             ),
