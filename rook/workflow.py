@@ -35,7 +35,7 @@ def replace_inputs(wfdoc):
         # fixes are only applied to start steps
         if step_id in start_steps:
             steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
-                "apply_fixes", False
+                "apply_fixes", True
             )
         else:
             steps[step_id]["in"]["apply_fixes"] = False
