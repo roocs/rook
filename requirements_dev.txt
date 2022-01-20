@@ -14,3 +14,4 @@ cruft
 black
 pre-commit
 GitPython>=3.1.12
+beautifulsoup4
