@@ -44,6 +44,14 @@ class Director:
                 raise InvalidCollection()
 
             self._resolve()
+        # check if a fix will be applied
+        self._check_apply_fixes()
+
+    def _check_apply_fixes(self):
+        if self.inputs.get("apply_fixes") and not self.inputs.get("original_files") and self.requires_fixes():
+            self.inputs["apply_fixes"] = True
+        else:
+            self.inputs["apply_fixes"] = False
 
     def _resolve(self):
         """
@@ -78,7 +86,6 @@ class Director:
         if self.inputs.get("original_files"):
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
-            self.inputs["apply_fixes"] = False
             return
 
         # Raise exception if "pre_checked" selected but data has not been characterised by dachar
@@ -89,9 +96,6 @@ class Director:
 
         # Check if fixes are required. If so, then return (and subset will be generated).
         if self.inputs.get("apply_fixes") and self.requires_fixes():
-            return
-        else:
-            self.inputs["apply_fixes"] = False
             return
 
         # TODO: quick fix for average. Don't use original files for average operator
@@ -106,7 +110,12 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        for ds_id in self.search_result.files():
+        # TODO: is this necessary?
+        if self.search_result:
+            ds_ids = self.search_result.files()
+        else:
+            ds_ids = self.coll
+        for ds_id in ds_ids:
             fix = fixer.Fixer(ds_id)
 
             if fix.pre_processor or fix.post_processors:
