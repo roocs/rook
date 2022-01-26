@@ -48,7 +48,7 @@ class Director:
         self._check_apply_fixes()
 
     def _check_apply_fixes(self):
-        if self.inputs.get("apply_fixes") and not self.inputs.get("original_files") and self.requires_fixes():
+        if self.inputs.get("apply_fixes") and not self.use_original_files and self.requires_fixes():
             self.inputs["apply_fixes"] = True
         else:
             self.inputs["apply_fixes"] = False

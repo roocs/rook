@@ -32,6 +32,7 @@ class Operator(object):
         if is_file_list(collection):
             # This block is called if this is NOT the first stage of a workflow, and
             # the collection will be a file list (one or more files)
+            args["apply_fixes"] = False
             kwargs = deepcopy(args)
             file_paths = resolve_to_file_paths(args.get("collection"))
             kwargs["collection"] = FileMapper(file_paths)
