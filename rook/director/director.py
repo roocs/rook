@@ -78,6 +78,7 @@ class Director:
         if self.inputs.get("original_files"):
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
+            self.inputs["apply_fixes"] = False
             return
 
         # Raise exception if "pre_checked" selected but data has not been characterised by dachar
@@ -88,6 +89,9 @@ class Director:
 
         # Check if fixes are required. If so, then return (and subset will be generated).
         if self.inputs.get("apply_fixes") and self.requires_fixes():
+            return
+        else:
+            self.inputs["apply_fixes"] = False
             return
 
         # TODO: quick fix for average. Don't use original files for average operator
