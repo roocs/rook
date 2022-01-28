@@ -44,6 +44,14 @@ class Director:
                 raise InvalidCollection()
 
             self._resolve()
+        # check if a fix will be applied
+        self._check_apply_fixes()
+
+    def _check_apply_fixes(self):
+        if self.inputs.get("apply_fixes") and not self.use_original_files and self.requires_fixes():
+            self.inputs["apply_fixes"] = True
+        else:
+            self.inputs["apply_fixes"] = False
 
     def _resolve(self):
         """
@@ -102,7 +110,12 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        for ds_id in self.search_result.files():
+        # TODO: is this necessary?
+        if self.search_result:
+            ds_ids = self.search_result.files()
+        else:
+            ds_ids = self.coll
+        for ds_id in ds_ids:
             fix = fixer.Fixer(ds_id)
 
             if fix.pre_processor or fix.post_processors:

@@ -42,9 +42,19 @@ def write_roocs_cfg():
 
     [project:c3s-cmip6]
     base_dir = {{ base_dir }}/test_data/badc/cmip6/data/CMIP6
+    # use_catalog = False
 
     [project:c3s-cordex]
     base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
+
+    [dachar:store]
+    store_type = elasticsearch
+
+    [elasticsearch]
+    endpoint = elasticsearch.ceda.ac.uk
+    port = 443
+    fix_store = c3s-roocs-fix
+    fix_proposal_store = c3s-roocs-fix-prop
     """
     cfg = Template(cfg_templ).render(base_dir=MINI_ESGF_MASTER_DIR)
     with open(ROOCS_CFG, "w") as fp:
