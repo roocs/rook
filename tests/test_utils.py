@@ -83,37 +83,43 @@ def test_resolve_to_file_paths_urls(load_test_data):
 
 def test_parse_wps_input():
     obj = {
-        'operation': 'execute',
-        'version': '1.0.0',
-        'language': 'eng',
-        'identifier': 'subset',
-        'identifiers': 'subset',  # TODO: why identifierS?
-        'store_execute': True,
-        'status': True,
-        'lineage': True,
-        'inputs': {
-            'time': [{
-                'identifier': 'time',
-                'type': 'literal',
-                'data_type': 'string',
-                'allowed_values': [{'type': 'anyvalue'}],
-                'data': '1970/1980',
-            }],
-            'time_components': [{
-                'identifier': 'time',
-                'type': 'literal',
-                'data_type': 'string',
-                'allowed_values': [{'type': 'anyvalue'}],
-                'data': 'year:1970,1980|month=01,02,03',
-            }],
+        "operation": "execute",
+        "version": "1.0.0",
+        "language": "eng",
+        "identifier": "subset",
+        "identifiers": "subset",  # TODO: why identifierS?
+        "store_execute": True,
+        "status": True,
+        "lineage": True,
+        "inputs": {
+            "time": [
+                {
+                    "identifier": "time",
+                    "type": "literal",
+                    "data_type": "string",
+                    "allowed_values": [{"type": "anyvalue"}],
+                    "data": "1970/1980",
+                }
+            ],
+            "time_components": [
+                {
+                    "identifier": "time",
+                    "type": "literal",
+                    "data_type": "string",
+                    "allowed_values": [{"type": "anyvalue"}],
+                    "data": "year:1970,1980|month=01,02,03",
+                }
+            ],
         },
-        'outputs': {},
-        'raw': False
+        "outputs": {},
+        "raw": False,
     }
 
     request = WPSRequest()
     request.json = obj
 
     assert parse_wps_input(request.inputs, "time", default=None) == "1970/1980"
-    assert parse_wps_input(request.inputs, "time_components", default=None) == \
-        "year:1970,1980|month=01,02,03"
+    assert (
+        parse_wps_input(request.inputs, "time_components", default=None)
+        == "year:1970,1980|month=01,02,03"
+    )

@@ -12,7 +12,7 @@ class TransferPlot(PlotView):
         pdf = pd.DataFrame()
         pdf["time"] = self.df.datetime
         pdf["size"] = self.df["size"]
-        pdf["size"] = pdf["size"].apply(lambda x: x / 1024 ** 3)
+        pdf["size"] = pdf["size"].apply(lambda x: x / 1024**3)
         pdf = pdf.groupby(pd.Grouper(key="time", freq="1D")).sum()
         pdf = pdf.sort_values(by=["time"], ascending=False)
         return pdf

@@ -6,7 +6,7 @@ Changes
 
 * Added "subset-by-point" (#190).
 * Updated to clisops 0.7.0.
-* Updated to daops 0.7.0. 
+* Updated to daops 0.7.0.
 * Updated dashboard (#195).
 * Updated provenance namespace (#188).
 
