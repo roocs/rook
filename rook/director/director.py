@@ -48,7 +48,11 @@ class Director:
         self._check_apply_fixes()
 
     def _check_apply_fixes(self):
-        if self.inputs.get("apply_fixes") and not self.use_original_files and self.requires_fixes():
+        if (
+            self.inputs.get("apply_fixes")
+            and not self.use_original_files
+            and self.requires_fixes()
+        ):
             self.inputs["apply_fixes"] = True
         else:
             self.inputs["apply_fixes"] = False
@@ -76,7 +80,7 @@ class Director:
         self.search_result = self.catalog.search(
             collection=self.coll,
             time=self.inputs.get("time"),
-            time_components=self.inputs.get("time_components")
+            time_components=self.inputs.get("time_components"),
         )
         # Raise exception if any of the dataset ids is not in the inventory
         if len(self.search_result) != len(self.coll):

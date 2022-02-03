@@ -13,7 +13,7 @@ LOGGER = logging.getLogger()
 EMPTY_CSV = """\
 remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent
 127.0.0.1,1000000000,2021-01-01 12:00:00,+0200,GET,dummy.nc,HTTP/1.1,200,1000000,-,python
-""" # noqa
+"""  # noqa
 
 
 class Usage(Process):

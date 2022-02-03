@@ -30,7 +30,7 @@ class OverviewTable(TableView):
         ).request_type.count()
         # data transfer
         tdf = self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D")).sum()
-        tdf["size"] = tdf["size"].apply(lambda x: x / 1024 ** 3)
+        tdf["size"] = tdf["size"].apply(lambda x: x / 1024**3)
         transfer = tdf["size"]
         data_ = dict(
             property=[

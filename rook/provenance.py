@@ -104,7 +104,14 @@ class Provenance(object):
 
     def add_operator(self, operator, parameters, collection, output):
         attributes = {}
-        for param in ["time", "time_components", "area", "level", "dims", "apply_fixes"]:
+        for param in [
+            "time",
+            "time_components",
+            "area",
+            "level",
+            "dims",
+            "apply_fixes",
+        ]:
             if param in parameters:
                 attributes[ROOCS[param]] = parameters[param]
         op = self._execution_activity(

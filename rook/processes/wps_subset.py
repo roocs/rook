@@ -143,9 +143,7 @@ class Subset(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(
-                request.inputs, "apply_fixes", default=True
-            ),
+            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
@@ -153,7 +151,9 @@ class Subset(Process):
                 request.inputs, "original_files", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
-            "time_components": parse_wps_input(request.inputs, "time_components", default=None),
+            "time_components": parse_wps_input(
+                request.inputs, "time_components", default=None
+            ),
             "level": parse_wps_input(request.inputs, "level", default=None),
             "area": parse_wps_input(request.inputs, "area", default=None),
         }

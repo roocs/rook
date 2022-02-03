@@ -9,7 +9,7 @@ from rook.director.alignment import SubsetAlignmentChecker
 
 
 class TestYearMonth:
-    """ Tests with year and month only, not day"""
+    """Tests with year and month only, not day"""
 
     test_path = (
         f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
@@ -59,7 +59,7 @@ class TestYearMonth:
 
 
 class TestYearMonthDay1200:
-    """ Tests with year month and day for dataset with a 12:00:00 time step """
+    """Tests with year month and day for dataset with a 12:00:00 time step"""
 
     test_path = (
         f"{MINI_ESGF_MASTER_DIR}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
@@ -174,7 +174,7 @@ class TestYearMonthDay1200:
 
 
 class TestYearMonthDay0000:
-    """ Tests with year month and day for dataset with a 00:00:00 time step """
+    """Tests with year month and day for dataset with a 00:00:00 time step"""
 
     test_path = (
         f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
