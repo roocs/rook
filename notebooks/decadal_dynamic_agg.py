@@ -14,6 +14,7 @@ def get_decdal_dynamic_agg(basedir, time=None):
         paths,
         concat_dim="realization",
         combine="nested",
+        # chunks=500,
         parallel=False,
         preprocess=None,
     ) as ds:
