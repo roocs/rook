@@ -10,7 +10,13 @@ def get_decdal_dynamic_agg(basedir, time=None):
     paths = sorted(data_dir.glob("**/*.nc"))
 
     # aggregation
-    with xr.open_mfdataset(paths, concat_dim="realization", combine="nested") as ds:
+    with xr.open_mfdataset(
+        paths,
+        concat_dim="realization",
+        combine="nested",
+        parallel=False,
+        preprocess=None,
+    ) as ds:
         # average
         ds_avg = ds.mean(dim="realization", skipna=True, keep_attrs=True)
         # select time
