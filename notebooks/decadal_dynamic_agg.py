@@ -14,9 +14,9 @@ def get_decdal_dynamic_agg(basedir, time=None):
         paths,
         concat_dim="realization",
         combine="nested",
-        # chunks=500,
-        parallel=False,
-        preprocess=None,
+        chunks={"realization": 10, "time": 10},
+        # parallel=True,
+        # preprocess=lambda ds: ds.isel(time=0)
     ) as ds:
         # average
         ds_avg = ds.mean(dim="realization", skipna=True, keep_attrs=True)
@@ -25,3 +25,7 @@ def get_decdal_dynamic_agg(basedir, time=None):
             ds_avg.isel(time=time)
         # write output
         ds_avg.to_netcdf("out/dynamic_agg.nc")
+
+
+if __name__ == "__main__":
+    get_decdal_dynamic_agg("/Users/pingu/data/cmip6-decadal/orig/day")
