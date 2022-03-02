@@ -4,7 +4,7 @@ import pandas as pd
 
 from pywps import configuration as config
 
-from owslib.wps import WebProcessingService, SYNC
+from owslib.wps import WebProcessingService, ASYNC, monitorExecution
 
 from .base import Usage
 
@@ -19,7 +19,10 @@ URLS = {
 
 def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
-    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=SYNC)
+    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=ASYNC)
+    monitorExecution(resp)
+    if not resp.isSucceeded():
+        raise Exception("usage process failed.")
     # requests
     df = pd.read_csv(
         resp.processOutputs[0].reference, parse_dates=["time_start", "time_end"]
@@ -49,7 +52,7 @@ class Combine(Usage):
     def __init__(self, site=None):
         site = site or "local"
         if site == "all":
-            self.sites = ["ceda", "dkrz"]
+            self.sites = ["ceda", "ipsl", "dkrz"]
         else:
             self.sites = [site]
 
