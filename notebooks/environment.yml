@@ -9,3 +9,4 @@ dependencies:
   - ipywidgets
   - nodejs
   - memory_profiler
+  - diskcache
