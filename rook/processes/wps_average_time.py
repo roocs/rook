@@ -10,12 +10,12 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_average
+from ..utils.average_utils import run_average_by_time
 
 LOGGER = logging.getLogger()
 
 
-class Average(Process):
+class AverageByTime(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -28,10 +28,10 @@ class Average(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "aggregation",
-                "Aggregation",
-                abstract="Aggregation type used for averaging. Example: annual",
-                allowed_values=["annual", "monthly"],
+                "freq",
+                "Frequency",
+                abstract="Aggregation time frequency. Example: year",
+                allowed_values=["year", "month", "day"],
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
@@ -81,11 +81,11 @@ class Average(Process):
             ),
         ]
 
-        super(Average, self).__init__(
+        super(AverageByTime, self).__init__(
             self._handler,
-            identifier="average",
-            title="Average",
-            abstract="Run averaging on climate model data. Calls daops operators.",
+            identifier="average_time",
+            title="Average by Time",
+            abstract="Run averaging by time on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
@@ -116,20 +116,20 @@ class Average(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            # TODO: update average parameters
-            # "dims": parse_wps_input(request.inputs, "dims", default=None),
-            "dims": "time"
+            "freq": parse_wps_input(request.inputs, "freq", default=None),
         }
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average)
+        director = wrap_director(collection, inputs, run_average_by_time)
 
         ml4 = build_metalink(
-            "average-result",
-            "Averaging result as NetCDF files.",
+            "average-time-result",
+            "Averaging by time result as NetCDF files.",
             self.workdir,
             director.output_uris,
         )
 
-        populate_response(response, "average", self.workdir, inputs, collection, ml4)
+        populate_response(
+            response, "average_time", self.workdir, inputs, collection, ml4
+        )
         return response
