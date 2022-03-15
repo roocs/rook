@@ -39,8 +39,9 @@ def test_wps_average_no_aggregation():
     client = client_for(Service(processes=[AverageByTime()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=average&datainputs={}".format(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=average_time&datainputs={}".format(
             datainputs
         )
     )
+    # print(resp.data)
     assert_process_exception(resp, code="MissingParameterValue")

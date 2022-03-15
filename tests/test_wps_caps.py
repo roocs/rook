@@ -12,7 +12,7 @@ def test_wps_caps():
         "/wps:Capabilities" "/wps:ProcessOfferings" "/wps:Process" "/ows:Identifier"
     )
     assert sorted(names.split()) == [
-        "average",
+        "average_time",
         "dashboard",
         "orchestrate",
         "subset",

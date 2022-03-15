@@ -110,6 +110,7 @@ class Provenance(object):
             "area",
             "level",
             "dims",
+            "freq",
             "apply_fixes",
         ]:
             if param in parameters:

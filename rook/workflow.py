@@ -6,7 +6,7 @@ import networkx as nx
 import yaml
 
 from .exceptions import WorkflowValidationError
-from .operator import Average, Diff, Subset
+from .operator import AverageByTime, Diff, Subset
 from .provenance import Provenance
 
 LOGGER = logging.getLogger()
@@ -76,7 +76,7 @@ class WorkflowRunner(object):
 class BaseWorkflow(object):
     def __init__(self, output_dir):
         self.subset_op = Subset(output_dir)
-        self.average_op = Average(output_dir)
+        self.average_time_op = AverageByTime(output_dir)
         self.diff_op = Diff(output_dir)
         self.prov = Provenance(output_dir)
 
@@ -134,9 +134,9 @@ class TreeWorkflow(BaseWorkflow):
             collection = step["in"]["collection"]
             result = self.subset_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "average" == step["run"]:
+        elif "average_time" == step["run"]:
             collection = step["in"]["collection"]
-            result = self.average_op.call(step["in"])
+            result = self.average_time_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
         elif "diff" == step["run"]:
             result = self.diff_op.call(step["in"])

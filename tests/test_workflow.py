@@ -41,13 +41,13 @@ def test_build_tree():
 def test_run_tree_wf():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF)
-    assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_avg-t.nc" in output[0]
+    assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850101-21200101_avg-year.nc" in output[0]
 
 
 def test_run_tree_wf_2():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_2)
-    assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_avg-t" in output[0]
+    assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20900101-21000101_avg-year.nc" in output[0]
 
 
 @pytest.mark.skip(reason="Uses Diff operator - not implemented.")
@@ -61,13 +61,19 @@ def test_run_wf_cmip6_subset_average():
     wfdoc = resource_file("wf_cmip6_subset_average.json")
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(wfdoc)
-    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc" in output[0]
+    assert (
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850101-20140101_avg-year.nc"
+        in output[0]
+    )
 
 
 def test_run_tree_wf_5():
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
     output = wf.run(TREE_WF_5)
-    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc" in output[0]
+    assert (
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950101-20000101_avg-year.nc"
+        in output[0]
+    )
 
 
 @pytest.mark.skip(reason="Uses Diff operator - not implemented.")

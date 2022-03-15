@@ -24,10 +24,10 @@
               }
           },
           "average_tas": {
-              "run": "average",
+              "run": "average_time",
               "in": {
                   "collection": "subset_tas_2/output",
-                  "dims": "time"
+                  "freq": "year"
               }
           }
       }

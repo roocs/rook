@@ -1,4 +1,4 @@
-def run_average(args):
+def run_average_by_time(args):
     # TODO: handle lazy load of daops
     from daops.ops.average import average_time
 

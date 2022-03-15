@@ -110,9 +110,7 @@ class AverageByTime(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(
-                request.inputs, "apply_fixes", default=False
-            ),
+            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),

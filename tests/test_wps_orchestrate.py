@@ -56,13 +56,13 @@ def test_wps_orchestrate_prov():
     doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
     assert 'roocs:time="1985-01-01/2014-12-30"' in doc.get_provn()
-    assert 'roocs:dims="time"' in doc.get_provn()
+    assert 'roocs:freq="year"' in doc.get_provn()
     assert (
         "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, roocs:CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"  # noqa
         in doc.get_provn()
     )
     assert (
-        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_avg-t.nc, roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"  # noqa
+        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850101-20140101_avg-year.nc, roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"  # noqa
         in doc.get_provn()
     )
     # assert "prov:startTime" in doc.get_provn()
@@ -85,4 +85,4 @@ def test_wps_orchestrate_prov_with_fixes():
     doc = prov.read(file_uri[len("file://") :])
     print(doc.get_provn())
     assert 'time="1985-01-01/2014-12-30"' in doc.get_provn()
-    assert 'dims="time"' in doc.get_provn()
+    assert 'freq="year"' in doc.get_provn()
