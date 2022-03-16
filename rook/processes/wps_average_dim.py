@@ -112,8 +112,9 @@ class AverageByDimension(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            "dim": parse_wps_input(request.inputs, "dim", default=None),
+            "dims": parse_wps_input(request.inputs, "dim", default=None),
         }
+        print(inputs)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_average_by_dim)

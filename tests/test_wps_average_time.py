@@ -35,7 +35,7 @@ def test_wps_average_year_cmip6():
     assert "output" in get_output(resp.xml)
 
 
-def test_wps_average_no_aggregation():
+def test_wps_average_no_freq():
     client = client_for(Service(processes=[AverageByTime()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     resp = client.get(
