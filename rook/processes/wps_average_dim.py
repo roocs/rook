@@ -10,12 +10,12 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_average_by_time
+from ..utils.average_utils import run_average_by_dim
 
 LOGGER = logging.getLogger()
 
 
-class AverageByTime(Process):
+class AverageByDimension(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -28,13 +28,13 @@ class AverageByTime(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "freq",
-                "Frequency",
-                abstract="Aggregation time frequency. Example: year",
-                allowed_values=["year", "month", "day"],
+                "dim",
+                "Dimension",
+                abstract="Dimensions used for aggregation. Example: level",
+                allowed_values=["time", "level", "latitude", "longitude"],
                 data_type="string",
                 min_occurs=1,
-                max_occurs=1,
+                max_occurs=4,
             ),
             LiteralInput(
                 "pre_checked",
@@ -81,11 +81,11 @@ class AverageByTime(Process):
             ),
         ]
 
-        super(AverageByTime, self).__init__(
+        super(AverageByDimension, self).__init__(
             self._handler,
-            identifier="average_time",
-            title="Average by Time",
-            abstract="Run averaging by time on climate model data.",
+            identifier="average_dim",
+            title="Average by Dimensions",
+            abstract="Run averaging by dimensions on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
@@ -112,20 +112,20 @@ class AverageByTime(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            "freq": parse_wps_input(request.inputs, "freq", default=None),
+            "dim": parse_wps_input(request.inputs, "dim", default=None),
         }
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average_by_time)
+        director = wrap_director(collection, inputs, run_average_by_dim)
 
         ml4 = build_metalink(
-            "average-time-result",
-            "Averaging by time result as NetCDF files.",
+            "average-dim-result",
+            "Averaging by dimension result as NetCDF files.",
             self.workdir,
             director.output_uris,
         )
 
         populate_response(
-            response, "average_time", self.workdir, inputs, collection, ml4
+            response, "average_dim", self.workdir, inputs, collection, ml4
         )
         return response
