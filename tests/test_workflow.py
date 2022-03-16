@@ -87,6 +87,17 @@ def test_run_tree_wf_6():
     assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
+def test_wf_average_latlon_cmip6():
+    wfdoc = resource_file("wf_average_latlon_cmip6.json")
+    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
+    output = wf.run(wfdoc)
+    # print(output)
+    assert (
+        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216_avg-xy.nc"
+        in output[0]
+    )
+
+
 def test_wf_c3s_cmip6_collection_only():
     wfdoc = resource_file("wf_c3s_cmip6_subset_collection_only.json")
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
