@@ -86,3 +86,22 @@ def test_wps_orchestrate_prov_with_fixes():
     print(doc.get_provn())
     assert 'time="1985-01-01/2014-12-30"' in doc.get_provn()
     assert 'freq="year"' in doc.get_provn()
+
+
+def test_wps_orchestrate_average_latlon_cmip6():
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+    datainputs = "workflow=@xlink:href=file://{}".format(
+        resource_file("wf_average_latlon_cmip6.json")
+    )
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    file_uri = get_output(resp.xml)["prov"]
+    print(file_uri)
+    doc = prov.read(file_uri[len("file://") :])
+    print(doc.get_provn())
+    assert 'time="1985-01-01/2014-12-30"' in doc.get_provn()
+    assert 'dims="latitude,longitude"' in doc.get_provn()
