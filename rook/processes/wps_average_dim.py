@@ -112,7 +112,9 @@ class AverageByDimension(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            "dims": parse_wps_input(request.inputs, "dim", default=None),
+            "dims": parse_wps_input(
+                request.inputs, "dim", as_sequence=True, default=None
+            ),
         }
         print(inputs)
 
