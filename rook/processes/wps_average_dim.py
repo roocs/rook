@@ -28,8 +28,8 @@ class AverageByDimension(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "dim",
-                "Dimension",
+                "dims",
+                "Dimensions",
                 abstract="Dimensions used for aggregation. Example: level",
                 allowed_values=["time", "level", "latitude", "longitude"],
                 data_type="string",
@@ -113,7 +113,7 @@ class AverageByDimension(Process):
                 request.inputs, "pre_checked", default=False
             ),
             "dims": parse_wps_input(
-                request.inputs, "dim", as_sequence=True, default=None
+                request.inputs, "dims", as_sequence=True, default=None
             ),
         }
         print(inputs)
