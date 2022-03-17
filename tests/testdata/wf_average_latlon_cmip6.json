@@ -1,5 +1,5 @@
 {
-      "doc": "subset+average",
+      "doc": "subset+average_latlon",
       "inputs": {
           "rlds": ["CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"]
       },
@@ -7,18 +7,18 @@
           "output": "average_rlds/output"
       },
       "steps": {
-          "subset_rlds": {
+          "subset_rlds_1": {
               "run": "subset",
               "in": {
                   "collection": "inputs/rlds",
-                  "time": "1985-01-01/2014-12-30"
+                  "time": "1985-01-01/2014-12-30",
               }
           },
           "average_rlds": {
-              "run": "average_time",
+              "run": "average_dim",
               "in": {
-                  "collection": "subset_rlds/output",
-                  "freq": "year"
+                  "collection": "subset_rlds_1/output",
+                  "dims": ["latitude", "longitude"]
               }
           }
       }

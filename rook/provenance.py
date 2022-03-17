@@ -110,10 +110,14 @@ class Provenance(object):
             "area",
             "level",
             "dims",
+            "freq",
             "apply_fixes",
         ]:
             if param in parameters:
-                attributes[ROOCS[param]] = parameters[param]
+                value = parameters[param]
+                if isinstance(value, list):
+                    value = ",".join(value)
+                attributes[ROOCS[param]] = value
         op = self._execution_activity(
             identifier=ROOCS[f"{operator}_{uuid.uuid4()}"],
             label=operator,

@@ -23,10 +23,10 @@
               }
           },
           "average_rlds": {
-              "run": "average",
+              "run": "average_time",
               "in": {
                   "collection": "subset_rlds_2/output",
-                  "dims": "time"
+                  "freq": "year"
               }
           }
       }

@@ -32,7 +32,7 @@ WF_SUBSET_AVERAGE = json.dumps(
                 "in": {"collection": "inputs/ds", "time": "2020-01-01/2020-12-31"},
             },
             "average_ds": {
-                "run": "average",
+                "run": "average_dim",
                 "in": {"collection": "subset_ds/output", "dims": "time"},
             },
         },
@@ -45,7 +45,8 @@ def test_smoke_get_capabilities(wps):
     assert caps.identification.type == "WPS"
     processes = [p.identifier for p in caps.processes]
     assert "subset" in processes
-    assert "average" in processes
+    assert "average_dim" in processes
+    assert "average_time" in processes
     assert "orchestrate" in processes
 
 
@@ -58,12 +59,20 @@ def test_smoke_describe_process_subset(wps):
     assert "area" in inputs
 
 
-def test_smoke_describe_process_average(wps):
-    process = wps.describeprocess("average")
-    assert process.identifier == "average"
+def test_smoke_describe_process_average_dim(wps):
+    process = wps.describeprocess("average_dim")
+    assert process.identifier == "average_dim"
     inputs = [inpt.identifier for inpt in process.dataInputs]
     assert "collection" in inputs
     assert "dims" in inputs
+
+
+def test_smoke_describe_process_average_time(wps):
+    process = wps.describeprocess("average_time")
+    assert process.identifier == "average_time"
+    inputs = [inpt.identifier for inpt in process.dataInputs]
+    assert "collection" in inputs
+    assert "freq" in inputs
 
 
 def test_smoke_describe_process_orchestrate(wps):
@@ -128,19 +137,26 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_mon_average_time(wps):
+def test_smoke_execute_c3s_cmip6_mon_average_dim(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("dims", "time")]
-    urls = wps.execute("average", inputs)
+    urls = wps.execute("average_dim", inputs)
     assert len(urls) == 1
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_day_average_time(wps):
+def test_smoke_execute_c3s_cmip6_day_average_dim(wps):
     inputs = [("collection", C3S_CMIP6_DAY_COLLECTION), ("dims", "time")]
-    urls = wps.execute("average", inputs)
-    print(urls)
+    urls = wps.execute("average_dim", inputs)
+    # print(urls)
     assert len(urls) == 1
     assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
+    inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("freq", "year")]
+    urls = wps.execute("average_time", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_orchestrate(wps):

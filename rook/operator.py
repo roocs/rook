@@ -4,7 +4,10 @@ from copy import deepcopy
 
 from rook.director import wrap_director
 from rook.utils.input_utils import resolve_to_file_paths
-from rook.utils.average_utils import run_average
+from rook.utils.average_utils import (
+    run_average_by_time,
+    run_average_by_dim,
+)
 from rook.utils.subset_utils import run_subset
 from roocs_utils.utils.file_utils import is_file_list, FileMapper
 
@@ -58,11 +61,18 @@ class Subset(Operator):
         return run_subset
 
 
-class Average(Operator):
-    prefix = "average"
+class AverageByTime(Operator):
+    prefix = "average_time"
 
     def _get_runner(self):
-        return run_average
+        return run_average_by_time
 
 
-Diff = Average
+class AverageByDimension(Operator):
+    prefix = "average_dim"
+
+    def _get_runner(self):
+        return run_average_by_dim
+
+
+Diff = AverageByTime

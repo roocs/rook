@@ -10,12 +10,12 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_average
+from ..utils.average_utils import run_average_by_dim
 
 LOGGER = logging.getLogger()
 
 
-class Average(Process):
+class AverageByDimension(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -30,10 +30,11 @@ class Average(Process):
             LiteralInput(
                 "dims",
                 "Dimensions",
-                abstract="Dimensions to average over. Example: time",
+                abstract="Dimensions used for aggregation. Example: level",
+                allowed_values=["time", "level", "latitude", "longitude"],
                 data_type="string",
                 min_occurs=1,
-                max_occurs=1,
+                max_occurs=4,
             ),
             LiteralInput(
                 "pre_checked",
@@ -80,11 +81,11 @@ class Average(Process):
             ),
         ]
 
-        super(Average, self).__init__(
+        super(AverageByDimension, self).__init__(
             self._handler,
-            identifier="average",
-            title="Average",
-            abstract="Run averaging on climate model data. Calls daops operators.",
+            identifier="average_dim",
+            title="Average by Dimensions",
+            abstract="Run averaging by dimensions on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
@@ -96,8 +97,6 @@ class Average(Process):
         )
 
     def _handler(self, request, response):
-        # TODO: handle lazy load of daops
-
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in average: {os.environ}")
 
@@ -109,24 +108,27 @@ class Average(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(
-                request.inputs, "apply_fixes", default=False
-            ),
+            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
-            "dims": parse_wps_input(request.inputs, "dims", default=None),
+            "dims": parse_wps_input(
+                request.inputs, "dims", as_sequence=True, default=None
+            ),
         }
+        print(inputs)
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average)
+        director = wrap_director(collection, inputs, run_average_by_dim)
 
         ml4 = build_metalink(
-            "average-result",
-            "Averaging result as NetCDF files.",
+            "average-dim-result",
+            "Averaging by dimension result as NetCDF files.",
             self.workdir,
             director.output_uris,
         )
 
-        populate_response(response, "average", self.workdir, inputs, collection, ml4)
+        populate_response(
+            response, "average_dim", self.workdir, inputs, collection, ml4
+        )
         return response
