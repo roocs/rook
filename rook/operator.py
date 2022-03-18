@@ -73,6 +73,3 @@ class AverageByDimension(Operator):
 
     def _get_runner(self):
         return run_average_by_dim
-
-
-Diff = AverageByTime

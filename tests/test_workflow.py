@@ -9,9 +9,7 @@ from .common import resource_file
 
 TREE_WF = resource_file("subset_wf_1.json")
 TREE_WF_2 = resource_file("subset_wf_2.json")
-TREE_WF_3 = resource_file("subset_wf_3.json")
 TREE_WF_5 = resource_file("subset_wf_5.json")
-TREE_WF_6 = resource_file("subset_wf_6.json")
 
 
 def test_validate_tree_wf():
@@ -50,13 +48,6 @@ def test_run_tree_wf_2():
     assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20900101-21000101_avg-year.nc" in output[0]
 
 
-@pytest.mark.skip(reason="Uses Diff operator - not implemented.")
-def test_run_tree_wf_3():
-    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
-    output = wf.run(TREE_WF_3)
-    assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
-
-
 def test_run_wf_cmip6_subset_average():
     wfdoc = resource_file("wf_cmip6_subset_average.json")
     wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
@@ -74,17 +65,6 @@ def test_run_tree_wf_5():
         "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19950101-20000101_avg-year.nc"
         in output[0]
     )
-
-
-@pytest.mark.skip(reason="Uses Diff operator - not implemented.")
-def test_run_tree_wf_6():
-    wf = workflow.WorkflowRunner(output_dir=tempfile.mkdtemp())
-    output = wf.run(TREE_WF_6)
-    assert (
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6"
-        in output[0]
-    )
-    assert "zostoga_mon_inmcm4_rcp45_r1i1p1_20850116-21001216.nc" in output[0]
 
 
 def test_wf_average_latlon_cmip6():

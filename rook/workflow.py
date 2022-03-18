@@ -9,7 +9,6 @@ from .exceptions import WorkflowValidationError
 from .operator import (
     AverageByTime,
     AverageByDimension,
-    Diff,
     Subset,
 )
 from .provenance import Provenance
@@ -83,7 +82,6 @@ class BaseWorkflow(object):
         self.subset_op = Subset(output_dir)
         self.average_time_op = AverageByTime(output_dir)
         self.average_dim_op = AverageByDimension(output_dir)
-        self.diff_op = Diff(output_dir)
         self.prov = Provenance(output_dir)
 
     def validate(self, wfdoc):
@@ -148,9 +146,6 @@ class TreeWorkflow(BaseWorkflow):
             collection = step["in"]["collection"]
             result = self.average_dim_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "diff" == step["run"]:
-            result = self.diff_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], ["missing"], result)
         else:
             result = None
         LOGGER.debug(f"run result={result}")
