@@ -64,7 +64,7 @@ def build_tree(wfdoc):
 
 class WorkflowRunner(object):
     def __init__(self, output_dir):
-        self.workflow = TreeWorkflow(output_dir)
+        self.workflow = Workflow(output_dir)
 
     def run(self, path):
         wfdoc = load_wfdoc(path)
@@ -98,7 +98,7 @@ class BaseWorkflow(object):
         raise NotImplementedError("implemented in subclass")
 
 
-class TreeWorkflow(BaseWorkflow):
+class Workflow(BaseWorkflow):
     def validate(self, wfdoc):
         if "doc" not in wfdoc:
             raise WorkflowValidationError("doc missing")
