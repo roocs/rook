@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 from datetime import datetime
+import pathlib
 
 from prov.identifier import Namespace
 import prov.model as prov
@@ -29,7 +30,10 @@ ROOCS = Namespace("roocs", uri="urn:roocs:")
 
 class Provenance(object):
     def __init__(self, output_dir):
-        self.output_dir = output_dir
+        if isinstance(output_dir, pathlib.Path):
+            self.output_dir = output_dir
+        else:
+            self.output_dir = pathlib.Path(output_dir)
         self.doc = None
         self._identifier = None
         self._workflow = None
@@ -168,14 +172,14 @@ class Provenance(object):
         return activity
 
     def write_json(self):
-        outfile = os.path.join(self.output_dir, "provenance.json")
-        self.doc.serialize(outfile, format="json")
+        outfile = self.output_dir / "provenance.json"
+        self.doc.serialize(outfile.as_posix(), format="json")
         return outfile
 
     def write_png(self):
-        outfile = os.path.join(self.output_dir, "provenance.png")
+        outfile = self.output_dir / "provenance.png"
         figure = prov_to_dot(self.doc)
-        figure.write_png(outfile)
+        figure.write_png(outfile.as_posix())
         return outfile
 
     def get_provn(self):
