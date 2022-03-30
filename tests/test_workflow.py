@@ -14,7 +14,7 @@ TREE_WF_5 = resource_file("subset_wf_5.json")
 
 def test_validate_tree_wf(tmp_path):
     wfdoc = workflow.load_wfdoc(TREE_WF)
-    wf = workflow.TreeWorkflow(output_dir=tmp_path)
+    wf = workflow.Workflow(output_dir=tmp_path)
     assert wf.validate(wfdoc) is True
 
 
