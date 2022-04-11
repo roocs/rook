@@ -142,7 +142,7 @@ class Workflow(BaseWorkflow):
             collection = step["in"]["collection"]
             result = self.average_time_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "average_dim" == step["run"]:
+        elif "average" == step["run"]:
             collection = step["in"]["collection"]
             result = self.average_dim_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)

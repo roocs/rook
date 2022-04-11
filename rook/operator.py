@@ -74,7 +74,7 @@ class AverageByTime(Operator):
 
 
 class AverageByDimension(Operator):
-    prefix = "average_dim"
+    prefix = "average"
 
     def _get_runner(self):
         return run_average_by_dim
