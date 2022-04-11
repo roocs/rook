@@ -15,7 +15,7 @@
               }
           },
           "average_rlds": {
-              "run": "average_dim",
+              "run": "average",
               "in": {
                   "collection": "subset_rlds_1/output",
                   "dims": ["latitude", "longitude"]

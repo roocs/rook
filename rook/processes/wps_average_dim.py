@@ -83,7 +83,7 @@ class AverageByDimension(Process):
 
         super(AverageByDimension, self).__init__(
             self._handler,
-            identifier="average_dim",
+            identifier="average",
             title="Average by Dimensions",
             abstract="Run averaging by dimensions on climate model data.",
             metadata=[
@@ -128,7 +128,5 @@ class AverageByDimension(Process):
             director.output_uris,
         )
 
-        populate_response(
-            response, "average_dim", self.workdir, inputs, collection, ml4
-        )
+        populate_response(response, "average", self.workdir, inputs, collection, ml4)
         return response
