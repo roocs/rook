@@ -1,6 +1,16 @@
 Changes
 *******
 
+0.8.0 (2022-04-14)
+==================
+
+* Added "average" and "average_time" operators (#191, #206).
+* Removed "diff" operator (#204).
+* Cleaned up workflow and tests (#205).
+* Added changes for CMIP6 decadal (#202).
+* Updated to daops 0.8.0.
+* Updated to clisops 0.9.0.
+
 0.7.0 (2021-11-08)
 ==================
 
