@@ -1,6 +1,19 @@
 Changes
 *******
 
+0.8.0 (2022-04-14)
+==================
+
+* Added "average" and "average_time" operators (#191, #206).
+* Removed "diff" operator (#204).
+* Cleaned up workflow and tests (#205).
+* Added changes for CMIP6 decadal (#202).
+* Updated to daops 0.8.0 (#207).
+* Updated to clisops 0.9.0 (#207).
+* Updated to latest bokeh 2.4.2 in dashboard (#207).
+* Updated pre-commit (#207).
+* Updated pywps 4.5.2 (#203, #207).
+
 0.7.0 (2021-11-08)
 ==================
 

@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import humanize
+import bokeh
 
 from .plots import ActivityPlot, DurationPlot, ConcurrencyPlot, PulsePlot
 from .plots import DownloadsPlot, TransferPlot
@@ -61,6 +62,7 @@ class Dashboard:
         script_t1, table_1 = OverviewTable(self.df, self.df_downloads).components()
         script_t2, table_2 = MessageTable(self.df).components()
         return template.render(
+            bokeh_version=bokeh.__version__,
             time_start=humanize.naturaldate(min(self.df["time_start"])),
             time_end=humanize.naturaldate(max(self.df["time_start"])),
             plot_1=plot_1,

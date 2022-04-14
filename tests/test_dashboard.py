@@ -7,8 +7,11 @@ from rook.dashboard import Dashboard
 def test_dashboard(tmpdir):
     dash = Dashboard(output_dir=tmpdir)
     dash.load(
-        "http://rook4.cloud.dkrz.de:80/outputs/rook/9e3ae300-d044-11eb-8ce3-fa163e1098db/wps_requests.csv",
+        "http://rook4.cloud.dkrz.de/outputs/rook/64413a5a-bbda-11ec-9cfa-fa163ed6c06f/wps_requests.csv",
         filter="orchestrate",
+    )
+    dash.load_downloads(
+        "http://rook4.cloud.dkrz.de/outputs/rook/64413a5a-bbda-11ec-9cfa-fa163ed6c06f/downloads.csv"
     )
     print(dash.write())
     # assert False
