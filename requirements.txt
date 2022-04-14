@@ -3,9 +3,8 @@ jinja2
 click
 psutil
 # daops
-# daops>=0.8.0,<0.9
+daops>=0.8.0,<0.9
 # daops @ git+https://github.com/roocs/daops@master#egg=daops
-daops @ git+https://github.com/roocs/daops@prepare-release-0.8.0#egg=daops
 clisops>=0.9.0,<0.10
 roocs-utils>=0.5.0,<0.6
 xarray>=0.20
@@ -21,5 +20,5 @@ intake
 pandas>=1.3.5,<1.4
 aiohttp
 # dashboard
-bokeh>=2.4.2,2.5
+bokeh>=2.4.2,<2.5
 humanize
