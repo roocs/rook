@@ -156,7 +156,7 @@ def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc" in urls[0]
 
 
 def test_smoke_execute_orchestrate(wps):
