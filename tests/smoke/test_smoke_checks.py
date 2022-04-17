@@ -21,9 +21,11 @@ CMIP5_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
 
-WF_SUBSET_AVERAGE = json.dumps(
+C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # noqa
+
+WF_C3S_CMIP6 = json.dumps(
     {
-        "doc": "subset+average on cmip6 rlds",
+        "doc": "subset+average on cmip6",
         "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
         "outputs": {"output": "average_ds/output"},
         "steps": {
@@ -34,6 +36,24 @@ WF_SUBSET_AVERAGE = json.dumps(
             "average_ds": {
                 "run": "average",
                 "in": {"collection": "subset_ds/output", "dims": "time"},
+            },
+        },
+    }
+)
+
+WF_C3S_CORDEX = json.dumps(
+    {
+        "doc": "subset on c3s-cordex",
+        "inputs": {"ds": [C3S_CORDEX_DAY_COLLECTION]},
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "inputs/ds",
+                    "time": "2006/2006",
+                    "time_components": "month:jan,feb,mar",
+                },
             },
         },
     }
@@ -159,9 +179,18 @@ def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc" in urls[0]
 
 
-def test_smoke_execute_orchestrate(wps):
+def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     inputs = [
-        ("workflow", ComplexDataInput(WF_SUBSET_AVERAGE)),
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cordex_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CORDEX)),
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
