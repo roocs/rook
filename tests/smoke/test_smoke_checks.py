@@ -23,6 +23,8 @@ CMIP5_COLLECTION = (
 
 C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # noqa
 
+C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
+
 WF_C3S_CMIP6 = json.dumps(
     {
         "doc": "subset+average on cmip6",
@@ -157,22 +159,14 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_mon_average_dim(wps):
+def test_smoke_execute_c3s_cmip6_average_dim(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
     assert len(urls) == 1
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_day_average_dim(wps):
-    inputs = [("collection", C3S_CMIP6_DAY_COLLECTION), ("dims", "time")]
-    urls = wps.execute("average", inputs)
-    # print(urls)
-    assert len(urls) == 1
-    assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
-
-
-def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
+def test_smoke_execute_c3s_cmip6_average_time(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
@@ -180,7 +174,7 @@ def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
 
 
 def test_smoke_execute_c3s_cordex_average_dim(wps):
-    inputs = [("collection", C3S_CORDEX_DAY_COLLECTION), ("dims", "time")]
+    inputs = [("collection", C3S_CORDEX_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
     # print(urls)
     assert len(urls) == 1
