@@ -133,7 +133,7 @@ def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+    assert "tas_day_EC-EARTH_historical_r1i1p1_20050101-20051231.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
@@ -157,7 +157,10 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+    assert (
+        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20201216.nc"
+        in urls[0]
+    )
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
