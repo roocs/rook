@@ -189,7 +189,10 @@ def test_smoke_execute_c3s_cordex_average_time(wps):
     urls = wps.execute("average_time", inputs)
     # print(urls)
     assert len(urls) == 1
-    assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
+    assert (
+        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_200601-206012.nc"
+        in urls[0]
+    )
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate(wps):
