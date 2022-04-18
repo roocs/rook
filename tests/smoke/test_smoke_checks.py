@@ -179,6 +179,22 @@ def test_smoke_execute_c3s_cmip6_mon_average_time_year(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc" in urls[0]
 
 
+def test_smoke_execute_c3s_cordex_average_dim(wps):
+    inputs = [("collection", C3S_CORDEX_DAY_COLLECTION), ("dims", "time")]
+    urls = wps.execute("average", inputs)
+    # print(urls)
+    assert len(urls) == 1
+    assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cordex_average_time(wps):
+    inputs = [("collection", C3S_CORDEX_DAY_COLLECTION), ("freq", "year")]
+    urls = wps.execute("average_time", inputs)
+    # print(urls)
+    assert len(urls) == 1
+    assert "tas_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_avg-t.nc" in urls[0]
+
+
 def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
