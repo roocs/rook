@@ -58,8 +58,8 @@ WF_C3S_CORDEX = json.dumps(
                 },
             },
             "average": {
-                "run": "average_time",
-                "in": {"collection": "subset/output", "freq": "year"},
+                "run": "average",
+                "in": {"collection": "subset/output", "dims": "time"},
             },
         },
     }
