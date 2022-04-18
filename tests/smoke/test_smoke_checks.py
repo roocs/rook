@@ -218,6 +218,6 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert (
-        "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_20060101-20060331.nc"
+        "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
         in urls[0]
     )
