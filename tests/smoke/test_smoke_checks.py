@@ -29,15 +29,15 @@ WF_C3S_CMIP6 = json.dumps(
     {
         "doc": "subset+average on cmip6",
         "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
-        "outputs": {"output": "average_ds/output"},
+        "outputs": {"output": "average/output"},
         "steps": {
-            "subset_ds": {
+            "subset": {
                 "run": "subset",
                 "in": {"collection": "inputs/ds", "time": "2020-01-01/2020-12-31"},
             },
-            "average_ds": {
+            "average": {
                 "run": "average",
-                "in": {"collection": "subset_ds/output", "dims": "time"},
+                "in": {"collection": "subset/output", "dims": "time"},
             },
         },
     }
@@ -47,7 +47,7 @@ WF_C3S_CORDEX = json.dumps(
     {
         "doc": "subset on c3s-cordex",
         "inputs": {"ds": [C3S_CORDEX_DAY_COLLECTION]},
-        "outputs": {"output": "subset/output"},
+        "outputs": {"output": "average/output"},
         "steps": {
             "subset": {
                 "run": "subset",
@@ -56,6 +56,10 @@ WF_C3S_CORDEX = json.dumps(
                     "time": "2006/2006",
                     "time_components": "month:jan,feb,mar",
                 },
+            },
+            "average": {
+                "run": "average_time",
+                "in": {"collection": "subset/output", "freq": "year"},
             },
         },
     }
