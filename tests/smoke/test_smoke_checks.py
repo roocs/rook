@@ -17,13 +17,31 @@ C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
 )
 
-CMIP5_COLLECTION = (
+C3S_CMIP5_DAY_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
 
 C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # noqa
 
 C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
+
+WF_C3S_CMIP5 = json.dumps(
+    {
+        "doc": "subset+average on cmip5",
+        "inputs": {"ds": [C3S_CMIP5_DAY_COLLECTION]},
+        "outputs": {"output": "average/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {"collection": "inputs/ds", "time": "2000/2000"},
+            },
+            "average": {
+                "run": "average",
+                "in": {"collection": "subset/output", "dims": "time"},
+            },
+        },
+    }
+)
 
 WF_C3S_CMIP6 = json.dumps(
     {
@@ -108,7 +126,19 @@ def test_smoke_describe_process_orchestrate(wps):
     assert "workflow" in inputs
 
 
-def test_smoke_execute_subset(wps, tmp_path):
+def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
+    inputs = [
+        ("collection", C3S_CMIP5_DAY_COLLECTION),
+        ("time", "2020-01-01/2020-12-31"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "tas" in ds.variables
+
+
+def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -120,7 +150,7 @@ def test_smoke_execute_subset(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_subset_by_point(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -198,6 +228,18 @@ def test_smoke_execute_c3s_cordex_average_time(wps):
     assert len(urls) == 1
     assert (
         "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20060101-20990101_avg-year.nc"
+        in urls[0]
+    )
+
+
+def test_smoke_execute_c3s_cmip5_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP5)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert (
+        "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
         in urls[0]
     )
 
