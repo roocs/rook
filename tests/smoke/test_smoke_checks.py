@@ -222,45 +222,60 @@ def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
-def test_smoke_execute_subset_c3s_cmip6_collection_only(wps):
-    inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
-    urls = wps.execute("subset", inputs)
-    print(urls)
-    assert len(urls) == 2
-    assert "data.mips.copernicus-climate.eu" in urls[0]
-
-
-def test_smoke_execute_subset_c3s_cmip5_collection_only(wps):
+@pytest.xfail(reason="cmip5 intake catalog missing")
+def test_smoke_execute_c3s_cmip5_subset_collection_only(wps):
     inputs = [("collection", C3S_CMIP5_MON_COLLECTION)]
     urls = wps.execute("subset", inputs)
     print(urls)
     assert len(urls) == 1
-    assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500116-20051216.nc" in urls[0]
+    assert (
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip5"
+        in urls[0]
+    )
 
 
-def test_smoke_execute_subset_c3s_cordex_collection_only(wps):
+def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
+    inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
+    urls = wps.execute("subset", inputs)
+    print(urls)
+    assert len(urls) == 2
+    assert (
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6"
+        in urls[0]
+    )
+
+
+def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
     inputs = [("collection", C3S_CORDEX_MON_COLLECTION)]
     urls = wps.execute("subset", inputs)
     print(urls)
-    assert len(urls) == 1
-    assert "data.mips.copernicus-climate.eu" in urls[0]
-
-
-def test_smoke_execute_c3s_cmip6_subset_time_and_area_cross_meridian(wps):
-    inputs = [
-        ("collection", C3S_CMIP6_MON_COLLECTION),
-        ("time", "2020-01-01/2020-12-30"),
-        ("area", "-50,-50,50,50"),
-    ]
-    urls = wps.execute("subset", inputs)
-    assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+    assert len(urls) == 10
+    assert (
+        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cordex"
+        in urls[0]
+    )
+    assert (
+        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_200601-201012.nc"
+        in urls[0]
+    )
 
 
 def test_smoke_execute_c3s_cmip5_subset_time_and_area_cross_meridian(wps):
     inputs = [
         ("collection", C3S_CMIP5_MON_COLLECTION),
         ("time", "2005/2005"),
+        ("area", "-50,-50,50,50"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_20050116-20051216.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_subset_time_and_area_cross_meridian(wps):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_COLLECTION),
+        ("time", "2020-01-01/2020-12-30"),
         ("area", "-50,-50,50,50"),
     ]
     urls = wps.execute("subset", inputs)
