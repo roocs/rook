@@ -211,7 +211,7 @@ def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_subset_original_files(wps):
+def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     inputs = [
         ("collection", C3S_CMIP6_DAY_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -222,7 +222,7 @@ def test_smoke_execute_subset_original_files(wps):
     assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
-def test_smoke_execute_subset_collection_only(wps):
+def test_smoke_execute_subset_c3s_cmip6_collection_only(wps):
     inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
     urls = wps.execute("subset", inputs)
     print(urls)
@@ -230,10 +230,37 @@ def test_smoke_execute_subset_collection_only(wps):
     assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
-def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
+def test_smoke_execute_subset_c3s_cmip5_collection_only(wps):
+    inputs = [("collection", C3S_CMIP5_MON_COLLECTION)]
+    urls = wps.execute("subset", inputs)
+    print(urls)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
+
+
+def test_smoke_execute_subset_c3s_cordex_collection_only(wps):
+    inputs = [("collection", C3S_CORDEX_MON_COLLECTION)]
+    urls = wps.execute("subset", inputs)
+    print(urls)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_subset_time_and_area_cross_meridian(wps):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
+        ("area", "-50,-50,50,50"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip5_subset_time_and_area_cross_meridian(wps):
+    inputs = [
+        ("collection", C3S_CMIP5_MON_COLLECTION),
+        ("time", "2005/2005"),
         ("area", "-50,-50,50,50"),
     ]
     urls = wps.execute("subset", inputs)
