@@ -222,17 +222,16 @@ def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
-@pytest.xfail(reason="cmip5 intake catalog missing")
-def test_smoke_execute_c3s_cmip5_subset_collection_only(wps):
-    inputs = [("collection", C3S_CMIP5_MON_COLLECTION)]
-    urls = wps.execute("subset", inputs)
-    print(urls)
-    assert len(urls) == 1
-    assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500116-20051216.nc" in urls[0]
-    assert (
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip5"
-        in urls[0]
-    )
+# def test_smoke_execute_c3s_cmip5_subset_collection_only(wps):
+#     inputs = [("collection", C3S_CMIP5_MON_COLLECTION)]
+#     urls = wps.execute("subset", inputs)
+#     print(urls)
+#     assert len(urls) == 1
+#     assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500116-20051216.nc" in urls[0]
+#     assert (
+#         "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip5"
+#         in urls[0]
+#     )
 
 
 def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
