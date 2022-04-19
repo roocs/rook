@@ -245,7 +245,7 @@ def test_smoke_execute_c3s_cmip5_average_dim(wps):
     inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
     assert len(urls) == 1
-    assert "tas_Amon_MPI-ESM-LR_historical_r1i1p1_avg-t.nc" in urls[0]
+    assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip5_average_time(wps):
@@ -253,7 +253,7 @@ def test_smoke_execute_c3s_cmip5_average_time(wps):
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
     assert (
-        "tas_Amon_MPI-ESM-LR_historical_r1i1p1_18500101-20050101_avg-year.nc" in urls[0]
+        "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500101-20050101_avg-year.nc" in urls[0]
     )
 
 
