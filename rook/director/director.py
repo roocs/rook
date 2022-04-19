@@ -103,7 +103,7 @@ class Director:
             return
 
         # TODO: quick fix for average. Don't use original files for average operator
-        if "dims" in self.inputs:
+        if "dims" in self.inputs or "freq" in self.inputs:
             return
 
         # Finally, check if the subset requirements can align with whole datasets
