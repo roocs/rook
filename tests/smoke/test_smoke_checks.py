@@ -21,6 +21,10 @@ C3S_CMIP5_DAY_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
 
+C3S_CMIP5_MON_COLLECTION = (
+    "c3s-cmip5.output1.MPI-M.MPI-ESM-LR.historical.mon.atmos.Amon.r1i1p1.tas.v20120315"
+)
+
 C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # noqa
 
 C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
@@ -238,17 +242,19 @@ def test_smoke_execute_subset_time_and_area_cross_meridian(wps):
 
 
 def test_smoke_execute_c3s_cmip5_average_dim(wps):
-    inputs = [("collection", C3S_CMIP5_DAY_COLLECTION), ("dims", "time")]
+    inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
     assert len(urls) == 1
-    assert "tas_day_EC-EARTH_historical_r1i1p1_avg-t.nc" in urls[0]
+    assert "tas_Amon_MPI-ESM-LR_historical_r1i1p1_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip5_average_time(wps):
-    inputs = [("collection", C3S_CMIP5_DAY_COLLECTION), ("freq", "year")]
+    inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
-    assert "tas_day_EC-EARTH_historical_r1i1p1_18500101-20090101_avg-year.nc" in urls[0]
+    assert (
+        "tas_Amon_MPI-ESM-LR_historical_r1i1p1_18500101-20050101_avg-year.nc" in urls[0]
+    )
 
 
 def test_smoke_execute_c3s_cmip6_average_dim(wps):
