@@ -6,7 +6,7 @@ psutil
 daops>=0.8.0,<0.9
 # daops @ git+https://github.com/roocs/daops@master#egg=daops
 clisops>=0.9.0,<0.10
-roocs-utils>=0.6.0,<0.7
+roocs-utils>=0.6.1,<0.7
 xarray>=0.20
 dask[complete]
 netcdf4
