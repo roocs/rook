@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.8.1 (2022-04-20)
+==================
+
+* Updated to roocs-utils 0.6.1 (#209).
+* Fixed `director` for new `average_time` operator (#208).
+* Added smoke tests for c3s-cmip5 and c3s-cordex (#208, #209).
+
 0.8.0 (2022-04-14)
 ==================
 
