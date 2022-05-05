@@ -381,6 +381,30 @@ def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
+def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "rlds" in ds.variables
+    # check fill value in bounds
+    assert "_FillValue" not in ds.lat_bnds.encoding
+    assert "_FillValue" not in ds.lon_bnds.encoding
+    assert "_FillValue" not in ds.time_bnds.encoding
+    # check fill value in coordinates
+    assert "_FillValue" not in ds.time.encoding
+    assert "_FillValue" not in ds.lat.encoding
+    assert "_FillValue" not in ds.lon.encoding
+    # assert "_FillValue" not in ds.height.encoding
+    # check coordinates in bounds
+    assert "coordinates" not in ds.lat_bnds.encoding
+    assert "coordinates" not in ds.lon_bnds.encoding
+    assert "coordinates" not in ds.time_bnds.encoding
+
+
 def test_smoke_execute_c3s_cordex_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CORDEX)),
