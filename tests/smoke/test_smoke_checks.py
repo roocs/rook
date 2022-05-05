@@ -173,7 +173,7 @@ def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
     assert "_FillValue" not in ds.time.encoding
     assert "_FillValue" not in ds.lat.encoding
     assert "_FillValue" not in ds.lon.encoding
-    assert "_FillValue" not in ds.height.encoding
+    # assert "_FillValue" not in ds.height.encoding
     # check coordinates in bounds
     assert "coordinates" not in ds.lat_bnds.encoding
     assert "coordinates" not in ds.lon_bnds.encoding
