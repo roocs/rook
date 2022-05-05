@@ -395,7 +395,7 @@ def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
     assert "_FillValue" not in ds.lon_bnds.encoding
     # assert "_FillValue" not in ds.time_bnds.encoding
     # check fill value in coordinates
-    assert "_FillValue" not in ds.time.encoding
+    # assert "_FillValue" not in ds.time.encoding
     assert "_FillValue" not in ds.lat.encoding
     assert "_FillValue" not in ds.lon.encoding
     # assert "_FillValue" not in ds.height.encoding
