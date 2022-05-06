@@ -18,6 +18,10 @@ C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
 )
 
+C3S_CMIP6_MON_TASMIN_COLLECTION = (
+    "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
+)
+
 C3S_CMIP5_DAY_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
@@ -157,14 +161,17 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
 
 def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
     inputs = [
-        ("collection", C3S_CMIP6_MON_COLLECTION),
-        ("time", "2021-01-01/2021-12-31"),
+        ("collection", C3S_CMIP6_MON_TASMIN_COLLECTION),
+        ("time", "2010-01-01/2010-12-31"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20210116-20211216.nc" in urls[0]
+    assert (
+        "tasmin_Amon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_20100116-20101216.nc"
+        in urls[0]
+    )
     ds = open_dataset(urls[0], tmp_path)
-    assert "rlds" in ds.variables
+    assert "tasmin" in ds.variables
     # check fill value in bounds
     assert "_FillValue" not in ds.lat_bnds.encoding
     assert "_FillValue" not in ds.lon_bnds.encoding
