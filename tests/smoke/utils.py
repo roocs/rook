@@ -16,7 +16,7 @@ def download_file(url, tmp_path):
 
 
 def open_dataset(url, tmp_path):
-    ds = xr.open_dataset(download_file(url, tmp_path))
+    ds = xr.open_dataset(download_file(url, tmp_path), use_cftime=True)
     return ds
 
 

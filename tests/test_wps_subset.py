@@ -1,9 +1,12 @@
 import pytest
 
+import xarray as xr
 import prov
 
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
+
+from tests.smoke.utils import parse_metalink
 
 from rook.processes.wps_subset import Subset
 
@@ -12,6 +15,10 @@ from .common import PYWPS_CFG, get_output
 
 C3S_CMIP6_MON_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
+)
+
+C3S_CMIP6_MON_TASMIN_COLLECTION = (
+    "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
 
@@ -71,6 +78,37 @@ def test_wps_subset_c3s_cmip6_time_components():
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
     assert b"year:2015,2016|month:01,02,03" in resp.data
+
+
+def test_wps_subset_c3s_cmip6_metadata():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_CMIP6_MON_TASMIN_COLLECTION}"
+    datainputs += ";time=2010/2010"
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&lineage=true&datainputs={datainputs}"
+    )
+    # print(resp.data)
+    assert_response_success(resp)
+    m_path = get_output(resp.xml)["output"]
+    assert "meta4" in m_path
+    # parse metalink
+    xml = open(m_path[7:], "r").read()
+    urls = parse_metalink(xml)
+    # print(urls)
+    ds = xr.open_dataset(urls[0][7:], use_cftime=True)
+    # check fill value in bounds
+    assert "_FillValue" not in ds.lat_bnds.encoding
+    assert "_FillValue" not in ds.lon_bnds.encoding
+    assert "_FillValue" not in ds.time_bnds.encoding
+    # check fill value in coordinates
+    assert "_FillValue" not in ds.time.encoding
+    assert "_FillValue" not in ds.lat.encoding
+    assert "_FillValue" not in ds.lon.encoding
+    assert "_FillValue" not in ds.height.encoding
+    # check coordinates in bounds
+    assert "coordinates" not in ds.lat_bnds.encoding
+    assert "coordinates" not in ds.lon_bnds.encoding
+    assert "coordinates" not in ds.time_bnds.encoding
 
 
 def test_wps_subset_cmip6_prov():

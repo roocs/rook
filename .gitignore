@@ -47,6 +47,9 @@ coverage/
 # Sublime Text Editor
 *.sublime*
 
+# vscode
+*.vscode
+
 # buildout
 bin
 develop-eggs

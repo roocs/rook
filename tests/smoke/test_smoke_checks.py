@@ -1,3 +1,4 @@
+from pyparsing import dbl_slash_comment
 from tests.smoke.utils import open_dataset
 
 from owslib.wps import ComplexDataInput
@@ -15,6 +16,10 @@ C3S_CMIP6_MON_COLLECTION = (
 
 C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
+)
+
+C3S_CMIP6_MON_TASMIN_COLLECTION = (
+    "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
 C3S_CMIP5_DAY_COLLECTION = (
@@ -152,6 +157,34 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "rlds" in ds.variables
+
+
+def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_TASMIN_COLLECTION),
+        ("time", "2010-01-01/2010-12-31"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert (
+        "tasmin_Amon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_20100116-20101216.nc"
+        in urls[0]
+    )
+    ds = open_dataset(urls[0], tmp_path)
+    assert "tasmin" in ds.variables
+    # check fill value in bounds
+    assert "_FillValue" not in ds.lat_bnds.encoding
+    assert "_FillValue" not in ds.lon_bnds.encoding
+    assert "_FillValue" not in ds.time_bnds.encoding
+    # check fill value in coordinates
+    assert "_FillValue" not in ds.time.encoding
+    assert "_FillValue" not in ds.lat.encoding
+    assert "_FillValue" not in ds.lon.encoding
+    assert "_FillValue" not in ds.height.encoding
+    # check coordinates in bounds
+    assert "coordinates" not in ds.lat_bnds.encoding
+    assert "coordinates" not in ds.lon_bnds.encoding
+    assert "coordinates" not in ds.time_bnds.encoding
 
 
 def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
@@ -353,6 +386,30 @@ def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "rlds" in ds.variables
+    # check fill value in bounds
+    assert "_FillValue" not in ds.lat_bnds.encoding
+    assert "_FillValue" not in ds.lon_bnds.encoding
+    # assert "_FillValue" not in ds.time_bnds.encoding
+    # check fill value in coordinates
+    # assert "_FillValue" not in ds.time.encoding
+    assert "_FillValue" not in ds.lat.encoding
+    assert "_FillValue" not in ds.lon.encoding
+    # assert "_FillValue" not in ds.height.encoding
+    # check coordinates in bounds
+    assert "coordinates" not in ds.lat_bnds.encoding
+    assert "coordinates" not in ds.lon_bnds.encoding
+    # assert "coordinates" not in ds.time_bnds.encoding
 
 
 def test_smoke_execute_c3s_cordex_orchestrate(wps):
