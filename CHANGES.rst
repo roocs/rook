@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.8.2 (2022-05-16)
+==================
+
+* Updated to daops 0.8.1 and clisops 0.9.1 (#211).
+* Added tests to check correct metadata (#211).
+
 0.8.1 (2022-04-20)
 ==================
 
