@@ -37,12 +37,14 @@ def replace_inputs(wfdoc):
                 start_steps.append(step_id)
     for step_id, step in steps.items():
         # fixes are only applied to start steps
-        if step_id in start_steps:
-            steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
-                "apply_fixes", True
-            )
-        else:
-            steps[step_id]["in"]["apply_fixes"] = False
+        # TODO: quick fix to disable fix check (elasticsearch is down)
+        steps[step_id]["in"]["apply_fixes"] = False
+        # if step_id in start_steps:
+        #     steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
+        #         "apply_fixes", True
+        #     )
+        # else:
+        #     steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
     return steps
 

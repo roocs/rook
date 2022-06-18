@@ -45,7 +45,9 @@ class Director:
 
             self._resolve()
         # check if a fix will be applied
-        self._check_apply_fixes()
+        # TODO: quick fix to disable fixes (elasticsearch service is down)
+        # self._check_apply_fixes()
+        self.inputs["apply_fixes"] = False
 
     def _check_apply_fixes(self):
         if (
