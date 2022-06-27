@@ -25,7 +25,7 @@ class Concat(Process):
                 "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
                 data_type="string",
                 min_occurs=1,
-                max_occurs=-1,
+                max_occurs=10,
             ),
             LiteralInput(
                 "pre_checked",
@@ -89,7 +89,7 @@ class Concat(Process):
 
     def _handler(self, request, response):
         # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in average: {os.environ}")
+        LOGGER.debug(f"Environment used in concat: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collections = parse_wps_input(
