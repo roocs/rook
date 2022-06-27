@@ -25,7 +25,7 @@ class Concat(Process):
                 "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
                 data_type="string",
                 min_occurs=1,
-                max_occurs=10,
+                max_occurs=100,
             ),
             LiteralInput(
                 "pre_checked",
