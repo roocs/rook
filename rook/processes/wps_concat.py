@@ -22,7 +22,8 @@ class Concat(Process):
                 "collections",
                 "Collections",
                 abstract="A list of dataset identifiers. "
-                "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
+                "Example: "
+                "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r10i1p1f1.Amon.tas.gn.v20200908",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=100,

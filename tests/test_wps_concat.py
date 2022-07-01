@@ -8,11 +8,10 @@ from rook.processes.wps_concat import Concat
 from .common import PYWPS_CFG, get_output
 
 
-def test_wps_concat():
+def test_wps_concat_ec_earth():
     client = client_for(Service(processes=[Concat()], cfgfiles=[PYWPS_CFG]))
-    datainputs = """
-    collections=c3s-cmip6-decadal.DCPP.DWD.MPI-ESM1-2-LR.dcppA-hindcast.s1980-r1i1p1f1.day.tasmax.gn.v20220126
-    """
+    datainputs = "collections=c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215"  # noqa
+    datainputs += ";collections=c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r6i2p1f1.Amon.tas.gr.v20200508"  # noqa
     request = "service=WPS&request=Execute&version=1.0.0&identifier=concat"
     resp = client.get(f"?{request}&datainputs={datainputs}")
     print(resp.data)

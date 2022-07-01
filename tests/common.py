@@ -45,7 +45,7 @@ def write_roocs_cfg():
     # use_catalog = False
 
     [project:c3s-cmip6-decadal]
-    base_dir = {{ base_dir }}/test_data/pool/data/CMIP6/data/cmip6
+    base_dir = {{ base_dir }}/test_data/pool/data/CMIP6/data/CMIP6
 
     [project:c3s-cordex]
     base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
