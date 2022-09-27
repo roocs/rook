@@ -4,6 +4,7 @@ from .wps_average_time import AverageByTime
 from .wps_average_dim import AverageByDimension
 from .wps_orchestrate import Orchestrate
 from .wps_subset import Subset
+from .wps_concat import Concat
 
 processes = [
     Usage(),
@@ -11,5 +12,6 @@ processes = [
     Subset(),
     AverageByTime(),
     AverageByDimension(),
+    Concat(),
     Orchestrate(),
 ]

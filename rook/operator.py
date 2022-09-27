@@ -10,6 +10,7 @@ from rook.utils.average_utils import (
     run_average_by_dim,
 )
 from rook.utils.subset_utils import run_subset
+from rook.utils.concat_utils import run_concat
 from roocs_utils.utils.file_utils import is_file_list, FileMapper
 
 
@@ -78,3 +79,10 @@ class AverageByDimension(Operator):
 
     def _get_runner(self):
         return run_average_by_dim
+
+
+class Concat(Operator):
+    prefix = "concat"
+
+    def _get_runner(self):
+        return run_concat
