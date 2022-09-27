@@ -10,6 +10,7 @@ from .operator import (
     AverageByTime,
     AverageByDimension,
     Subset,
+    Concat,
 )
 from .provenance import Provenance
 
@@ -79,6 +80,7 @@ class WorkflowRunner(object):
 
 class BaseWorkflow(object):
     def __init__(self, output_dir):
+        self.concat_op = Concat(output_dir)
         self.subset_op = Subset(output_dir)
         self.average_time_op = AverageByTime(output_dir)
         self.average_dim_op = AverageByDimension(output_dir)
@@ -145,6 +147,10 @@ class Workflow(BaseWorkflow):
         elif "average" == step["run"]:
             collection = step["in"]["collection"]
             result = self.average_dim_op.call(step["in"])
+            self.prov.add_operator(step_id, step["in"], collection, result)
+        elif "concat" == step["run"]:
+            collection = step["in"]["collection"]
+            result = self.concat_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
         else:
             result = None
