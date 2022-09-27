@@ -19,8 +19,8 @@ class Concat(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
-                "collections",
-                "Collections",
+                "collection",
+                "Collection",
                 abstract="A list of dataset identifiers. "
                 "Example: "
                 "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r10i1p1f1.Amon.tas.gn.v20200908",
@@ -90,15 +90,15 @@ class Concat(Process):
 
     def _handler(self, request, response):
         # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in concat: {os.environ}")
+        # LOGGER.debug(f"Environment used in concat: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
-        collections = parse_wps_input(
-            request.inputs, "collections", as_sequence=True, must_exist=True
+        collection = parse_wps_input(
+            request.inputs, "collection", as_sequence=True, must_exist=True
         )
-        print(collections)
+        print(collection)
         inputs = {
-            "collection": collections,
+            "collection": collection,
             "output_dir": self.workdir,
             "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
@@ -107,7 +107,7 @@ class Concat(Process):
         }
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collections, inputs, run_concat)
+        director = wrap_director(collection, inputs, run_concat)
 
         ml4 = build_metalink(
             "concat-result",
@@ -116,5 +116,5 @@ class Concat(Process):
             director.output_uris,
         )
 
-        populate_response(response, "concat", self.workdir, inputs, collections, ml4)
+        populate_response(response, "concat", self.workdir, inputs, collection, ml4)
         return response
