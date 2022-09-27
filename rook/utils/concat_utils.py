@@ -16,7 +16,7 @@ def concat(
 
     args = dict(
         collection=collection,
-        dims=["time"],
+        dims=["realization"],
         output_dir=output_dir,
         output_type=output_type,
         split_method=split_method,
