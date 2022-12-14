@@ -4,7 +4,7 @@ Changes
 0.9.1 (2022-12-14)
 ==================
 
-* Updated to clisops 0.9.4 with patches for `subset_level_by_values`.
+* Updated to clisops 0.9.5 with patches for `subset_level_by_values`.
 
 0.9.0 (2022-09-27)
 ==================
