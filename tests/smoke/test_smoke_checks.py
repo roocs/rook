@@ -22,6 +22,10 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
+C3S_CMIP6_MON_LEVEL_COLLECTION = (
+    "c3s-cmip6.CMIP.CSIRO-ARCCSS.ACCESS-CM2.historical.r1i1p1f1.Amon.ta.gn.v20191108"
+)
+
 C3S_CMIP5_DAY_COLLECTION = (
     "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
 )
@@ -69,6 +73,7 @@ WF_C3S_CMIP6 = json.dumps(
         },
     }
 )
+
 
 WF_C3S_CORDEX = json.dumps(
     {
@@ -157,6 +162,19 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "rlds" in ds.variables
+
+
+def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_LEVEL_COLLECTION),
+        ("time", "1850/1850"),
+        ("time_components", "year:1850|month:jan"),
+        ("level", "1000"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    ds = open_dataset(urls[0], tmp_path)
+    assert "ta" in ds.variables
 
 
 def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
