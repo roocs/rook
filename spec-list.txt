@@ -145,7 +145,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libwebp-1.2.4-h522a892_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/llvmlite-0.39.1-py310h58363a5_1.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/locket-1.0.0-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/loguru-0.6.0-py310hff52083_2.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/lxml-4.9.1-py310ha00c094_1.tar.bz2
+https://conda.anaconda.org/conda-forge/linux-64/lxml-4.9.2-py310hbdc0903_0.conda
 https://conda.anaconda.org/conda-forge/linux-64/lz4-4.0.2-py310h5d5e884_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/markupsafe-2.1.1-py310h5764c6d_2.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/mpi4py-3.1.4-py310h37cc914_0.tar.bz2
@@ -276,7 +276,7 @@ https://conda.anaconda.org/conda-forge/noarch/urllib3-1.26.13-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/distributed-2022.12.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/elastic-transport-8.4.0-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/esmpy-8.4.0-mpi_mpich_py310h515c5ea_101.conda
-https://conda.anaconda.org/conda-forge/linux-64/fiona-1.8.22-py310ha325b7b_4.conda
+https://conda.anaconda.org/conda-forge/linux-64/fiona-1.8.22-py310ha325b7b_5.conda
 https://conda.anaconda.org/conda-forge/linux-64/graphviz-6.0.2-h99bc08f_0.conda
 https://conda.anaconda.org/conda-forge/noarch/requests-2.28.1-pyhd8ed1ab_1.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/dask-2022.12.0-pyhd8ed1ab_0.conda
@@ -292,5 +292,5 @@ https://conda.anaconda.org/conda-forge/noarch/intake-0.6.6-pyhd8ed1ab_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/prov-2.0.0-pyhd3deb0d_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/pywps-4.5.2-pyh6c4a22f_0.tar.bz2
 https://conda.anaconda.org/conda-forge/noarch/roocs-utils-0.6.3-pyh1a96a4e_0.tar.bz2
-https://conda.anaconda.org/conda-forge/noarch/clisops-0.9.4-pyh1a96a4e_0.conda
+https://conda.anaconda.org/conda-forge/noarch/clisops-0.9.5-pyh1a96a4e_0.conda
 https://conda.anaconda.org/conda-forge/noarch/daops-0.8.1-pyh6c4a22f_0.tar.bz2
