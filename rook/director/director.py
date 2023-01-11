@@ -186,4 +186,7 @@ class Director:
             except Exception as e:
                 raise ProcessError(f"{e}")
 
+        print("orig files", self.use_original_files)
+        print("uris", file_uris)
+
         self.output_uris = file_uris

@@ -100,7 +100,8 @@ class Concat(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
+            "use_original_files": False,
+            "apply_fixes": True,  # parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
