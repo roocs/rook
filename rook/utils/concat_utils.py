@@ -25,7 +25,7 @@ class Concat(Operation):
     def get_operation_callable(self):
         return clisops_average_over_dims
 
-    def calculate(self):
+    def _calculate(self):
         config = {
             "output_type": self._output_type,
             "output_dir": self._output_dir,
@@ -63,7 +63,7 @@ def _concat(
     file_namer="standard",
     apply_fixes=True,
 ):
-    result_set = Concat(**locals()).calculate()
+    result_set = Concat(**locals())._calculate()
     return result_set
 
 
