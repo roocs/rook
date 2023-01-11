@@ -101,7 +101,6 @@ class Concat(Operation):
         for dset, norm_collection in norm_collection.items():
             # Process each input dataset (either in series or
             # parallel)
-            raise Exception(f"dset: {dset}, col={norm_collection}")
             rs.add(
                 dset,
                 process(self.get_operation_callable(), norm_collection, **self.params),
