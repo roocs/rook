@@ -106,6 +106,8 @@ class Director:
         if "dims" in self.inputs or "freq" in self.inputs:
             return
 
+        return
+
         # Finally, check if the subset requirements can align with whole datasets
         if self.request_aligns_with_files():
             # This call sets values for self.original_file_urls AND self.use_original_files

@@ -34,7 +34,7 @@ class Concat(Operation):
 
         rs = normalise.ResultSet(vars())
 
-        dset = norm_collection.keys()[0]
+        dset = list(norm_collection.keys())[0]
         datasets = list(norm_collection.values())
 
         rs.add(dset, xr.concat(datasets, dim="realization").mean(dim="realization"))
