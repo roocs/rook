@@ -38,9 +38,9 @@ class Concat(Operation):
 
         new_collection = collections.OrderedDict()
 
-        for dset, files in self.collection:
-            ds_id = derive_ds_id(files[0])
-            new_collection[ds_id] = files
+        for dset in self.collection:
+            ds_id = derive_ds_id(dset)
+            new_collection[ds_id] = dset.file_uris
 
         # Normalise (i.e. "fix") data inputs based on "character"
         # norm_collection = normalise.normalise(self.collection, self._apply_fixes)
