@@ -41,27 +41,27 @@ class Concat(Operation):
 
         processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
         namer = get_file_namer("standard")()
-        time_slices = get_time_slices(processed_ds, "time:auto")
+        # time_slices = get_time_slices(processed_ds, "time:auto")
 
         outputs = list()
         # Loop through each time slice
-        for tslice in time_slices:
+        # for tslice in time_slices:
 
-            # If there is only one time slice, and it is None:
-            # - then just set the result Dataset to the processed Dataset
-            if tslice is None:
-                result_ds = processed_ds
-            # If there is a time slice then extract the time slice from the
-            # processed Dataset
-            else:
-                result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
+        #     # If there is only one time slice, and it is None:
+        #     # - then just set the result Dataset to the processed Dataset
+        #     if tslice is None:
+        #         result_ds = processed_ds
+        #     # If there is a time slice then extract the time slice from the
+        #     # processed Dataset
+        #     else:
+        #         result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
 
-            # logger.info(f"Processing {self.__class__.__name__} for times: {tslice}")
+        # logger.info(f"Processing {self.__class__.__name__} for times: {tslice}")
 
-            # Get the output (file or xarray Dataset)
-            # When this is a file: xarray will read all the data and write the file
-            output = get_output(result_ds, "netcdf", None, namer)
-            outputs.append(output)
+        # Get the output (file or xarray Dataset)
+        # When this is a file: xarray will read all the data and write the file
+        output = get_output(processed_ds, "netcdf", None, namer)
+        outputs.append(output)
 
         rs.add("output", outputs)
 
