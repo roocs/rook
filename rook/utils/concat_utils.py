@@ -39,7 +39,9 @@ class Concat(Operation):
 
         datasets = list(norm_collection.values())
 
-        processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
+        processed_ds = xr.concat(datasets, dim="realization").mean(
+            dim="realization", skipna=True, keep_attrs=True
+        )
         namer = get_file_namer("simple")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
