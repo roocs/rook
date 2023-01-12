@@ -116,7 +116,7 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        return True
+        return False
         # TODO: is this necessary?
         if self.search_result:
             ds_ids = self.search_result.files()

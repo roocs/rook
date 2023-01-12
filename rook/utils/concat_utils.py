@@ -41,8 +41,8 @@ class Concat(Operation):
             new_collection[ds_id] = files
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        # norm_collection = normalise.normalise(self.collection, self._apply_fixes)
-        norm_collection = normalise.normalise(new_collection, self._apply_fixes)
+        norm_collection = normalise.normalise(self.collection, self._apply_fixes)
+        # norm_collection = normalise.normalise(new_collection, self._apply_fixes)
 
         rs = normalise.ResultSet(vars())
 
