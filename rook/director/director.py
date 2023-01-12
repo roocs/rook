@@ -106,7 +106,7 @@ class Director:
         if "dims" in self.inputs or "freq" in self.inputs:
             return
 
-        return
+        # return
 
         # Finally, check if the subset requirements can align with whole datasets
         if self.request_aligns_with_files():
@@ -116,6 +116,7 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
+        return True
         # TODO: is this necessary?
         if self.search_result:
             ds_ids = self.search_result.files()
