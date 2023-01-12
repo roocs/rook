@@ -57,6 +57,7 @@ class Concat(Operation):
                 result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
 
             print(f"for times: {tslice}")
+            raise Exception(f"for times: {tslice}")
 
             # Get the output (file or xarray Dataset)
             # When this is a file: xarray will read all the data and write the file
