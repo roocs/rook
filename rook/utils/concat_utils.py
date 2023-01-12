@@ -40,7 +40,7 @@ class Concat(Operation):
         datasets = list(norm_collection.values())
 
         processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
-        # namer = get_file_namer("standard")()
+        namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
         outputs = list()
@@ -63,9 +63,9 @@ class Concat(Operation):
             # When this is a file: xarray will read all the data and write the file
             output = get_output(
                 result_ds,
-                output_type="netcdf",
+                output_type="nc",
                 output_dir=self._output_dir,
-                namer="standard",
+                namer=namer,
             )
             outputs.append(output)
 
