@@ -40,7 +40,7 @@ class Concat(Operation):
         datasets = list(norm_collection.values())
 
         processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
-        namer = get_file_namer("standard")()
+        # namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
         outputs = list()
@@ -57,11 +57,16 @@ class Concat(Operation):
                 result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
 
             print(f"for times: {tslice}")
-            raise Exception(f"for times: {tslice}")
+            # raise Exception(f"for times: {result_ds}")
 
             # Get the output (file or xarray Dataset)
             # When this is a file: xarray will read all the data and write the file
-            output = get_output(result_ds, "netcdf", self._output_dir, namer)
+            output = get_output(
+                result_ds,
+                output_type="netcdf",
+                output_dir=self._output_dir,
+                namer="standard",
+            )
             outputs.append(output)
 
         rs.add("output", outputs)
