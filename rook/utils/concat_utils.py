@@ -60,7 +60,7 @@ class Concat(Operation):
 
             # Get the output (file or xarray Dataset)
             # When this is a file: xarray will read all the data and write the file
-            output = get_output(result_ds, "netcdf", None, namer)
+            output = get_output(result_ds, "netcdf", self._output_dir, namer)
             outputs.append(output)
 
         rs.add("output", outputs)
