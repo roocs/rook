@@ -1,10 +1,10 @@
 import xarray as xr
 
-# import collections
+import collections
 
 from roocs_utils.parameter import collection_parameter
 
-# from roocs_utils.project_utils import derive_ds_id
+from roocs_utils.project_utils import derive_ds_id
 
 from daops.ops.base import Operation
 from daops.utils import normalise
@@ -36,15 +36,15 @@ class Concat(Operation):
 
         self.params.update(config)
 
-        # new_collection = collections.OrderedDict()
+        new_collection = collections.OrderedDict()
 
-        # for dset, files in self.collection:
-        #     ds_id = derive_ds_id(dset)
-        #     new_collection[ds_id] = files
+        for dset, files in self.collection:
+            ds_id = derive_ds_id(files[0])
+            new_collection[ds_id] = files
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        norm_collection = normalise.normalise(self.collection, self._apply_fixes)
-        # norm_collection = normalise.normalise(new_collection, self._apply_fixes)
+        # norm_collection = normalise.normalise(self.collection, self._apply_fixes)
+        norm_collection = normalise.normalise(new_collection, self._apply_fixes)
 
         rs = normalise.ResultSet(vars())
 
