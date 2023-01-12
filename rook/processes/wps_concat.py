@@ -29,6 +29,22 @@ class Concat(Process):
                 max_occurs=100,
             ),
             LiteralInput(
+                "dims",
+                "Dimensions",
+                abstract="Dimensions used for aggregation. Example: level",
+                allowed_values=[
+                    "realization",
+                    "time",
+                    "level",
+                    "latitude",
+                    "longitude",
+                ],
+                default="realization",
+                data_type="string",
+                min_occurs=1,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "pre_checked",
                 "Pre-Checked",
                 data_type="boolean",
