@@ -23,14 +23,14 @@ class Concat(Operation):
         }
 
     def _calculate(self):
-        # config = {
-        #     "output_type": self._output_type,
-        #     "output_dir": self._output_dir,
-        #     "split_method": self._split_method,
-        #     "file_namer": self._file_namer,
-        # }
+        config = {
+            "output_type": self._output_type,
+            "output_dir": self._output_dir,
+            "split_method": self._split_method,
+            "file_namer": self._file_namer,
+        }
 
-        # self.params.update(config)
+        self.params.update(config)
 
         # Normalise (i.e. "fix") data inputs based on "character"
         norm_collection = normalise.normalise(self.collection, self._apply_fixes)
@@ -40,7 +40,7 @@ class Concat(Operation):
         datasets = list(norm_collection.values())
 
         processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
-        namer = get_file_namer("standard")()
+        namer = get_file_namer("simple")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
         outputs = list()
