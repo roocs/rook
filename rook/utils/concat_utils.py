@@ -42,7 +42,7 @@ class Concat(Operation):
         processed_ds = xr.concat(datasets, dim="realization").mean(
             dim="realization", skipna=True, keep_attrs=True
         )
-        namer = get_file_namer("simple")()
+        namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
         outputs = list()
