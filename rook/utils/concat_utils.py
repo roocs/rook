@@ -40,7 +40,7 @@ class Concat(Operation):
 
         for dset in self.collection:
             ds_id = derive_ds_id(dset)
-            new_collection[ds_id] = dset.files
+            new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
         # norm_collection = normalise.normalise(self.collection, self._apply_fixes)
