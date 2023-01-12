@@ -5,6 +5,9 @@ from roocs_utils.parameter import collection_parameter
 from daops.ops.base import Operation
 from daops.utils import normalise
 
+from clisops.utils.file_namers import get_file_namer
+from clisops.utils.output_utils import get_output, get_time_slices
+
 
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
@@ -34,13 +37,33 @@ class Concat(Operation):
 
         rs = normalise.ResultSet(vars())
 
-        dset = list(norm_collection.keys())[0]
         datasets = list(norm_collection.values())
 
-        result = xr.concat(datasets, dim="realization").mean(dim="realization")
-        raise Exception(result)
+        processed_ds = xr.concat(datasets, dim="realization").mean(dim="realization")
+        namer = get_file_namer(self._file_namer)()
+        time_slices = get_time_slices(processed_ds, self._split_method)
 
-        rs.add(dset, result)
+        outputs = list()
+        # Loop through each time slice
+        for tslice in time_slices:
+
+            # If there is only one time slice, and it is None:
+            # - then just set the result Dataset to the processed Dataset
+            if tslice is None:
+                result_ds = processed_ds
+            # If there is a time slice then extract the time slice from the
+            # processed Dataset
+            else:
+                result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
+
+            # logger.info(f"Processing {self.__class__.__name__} for times: {tslice}")
+
+            # Get the output (file or xarray Dataset)
+            # When this is a file: xarray will read all the data and write the file
+            output = get_output(result_ds, self._output_type, self._output_dir, namer)
+            outputs.append(output)
+
+        rs.add("output", outputs)
 
         return rs
 
