@@ -37,7 +37,10 @@ class Concat(Operation):
         dset = list(norm_collection.keys())[0]
         datasets = list(norm_collection.values())
 
-        rs.add(dset, xr.concat(datasets, dim="realization").mean(dim="realization"))
+        result = xr.concat(datasets, dim="realization").mean(dim="realization")
+        raise Exception(result)
+
+        rs.add(dset, result)
 
         return rs
 
