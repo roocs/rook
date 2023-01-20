@@ -24,7 +24,7 @@ class Concat(Operation):
 
         self.collection = collection
         self.params = {
-            "ignore_undetected_dims": params.get("ignore_undetected_dims"),
+            # "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
     def _calculate(self):
@@ -51,10 +51,12 @@ class Concat(Operation):
 
         datasets = list(norm_collection.values())
 
-        # processed_ds = xr.concat(datasets, dim="realization").mean(
-        #     dim="realization", skipna=True, keep_attrs=True
-        # )
-        processed_ds = xr.concat(datasets, pd.Index([1, 10], name="realization_index"))
+        processed_ds = xr.concat(
+            datasets,
+            pd.Index([1, 10], name="realization_index"),
+            data_vars="all",
+            coords="all",
+        )
 
         namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
