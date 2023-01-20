@@ -57,6 +57,9 @@ class Concat(Operation):
             data_vars="all",
             coords="all",
         )
+        processed_ds.coords["realization_index"].attrs = {
+            "standard_name": "realization"
+        }
 
         namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
