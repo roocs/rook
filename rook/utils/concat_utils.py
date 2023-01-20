@@ -54,8 +54,8 @@ class Concat(Operation):
         processed_ds = xr.concat(
             datasets,
             pd.Index([1, 10], name="realization_index"),
-            data_vars="all",
-            coords="all",
+            # data_vars="all",
+            # coords="all",
         )
         processed_ds.coords["realization_index"].attrs = {
             "standard_name": "realization"
@@ -77,7 +77,11 @@ class Concat(Operation):
             else:
                 result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
 
-            print(f"for times: {tslice}")
+            result_ds.coords["realization_index"].attrs = {
+                "standard_name": "realization"
+            }
+
+            # print(f"for times: {tslice}")
 
             # Get the output (file or xarray Dataset)
             # When this is a file: xarray will read all the data and write the file
