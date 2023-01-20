@@ -1,4 +1,5 @@
 import xarray as xr
+import pandas as pd
 
 import collections
 
@@ -53,7 +54,7 @@ class Concat(Operation):
         # processed_ds = xr.concat(datasets, dim="realization").mean(
         #     dim="realization", skipna=True, keep_attrs=True
         # )
-        processed_ds = xr.concat(datasets, dim="realization")
+        processed_ds = xr.concat(datasets, pd.Index([1, 10], name="realization"))
 
         namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
