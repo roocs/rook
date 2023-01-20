@@ -9,5 +9,8 @@ def run_average_by_time(args):
 def run_average_by_dim(args):
     from daops.ops.average import average_over_dims
 
+    # TODO: workaround for dimensions realization
+    args["ignore_undetected_dims"] = True
+
     result = average_over_dims(**args)
     return result.file_uris
