@@ -31,13 +31,9 @@ class Concat(Process):
             LiteralInput(
                 "dims",
                 "Dimensions",
-                abstract="Dimensions used for aggregation. Example: level",
+                abstract="Dimensions used for aggregation. Example: realization",
                 allowed_values=[
                     "realization",
-                    "time",
-                    "level",
-                    "latitude",
-                    "longitude",
                 ],
                 default="realization",
                 data_type="string",

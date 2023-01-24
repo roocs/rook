@@ -4,6 +4,7 @@ import pandas as pd
 import collections
 
 from roocs_utils.parameter import collection_parameter
+from roocs_utils.parameter import dimension_parameter
 
 from roocs_utils.project_utils import derive_ds_id
 
@@ -13,6 +14,10 @@ from daops.utils import normalise
 from clisops.utils.file_namers import get_file_namer
 from clisops.utils.output_utils import get_output, get_time_slices
 
+coord_by_standard_name = {
+    "realization": "realization_index",
+}
+
 
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
@@ -20,11 +25,13 @@ class Concat(Operation):
         Resolve the input parameters to `self.params` and parameterise
         collection parameter and set to `self.collection`.
         """
+        dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = collection_parameter.CollectionParameter(collection)
 
         self.collection = collection
         self.params = {
-            # "ignore_undetected_dims": params.get("ignore_undetected_dims"),
+            "dims": dims,
+            "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
     def _calculate(self):
@@ -44,22 +51,23 @@ class Concat(Operation):
             new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        # norm_collection = normalise.normalise(self.collection, self._apply_fixes)
         norm_collection = normalise.normalise(new_collection, self._apply_fixes)
 
         rs = normalise.ResultSet(vars())
 
         datasets = list(norm_collection.values())
 
+        dims = dimension_parameter.DimensionParameter(
+            self.params.get("dims", None)
+        ).value
+        standard_name = dims[0]
+        dim = coord_by_standard_name(standard_name)
+
         processed_ds = xr.concat(
             datasets,
-            pd.Index([1, 10], name="realization_index"),
-            # data_vars="all",
-            # coords="all",
+            pd.Index([1, 10], name=dim),
         )
-        processed_ds.coords["realization_index"].attrs = {
-            "standard_name": "realization"
-        }
+        processed_ds.coords[dim].attrs = {"standard_name": standard_name}
 
         namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
@@ -115,17 +123,18 @@ def run_concat(args):
 
 def concat(
     collection,
+    dims=None,
+    ignore_undetected_dims=False,
     output_dir=None,
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
     apply_fixes=True,
 ):
-    # dummy concat operator
-    # from daops.ops.average import average_over_dims
-
     args = dict(
         collection=collection,
+        dims=dims,
+        ignore_undetected_dims=ignore_undetected_dims,
         output_dir=output_dir,
         output_type=output_type,
         split_method=split_method,
