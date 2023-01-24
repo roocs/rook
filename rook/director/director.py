@@ -102,11 +102,9 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
-        # TODO: quick fix for average. Don't use original files for average operator
+        # TODO: quick fix for average and concat. Don't use original files for these operators.
         if "dims" in self.inputs or "freq" in self.inputs:
             return
-
-        return
 
         # Finally, check if the subset requirements can align with whole datasets
         if self.request_aligns_with_files():

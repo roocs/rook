@@ -108,7 +108,7 @@ class Concat(Process):
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
-        print(collection)
+        # print(collection)
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
@@ -120,7 +120,7 @@ class Concat(Process):
                 request.inputs, "dims", as_sequence=True, default=None
             ),
         }
-        print(inputs)
+        # print(inputs)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_concat)
