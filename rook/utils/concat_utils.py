@@ -61,7 +61,7 @@ class Concat(Operation):
             self.params.get("dims", None)
         ).value
         standard_name = dims[0]
-        dim = coord_by_standard_name(standard_name)
+        dim = coord_by_standard_name.get(standard_name, None)
 
         processed_ds = xr.concat(
             datasets,
