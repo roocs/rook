@@ -77,10 +77,6 @@ class Concat(Operation):
             else:
                 result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
 
-            result_ds.coords["realization_index"].attrs = {
-                "standard_name": "realization"
-            }
-
             # print(f"for times: {tslice}")
 
             # Get the output (file or xarray Dataset)
