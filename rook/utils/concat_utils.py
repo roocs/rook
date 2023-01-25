@@ -1,5 +1,5 @@
 import xarray as xr
-import pandas as pd
+import numpy as np
 
 import collections
 
@@ -66,6 +66,9 @@ class Concat(Operation):
         processed_ds = xr.concat(
             datasets,
             dim,
+        )
+        processed_ds = processed_ds.assign_coords(
+            {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
 
