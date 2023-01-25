@@ -65,7 +65,7 @@ class Concat(Operation):
 
         processed_ds = xr.concat(
             datasets,
-            pd.Index([1, 10], name=dim),
+            dim,
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
 
