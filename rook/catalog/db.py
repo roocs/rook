@@ -50,8 +50,9 @@ class DBCatalog(Catalog):
         session = get_session()
         try:
             df.to_sql(
-                self.table_name,
-                session.connection(),
+                name=self.table_name,
+                con=session.connection(),
+                schema=None,
                 if_exists="replace",
                 index=True,
                 chunksize=500,

@@ -29,6 +29,18 @@ class Concat(Process):
                 max_occurs=100,
             ),
             LiteralInput(
+                "dims",
+                "Dimensions",
+                abstract="Dimensions used for aggregation. Example: realization",
+                allowed_values=[
+                    "realization",
+                ],
+                default="realization",
+                data_type="string",
+                min_occurs=1,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "pre_checked",
                 "Pre-Checked",
                 data_type="boolean",
@@ -96,7 +108,7 @@ class Concat(Process):
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
-        print(collection)
+        # print(collection)
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
@@ -104,7 +116,11 @@ class Concat(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
+            "dims": parse_wps_input(
+                request.inputs, "dims", as_sequence=True, default=None
+            ),
         }
+        # print(inputs)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_concat)

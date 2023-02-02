@@ -102,7 +102,7 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
-        # TODO: quick fix for average. Don't use original files for average operator
+        # TODO: quick fix for average and concat. Don't use original files for these operators.
         if "dims" in self.inputs or "freq" in self.inputs:
             return
 
@@ -114,7 +114,6 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        # TODO: is this necessary?
         if self.search_result:
             ds_ids = self.search_result.files()
         else:
@@ -185,5 +184,8 @@ class Director:
                 file_uris = runner(self.inputs)
             except Exception as e:
                 raise ProcessError(f"{e}")
+
+        # print("orig files", self.use_original_files)
+        # print("uris", file_uris)
 
         self.output_uris = file_uris
