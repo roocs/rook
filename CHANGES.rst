@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.9.2 (2023-02-02)
+==================
+
+* Updated to roocs-utils with support for `realization` dimension.
+* Updated concat operator (#220).
+
 0.9.1 (2022-12-14)
 ==================
 
