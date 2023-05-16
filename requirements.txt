@@ -4,7 +4,7 @@ click
 psutil
 # daops
 daops>=0.8.1,<0.9
-clisops>=0.9.5,<0.10
+clisops>=0.9.6,<0.10
 roocs-utils>=0.6.4,<0.7
 # roocs-utils @ git+https://github.com/roocs/roocs-utils@master#egg=roocs-utils
 xarray>=0.20,<0.22
