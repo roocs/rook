@@ -38,6 +38,12 @@ C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp
 
 C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
 
+C3S_IPCC_ATLAS_CMIP5_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP5.rcp45.mon"
+
+C3S_IPCC_ATLAS_CMIP6_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP6.historical.mon"
+
+C3S_IPCC_ATLAS_CORDEX_COLLECTION = "c3s-ipcc-atlas.tnn.CORDEX-AFR.historical.mon"
+
 WF_C3S_CMIP5 = json.dumps(
     {
         "doc": "subset+average on cmip5",
@@ -440,3 +446,36 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
         "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
         in urls[0]
     )
+
+
+def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
+    inputs = [
+        ("collection", C3S_IPCC_ATLAS_CMIP5_COLLECTION),
+        # ("time", "2000-01-01/2000-12-30"),
+        # ("original_files", "1"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
+
+
+def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
+    inputs = [
+        ("collection", C3S_IPCC_ATLAS_CMIP6_COLLECTION),
+        # ("time", "2000-01-01/2000-12-30"),
+        # ("original_files", "1"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
+
+
+def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
+    inputs = [
+        ("collection", C3S_IPCC_ATLAS_CORDEX_COLLECTION),
+        # ("time", "2000-01-01/2000-12-30"),
+        # ("original_files", "1"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "data.mips.copernicus-climate.eu" in urls[0]
