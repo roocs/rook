@@ -103,6 +103,47 @@ WF_C3S_CORDEX = json.dumps(
     }
 )
 
+WF_C3S_CMIP6_DECADAL = json.dumps(
+    {
+        "doc": "subset on c3s-cmip6-decadal",
+        "inputs": {
+            "ds": [
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r1i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r2i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r3i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r4i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r5i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r6i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r7i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r8i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r9i1p1f2.Amon.tas.gn.v20200417",
+                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r10i1p1f2.Amon.tas.gn.v20200417",
+            ]
+        },
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "concat": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/ds",
+                    "dims": "realization",
+                },
+            },
+            "average": {
+                "run": "average",
+                "in": {"collection": "concat/output", "dims": "realization"},
+            },
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "average/output",
+                    "time": "1995/1996",
+                },
+            },
+        },
+    }
+)
+
 
 def test_smoke_get_capabilities(wps):
     caps = wps.getcapabilities()
@@ -444,6 +485,18 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     assert len(urls) == 1
     assert (
         "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
+        in urls[0]
+    )
+
+
+def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert (
+        "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast_r10i1p1f2_gn_19951116-19961216.nc"
         in urls[0]
     )
 
