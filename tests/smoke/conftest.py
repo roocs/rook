@@ -17,7 +17,7 @@ def server_url():
 
 class RookWPS:
     def __init__(self, url):
-        self.wps = WebProcessingService(url, verbose=False, skip_caps=True)
+        self.wps = WebProcessingService(url, skip_caps=True)
 
     def getcapabilities(self):
         self.wps.getcapabilities()
