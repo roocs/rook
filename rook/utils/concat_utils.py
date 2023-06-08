@@ -76,40 +76,10 @@ class Concat(Operation):
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # subset
-        # time = time_parameter.TimeParameter(self.params.get("time", None)).value
-        processed_ds = subset(
-            processed_ds, time=self.params.get("time", None), output_type="xarray"
-        )[0]
-
-        # write output
-        namer = get_file_namer("standard")()
-        time_slices = get_time_slices(processed_ds, "time:auto")
-
-        outputs = list()
-        # Loop through each time slice
-        for tslice in time_slices:
-
-            # If there is only one time slice, and it is None:
-            # - then just set the result Dataset to the processed Dataset
-            if tslice is None:
-                result_ds = processed_ds
-            # If there is a time slice then extract the time slice from the
-            # processed Dataset
-            else:
-                result_ds = processed_ds.sel(time=slice(tslice[0], tslice[1]))
-
-            # print(f"for times: {tslice}")
-
-            # Get the output (file or xarray Dataset)
-            # When this is a file: xarray will read all the data and write the file
-            output = get_output(
-                result_ds,
-                output_type="nc",
-                output_dir=self._output_dir,
-                namer=namer,
-            )
-            outputs.append(output)
-
+        outputs = subset(
+            processed_ds, time=self.params.get("time", None), output_type="nc"
+        )
+        # result
         rs.add("output", outputs)
 
         return rs
