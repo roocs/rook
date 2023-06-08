@@ -76,8 +76,10 @@ class Concat(Operation):
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # subset
-        time = time_parameter.TimeParameter(self.params.get("time", None)).value
-        processed_ds = subset(processed_ds, time=time, output_type="xarray")[0]
+        # time = time_parameter.TimeParameter(self.params.get("time", None)).value
+        processed_ds = subset(
+            processed_ds, time=self.params.get("time", None), output_type="xarray"
+        )[0]
 
         # write output
         namer = get_file_namer("standard")()
