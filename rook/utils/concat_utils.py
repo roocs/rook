@@ -115,6 +115,7 @@ class Concat(Operation):
 
 def _concat(
     collection,
+    time=None,
     dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
