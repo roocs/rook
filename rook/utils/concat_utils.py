@@ -5,12 +5,14 @@ import collections
 
 from roocs_utils.parameter import collection_parameter
 from roocs_utils.parameter import dimension_parameter
+from roocs_utils.parameter import time_parameter
 
 from roocs_utils.project_utils import derive_ds_id
 
 from daops.ops.base import Operation
 from daops.utils import normalise
 
+from clisops.ops import subset
 from clisops.utils.file_namers import get_file_namer
 from clisops.utils.output_utils import get_output, get_time_slices
 
@@ -25,11 +27,13 @@ class Concat(Operation):
         Resolve the input parameters to `self.params` and parameterise
         collection parameter and set to `self.collection`.
         """
+        time = time_parameter.TimeParameter(params.get("time"))
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = collection_parameter.CollectionParameter(collection)
 
         self.collection = collection
         self.params = {
+            "time": time,
             "dims": dims,
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
@@ -71,7 +75,11 @@ class Concat(Operation):
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
+        # subset
+        time = time_parameter.TimeParameter(self.params.get("time", None)).value
+        processed_ds = subset(processed_ds, time=time, output_type="xarray")[0]
 
+        # write output
         namer = get_file_namer("standard")()
         time_slices = get_time_slices(processed_ds, "time:auto")
 
