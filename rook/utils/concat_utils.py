@@ -135,6 +135,7 @@ def run_concat(args):
 
 def concat(
     collection,
+    time=None,
     dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
@@ -145,6 +146,7 @@ def concat(
 ):
     args = dict(
         collection=collection,
+        time=time,
         dims=dims,
         ignore_undetected_dims=ignore_undetected_dims,
         output_dir=output_dir,
