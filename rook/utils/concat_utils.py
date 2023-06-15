@@ -14,6 +14,8 @@ from daops.utils import normalise
 
 from clisops.ops import subset
 
+from .decadal_fixes import apply_decadal_fixes
+
 coord_by_standard_name = {
     "realization": "realization_index",
 }
@@ -53,11 +55,19 @@ class Concat(Operation):
             new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        norm_collection = normalise.normalise(new_collection, self._apply_fixes)
+        norm_collection = normalise.normalise(
+            new_collection, False  # self._apply_fixes
+        )
 
         rs = normalise.ResultSet(vars())
 
-        datasets = list(norm_collection.values())
+        # datasets = list(norm_collection.values())
+        # apply decadal fixes
+        datasets = []
+        for ds_id in norm_collection.keys():
+            ds = norm_collection[ds_id]
+            ds_mod = apply_decadal_fixes(ds_id, ds)
+            datasets.append(ds_mod)
 
         dims = dimension_parameter.DimensionParameter(
             self.params.get("dims", None)
