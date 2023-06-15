@@ -13,8 +13,6 @@ from daops.ops.base import Operation
 from daops.utils import normalise
 
 from clisops.ops import subset
-from clisops.utils.file_namers import get_file_namer
-from clisops.utils.output_utils import get_output, get_time_slices
 
 coord_by_standard_name = {
     "realization": "realization_index",
