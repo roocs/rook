@@ -116,6 +116,7 @@ class Provenance(object):
             "dims",
             "freq",
             "apply_fixes",
+            "apply_average",
         ]:
             if param in parameters:
                 value = parameters[param]
