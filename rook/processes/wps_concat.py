@@ -61,6 +61,15 @@ class Concat(Process):
                 max_occurs=1,
             ),
             LiteralInput(
+                "apply_average",
+                "Apply Average over dims",
+                data_type="boolean",
+                abstract="Apply Average over dims.",
+                default="0",
+                min_occurs=1,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "pre_checked",
                 "Pre-Checked",
                 data_type="boolean",
@@ -135,6 +144,9 @@ class Concat(Process):
             "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
+            ),
+            "apply_average": parse_wps_input(
+                request.inputs, "apply_average", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
             "time_components": parse_wps_input(

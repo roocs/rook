@@ -42,6 +42,7 @@ class Concat(Operation):
             "time": time,
             "time_components": time_components,
             "dims": dims,
+            "apply_average": params.get("apply_average", False),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
@@ -90,8 +91,9 @@ class Concat(Operation):
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
-        # average
-        processed_ds = average(processed_ds, dims=["realization"])
+        # optional: average
+        if self.params.get("apply_average", False):
+            processed_ds = average(processed_ds, dims=["realization"])
         # subset
         outputs = subset(
             processed_ds,
@@ -116,6 +118,7 @@ def _concat(
     split_method="time:auto",
     file_namer="standard",
     apply_fixes=True,
+    apply_average=False,
 ):
     result_set = Concat(**locals())._calculate()
     return result_set
@@ -137,6 +140,7 @@ def concat(
     split_method="time:auto",
     file_namer="standard",
     apply_fixes=True,
+    apply_average=False,
 ):
     args = dict(
         collection=collection,
@@ -149,5 +153,6 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_fixes=apply_fixes,
+        apply_average=apply_average,
     )
     return _concat(**args)
