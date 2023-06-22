@@ -85,7 +85,7 @@ class Concat(Operation):
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # average
-        processed_ds = average(processed_ds, dims=[dim])
+        processed_ds = average(processed_ds, dims=["realization"])
         # subset
         outputs = subset(
             processed_ds, time=self.params.get("time", None), output_type="nc"
