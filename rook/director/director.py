@@ -44,8 +44,11 @@ class Director:
                 raise InvalidCollection()
 
             self._resolve()
-        # check if a fix will be applied
-        self._check_apply_fixes()
+        # if enabled for the project then check if a fix will be applied
+        if CONFIG[f"project:{self.project}"].get("use_fixes", False):
+            self._check_apply_fixes()
+        else:
+            self.inputs["apply_fixes"] = False
 
     def _check_apply_fixes(self):
         if (
