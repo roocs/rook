@@ -13,7 +13,7 @@ from daops.ops.base import Operation
 from daops.utils import normalise
 
 from clisops.ops import subset
-from clisops.ops.average import average_over_dims as average
+from clisops.core.average import average_over_dims as average
 
 from .decadal_fixes import apply_decadal_fixes
 
@@ -85,7 +85,7 @@ class Concat(Operation):
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # average
-        processed_ds = average(processed_ds, dims="realization", output_type="xarray")
+        processed_ds = average(processed_ds, dims=["realization"])
         # subset
         outputs = subset(
             processed_ds, time=self.params.get("time", None), output_type="nc"
