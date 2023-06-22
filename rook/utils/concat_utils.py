@@ -6,6 +6,7 @@ import collections
 from roocs_utils.parameter import collection_parameter
 from roocs_utils.parameter import dimension_parameter
 from roocs_utils.parameter import time_parameter
+from roocs_utils.parameter import time_components_parameter
 
 from roocs_utils.project_utils import derive_ds_id
 
@@ -14,7 +15,7 @@ from daops.utils import normalise
 
 from clisops.ops import subset
 
-# from clisops.core.average import average_over_dims as average
+from clisops.core.average import average_over_dims as average
 
 from .decadal_fixes import apply_decadal_fixes
 
@@ -30,12 +31,16 @@ class Concat(Operation):
         collection parameter and set to `self.collection`.
         """
         time = time_parameter.TimeParameter(params.get("time"))
+        time_components = time_components_parameter.TimeComponentsParameter(
+            params.get("time_components")
+        )
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = collection_parameter.CollectionParameter(collection)
 
         self.collection = collection
         self.params = {
             "time": time,
+            "time_components": time_components,
             "dims": dims,
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
@@ -86,10 +91,13 @@ class Concat(Operation):
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # average
-        # processed_ds = average(processed_ds, dims=["realization"])
+        processed_ds = average(processed_ds, dims=["realization"])
         # subset
         outputs = subset(
-            processed_ds, time=self.params.get("time", None), output_type="nc"
+            processed_ds,
+            time=self.params.get("time", None),
+            time_components=self.params.get("time_components", None),
+            output_type="nc",
         )
         # result
         rs.add("output", outputs)
@@ -100,6 +108,7 @@ class Concat(Operation):
 def _concat(
     collection,
     time=None,
+    time_components=None,
     dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
@@ -120,6 +129,7 @@ def run_concat(args):
 def concat(
     collection,
     time=None,
+    time_components=None,
     dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
@@ -131,6 +141,7 @@ def concat(
     args = dict(
         collection=collection,
         time=time,
+        time_components=time_components,
         dims=dims,
         ignore_undetected_dims=ignore_undetected_dims,
         output_dir=output_dir,

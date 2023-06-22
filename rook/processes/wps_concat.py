@@ -40,6 +40,15 @@ class Concat(Process):
                 max_occurs=1,
             ),
             LiteralInput(
+                "time_components",
+                "Time Components",
+                abstract="Optional time components to describe parts of the time period (e.g. year, month and day)."
+                " Example: month:01,02,03 or year:1970,1980|month:01,02,03",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "dims",
                 "Dimensions",
                 abstract="Dimensions used for aggregation. Example: realization",
@@ -128,6 +137,9 @@ class Concat(Process):
                 request.inputs, "pre_checked", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
+            "time_components": parse_wps_input(
+                request.inputs, "time_components", default=None
+            ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
             ),
