@@ -6,6 +6,42 @@ from daops.data_utils.attr_utils import (
 from daops.data_utils.coord_utils import add_scalar_coord, add_coord
 from daops.data_utils.var_utils import add_data_var
 
+model_specific_global_attrs = {
+    "CMCC-CM2-SR5": {
+        "forcing_description": "f1, CMIP6 historical forcings",
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+    },
+    "EC-Earth3": {
+        "forcing_description": "f1, CMIP6 historical forcings",
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
+        "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # noqa
+    },
+    "HadGEM3-GC31-MM": {
+        "forcing_description": "f2, CMIP6 v6.2.0 forcings; no ozone remapping",
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+    },
+    "MPI-ESM1-2-HR": {
+        "forcing_description": "f1, CMIP6 historical forcings",
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+    },
+    "MPI-ESM1-2-LR": {
+        "forcing_description": "f1, CMIP6 historical forcings",
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+    },
+}
+
+
+def get_decadal_model_attr_from_dict(ds_id, ds, attr):
+    # TODO: method taken from daops.fix_utils.decadal_utils.py
+    # Add the model-specific global attr
+    model = ds_id.split(".")[3]
+    value = model_specific_global_attrs[model][attr]
+    return value
+
 
 def apply_decadal_fixes(ds_id, ds):
     ds_mod = decadal_fix_1(ds_id, ds)
@@ -25,9 +61,15 @@ def decadal_fix_1(ds_id, ds):
 def decadal_fix_2(ds_id, ds):
     operands = {
         "attrs": {
-            "forcing_description": "derive: daops.fix_utils.decadal_utils.get_decadal_model_attr_from_dict: forcing_description",  # noqa
-            "physics_description": "derive: daops.fix_utils.decadal_utils.get_decadal_model_attr_from_dict: physics_description",  # noqa
-            "initialization_description": "derive: daops.fix_utils.decadal_utils.get_decadal_model_attr_from_dict: initialization_description",  # noqa
+            "forcing_description": get_decadal_model_attr_from_dict(
+                ds_id, ds, "forcing_description"
+            ),  # noqa
+            "physics_description": get_decadal_model_attr_from_dict(
+                ds_id, ds, "physics_description"
+            ),  # noqa
+            "initialization_description": get_decadal_model_attr_from_dict(
+                ds_id, ds, "initialization_description"
+            ),  # noqa
             "startdate": "derive: daops.fix_utils.decadal_utils.get_sub_experiment_id",
             "sub_experiment_id": "derive: daops.fix_utils.decadal_utils.get_sub_experiment_id",
         }
