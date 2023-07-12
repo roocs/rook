@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.10.0 (2023-07-12)
+==================
+
+* Added smoke tests for c3s-ipcc-atlas and c3s-cmip6-decadal.
+* Updated roocs config for c3s-ipcc-atlas.
+
 0.9.3 (2023-05-16)
 ==================
 
