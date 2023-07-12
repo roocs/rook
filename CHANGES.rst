@@ -4,8 +4,9 @@ Changes
 0.10.0 (2023-07-12)
 ==================
 
-* Added smoke tests for c3s-ipcc-atlas and c3s-cmip6-decadal.
-* Updated roocs config for c3s-ipcc-atlas.
+* Updated concat operator to optinally apply subsetting and averaging to improve performance.
+* Apply cmip6 decadal fixes directly using Python code. Skip lookup of fixes in ElasticSearch.
+* Updated to clisops 0.10.0.
 
 0.9.3 (2023-05-16)
 ==================
