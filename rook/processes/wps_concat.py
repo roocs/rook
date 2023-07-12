@@ -29,6 +29,26 @@ class Concat(Process):
                 max_occurs=100,
             ),
             LiteralInput(
+                "time",
+                "Time Period",
+                abstract="The time interval (start/end) to subset over separated by '/'"
+                " or a list of time points separated by ','."
+                " The format is according to the ISO-8601 standard."
+                " Example: 1860-01-01/1900-12-30 or 1860-01-01, 1870-01-01, 1880-01-01",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
+                "time_components",
+                "Time Components",
+                abstract="Optional time components to describe parts of the time period (e.g. year, month and day)."
+                " Example: month:01,02,03 or year:1970,1980|month:01,02,03",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "dims",
                 "Dimensions",
                 abstract="Dimensions used for aggregation. Example: realization",
@@ -37,6 +57,15 @@ class Concat(Process):
                 ],
                 default="realization",
                 data_type="string",
+                min_occurs=1,
+                max_occurs=1,
+            ),
+            LiteralInput(
+                "apply_average",
+                "Apply Average over dims",
+                data_type="boolean",
+                abstract="Apply Average over dims.",
+                default="0",
                 min_occurs=1,
                 max_occurs=1,
             ),
@@ -115,6 +144,13 @@ class Concat(Process):
             "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
+            ),
+            "apply_average": parse_wps_input(
+                request.inputs, "apply_average", default=False
+            ),
+            "time": parse_wps_input(request.inputs, "time", default=None),
+            "time_components": parse_wps_input(
+                request.inputs, "time_components", default=None
             ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
