@@ -21,7 +21,7 @@ PROVONE_DATA = PROVONE["Data"]
 PROVONE_EXECUTION = PROVONE["Execution"]
 
 # dcterms namespace
-DCTERMS = Namespace("dct", uri="http://purl.org/dc/terms/")
+DCTERMS = Namespace("dcterms", uri="http://purl.org/dc/terms/")
 DCTERMS_SOURCE = DCTERMS["source"]
 
 # roocs namespace
@@ -116,6 +116,7 @@ class Provenance(object):
             "dims",
             "freq",
             "apply_fixes",
+            "apply_average",
         ]:
             if param in parameters:
                 value = parameters[param]

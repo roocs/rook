@@ -10,6 +10,7 @@ from .operator import (
     AverageByTime,
     AverageByDimension,
     Subset,
+    Concat,
 )
 from .provenance import Provenance
 
@@ -37,14 +38,14 @@ def replace_inputs(wfdoc):
                 start_steps.append(step_id)
     for step_id, step in steps.items():
         # fixes are only applied to start steps
-        # TODO: quick fix to disable fix check (elasticsearch is down)
-        steps[step_id]["in"]["apply_fixes"] = False
-        # if step_id in start_steps:
-        #     steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
-        #         "apply_fixes", True
-        #     )
-        # else:
-        #     steps[step_id]["in"]["apply_fixes"] = False
+        if step_id in start_steps:
+            # TODO: disable fixes by default
+            # steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
+            #    "apply_fixes", False
+            # )
+            steps[step_id]["in"]["apply_fixes"] = False
+        else:
+            steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
     return steps
 
@@ -81,6 +82,7 @@ class WorkflowRunner(object):
 
 class BaseWorkflow(object):
     def __init__(self, output_dir):
+        self.concat_op = Concat(output_dir)
         self.subset_op = Subset(output_dir)
         self.average_time_op = AverageByTime(output_dir)
         self.average_dim_op = AverageByDimension(output_dir)
@@ -147,6 +149,10 @@ class Workflow(BaseWorkflow):
         elif "average" == step["run"]:
             collection = step["in"]["collection"]
             result = self.average_dim_op.call(step["in"])
+            self.prov.add_operator(step_id, step["in"], collection, result)
+        elif "concat" == step["run"]:
+            collection = step["in"]["collection"]
+            result = self.concat_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
         else:
             result = None

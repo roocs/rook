@@ -1,6 +1,41 @@
 Changes
 *******
 
+0.10.0 (2023-07-12)
+==================
+
+* Updated concat operator to optinally apply subsetting and averaging to improve performance.
+* Apply cmip6 decadal fixes directly using Python code. Skip lookup of fixes in ElasticSearch.
+* Updated to clisops 0.10.0.
+
+0.9.3 (2023-05-16)
+==================
+
+* Added smoke tests for c3s-ipcc-atlas and c3s-cmip6-decadal.
+* Updated roocs config for c3s-ipcc-atlas.
+
+0.9.2 (2023-02-02)
+==================
+
+* Updated to roocs-utils with support for `realization` dimension.
+* Updated concat operator (#220).
+
+0.9.1 (2022-12-14)
+==================
+
+* Updated to clisops 0.9.5 with patches for `subset_level_by_values`.
+
+0.9.0 (2022-09-27)
+==================
+
+* Added initial concat operator (#217).
+
+0.8.3 (2022-09-26)
+==================
+
+* Updated to clisops 0.9.2.
+* Updated provenance for C4I (#215).
+
 0.8.2 (2022-05-16)
 ==================
 

@@ -1,0 +1,12 @@
+# conda env update -f environment.yml
+name: rook
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - ipython
+  - jupyterlab
+  - ipywidgets
+  - nodejs
+  - memory_profiler
+  - diskcache

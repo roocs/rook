@@ -44,10 +44,13 @@ class Director:
                 raise InvalidCollection()
 
             self._resolve()
-        # check if a fix will be applied
-        # TODO: quick fix to disable fixes (elasticsearch service is down)
-        # self._check_apply_fixes()
-        self.inputs["apply_fixes"] = False
+        # if enabled for the project then check if a fix will be applied
+        if CONFIG[f"project:{self.project}"].get("use_fixes", False):
+            # TODO: disable fixes by default
+            # self._check_apply_fixes()
+            self.inputs["apply_fixes"] = False
+        else:
+            self.inputs["apply_fixes"] = False
 
     def _check_apply_fixes(self):
         if (
@@ -89,7 +92,7 @@ class Director:
             raise InvalidCollection()
 
         # If original files are requested then go straight there
-        if self.inputs.get("original_files"):
+        if self.inputs.get("original_files") or self.project == "c3s-ipcc-atlas":
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
             return
@@ -104,7 +107,7 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
-        # TODO: quick fix for average. Don't use original files for average operator
+        # TODO: quick fix for average and concat. Don't use original files for these operators.
         if "dims" in self.inputs or "freq" in self.inputs:
             return
 
@@ -116,7 +119,6 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        # TODO: is this necessary?
         if self.search_result:
             ds_ids = self.search_result.files()
         else:
@@ -187,5 +189,8 @@ class Director:
                 file_uris = runner(self.inputs)
             except Exception as e:
                 raise ProcessError(f"{e}")
+
+        # print("orig files", self.use_original_files)
+        # print("uris", file_uris)
 
         self.output_uris = file_uris

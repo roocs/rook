@@ -10,37 +10,64 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_average_by_dim
+from ..utils.concat_utils import run_concat
 
 LOGGER = logging.getLogger()
 
 
-class AverageByDimension(Process):
+class Concat(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
                 "collection",
                 "Collection",
-                abstract="A dataset identifier or list of comma separated identifiers. "
-                "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
+                abstract="A list of dataset identifiers. "
+                "Example: "
+                "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r10i1p1f1.Amon.tas.gn.v20200908",
                 data_type="string",
                 min_occurs=1,
+                max_occurs=100,
+            ),
+            LiteralInput(
+                "time",
+                "Time Period",
+                abstract="The time interval (start/end) to subset over separated by '/'"
+                " or a list of time points separated by ','."
+                " The format is according to the ISO-8601 standard."
+                " Example: 1860-01-01/1900-12-30 or 1860-01-01, 1870-01-01, 1880-01-01",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
+                "time_components",
+                "Time Components",
+                abstract="Optional time components to describe parts of the time period (e.g. year, month and day)."
+                " Example: month:01,02,03 or year:1970,1980|month:01,02,03",
+                data_type="string",
+                min_occurs=0,
                 max_occurs=1,
             ),
             LiteralInput(
                 "dims",
                 "Dimensions",
-                abstract="Dimensions used for aggregation. Example: level",
+                abstract="Dimensions used for aggregation. Example: realization",
                 allowed_values=[
-                    "time",
-                    "level",
-                    "latitude",
-                    "longitude",
                     "realization",
                 ],
+                default="realization",
                 data_type="string",
                 min_occurs=1,
-                max_occurs=4,
+                max_occurs=1,
+            ),
+            LiteralInput(
+                "apply_average",
+                "Apply Average over dims",
+                data_type="boolean",
+                abstract="Apply Average over dims.",
+                default="0",
+                min_occurs=1,
+                max_occurs=1,
             ),
             LiteralInput(
                 "pre_checked",
@@ -87,11 +114,11 @@ class AverageByDimension(Process):
             ),
         ]
 
-        super(AverageByDimension, self).__init__(
+        super(Concat, self).__init__(
             self._handler,
-            identifier="average",
-            title="Average by Dimensions",
-            abstract="Run averaging by dimensions on climate model data.",
+            identifier="concat",
+            title="Concat",
+            abstract="Run concat on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
@@ -104,13 +131,13 @@ class AverageByDimension(Process):
 
     def _handler(self, request, response):
         # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in average: {os.environ}")
+        # LOGGER.debug(f"Environment used in concat: {os.environ}")
 
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
-
+        # print(collection)
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
@@ -118,21 +145,28 @@ class AverageByDimension(Process):
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),
+            "apply_average": parse_wps_input(
+                request.inputs, "apply_average", default=False
+            ),
+            "time": parse_wps_input(request.inputs, "time", default=None),
+            "time_components": parse_wps_input(
+                request.inputs, "time_components", default=None
+            ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
             ),
         }
-        print(inputs)
+        # print(inputs)
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average_by_dim)
+        director = wrap_director(collection, inputs, run_concat)
 
         ml4 = build_metalink(
-            "average-dim-result",
-            "Averaging by dimension result as NetCDF files.",
+            "concat-result",
+            "Concat result as NetCDF files.",
             self.workdir,
             director.output_uris,
         )
 
-        populate_response(response, "average", self.workdir, inputs, collection, ml4)
+        populate_response(response, "concat", self.workdir, inputs, collection, ml4)
         return response
