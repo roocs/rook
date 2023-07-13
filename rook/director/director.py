@@ -119,17 +119,19 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        if self.search_result:
-            ds_ids = self.search_result.files()
-        else:
-            ds_ids = self.coll
-        for ds_id in ds_ids:
-            fix = fixer.Fixer(ds_id)
-
-            if fix.pre_processor or fix.post_processors:
-                return True
-
+        # TODO: configure fixes lookup
         return False
+        # if self.search_result:
+        #     ds_ids = self.search_result.files()
+        # else:
+        #     ds_ids = self.coll
+        # for ds_id in ds_ids:
+        #     fix = fixer.Fixer(ds_id)
+
+        #     if fix.pre_processor or fix.post_processors:
+        #         return True
+
+        # return False
 
     def request_aligns_with_files(self):
         """
