@@ -45,14 +45,15 @@ class Director:
 
             self._resolve()
         # if enabled for the project then check if a fix will be applied
-        if CONFIG[f"project:{self.project}"].get("use_fixes", False):
-            self._check_apply_fixes()
-        else:
-            self.inputs["apply_fixes"] = False
+        self._check_apply_fixes()
+
+    def use_fixes(self):
+        return CONFIG[f"project:{self.project}"].get("use_fixes", False)
 
     def _check_apply_fixes(self):
         if (
-            self.inputs.get("apply_fixes")
+            self.use_fixes()
+            and self.inputs.get("apply_fixes")
             and not self.use_original_files
             and self.requires_fixes()
         ):
@@ -117,6 +118,9 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
+        if not self.use_fixes():
+            return False
+
         if self.search_result:
             ds_ids = self.search_result.files()
         else:
