@@ -27,7 +27,7 @@ C3S_CMIP6_MON_LEVEL_COLLECTION = (
 )
 
 C3S_CMIP5_DAY_COLLECTION = (
-    "c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
+    "c3s-cmip5.output1.IPSL.IPSL-CM5B-LR.historical.day.atmos.day.r1i1p1.tas.v20120718"
 )
 
 C3S_CMIP5_MON_COLLECTION = (
@@ -194,7 +194,7 @@ def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "tas_day_EC-EARTH_historical_r1i1p1_20050101-20051231.nc" in urls[0]
+    assert "tas_day_IPSL-CM5B-LR_historical_r1i1p1_20050101-20051231.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
@@ -275,7 +275,7 @@ def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "tas_day_EC-EARTH_historical_r1i1p1_20050101-20050331.nc" in urls[0]
+    assert "tas_day_IPSL-CM5B-LR_historical_r1i1p1_20050101-20050331.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
@@ -441,7 +441,7 @@ def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
-    assert "tas_day_EC-EARTH_historical_r1i1p1_avg-t.nc" in urls[0]
+    assert "tas_day_IPSL-CM5B-LR_historical_r1i1p1_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate(wps):
