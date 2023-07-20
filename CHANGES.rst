@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.10.1 (2023-07-20)
+==================
+
+* Updated checks when to apply fixes.
+* Fixed smoke tests for cmip5.
+
 0.10.0 (2023-07-12)
 ==================
 
