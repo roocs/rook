@@ -19,4 +19,5 @@ def test_wps_caps():
         "orchestrate",
         "subset",
         "usage",
+        "weighted_average",
     ]
