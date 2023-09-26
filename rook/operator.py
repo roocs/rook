@@ -8,6 +8,7 @@ from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.average_utils import (
     run_average_by_time,
     run_average_by_dim,
+    run_weighted_average,
 )
 from rook.utils.subset_utils import run_subset
 from rook.utils.concat_utils import run_concat
@@ -79,6 +80,13 @@ class AverageByDimension(Operator):
 
     def _get_runner(self):
         return run_average_by_dim
+
+
+class WeightedAverage(Operator):
+    prefix = "weighted_average"
+
+    def _get_runner(self):
+        return run_weighted_average
 
 
 class Concat(Operator):
