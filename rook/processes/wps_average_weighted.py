@@ -10,12 +10,12 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_average_by_dim
+from ..utils.average_utils import run_weighted_average
 
 LOGGER = logging.getLogger()
 
 
-class AverageByDimension(Process):
+class WeightedAverage(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -24,39 +24,6 @@ class AverageByDimension(Process):
                 abstract="A dataset identifier or list of comma separated identifiers. "
                 "Example: c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest",
                 data_type="string",
-                min_occurs=1,
-                max_occurs=1,
-            ),
-            LiteralInput(
-                "dims",
-                "Dimensions",
-                abstract="Dimensions used for aggregation. Example: level",
-                allowed_values=[
-                    "time",
-                    "level",
-                    "latitude",
-                    "longitude",
-                    "realization",
-                ],
-                data_type="string",
-                min_occurs=1,
-                max_occurs=4,
-            ),
-            LiteralInput(
-                "pre_checked",
-                "Pre-Checked",
-                data_type="boolean",
-                abstract="Use checked data only.",
-                default="0",
-                min_occurs=1,
-                max_occurs=1,
-            ),
-            LiteralInput(
-                "apply_fixes",
-                "Apply Fixes",
-                data_type="boolean",
-                abstract="Apply fixes to datasets.",
-                default="1",
                 min_occurs=1,
                 max_occurs=1,
             ),
@@ -87,11 +54,11 @@ class AverageByDimension(Process):
             ),
         ]
 
-        super(AverageByDimension, self).__init__(
+        super(WeightedAverage, self).__init__(
             self._handler,
-            identifier="average",
-            title="Average by Dimensions",
-            abstract="Run averaging by dimensions on climate model data.",
+            identifier="weighted_average",
+            title="Weighted Average",
+            abstract="Run weighted averaging on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
@@ -103,9 +70,6 @@ class AverageByDimension(Process):
         )
 
     def _handler(self, request, response):
-        # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in average: {os.environ}")
-
         # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
@@ -114,25 +78,23 @@ class AverageByDimension(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
-            "pre_checked": parse_wps_input(
-                request.inputs, "pre_checked", default=False
-            ),
-            "dims": parse_wps_input(
-                request.inputs, "dims", as_sequence=True, default=None
-            ),
+            "apply_fixes": False,
+            "pre_checked": False,
+            "dims": ["latitude", "longitude"],
         }
         # print(inputs)
 
         # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average_by_dim)
+        director = wrap_director(collection, inputs, run_weighted_average)
 
         ml4 = build_metalink(
-            "average-dim-result",
-            "Averaging by dimension result as NetCDF files.",
+            "weighted-average-result",
+            "Weighted averaging result as NetCDF files.",
             self.workdir,
             director.output_uris,
         )
 
-        populate_response(response, "average", self.workdir, inputs, collection, ml4)
+        populate_response(
+            response, "weighted_average", self.workdir, inputs, collection, ml4
+        )
         return response
