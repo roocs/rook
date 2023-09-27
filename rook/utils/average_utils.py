@@ -17,7 +17,6 @@ def run_weighted_average(args):
     from daops.ops.average import average_over_dims
 
     args["apply_fixes"] = False
-    args["pre_checked"] = False
     args["dims"] = ["latitude", "longitude"]
 
     result = average_over_dims(**args)
