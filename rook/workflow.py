@@ -9,6 +9,7 @@ from .exceptions import WorkflowValidationError
 from .operator import (
     AverageByTime,
     AverageByDimension,
+    WeightedAverage,
     Subset,
     Concat,
 )
@@ -84,6 +85,7 @@ class BaseWorkflow(object):
         self.subset_op = Subset(output_dir)
         self.average_time_op = AverageByTime(output_dir)
         self.average_dim_op = AverageByDimension(output_dir)
+        self.weighted_average_op = WeightedAverage(output_dir)
         self.prov = Provenance(output_dir)
 
     def validate(self, wfdoc):
@@ -147,6 +149,10 @@ class Workflow(BaseWorkflow):
         elif "average" == step["run"]:
             collection = step["in"]["collection"]
             result = self.average_dim_op.call(step["in"])
+            self.prov.add_operator(step_id, step["in"], collection, result)
+        elif "weighted_average" == step["run"]:
+            collection = step["in"]["collection"]
+            result = self.weighted_average_op.call(step["in"])
             self.prov.add_operator(step_id, step["in"], collection, result)
         elif "concat" == step["run"]:
             collection = step["in"]["collection"]
