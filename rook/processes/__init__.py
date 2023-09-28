@@ -6,6 +6,7 @@ from .wps_average_weighted import WeightedAverage
 from .wps_orchestrate import Orchestrate
 from .wps_subset import Subset
 from .wps_concat import Concat
+from .wps_regrid import Regrid
 
 processes = [
     Usage(),
@@ -15,5 +16,6 @@ processes = [
     AverageByDimension(),
     WeightedAverage(),
     Concat(),
+    Regrid(),
     Orchestrate(),
 ]
