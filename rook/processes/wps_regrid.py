@@ -26,6 +26,26 @@ class Regrid(Process):
                 min_occurs=1,
                 max_occurs=1,
             ),
+            LiteralInput(
+                "method",
+                "Regrid method",
+                abstract="Regrid method like consevative or bilinear. Default: nearest_s2d",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+                allowed_values=["conservative", "patch", "nearest_s2d", "bilinear"],
+                default="nearest_s2d",
+            ),
+            LiteralInput(
+                "grid",
+                "Regrid target grid",
+                abstract="Regrid target grid like 1deg. Default: 1deg",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+                allowed_values=["1deg", "2deg_lsm", "0pt25deg_era5_lsm"],
+                default="1deg",
+            ),
         ]
         outputs = [
             ComplexOutput(
@@ -79,7 +99,8 @@ class Regrid(Process):
             "output_dir": self.workdir,
             "apply_fixes": False,
             "pre_checked": False,
-            # "dims": ["latitude", "longitude"],
+            "method": parse_wps_input(request.inputs, "method", default="nearest_s2d"),
+            "grid": parse_wps_input(request.inputs, "grid", default="1deg"),
         }
         # print(inputs)
 
