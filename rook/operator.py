@@ -12,6 +12,7 @@ from rook.utils.average_utils import (
 )
 from rook.utils.subset_utils import run_subset
 from rook.utils.concat_utils import run_concat
+from rook.utils.regrid_utils import run_regrid
 from roocs_utils.utils.file_utils import is_file_list, FileMapper
 
 
@@ -87,6 +88,13 @@ class WeightedAverage(Operator):
 
     def _get_runner(self):
         return run_weighted_average
+
+
+class Regrid(Operator):
+    prefix = "regrid"
+
+    def _get_runner(self):
+        return run_regrid
 
 
 class Concat(Operator):
