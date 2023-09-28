@@ -115,6 +115,8 @@ class Provenance(object):
             "level",
             "dims",
             "freq",
+            "method",
+            "grid",
             "apply_fixes",
             "apply_average",
         ]:
