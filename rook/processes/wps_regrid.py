@@ -29,9 +29,9 @@ class Regrid(Process):
             LiteralInput(
                 "method",
                 "Regrid method",
-                abstract="Regrid method like consevative or bilinear. Default: nearest_s2d",
+                abstract="Please specify regridding method like consevative or bilinear. Default: nearest_s2d",
                 data_type="string",
-                min_occurs=0,
+                min_occurs=1,
                 max_occurs=1,
                 allowed_values=["conservative", "patch", "nearest_s2d", "bilinear"],
                 default="nearest_s2d",
@@ -39,9 +39,9 @@ class Regrid(Process):
             LiteralInput(
                 "grid",
                 "Regrid target grid",
-                abstract="Regrid target grid like 1deg. Default: 1deg",
+                abstract="Please specify output grid resolution for regridding. Default: 1deg",
                 data_type="string",
-                min_occurs=0,
+                min_occurs=1,
                 max_occurs=1,
                 allowed_values=["1deg", "2deg_lsm", "0pt25deg_era5_lsm"],
                 default="1deg",
@@ -77,7 +77,7 @@ class Regrid(Process):
             self._handler,
             identifier="regrid",
             title="Regrid",
-            abstract="Regridding operator for climate model data.",
+            abstract="Run regridding operator on climate model data using daops (xarray).",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
             ],
