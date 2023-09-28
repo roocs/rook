@@ -17,6 +17,7 @@ def test_wps_caps():
         "concat",
         "dashboard",
         "orchestrate",
+        "regrid",
         "subset",
         "usage",
         "weighted_average",
