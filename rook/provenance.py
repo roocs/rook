@@ -117,6 +117,7 @@ class Provenance(object):
             "freq",
             "method",
             "grid",
+            "adaptive_masking_threshold",
             "apply_fixes",
             "apply_average",
         ]:
