@@ -33,7 +33,7 @@ class Regrid(Process):
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
-                allowed_values=["nearest_s2d", "bilinear", "conservative",  "patch"],
+                allowed_values=["nearest_s2d", "bilinear", "conservative", "patch"],
                 default="nearest_s2d",
             ),
             LiteralInput(
@@ -43,7 +43,17 @@ class Regrid(Process):
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
-                allowed_values=["auto", "0pt25deg", "0pt25deg_era5", "0pt5deg_lsm",  "0pt625x0pt5deg", "0pt75deg", "1deg", "1pt25deg", "2pt5deg"],
+                allowed_values=[
+                    "auto",
+                    "0pt25deg",
+                    "0pt25deg_era5",
+                    "0pt5deg_lsm",
+                    "0pt625x0pt5deg",
+                    "0pt75deg",
+                    "1deg",
+                    "1pt25deg",
+                    "2pt5deg"
+                ],
                 default="auto",
             ),
         ]
