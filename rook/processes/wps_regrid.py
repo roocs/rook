@@ -33,18 +33,18 @@ class Regrid(Process):
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
-                allowed_values=["conservative", "patch", "nearest_s2d", "bilinear"],
+                allowed_values=["nearest_s2d", "bilinear", "conservative",  "patch"],
                 default="nearest_s2d",
             ),
             LiteralInput(
                 "grid",
                 "Regrid target grid",
-                abstract="Please specify output grid resolution for regridding. Default: 1deg",
+                abstract="Please specify output grid resolution for regridding. Default: auto",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
-                allowed_values=["1deg", "2deg_lsm", "0pt25deg_era5_lsm"],
-                default="1deg",
+                allowed_values=["auto", "0pt25deg", "0pt25deg_era5", "0pt5deg_lsm",  "0pt625x0pt5deg", "0pt75deg", "1deg", "1pt25deg", "2pt5deg"],
+                default="auto",
             ),
         ]
         outputs = [
@@ -100,7 +100,8 @@ class Regrid(Process):
             "apply_fixes": False,
             "pre_checked": False,
             "method": parse_wps_input(request.inputs, "method", default="nearest_s2d"),
-            "grid": parse_wps_input(request.inputs, "grid", default="1deg"),
+            "grid": parse_wps_input(request.inputs, "grid", default="auto"),
+            "adaptive_masking_threshold": 0.5,
         }
         # print(inputs)
 
