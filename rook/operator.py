@@ -9,6 +9,7 @@ from rook.utils.average_utils import (
     run_average_by_time,
     run_average_by_dim,
     run_weighted_average,
+    run_average_by_shape,
 )
 from rook.utils.subset_utils import run_subset
 from rook.utils.concat_utils import run_concat
@@ -81,6 +82,14 @@ class AverageByDimension(Operator):
 
     def _get_runner(self):
         return run_average_by_dim
+
+
+class AverageByShape(Operator):
+    prefix = "average_shape"
+
+    def _get_runner(self):
+        return run_average_by_shape
+
 
 
 class WeightedAverage(Operator):
