@@ -1,4 +1,6 @@
 import numpy as np
+import xarray as xr
+
 import collections
 
 from roocs_utils.parameter import collection_parameter
@@ -62,9 +64,15 @@ class WeightedAverage(Operation):
             # add to list
             datasets.append(ds_weighted)
 
+        # concat over time
+        processed_ds = xr.concat(
+            datasets,
+            "time",
+        )
+
         # average
         outputs = average_over_dims(
-            datasets,
+            processed_ds,
             dims=["latitude", "longitude"],
             output_type="nc",
         )
