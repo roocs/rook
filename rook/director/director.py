@@ -48,7 +48,9 @@ class Director:
         self._check_apply_fixes()
 
     def use_fixes(self):
-        return CONFIG[f"project:{self.project}"].get("use_fixes", False)
+        # TODO: don't use fixes
+        return False
+        # return CONFIG[f"project:{self.project}"].get("use_fixes", False)
 
     def _check_apply_fixes(self):
         if (
@@ -118,20 +120,22 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        if not self.use_fixes():
-            return False
-
-        if self.search_result:
-            ds_ids = self.search_result.files()
-        else:
-            ds_ids = self.coll
-        for ds_id in ds_ids:
-            fix = fixer.Fixer(ds_id)
-
-            if fix.pre_processor or fix.post_processors:
-                return True
-
+        # TODO: don't use fixes
         return False
+        # if not self.use_fixes():
+        #     return False
+
+        # if self.search_result:
+        #     ds_ids = self.search_result.files()
+        # else:
+        #     ds_ids = self.coll
+        # for ds_id in ds_ids:
+        #     fix = fixer.Fixer(ds_id)
+
+        #     if fix.pre_processor or fix.post_processors:
+        #         return True
+
+        # return False
 
     def request_aligns_with_files(self):
         """
