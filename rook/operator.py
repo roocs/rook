@@ -8,8 +8,8 @@ from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.average_utils import (
     run_average_by_time,
     run_average_by_dim,
-    run_weighted_average,
 )
+from rook.utils.weighted_average_utils import run_weighted_average
 from rook.utils.subset_utils import run_subset
 from rook.utils.concat_utils import run_concat
 from rook.utils.regrid_utils import run_regrid
