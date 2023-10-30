@@ -44,13 +44,5 @@ def weighted_average(
     apply_fixes=False,
     apply_average=False,
 ):
-    result_set = WeightedAverage(
-        collection=collection,
-        ignore_undetected_dims=ignore_undetected_dims,
-        output_dir=output_dir,
-        output_type=output_type,
-        split_method=split_method,
-        file_namer=file_namer,
-        apply_fixes=apply_fixes,
-        apply_average=apply_average)._calculate()
+    result_set = WeightedAverage(**locals()).calculate()
     return result_set
