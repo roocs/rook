@@ -80,8 +80,9 @@ class Concat(Operation):
         dims = dimension_parameter.DimensionParameter(
             self.params.get("dims", None)
         ).value
-        standard_name = dims[0]
-        dim = coord_by_standard_name.get(standard_name, None)
+        # standard_name = dims[0]
+        # dim = coord_by_standard_name.get(standard_name, None)
+        dim = dims[0]
 
         processed_ds = xr.concat(
             datasets,
@@ -90,7 +91,7 @@ class Concat(Operation):
         processed_ds = processed_ds.assign_coords(
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
-        processed_ds.coords[dim].attrs = {"standard_name": standard_name}
+        # processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # optional: average
         if self.params.get("apply_average", False):
             processed_ds = average(processed_ds, dims=["realization"])
