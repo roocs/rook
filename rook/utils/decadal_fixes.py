@@ -120,7 +120,7 @@ def decadal_fix_4(ds_id, ds):
 def decadal_fix_5(ds_id, ds):
     operands = {
         "var_id": "realization",
-        "value": "1",
+        "value": ds.attrs.get("realization_index"),
         "dtype": "int32",
         "attrs": {
             "long_name": "realization",
