@@ -20,7 +20,7 @@ from clisops.core.average import average_over_dims as average
 from .decadal_fixes import apply_decadal_fixes
 
 coord_by_standard_name = {
-    "realization": "realization_index",
+    "realization": "realization",
 }
 
 
@@ -80,9 +80,8 @@ class Concat(Operation):
         dims = dimension_parameter.DimensionParameter(
             self.params.get("dims", None)
         ).value
-        # standard_name = dims[0]
-        # dim = coord_by_standard_name.get(standard_name, None)
-        dim = dims[0]
+        standard_name = dims[0]
+        dim = coord_by_standard_name.get(standard_name, None)
 
         processed_ds = xr.concat(
             datasets,
@@ -91,10 +90,10 @@ class Concat(Operation):
         processed_ds = processed_ds.assign_coords(
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
-        # processed_ds.coords[dim].attrs = {"standard_name": standard_name}
+        processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # optional: average
         if self.params.get("apply_average", False):
-            processed_ds = average(processed_ds, dims=["realization"])
+            processed_ds = average(processed_ds, dims=[dim])
         # subset
         outputs = subset(
             processed_ds,
