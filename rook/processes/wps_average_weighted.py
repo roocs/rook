@@ -78,6 +78,7 @@ class WeightedAverage(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
+            "dims": ["latitude", "longitude"],
             "apply_fixes": False,
             "pre_checked": False,
         }

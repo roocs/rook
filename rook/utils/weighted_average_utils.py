@@ -12,19 +12,23 @@ from roocs_utils.project_utils import derive_ds_id
 from daops.ops.base import Operation
 from daops.utils import normalise
 
-from clisops.ops.average import average_over_dims as average
+from clisops.ops import subset
+
+# from clisops.ops.average import average_over_dims as average
 
 
 def apply_weights(ds):
-    ds["time"] = ds["time"].astype("int64")
-    ds["time_bnds"] = ds["time_bnds"].astype("int64")
+    # ds["time"] = ds["time"].astype("int64")
+    # ds["time_bnds"] = ds["time_bnds"].astype("int64")
     # weights
     weights = np.cos(np.deg2rad(ds.lat))
     weights.name = "weights"
     weights.fillna(0)
     # apply weights
     ds_weighted = ds.weighted(weights)
-    return ds_weighted
+    # apply mean
+    ds_weighted_mean = ds_weighted.mean(["lat", "lon"])
+    return ds_weighted_mean
 
 
 class WeightedAverage(Operation):
@@ -65,6 +69,10 @@ class WeightedAverage(Operation):
 
         rs = normalise.ResultSet(vars())
 
+        # dims = dimension_parameter.DimensionParameter(
+        #    self.params.get("dims", None)
+        # ).value
+
         # apply weights
         datasets = []
         for ds_id in norm_collection.keys():
@@ -72,20 +80,12 @@ class WeightedAverage(Operation):
             ds_mod = apply_weights(ds)
             datasets.append(ds_mod)
 
-        dims = dimension_parameter.DimensionParameter(
-            self.params.get("dims", None)
-        ).value
+        processed_ds = datasets[0]
 
-        # processed_ds = xr.concat(
-        #    datasets,
-        #    "time",
-        # )
-
-        # average over dimensions
-        outputs = average(
-            # processed_ds,
-            datasets,
-            dims=dims,
+        # subset
+        outputs = subset(
+            processed_ds,
+            time=None,
             output_type="nc",
         )
         # result
@@ -101,6 +101,7 @@ def run_weighted_average(args):
 
 def weighted_average(
     collection,
+    dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
     output_type="netcdf",
@@ -108,5 +109,5 @@ def weighted_average(
     file_namer="standard",
     apply_fixes=False,
 ):
-    result_set = WeightedAverage(**locals()).calculate()
+    result_set = WeightedAverage(**locals())._calculate()
     return result_set
