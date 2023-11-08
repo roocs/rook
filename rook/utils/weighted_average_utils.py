@@ -1,6 +1,6 @@
 import numpy as np
 
-# import xarray as xr
+import xarray as xr
 
 import collections
 
@@ -17,9 +17,10 @@ from clisops.ops import subset
 # from clisops.ops.average import average_over_dims as average
 
 
-def apply_weights(ds):
-    # ds["time"] = ds["time"].astype("int64")
-    # ds["time_bnds"] = ds["time_bnds"].astype("int64")
+def apply_weighted_mean(ds):
+    # fix cftime calendar
+    ds["time"] = ds.indexes["time"].to_numpy()
+    ds = ds.drop_vars(["time_bnds"])
     # weights
     weights = np.cos(np.deg2rad(ds.lat))
     weights.name = "weights"
@@ -69,15 +70,11 @@ class WeightedAverage(Operation):
 
         rs = normalise.ResultSet(vars())
 
-        # dims = dimension_parameter.DimensionParameter(
-        #    self.params.get("dims", None)
-        # ).value
-
         # apply weights
         datasets = []
         for ds_id in norm_collection.keys():
             ds = norm_collection[ds_id]
-            ds_mod = apply_weights(ds)
+            ds_mod = apply_weighted_mean(ds)
             datasets.append(ds_mod)
 
         processed_ds = datasets[0]
@@ -86,7 +83,8 @@ class WeightedAverage(Operation):
         outputs = subset(
             processed_ds,
             time=None,
-            output_type="nc",
+            file_namer="simple",
+            output_type="netcdf",
         )
         # result
         rs.add("output", outputs)
@@ -106,7 +104,7 @@ def weighted_average(
     output_dir=None,
     output_type="netcdf",
     split_method="time:auto",
-    file_namer="standard",
+    file_namer="simple",
     apply_fixes=False,
 ):
     result_set = WeightedAverage(**locals())._calculate()

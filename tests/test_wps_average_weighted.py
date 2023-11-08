@@ -23,8 +23,8 @@ def assert_weighted_average(path):
     paths = extract_paths_from_metalink(path)
     assert len(paths) > 0
     print(paths)
-    # ds = xr.open_dataset(paths[0])
-    # assert "time" in ds.coords
+    ds = xr.open_dataset(paths[0])
+    assert "time" in ds.coords
 
 
 def test_wps_weighted_average_cmip6():
@@ -38,4 +38,3 @@ def test_wps_weighted_average_cmip6():
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
     assert_weighted_average(path=get_output(resp.xml)["output"])
-    assert False
