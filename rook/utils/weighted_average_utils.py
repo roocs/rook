@@ -27,7 +27,7 @@ def calc_weighted_mean(ds):
     # apply weights
     ds_weighted = ds.weighted(weights)
     # apply mean
-    ds_weighted_mean = ds_weighted.mean(["lat", "lon"])
+    ds_weighted_mean = ds_weighted.mean(["lat", "lon"], keep_attrs=True)
     return ds_weighted_mean
 
 
