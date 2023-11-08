@@ -11,13 +11,3 @@ def run_average_by_dim(args):
 
     result = average_over_dims(**args)
     return result.file_uris
-
-
-# def run_weighted_average(args):
-#     from daops.ops.average import average_over_dims
-
-#     args["apply_fixes"] = False
-#     args["dims"] = ["latitude", "longitude"]
-
-#     result = average_over_dims(**args)
-#     return result.file_uris
