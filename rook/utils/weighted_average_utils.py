@@ -28,7 +28,7 @@ def calc_weighted_mean(ds):
 
 class WeightedAverage_(ClisopsAverage):
     def _get_file_namer(self):
-        extra = f"_w-avg"
+        extra = "_w-avg"
 
         namer = get_file_namer(self._file_namer)(extra=extra)
 
