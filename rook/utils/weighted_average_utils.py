@@ -8,6 +8,12 @@ from roocs_utils.parameter.dimension_parameter import DimensionParameter
 
 from daops.ops.average import Average as DaopsAverage
 from clisops.ops.average import Average as ClisopsAverage
+from clisops.utils.file_namers import StandardFileNamer
+
+
+class FixedFileNamer(StandardFileNamer):
+    def _get_project(self, ds):
+        return "c3s-cmip6"
 
 
 def calc_weighted_mean(ds):
@@ -26,6 +32,14 @@ def calc_weighted_mean(ds):
 
 
 class WeightedAverage_(ClisopsAverage):
+    def _get_file_namer(self):
+        extra = f"_w-avg"
+
+        # namer = get_file_namer(self._file_namer)(extra=extra)
+        namer = FixedFileNamer(extra=extra)
+
+        return namer
+
     def _calculate(self):
         avg_ds = calc_weighted_mean(self.ds)
 
@@ -57,7 +71,7 @@ def weighted_average(
     output_dir=None,
     output_type="netcdf",
     split_method="time:auto",
-    file_namer="simple",
+    file_namer="standard",
     apply_fixes=False,
 ):
     result_set = WeightedAverage(**locals()).calculate()
