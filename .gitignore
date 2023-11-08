@@ -82,6 +82,7 @@ src/
 *.log
 *.lock
 testdata.json
+output_*.nc
 
 # IPython
 .ipynb_checkpoints

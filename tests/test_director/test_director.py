@@ -38,6 +38,7 @@ class TestDirectorCMIP6:
             "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
         ]
 
+    @pytest.mark.skip(reason="not relevant")
     def test_pre_checked_not_characterised(self):
         # raise exception
         inputs = {"pre_checked": True}

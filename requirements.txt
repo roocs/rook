@@ -7,7 +7,7 @@ daops>=0.8.1,<0.9
 clisops>=0.9.6,<0.11
 roocs-utils>=0.6.4,<0.7
 # roocs-utils @ git+https://github.com/roocs/roocs-utils@master#egg=roocs-utils
-xarray>=0.20,<0.22
+xarray>=0.21
 cf-xarray<=0.8.4
 dask[complete]
 netcdf4

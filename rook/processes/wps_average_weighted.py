@@ -10,7 +10,7 @@ from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.average_utils import run_weighted_average
+from ..utils.weighted_average_utils import run_weighted_average
 
 LOGGER = logging.getLogger()
 
@@ -78,9 +78,9 @@ class WeightedAverage(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
+            "dims": ["latitude", "longitude"],
             "apply_fixes": False,
             "pre_checked": False,
-            "dims": ["latitude", "longitude"],
         }
         # print(inputs)
 
