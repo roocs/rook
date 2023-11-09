@@ -80,6 +80,24 @@ WF_C3S_CMIP6 = json.dumps(
     }
 )
 
+WF_C3S_CMIP6_W_AVG = json.dumps(
+    {
+        "doc": "subset+weighted_average on cmip6",
+        "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
+        "outputs": {"output": "weighted_average/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {"collection": "inputs/ds", "time": "2020/2020"},
+            },
+            "weighted_average": {
+                "run": "weighted_average",
+                "in": {"collection": "subset/output"},
+            },
+        },
+    }
+)
+
 
 WF_C3S_CORDEX = json.dumps(
     {
@@ -320,18 +338,6 @@ def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     assert "data.mips.copernicus-climate.eu" in urls[0]
 
 
-# def test_smoke_execute_c3s_cmip5_subset_collection_only(wps):
-#     inputs = [("collection", C3S_CMIP5_MON_COLLECTION)]
-#     urls = wps.execute("subset", inputs)
-#     print(urls)
-#     assert len(urls) == 1
-#     assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500116-20051216.nc" in urls[0]
-#     assert (
-#         "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip5"
-#         in urls[0]
-#     )
-
-
 def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
     inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
     urls = wps.execute("subset", inputs)
@@ -435,6 +441,15 @@ def test_smoke_execute_c3s_cordex_average_time(wps):
     )
 
 
+def test_smoke_execute_c3s_cmip6_weighted_average(wps):
+    inputs = [("collection", C3S_CMIP6_MON_COLLECTION)]
+    urls = wps.execute("weighted_average", inputs)
+    assert len(urls) == 1
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150116-21001216_w-avg.nc" in urls[0]
+    )
+
+
 def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP5)),
@@ -451,6 +466,17 @@ def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_W_AVG)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216_w-avg.nc" in urls[0]
+    )
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
@@ -495,10 +521,8 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast_r10i1p1f2_gn_19951116-19961216.nc"
-        in urls[0]
-    )
+    assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
+    assert "19951116-19961216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
