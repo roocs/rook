@@ -1,6 +1,15 @@
 Changes
 *******
 
+0.11.0 (2023-11-09)
+==================
+
+* Added weighted average operator and wps process for it.
+* Added wps process for regridding ... using only dummy operator.
+* Use pywps 4.6.0.
+* Updated deacdal fixes and concat operation. Using a realization variable (#235, #237).
+* Skip Python 3.8.
+
 0.10.1 (2023-07-20)
 ==================
 
