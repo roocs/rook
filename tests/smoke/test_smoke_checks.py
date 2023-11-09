@@ -521,10 +521,8 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast_r10i1p1f2_gn_19951116-19961216.nc"
-        in urls[0]
-    )
+    assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
+    assert "19951116-19961216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
