@@ -427,7 +427,9 @@ def test_smoke_execute_c3s_cmip6_weighted_average(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION)]
     urls = wps.execute("weighted_average", inputs)
     assert len(urls) == 1
-    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_w-avg.nc" in urls[0]
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150116-21001216_w-avg.nc" in urls[0]
+    )
 
 
 def test_smoke_execute_c3s_cmip5_orchestrate(wps):
