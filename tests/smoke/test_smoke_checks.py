@@ -80,6 +80,24 @@ WF_C3S_CMIP6 = json.dumps(
     }
 )
 
+WF_C3S_CMIP6_W_AVG = json.dumps(
+    {
+        "doc": "subset+weighted_average on cmip6",
+        "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
+        "outputs": {"output": "average/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {"collection": "inputs/ds", "time": "2020/2020"},
+            },
+            "weighted_average": {
+                "run": "weighted_average",
+                "in": {"collection": "subset/output"},
+            },
+        },
+    }
+)
+
 
 WF_C3S_CORDEX = json.dumps(
     {
@@ -448,6 +466,15 @@ def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_W_AVG)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_w-avg.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
