@@ -84,7 +84,7 @@ WF_C3S_CMIP6_W_AVG = json.dumps(
     {
         "doc": "subset+weighted_average on cmip6",
         "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
-        "outputs": {"output": "average/output"},
+        "outputs": {"output": "weighted_average/output"},
         "steps": {
             "subset": {
                 "run": "subset",
