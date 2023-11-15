@@ -13,6 +13,7 @@ def test_wps_caps():
     )
     assert sorted(names.split()) == [
         "average",
+        "average_shape",
         "average_time",
         "concat",
         "dashboard",
