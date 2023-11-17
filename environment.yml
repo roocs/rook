@@ -36,3 +36,4 @@ dependencies:
 - bokeh>=2.4.2,<2.5
 # tests
 - pytest
+- beautifulsoup4
