@@ -29,7 +29,7 @@ dependencies:
 - graphviz
 # catalog
 - intake
-- pandas>=1.3.5,<1.4
+- pandas>=1.3.5,<2.0
 - sqlalchemy>=1.4.45,<2.0
 - aiohttp
 # dashboard
