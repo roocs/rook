@@ -106,14 +106,14 @@ WF_C3S_CMIP6_REGRID = json.dumps(
         "steps": {
             "subset": {
                 "run": "subset",
-                "in": {"collection": "inputs/ds", "time": "2020/2020"},
+                "in": {"collection": "inputs/ds", "time": "2016/2016"},
             },
-            "weighted_average": {
+            "regrid": {
                 "run": "regrid",
                 "in": {
                     "collection": "subset/output",
                     "method": "nearest_s2d",
-                    "grid": "auto",
+                    "grid": "1deg",
                 },
             },
         },
@@ -522,7 +522,7 @@ def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20200116-20201216_regrid-nearest_s2d-120x179_cells_grid.nc"
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20160116-20161216_regrid-nearest_s2d-180x360_cells_grid.nc"
         in urls[0]
     )
 
