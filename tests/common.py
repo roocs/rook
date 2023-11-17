@@ -1,9 +1,8 @@
 import os
 
-# import tempfile
-
 from jinja2 import Template
 from pathlib import Path
+from bs4 import BeautifulSoup
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -106,3 +105,10 @@ def get_output(doc):
             output[identifier_el.text] = data_el[0].text
 
     return output
+
+
+def extract_paths_from_metalink(path):
+    path = path.replace("file://", "")
+    doc = BeautifulSoup(open(path, "r").read(), "xml")
+    paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
+    return paths
