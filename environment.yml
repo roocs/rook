@@ -21,6 +21,7 @@ dependencies:
 #- daops>=0.9.0,<0.10
 #- clisops>=0.12.0,<0.13
 - roocs-utils>=0.6.4,<0.7
+- roocs-grids >=0.1.2
 # workflow
 - networkx
 # provenance

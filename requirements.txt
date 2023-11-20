@@ -8,6 +8,7 @@ daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
 # clisops>=0.9.6,<0.12
 # clisops @ git+https://github.com/roocs/clisops.git@regrid-main#egg=clisops
 roocs-utils>=0.6.4,<0.7
+roocs_grids>=0.1.2
 xarray>=0.21
 cf-xarray>=0.7
 dask[complete]
