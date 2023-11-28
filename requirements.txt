@@ -3,8 +3,8 @@ jinja2
 click
 psutil
 # daops
-# daops>=0.8.1,<0.10
-daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
+daops>=0.10.0,<0.11
+# daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
 clisops>=0.12.0,<0.12
 # clisops @ git+https://github.com/roocs/clisops.git@regrid-main#egg=clisops
 roocs-utils>=0.6.4,<0.7
