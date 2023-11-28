@@ -1,21 +1,13 @@
 import pytest
 
 import xarray as xr
-from bs4 import BeautifulSoup
 
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_average_weighted import WeightedAverage
 
-from .common import PYWPS_CFG, get_output
-
-
-def extract_paths_from_metalink(path):
-    path = path.replace("file://", "")
-    doc = BeautifulSoup(open(path, "r").read(), "xml")
-    paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
-    return paths
+from .common import PYWPS_CFG, get_output, extract_paths_from_metalink
 
 
 def assert_weighted_average(path):

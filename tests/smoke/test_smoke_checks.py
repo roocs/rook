@@ -98,6 +98,28 @@ WF_C3S_CMIP6_W_AVG = json.dumps(
     }
 )
 
+WF_C3S_CMIP6_REGRID = json.dumps(
+    {
+        "doc": "subset+regrid on cmip6",
+        "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
+        "outputs": {"output": "regrid/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {"collection": "inputs/ds", "time": "2016/2016"},
+            },
+            "regrid": {
+                "run": "regrid",
+                "in": {
+                    "collection": "subset/output",
+                    "method": "nearest_s2d",
+                    "grid": "1deg",
+                },
+            },
+        },
+    }
+)
+
 
 WF_C3S_CORDEX = json.dumps(
     {
@@ -450,6 +472,20 @@ def test_smoke_execute_c3s_cmip6_weighted_average(wps):
     )
 
 
+def test_smoke_execute_c3s_cmip6_regrid(wps):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_COLLECTION),
+        ("grid", "auto"),
+        ("method", "nearest_s2d"),
+    ]
+    urls = wps.execute("regrid", inputs)
+    assert len(urls) == 1
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-120x179_cells_grid.nc"
+        in urls[0]
+    )
+
+
 def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP5)),
@@ -476,6 +512,18 @@ def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
     assert len(urls) == 1
     assert (
         "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216_w-avg.nc" in urls[0]
+    )
+
+
+def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_REGRID)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20160116-20161216_regrid-nearest_s2d-180x360_cells_grid.nc"
+        in urls[0]
     )
 
 

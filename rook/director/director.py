@@ -108,8 +108,8 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
-        # TODO: quick fix for average and concat. Don't use original files for these operators.
-        if "dims" in self.inputs or "freq" in self.inputs:
+        # TODO: quick fix for average, regrid and concat. Don't use original files for these operators.
+        if "dims" in self.inputs or "freq" in self.inputs or "grid" in self.inputs:
             return
 
         # Finally, check if the subset requirements can align with whole datasets

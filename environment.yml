@@ -4,34 +4,37 @@ channels:
 - defaults
 dependencies:
 - pip
-- python>=3.8
-- pywps>=4.5.2,<4.7
+- python >=3.9
+- pywps >=4.5.2,<4.7
 - jinja2
 - click
 - psutil
 - requests
 # daops
-- cftime>=1.2.1
-- xarray>=0.21
-- cf_xarray>=0.7
-- dask>=2021.12
-- netcdf4>=1.4
-- bottleneck>=1.3.1,<1.4
-- daops>=0.8.1,<0.9
-- clisops>=0.9.6,<0.11
-- roocs-utils>=0.6.4,<0.7
+- cftime >=1.2.1
+- xarray >=0.21,<2023.3.0 # https://github.com/pydata/xarray/issues/7794
+- xesmf >=0.8.2
+- cf_xarray >=0.7
+- dask >=2021.12
+- netcdf4 >=1.4
+- bottleneck >=1.3.1,<1.4
+- daops >=0.10.0,<0.11
+- clisops >=0.12.0,<0.13
+- roocs-utils >=0.6.4,<0.7
+- roocs-grids >=0.1.2
 # workflow
 - networkx
 # provenance
-- prov>=2.0.0
+- prov >=2.0.0
 - pydot
 - graphviz
 # catalog
 - intake
-- pandas>=1.3.5,<1.4
-- sqlalchemy>=1.4.45,<2.0
+- pandas >=1.3.5,<2.0
+- sqlalchemy >=1.4.45,<2.0
 - aiohttp
 # dashboard
-- bokeh>=2.4.2,<2.5
+- bokeh >=2.4.2,<2.5
 # tests
 - pytest
+- beautifulsoup4
