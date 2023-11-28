@@ -1,6 +1,14 @@
 Changes
 *******
 
+0.12.0 (2023-11-28)
+==================
+
+* Added regridding operator from clisops >=0.12.0.
+* Added tests for regridding process.
+* Added smoke test for regridding.
+* Run GitHub tests with conda.
+
 0.11.0 (2023-11-09)
 ==================
 
