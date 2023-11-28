@@ -4,7 +4,7 @@ channels:
 - defaults
 dependencies:
 - pip
-- python >=3.9
+- python >=3.9,<3.11
 - pywps >=4.5.2,<4.7
 - jinja2
 - click
@@ -12,7 +12,8 @@ dependencies:
 - requests
 # daops
 - cftime >=1.2.1
-- xarray >=0.21,<2023.3.0 # https://github.com/pydata/xarray/issues/7794
+#- xarray >=0.21,<2023.3.0 # https://github.com/pydata/xarray/issues/7794
+- xarray >=0.21,<2022.6.0
 - xesmf >=0.8.2
 - cf_xarray >=0.7
 - dask >=2021.12
