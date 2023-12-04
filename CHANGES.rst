@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.12.1 (2023-12-04)
+==================
+
+* Updated clisops >=0.12.1 with fix for fill-value issue.
+* Added smoke test for fill-value issue.
+
 0.12.0 (2023-11-28)
 ==================
 
