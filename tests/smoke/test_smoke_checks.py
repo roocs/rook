@@ -301,7 +301,7 @@ def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "tas_day_CESM2-WACCM_historical_r1i1p1f1_gn_20000101-20001231.nc" in urls[0]
+    assert "tas_day_CESM2-WACCM_historical_r1i1p1f1_gn_20100101-20101230.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
