@@ -292,6 +292,20 @@ def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
     assert "coordinates" not in ds.time_bnds.encoding
 
 
+def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
+    dsid = "c3s-cmip6.CMIP.NCAR.CESM2-WACCM.historical.r1i1p1f1.day.tas.gn.v20190227"
+    inputs = [
+        ("collection", dsid),
+        ("time", "2010-01-01/2010-12-30"),
+        ("area", "5,49,7,51"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "tas_day_CESM2-WACCM_historical_r1i1p1f1_gn_20100101-20101230.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "tas" in ds.variables
+
+
 def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
