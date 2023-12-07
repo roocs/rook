@@ -1,13 +1,13 @@
 import logging
-import os
 
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from pywps.app.exceptions import ProcessError
-from pywps.inout.outputs import MetaFile, MetaLink4
+
+# from pywps.app.exceptions import ProcessError
+# from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..director import wrap_director
-from ..utils.input_utils import parse_wps_input
+from ..utils.input_utils import parse_wps_input, fix_time_components
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
 from ..utils.concat_utils import run_concat
@@ -149,8 +149,8 @@ class Concat(Process):
                 request.inputs, "apply_average", default=False
             ),
             "time": parse_wps_input(request.inputs, "time", default=None),
-            "time_components": parse_wps_input(
-                request.inputs, "time_components", default=None
+            "time_components": fix_time_components(
+                parse_wps_input(request.inputs, "time_components", default=None)
             ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None

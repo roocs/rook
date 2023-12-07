@@ -152,3 +152,6 @@ def test_fix_time_components():
         fix_time_components(f"year:2001,2002|{all_months_2}|day:01,31")
         == "year:2001,2002|day:01,31"
     )
+
+    assert fix_time_components("") is None
+    assert fix_time_components(None) is None

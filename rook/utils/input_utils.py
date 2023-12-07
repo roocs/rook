@@ -7,10 +7,13 @@ from rook import CONFIG
 
 
 def fix_time_components(tc):
-    # Remove reduntant time-component parts to avoid for example issues with 360day calendars
+    # Remove redundant time-component parts to avoid for example issues with 360day calendars.
     tc_all_months = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
     tc_all_months_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
     tc_all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+
+    if not tc:
+        return None
 
     tc_parts = tc.split("|")
     new_tc_parts = []
