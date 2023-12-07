@@ -6,6 +6,14 @@ from roocs_utils.exceptions import InvalidProject
 from rook import CONFIG
 
 
+def fix_parameters(parameters):
+    if "time_components" in parameters:
+        parameters["time_components"] = fix_time_components(
+            parameters["time_components"]
+        )
+    return parameters
+
+
 def fix_time_components(tc):
     # Remove redundant time-component parts to avoid for example issues with 360day calendars.
     tc_all_months = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
