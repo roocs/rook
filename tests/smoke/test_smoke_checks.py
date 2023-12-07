@@ -26,6 +26,10 @@ C3S_CMIP6_MON_LEVEL_COLLECTION = (
     "c3s-cmip6.CMIP.CSIRO-ARCCSS.ACCESS-CM2.historical.r1i1p1f1.Amon.ta.gn.v20191108"
 )
 
+C3S_CMIP6_360DAY_CALENDAR_COLLECTION = (
+    "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.pr.gn.v20190908"
+)
+
 C3S_CMIP5_DAY_COLLECTION = (
     "c3s-cmip5.output1.IPSL.IPSL-CM5B-LR.historical.day.atmos.day.r1i1p1.tas.v20120718"
 )
@@ -345,6 +349,20 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20200316.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "rlds" in ds.variables
+
+
+def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
+    all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+    inputs = [
+        ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
+        ("time", "2015/2015"),
+        ("time_components", f"month:jan,feb,mar|{all_days}"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "pr" in ds.variables
 
 
 def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
