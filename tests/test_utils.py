@@ -3,7 +3,11 @@ import pytest
 
 from pywps.app import WPSRequest
 
-from rook.utils.input_utils import resolve_to_file_paths, parse_wps_input
+from rook.utils.input_utils import (
+    resolve_to_file_paths,
+    parse_wps_input,
+    fix_time_components,
+)
 from rook.utils.metalink_utils import build_metalink
 
 from .common import TESTS_HOME, MINI_ESGF_MASTER_DIR
@@ -124,3 +128,30 @@ def test_parse_wps_input():
         parse_wps_input(request.inputs, "time_components", default=None)
         == "year:1970,1980|month=01,02,03"
     )
+
+
+def test_fix_time_components():
+    assert (
+        fix_time_components("year:2000|month=01|day=01") == "year:2000|month=01|day=01"
+    )
+
+    all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+    assert (
+        fix_time_components(f"year:2001,2002|month=02|{all_days}")
+        == "year:2001,2002|month=02"
+    )
+
+    all_months = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
+    assert (
+        fix_time_components(f"year:2001,2002|{all_months}|{all_days}")
+        == "year:2001,2002"
+    )
+
+    all_months_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
+    assert (
+        fix_time_components(f"year:2001,2002|{all_months_2}|day:01,31")
+        == "year:2001,2002|day:01,31"
+    )
+
+    assert fix_time_components("") is None
+    assert fix_time_components(None) is None

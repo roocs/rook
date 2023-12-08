@@ -1,4 +1,4 @@
-from pyparsing import dbl_slash_comment
+# from pyparsing import dbl_slash_comment
 from tests.smoke.utils import open_dataset
 
 from owslib.wps import ComplexDataInput
@@ -24,6 +24,10 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
 
 C3S_CMIP6_MON_LEVEL_COLLECTION = (
     "c3s-cmip6.CMIP.CSIRO-ARCCSS.ACCESS-CM2.historical.r1i1p1f1.Amon.ta.gn.v20191108"
+)
+
+C3S_CMIP6_360DAY_CALENDAR_COLLECTION = (
+    "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.pr.gn.v20190908"
 )
 
 C3S_CMIP5_DAY_COLLECTION = (
@@ -120,6 +124,25 @@ WF_C3S_CMIP6_REGRID = json.dumps(
     }
 )
 
+TC_ALL_DAYS = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+
+WF_C3S_CMIP6_360DAY_CALENDAR = json.dumps(
+    {
+        "doc": "subset on cmip6",
+        "inputs": {"ds": [C3S_CMIP6_360DAY_CALENDAR_COLLECTION]},
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "inputs/ds",
+                    "time": "2015/2015",
+                    "time_components": f"month:01,02,03|{TC_ALL_DAYS}",
+                },
+            },
+        },
+    }
+)
 
 WF_C3S_CORDEX = json.dumps(
     {
@@ -347,6 +370,19 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
+def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
+    inputs = [
+        ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
+        ("time", "2015/2015"),
+        ("time_components", f"month:jan,feb,mar|{TC_ALL_DAYS}"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "pr" in ds.variables
+
+
 def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
@@ -539,6 +575,15 @@ def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
         "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20160116-20161216_regrid-nearest_s2d-180x360_cells_grid.nc"
         in urls[0]
     )
+
+
+def test_smoke_execute_c3s_cmip6_360day_calendar_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_360DAY_CALENDAR)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):

@@ -18,6 +18,7 @@ from clisops.ops import subset
 from clisops.core.average import average_over_dims as average
 
 from .decadal_fixes import apply_decadal_fixes
+from .input_utils import fix_parameters
 
 coord_by_standard_name = {
     "realization": "realization",
@@ -125,6 +126,8 @@ def _concat(
 
 
 def run_concat(args):
+    args = fix_parameters(args)
+
     result = concat(**args)
     return result.file_uris
 
