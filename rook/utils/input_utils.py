@@ -5,6 +5,10 @@ from roocs_utils.project_utils import url_to_file_path
 from roocs_utils.exceptions import InvalidProject
 from rook import CONFIG
 
+TC_ALL_MONTHS = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
+TC_ALL_MONTHS_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
+TC_ALL_DAYS = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+
 
 def fix_parameters(parameters):
     if "time_components" in parameters:
@@ -16,21 +20,17 @@ def fix_parameters(parameters):
 
 def fix_time_components(tc):
     # Remove redundant time-component parts to avoid for example issues with 360day calendars.
-    tc_all_months = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
-    tc_all_months_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
-    tc_all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
-
     if not tc:
         return None
 
     tc_parts = tc.split("|")
     new_tc_parts = []
     for tc_part in tc_parts:
-        if tc_part == tc_all_months:
+        if tc_part == TC_ALL_MONTHS:
             continue
-        if tc_part == tc_all_months_2:
+        if tc_part == TC_ALL_MONTHS_2:
             continue
-        if tc_part == tc_all_days:
+        if tc_part == TC_ALL_DAYS:
             continue
         new_tc_parts.append(tc_part)
     new_tc = "|".join(new_tc_parts)
