@@ -371,11 +371,10 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
 
 
 def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
-    all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
     inputs = [
         ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
         ("time", "2015/2015"),
-        ("time_components", f"month:jan,feb,mar|{all_days}"),
+        ("time_components", f"month:jan,feb,mar|{TC_ALL_DAYS}"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
