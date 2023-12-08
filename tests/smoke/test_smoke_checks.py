@@ -128,9 +128,9 @@ TC_ALL_DAYS = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,2
 
 WF_C3S_CMIP6_360DAY_CALENDAR = json.dumps(
     {
-        "doc": "subset+average on cmip6",
+        "doc": "subset on cmip6",
         "inputs": {"ds": [C3S_CMIP6_360DAY_CALENDAR_COLLECTION]},
-        "outputs": {"output": "average/output"},
+        "outputs": {"output": "subset/output"},
         "steps": {
             "subset": {
                 "run": "subset",
@@ -139,10 +139,6 @@ WF_C3S_CMIP6_360DAY_CALENDAR = json.dumps(
                     "time": "2015/2015",
                     "time_components": f"month:01,02,03|{TC_ALL_DAYS}",
                 },
-            },
-            "average": {
-                "run": "average",
-                "in": {"collection": "subset/output", "dims": "time"},
             },
         },
     }
