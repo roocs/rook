@@ -93,7 +93,11 @@ class Director:
             raise InvalidCollection()
 
         # If original files are requested then go straight there
-        if self.inputs.get("original_files") or self.project == "c3s-ipcc-atlas":
+        if (
+            self.inputs.get("original_files")
+            or self.project == "c3s-ipcc-atlas"
+            or self.project == "c3s-cica-atlas"
+        ):
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
             return
