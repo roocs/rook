@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.12.2 (2023-12-08)
+==================
+
+* Fixed the `time_components` paramater to avoid issues with 360day calendar (#245)
+
 0.12.1 (2023-12-04)
 ==================
 
