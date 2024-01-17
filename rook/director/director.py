@@ -30,7 +30,6 @@ class Director:
         self.inputs = inputs
 
         self.project = get_project_name(coll[0])
-        # self.project = "c3s-cmip6"
 
         self.use_original_files = False
         self.original_file_urls = None
