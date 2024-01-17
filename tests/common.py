@@ -55,7 +55,7 @@ def write_roocs_cfg():
     use_inventory = True
     use_catalog = True
     is_default_for_path = True
-    file_name_template = {__derive__var_id}_{project}_{experiment}_{time_frequency}_{__derive__time_range}{extra}.{__derive__extension}
+    file_name_template = {__derive__var_id}_{project}_{experiment}_{time_frequency}_{__derive__time_range}{extra}.{__derive__extension}  # noqa
     attr_defaults =
         time_frequency:no-freq
         experiment:no-expt
