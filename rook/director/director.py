@@ -95,7 +95,7 @@ class Director:
         if (
             self.inputs.get("original_files")
             or self.project == "c3s-ipcc-atlas"
-            or self.project == "c3s-cica-atlas"
+            # or self.project == "c3s-cica-atlas"
         ):
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
