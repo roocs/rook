@@ -40,6 +40,8 @@ class Subset(Operation):
         for dset, norm_collection in norm_collection.items():
             ds_id = derive_ds_id(dset)
             fixed_collection = apply_fixes(ds_id, norm_collection)
+            if "atlas" in ds_id:
+                self.params["file_namer"] = "simple"
             rs.add(
                 dset,
                 clisops_subset(fixed_collection, **self.params),
@@ -58,7 +60,7 @@ def subset(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
+    apply_fixes=False,
 ):
     result_set = Subset(**locals()).calculate()
 
