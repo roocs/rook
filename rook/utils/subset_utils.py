@@ -4,6 +4,8 @@ from clisops.ops.subset import subset as clisops_subset
 from roocs_utils.parameter import parameterise
 
 from daops.ops.base import Operation
+from daops.processor import process
+from daops.utils import normalise
 
 
 class Subset(Operation):
@@ -19,8 +21,31 @@ class Subset(Operation):
         self.collection = parameters.pop("collection")
         self.params = parameters
 
-    def get_operation_callable(self):
-        return clisops_subset
+    def calculate(self):
+        config = {
+            "output_type": self._output_type,
+            "output_dir": self._output_dir,
+            "split_method": self._split_method,
+            "file_namer": self._file_namer,
+        }
+
+        self.params.update(config)
+
+        # Normalise (i.e. "fix") data inputs based on "character"
+        norm_collection = normalise.normalise(self.collection, self._apply_fixes)
+
+        rs = normalise.ResultSet(vars())
+
+        # change name of data ref here
+        for dset, norm_collection in norm_collection.items():
+            # Process each input dataset (either in series or
+            # parallel)
+            rs.add(
+                dset,
+                process(clisops_subset, norm_collection, **self.params),
+            )
+
+        return rs
 
 
 def subset(
