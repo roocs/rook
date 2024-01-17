@@ -1,7 +1,9 @@
 from .input_utils import fix_parameters
+from .apply_fixes import apply_fixes
 
 from clisops.ops.subset import subset as clisops_subset
 from roocs_utils.parameter import parameterise
+from roocs_utils.project_utils import derive_ds_id
 
 from daops.ops.base import Operation
 from daops.utils import normalise
@@ -30,16 +32,17 @@ class Subset(Operation):
 
         self.params.update(config)
 
-        # Normalise (i.e. "fix") data inputs based on "character"
+        # Normalise data inputs based
         norm_collection = normalise.normalise(self.collection, False)
 
         rs = normalise.ResultSet(vars())
 
-        # change name of data ref here
         for dset, norm_collection in norm_collection.items():
+            ds_id = derive_ds_id(dset)
+            fixed_collection = apply_fixes(ds_id, norm_collection)
             rs.add(
                 dset,
-                clisops_subset(norm_collection, **self.params),
+                clisops_subset(fixed_collection, **self.params),
             )
 
         return rs
