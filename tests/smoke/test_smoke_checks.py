@@ -674,7 +674,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
 def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CMIP6_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
+        ("time", "2000-01-01/2000-12-30"),
         # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
