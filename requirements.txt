@@ -5,8 +5,8 @@ psutil
 # daops
 daops>=0.10.0,<0.11
 # daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
-clisops>=0.12.1,<0.13
-# clisops @ git+https://github.com/roocs/clisops.git@regrid-main#egg=clisops
+# clisops>=0.12.1,<0.13
+clisops @ git+https://github.com/roocs/clisops.git@master#egg=clisops
 roocs-utils>=0.6.4,<0.7
 roocs_grids>=0.1.2
 xarray>=0.21
