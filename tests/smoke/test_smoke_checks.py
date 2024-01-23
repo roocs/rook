@@ -674,19 +674,17 @@ def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
 def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CMIP6_COLLECTION),
-        ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
+        ("time", "2000/2000"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "CMIP6-???" in urls[0]
 
 
 def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CORDEX_COLLECTION),
         # ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
@@ -697,7 +695,6 @@ def test_smoke_execute_c3s_cica_atlas_era5_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_ERA5_COLLECTION),
         # ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
