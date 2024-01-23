@@ -678,24 +678,27 @@ def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "CMIP6-???" in urls[0]
+    assert "data.mips.copernicus-climate.eu" not in urls[0]
+    assert "output_001.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CORDEX_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
+        ("time", "2000/2000"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "data.mips.copernicus-climate.eu" not in urls[0]
+    assert "output_001.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cica_atlas_era5_subset(wps):
+def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_ERA5_COLLECTION),
         # ("time", "2000-01-01/2000-12-30"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "data.mips.copernicus-climate.eu" not in urls[0]
+    assert "output_001.nc" in urls[0]
