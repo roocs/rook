@@ -161,7 +161,8 @@ class Director:
         for ds_id, urls in self.search_result.download_urls().items():
             sac = SubsetAlignmentChecker(urls, self.inputs)
 
-            if not sac.is_aligned:
+            # TODO: don't use original files for atlas data ... need to apply a fix
+            if not sac.is_aligned or "c3s-cica-atlas" in ds_id:
                 self.use_original_files = False
                 self.original_file_urls = None
                 return False
