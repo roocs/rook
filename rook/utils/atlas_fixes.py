@@ -11,10 +11,19 @@ def apply_atlas_fixes(ds):
         var_list = list(ds.coords)
     for var in var_list:
         ds[var].encoding["_FillValue"] = None
-    for cvar in ["member_id", "gcm_variant", "gcm_model", "gcm_institution"]:
+    # Remove string deflation options if applicable
+    for cvar in [
+        "member_id",
+        "gcm_variant",
+        "gcm_model",
+        "gcm_institution",
+        "rcm_variant",
+        "rcm_model",
+        "rcm_institution",
+    ]:
         for en in ["zlib", "shuffle", "complevel"]:
             try:
                 del ds[cvar].encoding[en]
-            except Exception:
+            except KeyError:
                 pass
     return ds
