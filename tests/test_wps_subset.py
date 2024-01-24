@@ -21,6 +21,8 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
+C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon"
+
 
 def test_wps_subset_cmip6_no_inv():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
@@ -198,6 +200,19 @@ def test_wps_subset_time_invariant_dataset():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.IPSL.IPSL-CM6A-LR.ssp119.r1i1p1f1.fx.mrsofc.gr.v20190410"
     datainputs += ";area=1,1,300,89"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+
+
+def test_wps_subset_c3s_atlas_v1():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_ATLAS_V1_CMIP6_COLLECTION}"
+    datainputs += ";time=2020/2020"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs
