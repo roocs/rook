@@ -70,7 +70,7 @@ def write_roocs_cfg():
     port = 443
     fix_store = c3s-roocs-fix
     fix_proposal_store = c3s-roocs-fix-prop
-    """
+    """  # noqa
     cfg = Template(cfg_templ).render(base_dir=MINI_ESGF_MASTER_DIR)
     with open(ROOCS_CFG, "w") as fp:
         fp.write(cfg)
