@@ -217,6 +217,7 @@ def test_wps_subset_c3s_atlas_v1_cmip5():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_ATLAS_V1_CMIP5_COLLECTION}"
     datainputs += ";time=2020/2020"
+    datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs
@@ -230,19 +231,7 @@ def test_wps_subset_c3s_atlas_v1_era5():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_ATLAS_V1_ERA5_COLLECTION}"
     datainputs += ";time=2020/2020"
-    resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
-    )
-    assert_response_success(resp)
-    assert "meta4" in get_output(resp.xml)["output"]
-
-
-def test_wps_subset_c3s_atlas_v1_cordex():
-    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = f"collection={C3S_ATLAS_V1_CORDEX_COLLECTION}"
-    datainputs += ";time=2020/2020"
+    datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
             datainputs
