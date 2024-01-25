@@ -1,7 +1,19 @@
 import xarray as xr
 
 
-def apply_atlas_fixes(ds):
+def apply_atlas_fixes(ds_id, ds):
+    ds_mod = fix_deflation(ds)
+    ds_mod = add_project_id(ds_id, ds)
+    return ds_mod
+
+
+def add_project_id(ds_id, ds):
+    project_id = ds_id.split(".")[0]
+    ds.attrs["project_id"] = project_id
+    return ds
+
+
+def fix_deflation(ds):
     """
     See also clisops.ops.base_operaton._remove_redundant_fill_values
     """

@@ -225,6 +225,10 @@ def test_wps_subset_c3s_atlas_v1_cmip5():
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    print(doc.get_provn())
+    assert 'roocs:time="2020/2020"' in doc.get_provn()
+    assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
 
 
 def test_wps_subset_c3s_atlas_v1_era5():
@@ -239,3 +243,7 @@ def test_wps_subset_c3s_atlas_v1_era5():
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    print(doc.get_provn())
+    assert 'roocs:time="2020/2020"' in doc.get_provn()
+    assert "roocs:psl_ERA5_no-expt_mon_20200101-20200301.nc" in doc.get_provn()
