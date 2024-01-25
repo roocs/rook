@@ -21,7 +21,11 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
-C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon"
+C3S_ATLAS_V1_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon"
+
+C3S_ATLAS_V1_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon"
+
+C3S_ATLAS_V1_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon"
 
 
 def test_wps_subset_cmip6_no_inv():
@@ -209,9 +213,35 @@ def test_wps_subset_time_invariant_dataset():
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_c3s_atlas_v1():
+def test_wps_subset_c3s_atlas_v1_cmip5():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    datainputs = f"collection={C3S_ATLAS_V1_CMIP6_COLLECTION}"
+    datainputs = f"collection={C3S_ATLAS_V1_CMIP5_COLLECTION}"
+    datainputs += ";time=2020/2020"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+
+
+def test_wps_subset_c3s_atlas_v1_era5():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_ATLAS_V1_ERA5_COLLECTION}"
+    datainputs += ";time=2020/2020"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+
+
+def test_wps_subset_c3s_atlas_v1_cordex():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_ATLAS_V1_CORDEX_COLLECTION}"
     datainputs += ";time=2020/2020"
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(

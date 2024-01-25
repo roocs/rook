@@ -51,7 +51,7 @@ def write_roocs_cfg():
     base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
 
     [project:c3s-cica-atlas]
-    base_dir = {{ base_dir }}/test_data/pool/data/c3s-ipcc-ar6-atlas
+    base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
     use_inventory = True
     use_catalog = True
     is_default_for_path = True
