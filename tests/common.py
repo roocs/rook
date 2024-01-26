@@ -50,15 +50,6 @@ def write_roocs_cfg():
 
     [project:c3s-cica-atlas]
     base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
-
-    [dachar:store]
-    store_type = elasticsearch
-
-    [elasticsearch]
-    endpoint = elasticsearch.ceda.ac.uk
-    port = 443
-    fix_store = c3s-roocs-fix
-    fix_proposal_store = c3s-roocs-fix-prop
     """  # noqa
     cfg = Template(cfg_templ).render(base_dir=MINI_ESGF_MASTER_DIR)
     with open(ROOCS_CFG, "w") as fp:
