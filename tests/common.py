@@ -50,17 +50,6 @@ def write_roocs_cfg():
 
     [project:c3s-cica-atlas]
     base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
-    use_inventory = True
-    use_catalog = True
-    is_default_for_path = True
-    file_name_template = {__derive__var_id}_{source}_{experiment_id}_{frequency}{__derive__time_range}{extra}.{__derive__extension}
-    attr_defaults =
-        frequency:no-freq
-        experiment_id:no-expt
-    facet_rule = variable project experiment time_frequency
-    mappings =
-        project:project_id
-    data_node_root = https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cica-atlas/
 
     [dachar:store]
     store_type = elasticsearch
