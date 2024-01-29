@@ -29,8 +29,8 @@ def fix_deflation(ds):
         ds[var].encoding["_FillValue"] = None
     # DEBUG
     for var in var_list:
-        print(var, ds[var].encoding)
-        LOGGER.warn(f"var={var}", encoding={ds[var].encoding})
+        print("debug var", var, ds[var].encoding)
+        # LOGGER.warn(f"var={var}", encoding={ds[var].encoding})
     # DEBUG END
     # Remove string deflation options if applicable
     for cvar in [
