@@ -1,5 +1,9 @@
 import xarray as xr
 
+import logging
+
+LOGGER = logging.getLogger()
+
 
 def apply_atlas_fixes(ds_id, ds):
     ds_mod = fix_deflation(ds)
@@ -23,6 +27,11 @@ def fix_deflation(ds):
         var_list = list(ds.coords)
     for var in var_list:
         ds[var].encoding["_FillValue"] = None
+    # DEBUG
+    for var in var_list:
+        print(var, ds[var].encoding)
+        LOGGER.warn(f"var={var}", encoding={ds[var].encoding})
+    # DEBUG END
     # Remove string deflation options if applicable
     for cvar in [
         "member_id",
