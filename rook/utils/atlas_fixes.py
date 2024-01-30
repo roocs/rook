@@ -21,12 +21,12 @@ def fix_deflation(ds):
         var_list = list(ds.coords) + list(ds.data_vars)
     elif isinstance(ds, xr.DataArray):
         var_list = list(ds.coords)
-    for var in var_list:
-        ds[var].encoding["_FillValue"] = None
     # DEBUG
     for var in var_list:
         print("debug var", var, ds[var].encoding)
     # DEBUG END
+    for var in var_list:
+        ds[var].encoding["_FillValue"] = None
     # Remove string deflation options if applicable
     for cvar in [
         "member_id",
@@ -42,4 +42,11 @@ def fix_deflation(ds):
                 del ds[cvar].encoding[en]
             except KeyError:
                 pass
+    # use compression level 1
+    for var in ds.data_vars:
+        complevel = ds[var].encoding.get("complevel", 0)
+        if complevel > 1:
+            ds[var].encoding["complevel"] = 1
+            ds[var].encoding["zlib"] = True
+            ds[var].encoding["shuffle"] = True
     return ds
