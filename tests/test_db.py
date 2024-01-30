@@ -16,7 +16,7 @@ C3S_CMIP6_FX_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MRI.MRI-ESM2-0.ssp370.r1i1p1f1.fx.orog.gn.v20190603"
 )
 
-C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon"
+C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon.v1"
 
 
 def test_db_catalog_c3s_cmip6_mon():

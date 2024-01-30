@@ -21,11 +21,11 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
-C3S_ATLAS_V1_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon"
+C3S_ATLAS_V1_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v1"
 
-C3S_ATLAS_V1_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon"
+C3S_ATLAS_V1_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v1"
 
-C3S_ATLAS_V1_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon"
+C3S_ATLAS_V1_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v1"
 
 
 def test_wps_subset_cmip6_no_inv():
