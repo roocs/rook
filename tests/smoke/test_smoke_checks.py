@@ -645,7 +645,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
     assert "esg_c3s-ipcc-atlas" in urls[0]
-    assert "tnn_CMIP5_rcp45_mon.nc" in urls[0]
+    assert "tnn_CMIP5_rcp45_mon_200601-210012.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
@@ -656,7 +656,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
     assert "esg_c3s-ipcc-atlas" in urls[0]
-    assert "tnn_CMIP6_historical_mon.nc" in urls[0]
+    assert "tnn_CMIP6_historical_mon_185001-201412.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
@@ -667,7 +667,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
     assert "esg_c3s-ipcc-atlas" in urls[0]
-    assert "tnn_CORDEX-AFR_historical_mon.nc" in urls[0]
+    assert "tnn_CORDEX-AFR_historical_mon_197001-200512.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
