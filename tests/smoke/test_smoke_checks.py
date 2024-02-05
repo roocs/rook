@@ -701,4 +701,4 @@ def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
-    assert "cd_ERA5_no-expt_yr_19400101-20220101.nc" in urls[0]
+    assert "cd_ERA5_yr_1940-2022.nc" in urls[0]
