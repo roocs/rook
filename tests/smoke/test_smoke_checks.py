@@ -414,6 +414,7 @@ def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-cmip6" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
@@ -432,10 +433,8 @@ def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
     urls = wps.execute("subset", inputs)
     print(urls)
     assert len(urls) == 10
-    assert (
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cordex"
-        in urls[0]
-    )
+    assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-cordex" in urls[0]
     assert (
         "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_200601-201012.nc"
         in urls[0]
@@ -641,34 +640,34 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CMIP5_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-ipcc-atlas" in urls[0]
+    assert "tnn_CMIP5_rcp45_mon.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CMIP6_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-ipcc-atlas" in urls[0]
+    assert "tnn_CMIP6_historical_mon.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CORDEX_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
-        # ("original_files", "1"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-ipcc-atlas" in urls[0]
+    assert "tnn_CORDEX-AFR_historical_mon.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
@@ -696,9 +695,9 @@ def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
 def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_ERA5_COLLECTION),
-        # ("time", "2000-01-01/2000-12-30"),
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.copernicus-climate.eu" in urls[0]
+    assert "esg_c3s-cica-atlas" in urls[0]
     assert "cd_ERA5_yr_1940-2022.nc" in urls[0]
