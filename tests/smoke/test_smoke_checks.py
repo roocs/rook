@@ -206,7 +206,7 @@ WF_C3S_CMIP6_DECADAL = json.dumps(
                 "run": "subset",
                 "in": {
                     "collection": "average/output",
-                    "time": "1995/1996",
+                    "time": "1995/1995",
                 },
             },
         },
@@ -634,7 +634,7 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
-    assert "19951116-19961216.nc" in urls[0]
+    assert "19951116-19951216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
