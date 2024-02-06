@@ -3,7 +3,6 @@ from .apply_fixes import apply_fixes
 
 from clisops.ops.subset import subset as clisops_subset
 from roocs_utils.parameter import parameterise
-from roocs_utils.project_utils import derive_ds_id
 
 from daops.ops.base import Operation
 from daops.utils import normalise
@@ -38,10 +37,7 @@ class Subset(Operation):
         rs = normalise.ResultSet(vars())
 
         for dset, norm_collection in norm_collection.items():
-            ds_id = derive_ds_id(dset)
-            fixed_collection = apply_fixes(ds_id, norm_collection)
-            if "atlas" in ds_id:
-                self.params["file_namer"] = "simple"
+            fixed_collection = apply_fixes(dset, norm_collection)
             rs.add(
                 dset,
                 clisops_subset(fixed_collection, **self.params),

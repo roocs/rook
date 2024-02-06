@@ -162,7 +162,8 @@ class Director:
             sac = SubsetAlignmentChecker(urls, self.inputs)
 
             # TODO: don't use original files for atlas data ... need to apply a fix
-            if not sac.is_aligned or "c3s-cica-atlas" in ds_id:
+            # if not sac.is_aligned or "c3s-cica-atlas" in ds_id:
+            if not sac.is_aligned:
                 self.use_original_files = False
                 self.original_file_urls = None
                 return False
