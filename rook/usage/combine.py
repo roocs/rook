@@ -21,7 +21,8 @@ def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
     resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=ASYNC)
     # wait until job is done
-    while resp.isComplete() is False:
+    while not resp.isComplete():
+        print("waiting...")
         resp.checkStatus()
     # requests
     df = pd.read_csv(
