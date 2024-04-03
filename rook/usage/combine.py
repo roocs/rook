@@ -53,7 +53,7 @@ class Combine(Usage):
     def __init__(self, site=None):
         site = site or "local"
         if site == "all":
-            self.sites = ["ceda", "dkrz"]
+            self.sites = ["ipsl", "dkrz"]
         else:
             self.sites = [site]
 
