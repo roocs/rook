@@ -4,7 +4,7 @@ import pandas as pd
 
 from pywps import configuration as config
 
-from owslib.wps import WebProcessingService, SYNC
+from owslib.wps import WebProcessingService, ASYNC
 
 from .base import Usage
 
@@ -13,13 +13,16 @@ URLS = {
     "local": config.get_config_value("server", "url"),
     "ipsl": "http://copernicus-wps.ipsl.upmc.fr/wps",
     "dkrz": "http://rook3.cloud.dkrz.de/wps",
-    "ceda": "http://rook-wps1.ceda.ac.uk/wps",
+    # "ceda": "http://rook-wps1.ceda.ac.uk/wps",
 }
 
 
 def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
-    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=SYNC)
+    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=ASYNC)
+    # wait until job is done
+    while resp.isComplete() is False:
+        resp.checkStatus()
     # requests
     df = pd.read_csv(
         resp.processOutputs[0].reference, parse_dates=["time_start", "time_end"]
