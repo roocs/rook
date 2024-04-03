@@ -4,7 +4,7 @@ import pandas as pd
 
 from pywps import configuration as config
 
-from owslib.wps import WebProcessingService, ASYNC
+from owslib.wps import WebProcessingService
 
 from .base import Usage
 
@@ -19,7 +19,7 @@ URLS = {
 
 def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
-    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=ASYNC)
+    resp = wps.execute(identifier="usage", inputs=[("time", time)])
     # wait until job is done
     while not resp.isComplete():
         print("waiting...")
