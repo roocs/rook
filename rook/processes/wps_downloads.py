@@ -4,14 +4,19 @@ from pywps import FORMATS, ComplexOutput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
-from ..usage import WPSUsage
+from ..usage import Downloads as Downloads_
 from roocs_utils.parameter import time_parameter
 
 
 LOGGER = logging.getLogger()
 
+EMPTY_CSV = """\
+remote_host_ip,ip_number,datetime,timezone,request_type,request,protocol,status_code,size,referer,user_agent
+127.0.0.1,1000000000,2021-01-01 12:00:00,+0200,GET,dummy.nc,HTTP/1.1,200,1000000,-,python
+"""  # noqa
 
-class Usage(Process):
+
+class Downloads(Process):
     def __init__(self):
         inputs = [
             LiteralInput(
@@ -27,18 +32,18 @@ class Usage(Process):
         outputs = [
             ComplexOutput(
                 "output",
-                "WPS Usage",
-                abstract="OGC:WPS metrics collected from pywps database.",
+                "Downloads",
+                abstract="Downloads collected from nginx log file.",
                 as_reference=True,
                 supported_formats=[FORMATS.CSV],
             ),
         ]
 
-        super(Usage, self).__init__(
+        super(Downloads, self).__init__(
             self._handler,
-            identifier="usage",
+            identifier="downloads",
             title="Usage",
-            abstract="Run usage collector.",
+            abstract="Run downloads collector.",
             metadata=[
                 Metadata("ROOK", "https://github.com/roocs/rook"),
             ],
@@ -50,21 +55,24 @@ class Usage(Process):
         )
 
     def _handler(self, request, response):
-        response.update_status("Usage collector started.", 0)
+        response.update_status("Download collectior started.", 0)
         if "time" in request.inputs:
             time = request.inputs["time"][0].data
             time_start, time_end = time_parameter.TimeParameter(time).get_bounds()
         else:
             time = None
             time_start = time_end = None
-        # usage
+        # downloads
         try:
-            collector = WPSUsage()
-            response.outputs["output"].file = collector.collect(
+            collector = Downloads_()
+            downloads_csv = collector.collect(
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
-            response.update_status("Usage collection completed.", 90)
-        except Exception as e:
-            raise ProcessError(f"{e}")
+            response.outputs["output"].file = downloads_csv
+        except Exception:
+            LOGGER.exception("downloads collection failed")
+            response.outputs["output"].data = EMPTY_CSV
+        finally:
+            response.update_status("Downloads usage completed.", 90)
 
         return response
