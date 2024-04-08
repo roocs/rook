@@ -90,7 +90,7 @@ class AverageByShape(Process):
         super(AverageByShape, self).__init__(
             self._handler,
             identifier="average_shape",
-            title="Average by Shape",
+            title="Average by shape",
             abstract="Run averaging over a specified shape on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
