@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.10.2 (unreleased)
+==================
+
+* Added process for average over polygon.
+
 0.10.1 (2023-07-20)
 ==================
 
@@ -10,7 +15,7 @@ Changes
 0.10.0 (2023-07-12)
 ==================
 
-* Updated concat operator to optinally apply subsetting and averaging to improve performance.
+* Updated concat operator to optionally apply subsetting and averaging to improve performance.
 * Apply cmip6 decadal fixes directly using Python code. Skip lookup of fixes in ElasticSearch.
 * Updated to clisops 0.10.0.
 

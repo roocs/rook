@@ -3,8 +3,8 @@ jinja2
 click
 psutil
 # daops
-daops>=0.8.1,<0.9
-clisops>=0.9.6,<0.11
+daops>=0.10.1
+clisops>=0.12.1
 roocs-utils>=0.6.4,<0.7
 # roocs-utils @ git+https://github.com/roocs/roocs-utils@master#egg=roocs-utils
 xarray>=0.20,<0.22
