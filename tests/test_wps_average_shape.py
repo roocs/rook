@@ -2,17 +2,29 @@ import pytest
 
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
-
+from pywps.app.exceptions import ProcessError
 from rook.processes.wps_average_shape import AverageByShape
-
+from shapely import Polygon
+import geopandas as gpd
 from .common import PYWPS_CFG, get_output
 
+POLY = Polygon([[5.8671874999999996, 57.326521225217064],
+                [-15.468749999999998, 48.45835188280866],
+                [-16.171875, 24.84656534821976],
+                [-3.8671874999999996, 13.581920900545844],
+                [21.796875, 25.799891182088334],
+                [22.8515625, 52.482780222078226],
+                [5.8671874999999996, 57.326521225217064]])
 
-def test_wps_average_shape_cmip6():
+def test_wps_average_shape_cmip6(tmp_path):
+    # Save POLY to tmpdir
+    tmp_poly_path = tmp_path / "tmppoly.json"
+    gpd.GeoDataFrame([{'geometry': POLY}]).to_file(tmp_poly_path)
+
     # test the case where the inventory is used
     client = client_for(Service(processes=[AverageByShape()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-    datainputs += ";shape=not_a_valid_shape" #TODO figure out why this works without a valid shape
+    datainputs += f";shape={tmp_poly_path}"
     resp = client.get(
         f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}"
     )
@@ -26,5 +38,4 @@ def test_wps_average_no_shape():
     resp = client.get(
         f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}"
     )
-    # print(resp.data)
     assert_process_exception(resp, code="MissingParameterValue")
