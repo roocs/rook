@@ -6,7 +6,10 @@ from pywps.app.exceptions import ProcessError
 from rook.processes.wps_average_shape import AverageByShape
 from shapely import Polygon
 import geopandas as gpd
-from .common import PYWPS_CFG, get_output
+import xarray as xr
+
+from .common import PYWPS_CFG, get_output, extract_paths_from_metalink
+
 
 POLY = Polygon([[5.8671874999999996, 57.326521225217064],
                 [-15.468749999999998, 48.45835188280866],
@@ -15,6 +18,7 @@ POLY = Polygon([[5.8671874999999996, 57.326521225217064],
                 [21.796875, 25.799891182088334],
                 [22.8515625, 52.482780222078226],
                 [5.8671874999999996, 57.326521225217064]])
+
 
 def test_wps_average_shape_cmip6(tmp_path):
     # Save POLY to tmpdir
@@ -30,6 +34,16 @@ def test_wps_average_shape_cmip6(tmp_path):
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
+    assert_geom_created(path=get_output(resp.xml)["output"])
+
+
+def assert_geom_created(path):
+    assert "meta4" in path
+    paths = extract_paths_from_metalink(path)
+    assert len(paths) > 0
+    ds = xr.open_dataset(paths[0])
+    assert "geom" in ds.coords
+
 
 
 def test_wps_average_no_shape():

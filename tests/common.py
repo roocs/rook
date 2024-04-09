@@ -106,3 +106,12 @@ def get_output(doc):
             output[identifier_el.text] = data_el[0].text
 
     return output
+
+
+def extract_paths_from_metalink(path):
+    from bs4 import BeautifulSoup
+
+    path = path.replace("file://", "")
+    doc = BeautifulSoup(open(path, "r").read(), "xml")
+    paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
+    return paths
