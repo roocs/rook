@@ -90,7 +90,7 @@ class AverageByShape(Process):
         super(AverageByShape, self).__init__(
             self._handler,
             identifier="average_shape",
-            title="Average by shape",
+            title="Average over polygonal shape",
             abstract="Run averaging over a specified shape on climate model data.",
             metadata=[
                 Metadata("DAOPS", "https://github.com/roocs/daops"),
@@ -104,9 +104,8 @@ class AverageByShape(Process):
 
     def _handler(self, request, response):
         # show me the environment used by the process in debug mode
-        LOGGER.debug(f"Environment used in average: {os.environ}")
+        LOGGER.debug(f"Environment used in average_shape: {os.environ}")
 
-        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
