@@ -30,7 +30,6 @@ class Director:
         self.inputs = inputs
 
         self.project = get_project_name(coll[0])
-        # self.project = "c3s-cmip6"
 
         self.use_original_files = False
         self.original_file_urls = None
@@ -48,7 +47,9 @@ class Director:
         self._check_apply_fixes()
 
     def use_fixes(self):
-        return CONFIG[f"project:{self.project}"].get("use_fixes", False)
+        # TODO: don't use fixes
+        return False
+        # return CONFIG[f"project:{self.project}"].get("use_fixes", False)
 
     def _check_apply_fixes(self):
         if (
@@ -91,7 +92,11 @@ class Director:
             raise InvalidCollection()
 
         # If original files are requested then go straight there
-        if self.inputs.get("original_files") or self.project == "c3s-ipcc-atlas":
+        if (
+            self.inputs.get("original_files")
+            or self.project == "c3s-ipcc-atlas"
+            # or self.project == "c3s-cica-atlas"
+        ):
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
             return
@@ -106,8 +111,8 @@ class Director:
         if self.inputs.get("apply_fixes") and self.requires_fixes():
             return
 
-        # TODO: quick fix for average and concat. Don't use original files for these operators.
-        if "dims" in self.inputs or "freq" in self.inputs:
+        # TODO: quick fix for average, regrid and concat. Don't use original files for these operators.
+        if "dims" in self.inputs or "freq" in self.inputs or "grid" in self.inputs:
             return
 
         # Finally, check if the subset requirements can align with whole datasets
@@ -118,20 +123,22 @@ class Director:
         # If we got here: then WPS will be used, because `self.use_original_files == False`
 
     def requires_fixes(self):
-        if not self.use_fixes():
-            return False
-
-        if self.search_result:
-            ds_ids = self.search_result.files()
-        else:
-            ds_ids = self.coll
-        for ds_id in ds_ids:
-            fix = fixer.Fixer(ds_id)
-
-            if fix.pre_processor or fix.post_processors:
-                return True
-
+        # TODO: don't use fixes
         return False
+        # if not self.use_fixes():
+        #     return False
+
+        # if self.search_result:
+        #     ds_ids = self.search_result.files()
+        # else:
+        #     ds_ids = self.coll
+        # for ds_id in ds_ids:
+        #     fix = fixer.Fixer(ds_id)
+
+        #     if fix.pre_processor or fix.post_processors:
+        #         return True
+
+        # return False
 
     def request_aligns_with_files(self):
         """
@@ -154,6 +161,8 @@ class Director:
         for ds_id, urls in self.search_result.download_urls().items():
             sac = SubsetAlignmentChecker(urls, self.inputs)
 
+            # TODO: don't use original files for atlas data ... need to apply a fix
+            # if not sac.is_aligned or "c3s-cica-atlas" in ds_id:
             if not sac.is_aligned:
                 self.use_original_files = False
                 self.original_file_urls = None

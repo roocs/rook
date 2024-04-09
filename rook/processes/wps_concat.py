@@ -1,10 +1,10 @@
 import logging
-import os
 
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from pywps.app.exceptions import ProcessError
-from pywps.inout.outputs import MetaFile, MetaLink4
+
+# from pywps.app.exceptions import ProcessError
+# from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
@@ -137,7 +137,6 @@ class Concat(Process):
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
-        # print(collection)
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
@@ -156,7 +155,6 @@ class Concat(Process):
                 request.inputs, "dims", as_sequence=True, default=None
             ),
         }
-        # print(inputs)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_concat)

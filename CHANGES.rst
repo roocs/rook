@@ -1,10 +1,44 @@
 Changes
 *******
 
-0.10.2 (unreleased)
+
+0.13.1 (unreleased)
 ==================
 
 * Added process for average over polygon.
+
+0.13.0 (2024-02-06)
+==================
+
+* Add subsetting support for Atlas v1 datasets (#247, #248, #249).
+
+0.12.2 (2023-12-08)
+==================
+
+* Fixed the `time_components` parameter to avoid issues with 360day calendar (#245)
+
+0.12.1 (2023-12-04)
+==================
+
+* Updated clisops >=0.12.1 with fix for fill-value issue.
+* Added smoke test for fill-value issue.
+
+0.12.0 (2023-11-28)
+==================
+
+* Added regridding operator from clisops >=0.12.0.
+* Added tests for regridding process.
+* Added smoke test for regridding.
+* Run GitHub tests with conda.
+
+0.11.0 (2023-11-09)
+==================
+
+* Added weighted average operator and wps process for it.
+* Added wps process for regridding ... using only dummy operator.
+* Use pywps 4.6.0.
+* Updated deacdal fixes and concat operation. Using a realization variable (#235, #237).
+* Skip Python 3.8.
 
 0.10.1 (2023-07-20)
 ==================

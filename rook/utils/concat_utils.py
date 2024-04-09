@@ -18,9 +18,10 @@ from clisops.ops import subset
 from clisops.core.average import average_over_dims as average
 
 from .decadal_fixes import apply_decadal_fixes
+from .input_utils import fix_parameters
 
 coord_by_standard_name = {
-    "realization": "realization_index",
+    "realization": "realization",
 }
 
 
@@ -93,7 +94,7 @@ class Concat(Operation):
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
         # optional: average
         if self.params.get("apply_average", False):
-            processed_ds = average(processed_ds, dims=["realization"])
+            processed_ds = average(processed_ds, dims=[dim])
         # subset
         outputs = subset(
             processed_ds,
@@ -125,6 +126,8 @@ def _concat(
 
 
 def run_concat(args):
+    args = fix_parameters(args)
+
     result = concat(**args)
     return result.file_uris
 

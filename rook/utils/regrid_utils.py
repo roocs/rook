@@ -1,8 +1,8 @@
 def run_regrid(args):
-    from daops.ops.average import average_over_dims
+    from daops.ops.regrid import regrid
 
     args["apply_fixes"] = False
-    args["dims"] = ["latitude", "longitude"]
 
-    result = average_over_dims(**args)
+    result = regrid(**args)
+
     return result.file_uris

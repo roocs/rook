@@ -1,9 +1,8 @@
 import os
 
-# import tempfile
-
 from jinja2 import Template
 from pathlib import Path
+from bs4 import BeautifulSoup
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -42,25 +41,16 @@ def write_roocs_cfg():
 
     [project:c3s-cmip6]
     base_dir = {{ base_dir }}/test_data/badc/cmip6/data/CMIP6
-    # use_catalog = False
 
     [project:c3s-cmip6-decadal]
     base_dir = {{ base_dir }}/test_data/pool/data/CMIP6/data/CMIP6
-    # use_catalog = False
 
     [project:c3s-cordex]
     base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
 
-
-    [dachar:store]
-    store_type = elasticsearch
-
-    [elasticsearch]
-    endpoint = elasticsearch.ceda.ac.uk
-    port = 443
-    fix_store = c3s-roocs-fix
-    fix_proposal_store = c3s-roocs-fix-prop
-    """
+    [project:c3s-cica-atlas]
+    base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
+    """  # noqa
     cfg = Template(cfg_templ).render(base_dir=MINI_ESGF_MASTER_DIR)
     with open(ROOCS_CFG, "w") as fp:
         fp.write(cfg)
@@ -109,8 +99,6 @@ def get_output(doc):
 
 
 def extract_paths_from_metalink(path):
-    from bs4 import BeautifulSoup
-
     path = path.replace("file://", "")
     doc = BeautifulSoup(open(path, "r").read(), "xml")
     paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]

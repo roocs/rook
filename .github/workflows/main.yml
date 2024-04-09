@@ -5,22 +5,32 @@ on: [ push, pull_request ]
 jobs:
   build:
 
+    name: Conda Build with Python${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
-    - name: Checkout repository and submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
+    - uses: actions/checkout@v3
     - name: Install packages
       run: |
         sudo apt-get -y install pandoc graphviz
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
+      uses: mamba-org/setup-micromamba@v1
       with:
-        python-version: ${{ matrix.python-version }}
+        cache-downloads: true
+        cache-environment: true
+        environment-file: environment.yml
+        create-args: >-
+          conda
+          python=${{ matrix.python-version }}
+    - name: Conda and Mamba versions
+      run: |
+        conda --version
+        echo "micromamba: $(micromamba --version)"
     - name: Install requirements 📦
       run: |
         python -m pip install --upgrade pip
@@ -31,10 +41,10 @@ jobs:
       run: make test
     - name: Lint with flake8 ⚙️
       run: make lint
-      if: matrix.python-version == 3.8
+      if: matrix.python-version == 3.9
     # - name: Check formatting with black ⚙️
-    #   run: black --check --target-version py37 birdy tests
-    #   if: matrix.python-version == 3.7
+    #   run: black --check --target-version py39 rook tests
+    #   if: matrix.python-version == 3.9
     - name: Build docs 🏗️
       run: make docs
-      if: matrix.python-version == 3.8
+      if: matrix.python-version == 3.9

@@ -21,6 +21,12 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
+C3S_ATLAS_V1_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v1"
+
+C3S_ATLAS_V1_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v1"
+
+C3S_ATLAS_V1_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v1"
+
 
 def test_wps_subset_cmip6_no_inv():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
@@ -205,3 +211,39 @@ def test_wps_subset_time_invariant_dataset():
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
+
+
+def test_wps_subset_c3s_atlas_v1_cmip5():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_ATLAS_V1_CMIP5_COLLECTION}"
+    datainputs += ";time=2020/2020"
+    datainputs += ";time_components=month:jan,feb,mar"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    print(doc.get_provn())
+    assert 'roocs:time="2020/2020"' in doc.get_provn()
+    assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
+
+
+def test_wps_subset_c3s_atlas_v1_era5():
+    client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
+    datainputs = f"collection={C3S_ATLAS_V1_ERA5_COLLECTION}"
+    datainputs += ";time=2020/2020"
+    datainputs += ";time_components=month:jan,feb,mar"
+    resp = client.get(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
+            datainputs
+        )
+    )
+    assert_response_success(resp)
+    assert "meta4" in get_output(resp.xml)["output"]
+    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    print(doc.get_provn())
+    assert 'roocs:time="2020/2020"' in doc.get_provn()
+    assert "roocs:psl_ERA5_no-expt_mon_20200101-20200301.nc" in doc.get_provn()
