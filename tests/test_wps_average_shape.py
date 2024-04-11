@@ -45,7 +45,6 @@ def assert_geom_created(path):
     assert "geom" in ds.coords
 
 
-
 def test_wps_average_no_shape():
     client = client_for(Service(processes=[AverageByShape()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"

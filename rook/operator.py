@@ -91,7 +91,6 @@ class AverageByShape(Operator):
         return run_average_by_shape
 
 
-
 class WeightedAverage(Operator):
     prefix = "weighted_average"
 
