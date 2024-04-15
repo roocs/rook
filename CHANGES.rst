@@ -1,6 +1,12 @@
 Changes
 *******
 
+
+0.13.1 (unreleased)
+==================
+
+* Added process for average over polygon.
+
 0.13.0 (2024-02-06)
 ==================
 
@@ -9,7 +15,7 @@ Changes
 0.12.2 (2023-12-08)
 ==================
 
-* Fixed the `time_components` paramater to avoid issues with 360day calendar (#245)
+* Fixed the `time_components` parameter to avoid issues with 360day calendar (#245)
 
 0.12.1 (2023-12-04)
 ==================
@@ -43,7 +49,7 @@ Changes
 0.10.0 (2023-07-12)
 ==================
 
-* Updated concat operator to optinally apply subsetting and averaging to improve performance.
+* Updated concat operator to optionally apply subsetting and averaging to improve performance.
 * Apply cmip6 decadal fixes directly using Python code. Skip lookup of fixes in ElasticSearch.
 * Updated to clisops 0.10.0.
 

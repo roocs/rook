@@ -11,3 +11,10 @@ def run_average_by_dim(args):
 
     result = average_over_dims(**args)
     return result.file_uris
+
+
+def run_average_by_shape(args):
+    from daops.ops.average import average_shape
+
+    result = average_shape(**args)
+    return result.file_uris
