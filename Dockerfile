@@ -1,15 +1,9 @@
 # vim:set ft=dockerfile:
-FROM continuumio/miniconda3
+FROM condaforge/mambaforge
+ARG DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
 MAINTAINER https://github.com/roocs/rook
-LABEL Description="rook WPS" Vendor="Birdhouse" Version="0.13.0"
-
-# Update Debian system
-RUN apt-get update && apt-get install -y \
- build-essential \
-&& rm -rf /var/lib/apt/lists/*
-
-# Update conda
-RUN conda update -n base conda
+LABEL Description="rook WPS" Vendor="Roocs" Version="0.13.0"
 
 # Copy WPS project
 COPY . /opt/wps
@@ -17,15 +11,19 @@ COPY . /opt/wps
 WORKDIR /opt/wps
 
 # Create conda environment with PyWPS
-RUN ["conda", "env", "create", "-n", "wps", "-f", "environment.yml"]
+RUN mamba env create -n rook -f environment.yml \
+    && mamba install -n rook gunicorn psycopg2 \
+    && mamba clean --all --yes
+
+# Add the finch conda environment to the path
+ENV PATH /opt/conda/envs/rook/bin:$PATH
 
 # Install WPS
-RUN ["/bin/bash", "-c", "source activate wps && pip install -e ."]
+RUN pip install . --no-deps
 
-# Start WPS service on port 5000 on 0.0.0.0
+# Start WPS service on port 5000 of 0.0.0.0
 EXPOSE 5000
-ENTRYPOINT ["/bin/bash", "-c"]
-CMD ["source activate wps && exec rook start -b 0.0.0.0 -c /opt/wps/etc/demo.cfg"]
+CMD ["gunicorn", "--bind=0.0.0.0:5000", "-t 60", "rook.wsgi:application"]
 
 # docker build -t roocs/rook .
 # docker run -p 5000:5000 roocs/rook
