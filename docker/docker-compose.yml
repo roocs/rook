@@ -1,0 +1,40 @@
+version: '3'
+services:
+  wps:
+    build: ..
+    image: roocs/rook
+    container_name: wps
+    expose:
+      - 5000
+    depends_on:
+      - db
+    volumes:
+      - ./pywps.cfg:/etc/pywps.cfg
+
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: pywps
+      POSTGRES_PASSWORD: pywps
+      POSTGRES_DB: pywps
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - wps
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+volumes:
+  db_data:
+
+# docker-compose build
+# docker-compose up
+# docker-compose down
+# docker-compose rm
