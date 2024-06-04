@@ -10,6 +10,7 @@ services:
       - db
     volumes:
       - ./pywps.cfg:/etc/pywps.cfg
+      - ./roocs.ini:/etc/roocs.ini
 
   db:
     image: postgres:13
