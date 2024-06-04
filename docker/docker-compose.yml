@@ -11,7 +11,7 @@ services:
     volumes:
       - ./pywps.cfg:/etc/pywps.cfg
       - ./roocs.ini:/etc/roocs.ini
-      - ../../mini-esgf-data/test_data/pool/data/c3s-cica-atlas:/data/c3s-cica-atlas
+      - ../../mini-esgf-data/test_data/pool/data/c3s-cica-atlas:/mnt/c3s-cica-atlas
 
   db:
     image: postgres:13
