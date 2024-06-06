@@ -15,15 +15,15 @@ services:
       - ./pywps.cfg:/etc/pywps.cfg
       - ./roocs.ini:/etc/roocs.ini
       - wps_data:/mnt/outputs
-      - ../../mini-esgf-data/test_data/pool/data/c3s-cica-atlas:/mnt/c3s-cica-atlas
+      - ${DATA_PATH}:/mnt/c3s-cica-atlas
 
   db:
     image: postgres:13
     container_name: postgres_db
     environment:
-      POSTGRES_USER: pywps
-      POSTGRES_PASSWORD: pywps
-      POSTGRES_DB: pywps
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
 
