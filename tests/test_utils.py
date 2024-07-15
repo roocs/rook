@@ -26,17 +26,17 @@ def test_build_metalink(tmpdir, load_test_data):
         "Workflow result as NetCDF files.",
         tmpdir,
         [
-            "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6"
+            "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6"
             "/CMIP/NCC/NorESM1-F/piControl/r1i1p1f1/Amon/rsdt/gn/v20190920"
             "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",  # noqa
-            "http://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6"
+            "http://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6"
             "/CMIP/NCC/NorESM1-F/piControl/r1i1p1f1/Amon/rsdt/gn/v20190920"
             "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",  # noqa
             cmip6_nc,
         ],
     )
-    assert "https://data.mips.copernicus-climate.eu" in ml4.files[0].url
-    assert "http://data.mips.copernicus-climate.eu" in ml4.files[1].url
+    assert "https://data.mips.climate.copernicus.eu" in ml4.files[0].url
+    assert "http://data.mips.climate.copernicus.eu" in ml4.files[1].url
     assert "file://" in ml4.files[2].url
 
 
@@ -56,7 +56,7 @@ def test_resolve_to_file_paths_mixed():
     coll = [
         "/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
     ]
 
@@ -71,9 +71,9 @@ def test_resolve_to_file_paths_mixed():
 @pytest.mark.xfail(reason="fails on github workflow")
 def test_resolve_to_file_paths_urls(load_test_data):
     coll = [
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
+        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
     ]
 

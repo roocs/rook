@@ -68,7 +68,7 @@ def test_wf_c3s_cmip6_collection_only(tmp_path):
     wf = workflow.WorkflowRunner(output_dir=tmp_path)
     output = wf.run(wfdoc)
     expected_url = (
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/"
+        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/"
         "CMIP/SNU/SAM0-UNICON/historical/r1i1p1f1/day/pr/gn/v20190323/"
         "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_18500101-18501231.nc"
     )
@@ -80,7 +80,7 @@ def test_wf_c3s_cmip6_original_files(tmp_path):
     wf = workflow.WorkflowRunner(output_dir=tmp_path)
     output = wf.run(wfdoc)
     expected_url = (
-        "https://data.mips.copernicus-climate.eu/thredds/fileServer/esg_c3s-cmip6/"
+        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/"
         "CMIP/SNU/SAM0-UNICON/historical/r1i1p1f1/day/pr/gn/v20190323/"
         "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_18500101-18501231.nc"
     )
