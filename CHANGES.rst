@@ -2,10 +2,11 @@ Changes
 *******
 
 
-0.13.1 (unreleased)
+0.13.1 (2024-07-22)
 ==================
 
-* Added process for average over polygon.
+* Added process for average over polygon (#251).
+* Update CDS domain (#253).
 
 0.13.0 (2024-02-06)
 ==================
