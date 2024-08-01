@@ -1,6 +1,6 @@
 import logging
 
-from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
+from pywps import FORMATS, ComplexOutput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
@@ -23,7 +23,7 @@ class Usage(Process):
                 "time",
                 "Time Period",
                 abstract="The time period for usage collection seperated by /"
-                "Example: 2021-04-01/2021-04-30",
+                "Example: 2024-06-01/2024-06-30",
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
@@ -54,7 +54,7 @@ class Usage(Process):
             metadata=[
                 Metadata("ROOK", "https://github.com/roocs/rook"),
             ],
-            version="0.1",
+            version="0.2",
             inputs=inputs,
             outputs=outputs,
             store_supported=True,

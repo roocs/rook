@@ -4,7 +4,7 @@ import pandas as pd
 
 from pywps import configuration as config
 
-from owslib.wps import WebProcessingService, SYNC
+from owslib.wps import WebProcessingService, ASYNC
 
 from .base import Usage
 
@@ -18,7 +18,14 @@ URLS = {
 
 def get_usage(site, time):
     wps = WebProcessingService(url=URLS[site])
-    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=SYNC)
+    resp = wps.execute(identifier="usage", inputs=[("time", time)], mode=ASYNC)
+    while resp.isComplete() is False:
+        time.sleep(10)
+        resp.getStatus()
+
+    if not resp.isSucceded():
+        raise Exception("usage collection failed.")
+
     # requests
     df = pd.read_csv(
         resp.processOutputs[0].reference, parse_dates=["time_start", "time_end"]
@@ -56,7 +63,7 @@ class Combine(Usage):
         time = format_time(time_start, time_end)
         df_list = []
         df_downloads_list = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             jobs = {executor.submit(get_usage, site, time): site for site in self.sites}
             for future in concurrent.futures.as_completed(jobs):
                 site = jobs[future]
