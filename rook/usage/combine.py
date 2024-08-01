@@ -23,7 +23,7 @@ def get_usage(site, time):
         identifier="usage",
         inputs=[("time", time)],
         mode=ASYNC,
-        output=[("wps_requests", True), ("downloads", True)],
+        output=[("wpsusage", True), ("downloads", True)],
     )
     while resp.isComplete() is False:
         time_.sleep(10)
