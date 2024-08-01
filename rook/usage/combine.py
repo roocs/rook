@@ -1,6 +1,7 @@
 import os
 import concurrent.futures
 import pandas as pd
+import time as time_
 
 from pywps import configuration as config
 
@@ -25,7 +26,7 @@ def get_usage(site, time):
         output=[("wps_requests", True), ("downloads", True)],
     )
     while resp.isComplete() is False:
-        time.sleep(10)
+        time_.sleep(10)
         resp.getStatus()
 
     if not resp.isSucceded():
