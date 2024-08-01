@@ -27,7 +27,7 @@ def get_usage(site, time):
     )
     while resp.isComplete() is False:
         time_.sleep(10)
-        resp.getStatus()
+        resp.checkStatus()
 
     if not resp.isSucceded():
         raise Exception("usage collection failed.")
