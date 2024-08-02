@@ -3,7 +3,7 @@ import pandas as pd
 import humanize
 import bokeh
 
-from .plots import ActivityPlot, DurationPlot, ConcurrencyPlot, PulsePlot
+from .plots import ActivityPlot, DurationPlot, ConcurrencyPlot, DayPlot
 from .plots import DownloadsPlot, TransferPlot
 from .tables import OverviewTable, MessageTable
 
@@ -56,7 +56,7 @@ class Dashboard:
         script_p1, plot_1 = ActivityPlot(self.df).components()
         script_p2, plot_2 = ConcurrencyPlot(self.df).components()
         script_p3, plot_3 = DurationPlot(self.df).components()
-        script_p4, plot_4 = PulsePlot(self.df).components()
+        script_p4, plot_4 = DayPlot(self.df).components()
         script_p5, plot_5 = DownloadsPlot(self.df_downloads).components()
         script_p6, plot_6 = TransferPlot(self.df_downloads).components()
         script_t1, table_1 = OverviewTable(self.df, self.df_downloads).components()
