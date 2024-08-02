@@ -1,48 +1,52 @@
 {% extends 'base.html' %}
 {% block content %}
-    {% include 'navbar.html' %}
+{% include 'navbar.html' %}
 
-    <h2>{{ time_start }} - {{ time_end }}</h2>
+<h2>{{ time_start }} - {{ time_end }}</h2>
 
-    <div class="container">
-      <h3>Overview</h3>
-      <div class="row">
-        {{ table_1 | safe }}
-      </div>
-      <h3>Messages</h3>
-      <div class="row">
-        {{ table_2 | safe }}
-      </div>
-      <h3>Activity</h3>
-      <div class="row">
-        {{ plot_1 | safe }}
-      </div>
-      <div class="row">
-        {{ plot_2 | safe }}
-      </div>
-      <div class="row">
-        {{ plot_3 | safe }}
-      </div>
-      <div class="row">
-        {{ plot_4 | safe }}
-      </div>
-      <h3>Data Transfer</h3>
-      <div class="row">
-        {{ plot_5 | safe }}
-      </div>
-      <div class="row">
-        {{ plot_6 | safe }}
-      </div>
-    </div>
+<div class="container">
+  <h3>Overview</h3>
+  <div class="row">
+    {{ table_1 | safe }}
+  </div>
+  <h3>Messages</h3>
+  <div class="row">
+    {{ table_2 | safe }}
+  </div>
+  <h3>Activity</h3>
+  <div class="row">
+    {{ plot_1 | safe }}
+  </div>
+  <div class="row">
+    {{ plot_2 | safe }}
+  </div>
+  <div class="row">
+    {{ plot_3 | safe }}
+  </div>
+  <div class="row">
+    {{ plot_4 | safe }}
+  </div>
+  <div class="row">
+    {{ plot_41 | safe }}
+  </div>
+  <h3>Data Transfer</h3>
+  <div class="row">
+    {{ plot_5 | safe }}
+  </div>
+  <div class="row">
+    {{ plot_6 | safe }}
+  </div>
+</div>
 
-    <!-- Bokeh plot scripts -->
-    {{ script_p1 | safe }}
-    {{ script_p2 | safe }}
-    {{ script_p3 | safe }}
-    {{ script_p4 | safe }}
-    {{ script_p5 | safe }}
-    {{ script_p6 | safe }}
-    {{ script_t1 | safe }}
-    {{ script_t2 | safe }}
+<!-- Bokeh plot scripts -->
+{{ script_p1 | safe }}
+{{ script_p2 | safe }}
+{{ script_p3 | safe }}
+{{ script_p4 | safe }}
+{{ script_p41 | safe }}
+{{ script_p5 | safe }}
+{{ script_p6 | safe }}
+{{ script_t1 | safe }}
+{{ script_t2 | safe }}
 
 {% endblock %}

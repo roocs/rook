@@ -53,7 +53,7 @@ class DashboardProcess(Process):
             metadata=[
                 Metadata("ROOK", "https://github.com/roocs/rook"),
             ],
-            version="0.2",
+            version="0.3",
             inputs=inputs,
             outputs=outputs,
             store_supported=True,
@@ -74,12 +74,12 @@ class DashboardProcess(Process):
             fusage, fdownloads = usage.collect(
                 time_start=time_start, time_end=time_end, outdir=self.workdir
             )
-            response.update_status("Combine completed.", 80)
+            response.update_status("Combine completed.", 90)
             dashboard = Dashboard(output_dir=self.workdir)
             dashboard.load(url=fusage, filter="orchestrate")
             dashboard.load_downloads(url=fdownloads)
             response.outputs["dashboard"].file = dashboard.write()
-            response.update_status("Dashboard completed.", 90)
+            response.update_status("Dashboard completed.", 99)
         except Exception as e:
             raise ProcessError(f"{e}")
         return response
