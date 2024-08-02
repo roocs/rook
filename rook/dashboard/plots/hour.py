@@ -4,30 +4,29 @@ from bokeh.models import ColumnDataSource
 
 from .base import PlotView
 
-DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+HOURS = [str(i) for i in range(24)]
 
 
-class DayPlot(PlotView):
+class HourPlot(PlotView):
     def data(self):
         pdf = pd.DataFrame()
-        pdf["day"] = self.df["time_start"].dt.dayofweek
-        pdf["day"] = pdf["day"].apply(lambda x: DAYS[x])
+        pdf["hour"] = self.df["time_start"].dt.hour
 
-        day_counts = pdf["day"].value_counts().sort_index()
-        data_ = dict(days=day_counts.index, counts=day_counts.values)
+        hour_counts = pdf["hour"].value_counts().sort_index()
+        data_ = dict(hours=hour_counts.index, counts=hour_counts.values)
         return data_
 
     def plot(self):
         plot = figure(
-            title="Requests per weekday",
+            title="Requests per hour of day",
             tools="",
             toolbar_location=None,
-            x_range=DAYS,
+            # x_range=HOURS,
             sizing_mode="scale_width",
             plot_height=100,
         )
         plot.vbar(
-            x="days",
+            x="hours",
             top="counts",
             source=ColumnDataSource(self.data()),
             width=0.9,
