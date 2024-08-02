@@ -54,7 +54,7 @@ class Usage(Process):
             metadata=[
                 Metadata("ROOK", "https://github.com/roocs/rook"),
             ],
-            version="0.2",
+            version="0.3",
             inputs=inputs,
             outputs=outputs,
             store_supported=True,
