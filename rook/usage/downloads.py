@@ -97,7 +97,10 @@ class Downloads(Usage):
 
     def parse(self, log_files, time_start=None, time_end=None, outdir=None):
         records = []
-        search_pattern = f'"{self.output_path}'  # Match request with the output path
+        # zgrep "GET /outputs/rook/.*/.*\.nc" /var/log/nginx/access.log-20240801.gz
+        search_pattern = (
+            rf"GET {self.output_path}/.*/.*\.nc"  # Match request with the output path
+        )
 
         for log_file in log_files:
             try:
