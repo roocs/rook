@@ -23,14 +23,7 @@ jobs:
         uses: step-security/harden-runner@5c7944e73c4c2a096b17a9cb74d65b6c2bbafbde # v2.9.1
         with:
           disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: >
-            auth.docker.io:443
-            conda.anaconda.org:443
-            github.com:443
-            production.cloudflare.docker.com:443
-            pypi.org:443
-            registry-1.docker.io:443
+          egress-policy: audit
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Set up Docker Buildx
@@ -54,4 +47,4 @@ jobs:
             rook start -d
             sleep 2s
             rook status
-            rook  stop
+            rook stop

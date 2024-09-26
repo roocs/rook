@@ -16,11 +16,10 @@ permissions:
 
 jobs:
   lint:
-    name: ${{ matrix.build }} (Python${{ matrix.python-version }})
+    name: Lint (Python${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        build: ["lint", "docs"]
         python-version:
           - "3.9"
     steps:
@@ -43,9 +42,9 @@ jobs:
       - name: Install flake8
         run: |
           python -m pip install flake8
-      - name: Run ${{ matrix.build }} 📦
+      - name: Run Lint 📦
         run: |
-          make ${{ matrix.build }}
+          make lint
 
   build:
     name: Conda Build with Python${{ matrix.python-version }}
@@ -78,3 +77,35 @@ jobs:
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
       - name: Test with pytest ⚙️
         run: make test
+
+  docs:
+    name: Docs (Python${{ matrix.python-version }})
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.9"
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            files.pythonhosted.org:443
+            github.com:443
+            pypi.org:443
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Setup Python${{ matrix.python-version }}
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install docs requirements 📦
+        run: |
+          python -m pip install -r requirements_docs.txt
+      - name: Build Docs 📚
+        run: |
+          make docs
