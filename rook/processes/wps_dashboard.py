@@ -45,7 +45,7 @@ class DashboardProcess(Process):
             ),
         ]
 
-        super(DashboardProcess, self).__init__(
+        super().__init__(
             self._handler,
             identifier="dashboard",
             title="Dashboard",

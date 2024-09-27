@@ -120,7 +120,7 @@ class Subset(Process):
             ),
         ]
 
-        super(Subset, self).__init__(
+        super().__init__(
             self._handler,
             identifier="subset",
             title="Subset",

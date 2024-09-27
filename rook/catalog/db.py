@@ -15,7 +15,7 @@ from daops.catalog.util import parse_time
 
 class DBCatalog(Catalog):
     def __init__(self, project, url=None):
-        super(DBCatalog, self).__init__(project)
+        super().__init__(project)
         self.table_name = f"rook_catalog_{self.project}".replace("-", "_")
         self.intake_catalog = IntakeCatalog(project, url)
 

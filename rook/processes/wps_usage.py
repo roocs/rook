@@ -46,7 +46,7 @@ class Usage(Process):
             ),
         ]
 
-        super(Usage, self).__init__(
+        super().__init__(
             self._handler,
             identifier="usage",
             title="Usage",

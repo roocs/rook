@@ -81,7 +81,7 @@ class AverageByTime(Process):
             ),
         ]
 
-        super(AverageByTime, self).__init__(
+        super().__init__(
             self._handler,
             identifier="average_time",
             title="Average by Time",

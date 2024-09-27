@@ -114,7 +114,7 @@ class Concat(Process):
             ),
         ]
 
-        super(Concat, self).__init__(
+        super().__init__(
             self._handler,
             identifier="concat",
             title="Concat",

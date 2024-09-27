@@ -52,7 +52,7 @@ class Regrid(Process):
                     "0pt75deg",
                     "1deg",
                     "1pt25deg",
-                    "2pt5deg"
+                    "2pt5deg",
                 ],
                 default="auto",
             ),
@@ -83,7 +83,7 @@ class Regrid(Process):
             ),
         ]
 
-        super(Regrid, self).__init__(
+        super().__init__(
             self._handler,
             identifier="regrid",
             title="Regrid",

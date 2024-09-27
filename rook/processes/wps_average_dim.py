@@ -87,7 +87,7 @@ class AverageByDimension(Process):
             ),
         ]
 
-        super(AverageByDimension, self).__init__(
+        super().__init__(
             self._handler,
             identifier="average",
             title="Average by Dimensions",

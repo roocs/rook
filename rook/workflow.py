@@ -65,7 +65,7 @@ def build_tree(wfdoc):
     return tree
 
 
-class WorkflowRunner(object):
+class WorkflowRunner:
     def __init__(self, output_dir):
         self.workflow = Workflow(output_dir)
 
@@ -80,7 +80,7 @@ class WorkflowRunner(object):
         return self.workflow.prov
 
 
-class BaseWorkflow(object):
+class BaseWorkflow:
     def __init__(self, output_dir):
         self.concat_op = Concat(output_dir)
         self.subset_op = Subset(output_dir)

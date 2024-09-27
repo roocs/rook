@@ -17,7 +17,7 @@ from rook.utils.regrid_utils import run_regrid
 from roocs_utils.utils.file_utils import is_file_list, FileMapper
 
 
-class Operator(object):
+class Operator:
     # Sub-classes require "prefix" property
     prefix = NotImplemented
 

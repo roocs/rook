@@ -54,7 +54,7 @@ class WeightedAverage(Process):
             ),
         ]
 
-        super(WeightedAverage, self).__init__(
+        super().__init__(
             self._handler,
             identifier="weighted_average",
             title="Weighted Average",

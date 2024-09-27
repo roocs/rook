@@ -49,7 +49,7 @@ class Orchestrate(Process):
             ),
         ]
 
-        super(Orchestrate, self).__init__(
+        super().__init__(
             self._handler,
             identifier="orchestrate",
             title="Orchestrate",

@@ -28,7 +28,7 @@ DCTERMS_SOURCE = DCTERMS["source"]
 ROOCS = Namespace("roocs", uri="urn:roocs:")
 
 
-class Provenance(object):
+class Provenance:
     def __init__(self, output_dir):
         if isinstance(output_dir, pathlib.Path):
             self.output_dir = output_dir

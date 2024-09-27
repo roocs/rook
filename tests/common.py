@@ -67,7 +67,7 @@ class WpsTestClient(WpsClient):
         query = "?"
         for key, value in kwargs.items():
             query += "{}={}&".format(key, value)
-        return super(WpsTestClient, self).get(query)
+        return super().get(query)
 
 
 def client_for(service):
@@ -100,6 +100,6 @@ def get_output(doc):
 
 def extract_paths_from_metalink(path):
     path = path.replace("file://", "")
-    doc = BeautifulSoup(open(path, "r").read(), "xml")
+    doc = BeautifulSoup(open(path).read(), "xml")
     paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
     return paths

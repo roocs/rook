@@ -51,7 +51,7 @@ def run_process_action(action=None):
     and return a status message."""
     action = action or "status"
     try:
-        with open(PID_FILE, "r") as fp:
+        with open(PID_FILE) as fp:
             pid = int(fp.read())
             p = psutil.Process(pid)
             if action == "stop":
@@ -65,7 +65,7 @@ def run_process_action(action=None):
                 )
         if action == "stop":
             os.remove(PID_FILE)
-    except IOError:
+    except OSError:
         msg = 'No PID file found. Service not running? Try "netstat -nlp | grep :5000".'
     except psutil.NoSuchProcess as e:
         msg = e.msg
@@ -172,8 +172,16 @@ def stop():
     default="sqlite:///pywps-logs.sqlite",
     help="database in PyWPS configuration",
 )
-@click.option('--outputurl', default='', help='base URL for file downloads')
-@click.option('--outputpath', default='', help='base directory where outputs are written')
+@click.option(
+    "--outputurl",
+    default="",
+    help="base URL for file downloads"
+)
+@click.option(
+    "--outputpath",
+    default="",
+    help="base directory where outputs are written"
+)
 def start(
     config,
     bind_host,
@@ -206,8 +214,8 @@ def start(
             wps_log_level=log_level,
             wps_log_file=log_file,
             wps_database=database,
-            wps_outputurl = outputurl,
-            wps_outputpath = outputpath
+            wps_outputurl=outputurl,
+            wps_outputpath=outputpath,
         )
     )
     if config:

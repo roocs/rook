@@ -31,7 +31,7 @@ class AverageByShape(Process):
                 "shape",
                 "Vector Shape",
                 abstract="An ESRI Shapefile, GML, GeoPackage, JSON or GeoJSON file."
-                         " The ESRI Shapefile must be zipped and contain the .shp, .shx, and .dbf.",
+                " The ESRI Shapefile must be zipped and contain the .shp, .shx, and .dbf.",
                 supported_formats=[
                     FORMATS.GML,
                     FORMATS.GEOJSON,
@@ -87,7 +87,7 @@ class AverageByShape(Process):
             ),
         ]
 
-        super(AverageByShape, self).__init__(
+        super().__init__(
             self._handler,
             identifier="average_shape",
             title="Average over polygonal shape",
