@@ -5,7 +5,7 @@ pywps>=4.5.2,<4.7
 # daops
 daops>=0.11.0,<0.12.0
 # daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
-clisops>=0.12.2,<0.13.0
+clisops
 # clisops @ git+https://github.com/roocs/clisops.git@master#egg=clisops
 roocs-utils>=0.6.9,<0.7.0
 # roocs-utils @ git+https://github.com/roocs/roocs-utils.git@master#egg=roocs_utils
