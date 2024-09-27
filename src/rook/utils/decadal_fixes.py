@@ -49,6 +49,7 @@ def apply_decadal_fixes(ds_id, ds):
     ds_mod = decadal_fix_3(ds_id, ds_mod)
     ds_mod = decadal_fix_4(ds_id, ds_mod)
     ds_mod = decadal_fix_5(ds_id, ds_mod)
+    ds_mod = decadal_fix_calendar(ds_id, ds_mod)
     return ds_mod
 
 
@@ -130,3 +131,7 @@ def decadal_fix_5(ds_id, ds):
 
     ds_mod = add_data_var(ds_id, ds, **operands)
     return ds_mod
+
+
+def decadal_fix_calendar(ds_id, ds):
+    return ds
