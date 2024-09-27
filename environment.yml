@@ -32,7 +32,7 @@ dependencies:
   - sqlalchemy
   - aiohttp
   # dashboard
-  - bokeh >=3.4.3
+  - bokeh
   # tests
   - pytest
   - pytest-timeout

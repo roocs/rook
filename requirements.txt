@@ -27,5 +27,5 @@ pandas
 SQLAlchemy
 aiohttp
 # dashboard
-bokeh>=3.4.3
+bokeh
 humanize
