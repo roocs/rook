@@ -6,13 +6,14 @@
 ###########################################################
 
 import os
-import psutil
+from urllib.parse import urlparse
+
 import click
+import psutil
 from jinja2 import Environment, PackageLoader
 from pywps import configuration
 
 from . import wsgi
-from urllib.parse import urlparse
 
 PID_FILE = os.path.abspath(os.path.join(os.path.curdir, "pywps.pid"))
 
@@ -34,7 +35,7 @@ def get_host():
     url = configuration.get_config_value("server", "url")
     url = url or "http://localhost:5000/wps"
 
-    click.echo("starting WPS service on {}".format(url))
+    click.echo(f"starting WPS service on {url}")
 
     parsed_url = urlparse(url)
     if ":" in parsed_url.netloc:
@@ -56,7 +57,7 @@ def run_process_action(action=None):
             p = psutil.Process(pid)
             if action == "stop":
                 p.terminate()
-                msg = "pid={}, status=terminated".format(p.pid)
+                msg = f"pid={p.pid}, status=terminated"
             else:
                 from psutil import _pprint_secs
 
@@ -172,16 +173,6 @@ def stop():
     default="sqlite:///pywps-logs.sqlite",
     help="database in PyWPS configuration",
 )
-@click.option(
-    "--outputurl",
-    default="",
-    help="base URL for file downloads"
-)
-@click.option(
-    "--outputpath",
-    default="",
-    help="base directory where outputs are written"
-)
 def start(
     config,
     bind_host,
@@ -194,14 +185,12 @@ def start(
     log_level,
     log_file,
     database,
-    outputurl,
-    outputpath,
 ):
     """Start PyWPS service.
     This service is by default available at http://localhost:5000/wps
     """
     if os.path.exists(PID_FILE):
-        click.echo('PID file exists: "{}". Service still running?'.format(PID_FILE))
+        click.echo(f'PID file exists: "{PID_FILE}". Service still running?')
         os._exit(0)
     cfgfiles = []
     cfgfiles.append(
@@ -214,8 +203,6 @@ def start(
             wps_log_level=log_level,
             wps_log_file=log_file,
             wps_database=database,
-            wps_outputurl=outputurl,
-            wps_outputpath=outputpath,
         )
     )
     if config:
@@ -231,9 +218,9 @@ def start(
         try:
             pid = os.fork()
             if pid:
-                click.echo("forked process id: {}".format(pid))
+                click.echo(f"forked process id: {pid}")
                 with open(PID_FILE, "w") as fp:
-                    fp.write("{}".format(pid))
+                    fp.write(f"{pid}")
         except OSError as e:
             raise Exception("%s [%d]" % (e.strerror, e.errno))
 
