@@ -70,11 +70,10 @@ jobs:
           environment-file: environment.yml
           create-args: >-
             python=${{ matrix.python-version }}
+          micromamba-version: 1.5.10-0 # Pin micromamba version because of following issue: https://github.com/mamba-org/setup-micromamba/issues/225
       - name: Install requirements 📦
         run: |
-          python -m pip install -e .
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+          python -m pip install -e ".[dev]"
       - name: Test with pytest ⚙️
         run: make test
 
