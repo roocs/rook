@@ -2,10 +2,9 @@
 name: rook
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python >=3.9,<3.10
   - pywps >=4.5.2,<4.7
   - sphinx >=7.0.0
-  - nbsphinx
-  - ipython
+  - nbsphinx >=0.9.5
+  - ipython >=8.13.0
