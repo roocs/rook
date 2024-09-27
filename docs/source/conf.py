@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # rook documentation build configuration file, created by
 # sphinx-quickstart on Fri Jun  9 13:47:02 2017.
@@ -18,14 +17,11 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
+import datetime
 import os
 import sys
 
-# Add rook to sys.path to avoid having to full
-# install rook for autodoc.
-# Full install of rook will burst memory limit on ReadTheDocs.
 sys.path.insert(0, os.path.abspath("../../"))
-
 
 # -- General configuration ---------------------------------------------
 
@@ -37,16 +33,16 @@ sys.path.insert(0, os.path.abspath("../../"))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.imgconverter",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "IPython.sphinxext.ipython_console_highlighting",
+    "nbsphinx",
     "pywps.ext_autodoc",
-    "sphinx.ext.autosectionlabel",
-    # "sphinx.ext.imgconverter",
-    # "nbsphinx",
-    # "IPython.sphinxext.ipython_console_highlighting",
-]
+ ]
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
 # List of all tested working mock imports from all birds so new birds can
@@ -106,16 +102,14 @@ templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = {'.rst': 'restructuredtext'}
 
 # The master toctree document.
 master_doc = "index"
 
 # General information about the project.
 project = "rook"
-copyright = "2020, Carsten Ehbrecht"
+copyright = f"2020-{datetime.datetime.now().year}, Carsten Ehbrecht"
 author = "Carsten Ehbrecht"
 
 # The version info for the project you're documenting, acts as replacement
@@ -123,7 +117,7 @@ author = "Carsten Ehbrecht"
 # the built documents.
 #
 # The short X.Y version.
-# version = "0.1.0"
+version = "0.13.1"
 # The full version, including alpha/beta/rc tags.
 release = "0.13.1"
 
@@ -132,7 +126,7 @@ release = "0.13.1"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

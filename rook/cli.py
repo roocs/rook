@@ -172,6 +172,8 @@ def stop():
     default="sqlite:///pywps-logs.sqlite",
     help="database in PyWPS configuration",
 )
+@click.option('--outputurl', default='', help='base URL for file downloads')
+@click.option('--outputpath', default='', help='base directory where outputs are written')
 def start(
     config,
     bind_host,
@@ -184,6 +186,8 @@ def start(
     log_level,
     log_file,
     database,
+    outputurl,
+    outputpath,
 ):
     """Start PyWPS service.
     This service is by default available at http://localhost:5000/wps
@@ -202,6 +206,8 @@ def start(
             wps_log_level=log_level,
             wps_log_file=log_file,
             wps_database=database,
+            wps_outputurl = outputurl,
+            wps_outputpath = outputpath
         )
     )
     if config:

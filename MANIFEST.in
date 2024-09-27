@@ -1,6 +1,7 @@
 include Makefile
 include *.txt
 include *.rst
+include tox.ini
 recursive-include rook *
 global-exclude __pycache__
 global-exclude *.py[co]

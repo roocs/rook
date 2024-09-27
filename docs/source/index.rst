@@ -9,6 +9,7 @@
    dev_guide
    notebooks
    processes
+   authors
    prov
    changes
 

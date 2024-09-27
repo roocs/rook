@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """The setup script."""
 
@@ -16,8 +15,8 @@ about = {}
 with open(os.path.join(here, "rook", "__version__.py"), "r") as f:
     exec(f.read(), about)
 
-reqs = [line.strip() for line in open("requirements.txt")]
-dev_reqs = [line.strip() for line in open("requirements_dev.txt")]
+requirements = [line.strip() for line in open('requirements.txt')]
+dev_reqs = [line.strip() for line in open('requirements_dev.txt')]
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -37,27 +36,28 @@ classifiers = [
 ]
 
 setup(
-    name="rook",
-    version=about["__version__"],
+    name='roocs-rook',
+    version=about['__version__'],
     description="A WPS service for roocs.",
-    long_description=README + "\n\n" + CHANGES,
+    long_description=README + '\n\n' + CHANGES,
     long_description_content_type="text/x-rst",
-    author=about["__author__"],
-    author_email=about["__email__"],
-    url="https://github.com/roocs/rook",
+    author=about['__author__'],
+    author_email=about['__email__'],
+    url='https://github.com/roocs/rook',
     python_requires=REQUIRES_PYTHON,
     classifiers=classifiers,
     license="Apache Software License 2.0",
-    keywords="wps pywps birdhouse rook",
+    zip_safe=False,
+    keywords='wps pywps birdhouse rook',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=reqs,
+    install_requires=requirements,
     extras_require={
         "dev": dev_reqs,  # pip install ".[dev]"
     },
     entry_points={
-        "console_scripts": [
-            "rook=rook.cli:cli",
+        'console_scripts': [
+            'rook=rook.cli:cli',
         ]
     },
 )

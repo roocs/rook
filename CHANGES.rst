@@ -1,31 +1,30 @@
 Changes
 *******
 
-
 0.13.1 (2024-07-22)
-==================
+===================
 
 * Added process for average over polygon (#251).
 * Update CDS domain (#253).
 
 0.13.0 (2024-02-06)
-==================
+===================
 
 * Add subsetting support for Atlas v1 datasets (#247, #248, #249).
 
 0.12.2 (2023-12-08)
-==================
+===================
 
 * Fixed the `time_components` parameter to avoid issues with 360day calendar (#245)
 
 0.12.1 (2023-12-04)
-==================
+===================
 
 * Updated clisops >=0.12.1 with fix for fill-value issue.
 * Added smoke test for fill-value issue.
 
 0.12.0 (2023-11-28)
-==================
+===================
 
 * Added regridding operator from clisops >=0.12.0.
 * Added tests for regridding process.
@@ -33,7 +32,7 @@ Changes
 * Run GitHub tests with conda.
 
 0.11.0 (2023-11-09)
-==================
+===================
 
 * Added weighted average operator and wps process for it.
 * Added wps process for regridding ... using only dummy operator.
@@ -42,13 +41,13 @@ Changes
 * Skip Python 3.8.
 
 0.10.1 (2023-07-20)
-==================
+===================
 
 * Updated checks when to apply fixes.
 * Fixed smoke tests for cmip5.
 
 0.10.0 (2023-07-12)
-==================
+===================
 
 * Updated concat operator to optionally apply subsetting and averaging to improve performance.
 * Apply cmip6 decadal fixes directly using Python code. Skip lookup of fixes in ElasticSearch.
@@ -210,7 +209,6 @@ Changes:
 * Using a simple workflow implementation for combining operators.
 * Process outputs are provided as ``Metalink`` documents.
 * Added initial support for provenance documentation.
-
 
 0.1.0 (2020-04-03)
 ==================

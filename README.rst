@@ -1,18 +1,21 @@
 rook
 ====
 
-.. image:: https://readthedocs.org/projects/rook-wps/badge/?version=latest
-   :target: https://rook-wps.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
+.. image:: https://img.shields.io/pypi/v/roocs-rook.svg
+    :target: https://pypi.python.org/pypi/roocs-rook
+    :alt: PyPI
 
 .. image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg
-    :target: https://github.com/roocs/rook/actions
+    :target: https://github.com/roocs/rook/actions/workflows/main.yml
     :alt: Build Status
+
+.. image:: https://readthedocs.org/projects/rook/badge/?version=latest
+    :target: https://rook.readthedocs.io/en/latest/?version=latest
+    :alt: Documentation Status
 
 .. image:: https://img.shields.io/github/license/roocs/rook.svg
     :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
     :alt: GitHub license
-
 
 rook (the bird)
   *The rook belongs to the crow family ...*
@@ -28,18 +31,16 @@ available in the daops_ library based on xarray.
 Documentation
 -------------
 
-Learn more about rook in its official documentation at
-https://rook-wps.readthedocs.io.
+Learn more about rook in its official documentation at https://rook.readthedocs.io.
 
-Submit bug reports, questions and feature requests at
-https://github.com/roocs/rook/issues
+Submit bug reports, questions and feature requests at https://github.com/roocs/rook/issues
 
 Contributing
 ------------
 
 You can find information about contributing in our `Developer Guide`_.
 
-Please use bumpversion_ to release a new version.
+Please use bump2version_ to release a new version.
 
 Tests
 -----
@@ -52,7 +53,8 @@ The ``tests`` folder includes additional tests for a deployed rook service.
 License
 -------
 
-Free software: Apache Software License 2.0
+* Free software: Apache Software License 2.0
+* Documentation: https://rook.readthedocs.io.
 
 Credits
 -------
@@ -62,6 +64,6 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
-.. _bumpversion: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _bump2version: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 .. _daops: https://github.com/roocs/daops
 .. _locust: https://locust.io/

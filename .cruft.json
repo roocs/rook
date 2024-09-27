@@ -1,23 +1,27 @@
 {
-    "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-    "commit": "be4eeb281ac2a027c2128c4ef84894ba559c8c24",
-    "context": {
-        "cookiecutter": {
-            "full_name": "Carsten Ehbrecht",
-            "email": "ehbrecht@dkrz.de",
-            "github_username": "roocs",
-            "project_name": "rook",
-            "project_slug": "rook",
-            "project_repo_name": "rook",
-            "project_readthedocs_name": "rook",
-            "project_short_description": "A WPS service for roocs.",
-            "version": "0.13.1",
-            "open_source_license": "Apache Software License 2.0",
-            "http_port": "5000",
-            "_copy_without_render": [
-                "{{cookiecutter.project_slug}}/templates/*.cfg"
-            ],
-            "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
-        }
+  "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
+  "commit": "231d17eca6986f606d280cc25262d0153efd92c4",
+  "context": {
+    "cookiecutter": {
+      "full_name": "Carsten Ehbrecht",
+      "email": "ehbrecht@dkrz.de",
+      "github_username": "roocs",
+      "project_name": "rook",
+      "project_slug": "rook",
+      "project_repo_name": "rook",
+      "project_readthedocs_name": "rook",
+      "project_short_description": "A WPS service for roocs.",
+      "version": "0.13.1",
+      "open_source_license": "Apache Software License 2.0",
+      "http_port": "5000",
+      "use_pytest": "y",
+      "use_black": "n",
+      "create_author_file": "y",
+      "_copy_without_render": [
+        "{{cookiecutter.project_slug}}/templates/*.cfg"
+      ],
+      "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
     }
+  },
+  "checkout": null
 }

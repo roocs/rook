@@ -1,7 +1,7 @@
-pywps>=4.5.2,<4.7
-jinja2
 click
+jinja2
 psutil
+pywps>=4.5.1,<4.6
 # daops
 daops>=0.11.0,<0.12
 # daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
