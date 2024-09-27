@@ -2,7 +2,7 @@ name: rook
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.13
+  - python >=3.9,<3.12
   - pywps >=4.5.2,<4.7
   - jinja2
   - click
@@ -14,9 +14,8 @@ dependencies:
   - cf_xarray >=0.7
   - dask >=2021.12
   - netcdf4 >=1.4
-  - bottleneck >=1.3.1,<1.4.0
   - daops >=0.11.0,<0.12.0
-  - clisops
+  - clisops >=0.11.0
   - roocs-utils >=0.6.9,<0.7.0
   - roocs-grids >=0.1.2
   # workflow
@@ -28,7 +27,7 @@ dependencies:
   # catalog
   - intake
   - pandas
-  - sqlalchemy
+  - sqlalchemy >=1.4.45,<2.0  # Needed to pass existing tests
   - aiohttp
   # dashboard
   - bokeh

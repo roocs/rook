@@ -76,7 +76,7 @@ jobs:
           python -m pip install -e ".[dev]"
       - name: Test with pytest ⚙️
         run: |
-          pytest -v -m "not slow and not online and not smoke" tests
+          pytest -v -m "not slow and not online" tests
 
   docs:
     name: Docs (Python${{ matrix.python-version }})
