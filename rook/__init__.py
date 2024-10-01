@@ -3,8 +3,12 @@ from .__version__ import __author__, __email__, __version__  # noqa: F401
 
 from roocs_utils.config import get_config
 
-import rook
+# Workaround for roocs_utils to not re-import rook
+class Package:
+    __file__ = __file__  # noqa
 
-CONFIG = get_config(rook)
+
+package = Package()
+CONFIG = get_config(package)
 
 from .wsgi import application  # noqa: F401

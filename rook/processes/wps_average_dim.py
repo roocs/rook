@@ -3,8 +3,6 @@ import os
 
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from pywps.app.exceptions import ProcessError
-from pywps.inout.outputs import MetaFile, MetaLink4
 
 from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
@@ -122,7 +120,6 @@ class AverageByDimension(Process):
                 request.inputs, "dims", as_sequence=True, default=None
             ),
         }
-        # print(inputs)
 
         # Let the director manage the processing or redirection to original files
         director = wrap_director(collection, inputs, run_average_by_dim)
