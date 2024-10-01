@@ -86,7 +86,7 @@ autodoc_mock_imports = [
     "xarray",
     "zlib",
     # roocs
-    "clisops"
+    "clisops",
     "daops",
     "roocs_utils",
 ]
