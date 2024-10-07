@@ -11,7 +11,7 @@
    processes
    authors
    prov
-   changes
+   changelog
 
 Indices and tables
 ==================

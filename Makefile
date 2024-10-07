@@ -101,7 +101,7 @@ clean-docs: ## remove documentation artifacts
 
 lint/flake8: ## check style with flake8
 	@echo "Running flake8 code style checks ..."
-	@bash -c 'flake8 rook tests'
+	@bash -c 'ruff check rook tests'
 
 lint: lint/flake8 ## check style
 
@@ -127,7 +127,6 @@ test-all: ## run all tests quickly with the default Python
 notebook-sanitizer: ## download notebook output sanitizer
 	@echo "Copying notebook output sanitizer ..."
 	@-bash -c "curl -L $(SANITIZE_FILE) -o $(CURDIR)/docs/source/output-sanitize.cfg --silent"
-
 
 test-notebooks: notebook-sanitizer  ## run notebook-based tests
 	@echo "Running notebook-based tests"
@@ -156,11 +155,7 @@ servedocs: docs ## compile the docs watching for changes
 	@echo "Compiling the docs and watching for changes ..."
 	@watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-notebook-sanitizer: ## sanitize notebooks with configuration file
-	@echo "Copying notebook output sanitizer ..."
-	@-bash -c "curl -L $(SANITIZE_FILE) -o $(CURDIR)/docs/source/output-sanitize.cfg --silent"
-
-refresh-notebooks: ## refreshing all notebook outputs under docs/source/notebooks
+refresh-notebooks: notebook-sanitizer ## refreshing all notebook outputs under docs/source/notebooks
 	@echo "Refresh all notebook outputs under docs/source/notebooks"
 	@bash -c 'for nb in $(CURDIR)/docs/source/notebooks/*.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)'
 
@@ -168,10 +163,9 @@ refresh-notebooks: ## refreshing all notebook outputs under docs/source/notebook
 
 dist: clean ## build source and wheel package
 	@echo "Building source and wheel package ..."
-	@python setup.py sdist
-	@python setup.py bdist_wheel
+	@python -m build --sdist
 	@bash -c 'ls -l dist/'
 
 release: dist ## upload source and wheel packages
 	@echo "Uploading source and wheel packages ..."
-	@bash -c 'twine upload dist/*'
+	@python -m flit publish dist/*

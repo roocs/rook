@@ -66,7 +66,7 @@ class WpsTestClient(WpsClient):
     def get(self, *args, **kwargs):
         query = "?"
         for key, value in kwargs.items():
-            query += "{}={}&".format(key, value)
+            query += f"{key}={value}&"
         return super().get(query)
 
 
@@ -75,8 +75,8 @@ def client_for(service):
 
 
 def get_output(doc):
-    """Copied from pywps/tests/test_execute.py.
-    TODO: make this helper method public in pywps."""
+    """Copied from pywps/tests/test_execute.py."""
+    # TODO: make this helper method public in pywps.
     output = {}
     for output_el in xpath_ns(
         doc, "/wps:ExecuteResponse" "/wps:ProcessOutputs/wps:Output"
@@ -84,15 +84,15 @@ def get_output(doc):
         [identifier_el] = xpath_ns(output_el, "./ows:Identifier")
 
         lit_el = xpath_ns(output_el, "./wps:Data/wps:LiteralData")
-        if lit_el != []:
+        if lit_el:
             output[identifier_el.text] = lit_el[0].text
 
         ref_el = xpath_ns(output_el, "./wps:Reference")
-        if ref_el != []:
+        if ref_el:
             output[identifier_el.text] = ref_el[0].attrib["href"]
 
         data_el = xpath_ns(output_el, "./wps:Data/wps:ComplexData")
-        if data_el != []:
+        if data_el:
             output[identifier_el.text] = data_el[0].text
 
     return output

@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-  "commit": "231d17eca6986f606d280cc25262d0153efd92c4",
+  "commit": "d25191ecc41c091d9b4a392f0ac89d70ff27db55",
   "context": {
     "cookiecutter": {
       "full_name": "Carsten Ehbrecht",
@@ -20,6 +20,7 @@
       "_copy_without_render": [
         "{{cookiecutter.project_slug}}/templates/*.cfg"
       ],
+      "__gh_slug": "roocs/rook",
       "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
     }
   },

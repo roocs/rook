@@ -63,7 +63,6 @@ autodoc_mock_imports = [
     "hdf5",
     "matplotlib",
     "netCDF4",
-    "networkx",
     "numba",
     "numpy",
     "ocgis",

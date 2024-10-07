@@ -40,7 +40,7 @@ Contributing
 
 You can find information about contributing in our `Developer Guide`_.
 
-Please use bump2version_ to release a new version.
+Please use bump-my-version_ to release a new version.
 
 Tests
 -----
@@ -61,9 +61,9 @@ Credits
 
 This package was created with Cookiecutter_ and the `bird-house/cookiecutter-birdhouse`_ project template.
 
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _Cookiecutter: https://github.com/cookiecutter/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
-.. _bump2version: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _bump-my-version: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 .. _daops: https://github.com/roocs/daops
 .. _locust: https://locust.io/
