@@ -39,7 +39,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install flake8
+      - name: Install linting libraries
         run: |
           python -m pip install flake8
       - name: Run Lint 📦
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11" ] # "3.12"
     defaults:
       run:
         shell: bash -l {0}
@@ -70,13 +70,13 @@ jobs:
           environment-file: environment.yml
           create-args: >-
             python=${{ matrix.python-version }}
+          micromamba-version: 1.5.10-0 # Pin micromamba version because of following issue: https://github.com/mamba-org/setup-micromamba/issues/225
       - name: Install requirements 📦
         run: |
-          python -m pip install -e .
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+          python -m pip install -e ".[dev]"
       - name: Test with pytest ⚙️
-        run: make test
+        run: |
+          pytest -v -m "not slow and not online" tests
 
   docs:
     name: Docs (Python${{ matrix.python-version }})
@@ -103,9 +103,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Install dev requirements 📦
+      - name: Install rook with dev requirements 📦
         run: |
-          python -m pip install -r requirements_dev.txt
+          python -m pip install -e ".[dev]"
       - name: Build Docs 📚
         run: |
           make docs
