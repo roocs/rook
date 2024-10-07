@@ -101,8 +101,8 @@ clean-docs: ## remove documentation artifacts
 
 lint/flake8: ## check style with flake8
 	@echo "Running flake8 code style checks ..."
-	@bash -c 'flake8 rook tests'
-	@#bash -c 'ruff check rook tests'
+	@bash -c 'flake8 src/rook tests'
+	@#bash -c 'ruff check src/rook tests'
 
 lint: lint/flake8 ## check style
 
