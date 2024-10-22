@@ -8,7 +8,8 @@ authors = [
   {name = "Carsten Ehbrecht", email = "ehbrecht@dkrz.de"}
 ]
 maintainers = [
-  {name = "Carsten Ehbrecht", email = "ehbrecht@dkrz.de"}
+  {name = "Carsten Ehbrecht", email = "ehbrecht@dkrz.de"},
+  {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
 requires-python = ">=3.9.0"
@@ -27,7 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  # "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 dynamic = ["description", "version"]
