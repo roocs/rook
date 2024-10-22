@@ -100,7 +100,7 @@ def test_wps_subset_c3s_cmip6_metadata():
     m_path = get_output(resp.xml)["output"]
     assert "meta4" in m_path
     # parse metalink
-    xml = open(m_path[7:], "r").read()
+    xml = open(m_path[7:]).read()
     urls = parse_metalink(xml)
     # print(urls)
     ds = xr.open_dataset(urls[0][7:], use_cftime=True)

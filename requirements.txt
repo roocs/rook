@@ -1,19 +1,20 @@
-pywps>=4.5.2,<4.7
-jinja2
 click
+jinja2
 psutil
+pywps>=4.5.2,<4.7
 # daops
-daops>=0.11.0,<0.12
+daops>=0.11.0,<0.12.0
 # daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
-clisops>=0.12.2,<0.13
+clisops
 # clisops @ git+https://github.com/roocs/clisops.git@master#egg=clisops
-roocs-utils>=0.6.9,<0.7
+roocs-utils>=0.6.9,<0.7.0
 # roocs-utils @ git+https://github.com/roocs/roocs-utils.git@master#egg=roocs_utils
 roocs_grids>=0.1.2
-xarray>=0.21
+xarray>=0.21,<2023.3.0 # https://github.com/pydata/xarray/issues/7794
 cf-xarray>=0.7
-dask[complete]
-netcdf4
+cftime>=1.2.1
+dask[complete]>=2021.12.0
+netcdf4>=1.4
 # workflow
 networkx
 # provenance
@@ -21,9 +22,9 @@ prov>=2.0.0
 pydot
 # catalog
 intake
-pandas>=1.3.5,<2.0
+pandas
 SQLAlchemy>=1.4.45,<2.0
 aiohttp
 # dashboard
-bokeh>=2.4.2,<2.5
+bokeh
 humanize
