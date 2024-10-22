@@ -1,6 +1,18 @@
 Changes
 *******
 
+0.14.0 (2024-10-22)
+===================
+* Added a Docker image testing step the GitHub Actions CI pipeline (#259).
+* Updated CI workflows to use more modern GitHub Actions (#259).
+* Update the cookiecutter template to use more modern packages and tools (#260):
+    * Updated several linting tools and coding conventions
+    * Added a CODE_OF_CONDUCT.rst file
+    * Optimized the Dockerfile configuration for the rook service
+    * Added missing processes to the documentation
+    * Now using `pyproject.toml` with `flit-code` for package configuration
+    * Source code now uses a `src`-folder-based layout
+
 0.13.1 (2024-07-22)
 ===================
 
