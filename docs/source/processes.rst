@@ -17,7 +17,19 @@ Subset
 Average
 -------
 
-.. autoprocess:: rook.processes.wps_average.Average
+.. autoprocess:: rook.processes.wps_average_dim.AverageByDimension
+   :docstring:
+   :skiplines: 1
+
+.. autoprocess:: rook.processes.wps_average_shape.AverageByShape
+   :docstring:
+   :skiplines: 1
+
+.. autoprocess:: rook.processes.wps_average_time.AverageByTime
+   :docstring:
+   :skiplines: 1
+
+.. autoprocess:: rook.processes.wps_average_weighted.WeightedAverage
    :docstring:
    :skiplines: 1
 
