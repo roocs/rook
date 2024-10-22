@@ -67,7 +67,7 @@ rook = "rook.cli:cli"
 [tool]
 
 [tool.bumpversion]
-current_version = "0.13.1"
+current_version = "0.14.0"
 commit = true
 commit_args = "--no-verify"
 tag = true
