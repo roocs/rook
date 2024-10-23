@@ -1,16 +1,10 @@
 import pandas as pd
 import sqlalchemy
-from pywps.dblog import get_session
-from sqlalchemy.types import DateTime
-from sqlalchemy.types import Integer
-from sqlalchemy.types import String
-from sqlalchemy.types import Text
-
 from daops.catalog.base import Catalog
 from daops.catalog.intake import IntakeCatalog
-from daops.catalog.util import MAX_DATETIME
-from daops.catalog.util import MIN_DATETIME
-from daops.catalog.util import parse_time
+from daops.catalog.util import MAX_DATETIME, MIN_DATETIME, parse_time
+from pywps.dblog import get_session
+from sqlalchemy.types import DateTime, Integer, String, Text
 
 
 class DBCatalog(Catalog):
@@ -62,24 +56,24 @@ class DBCatalog(Catalog):
             session.close()
 
     def _query(self, collection, time=None, time_components=None):
-        """
-        https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause
-        """
+        """https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause"""
         self.update()
         start, end = parse_time(time, time_components)
 
         session = get_session()
         try:
             if len(collection) > 1:
+                # FIXME: This is vulnerable to SQL injection
                 query_ = (
-                    f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "
-                    f"and end_time>='{start}' and start_time<='{end}'"
+                    f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "  # noqa: S608
+                    f"and end_time>='{start}' and start_time<='{end}'"  # noqa: S608
                 )
 
             else:
-                query_ = (
-                    f"SELECT * FROM {self.table_name} WHERE ds_id='{collection[0]}' "
-                    f"and end_time>='{start}' and start_time<='{end}'"
+                # FIXME: This is vulnerable to SQL injection
+                query_ = (  # noqa: S608
+                    f"SELECT * FROM {self.table_name} WHERE ds_id='{collection[0]}' "  # noqa: S608
+                    f"and end_time>='{start}' and start_time<='{end}'"  # noqa: S608
                 )
             result = session.execute(query_).fetchall()
 

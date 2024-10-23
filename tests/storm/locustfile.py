@@ -1,10 +1,10 @@
-from locust import HttpUser, between, task, tag
+from locust import HttpUser, between, tag, task
 
 from tests.storm.common import (
-    execute_async,
     C3S_CMIP6_DAY_COLLECTION,
     C3S_CMIP6_MON_COLLECTION,
     WF_C3S_CMIP6_SUBSET_AVERAGE,
+    execute_async,
 )
 
 

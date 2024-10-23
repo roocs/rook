@@ -1,21 +1,18 @@
-import xarray as xr
-import numpy as np
-
 import collections
 
-from roocs_utils.parameter import collection_parameter
-from roocs_utils.parameter import dimension_parameter
-from roocs_utils.parameter import time_parameter
-from roocs_utils.parameter import time_components_parameter
-
-from roocs_utils.project_utils import derive_ds_id
-
+import numpy as np
+import xarray as xr
+from clisops.core.average import average_over_dims as average
+from clisops.ops import subset
 from daops.ops.base import Operation
 from daops.utils import normalise
-
-from clisops.ops import subset
-
-from clisops.core.average import average_over_dims as average
+from roocs_utils.parameter import (
+    collection_parameter,
+    dimension_parameter,
+    time_components_parameter,
+    time_parameter,
+)
+from roocs_utils.project_utils import derive_ds_id
 
 from .decadal_fixes import apply_decadal_fixes
 from .input_utils import fix_parameters

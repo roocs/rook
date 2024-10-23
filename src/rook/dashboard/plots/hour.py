@@ -1,10 +1,8 @@
 import pandas as pd
-from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
+
 from .base import PlotView
-
-
-# HOURS = [str(i) for i in range(24)]
 
 
 class HourPlot(PlotView):

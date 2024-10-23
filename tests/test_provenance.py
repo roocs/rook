@@ -1,5 +1,3 @@
-import pytest
-
 from rook.provenance import Provenance
 
 

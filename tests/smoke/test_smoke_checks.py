@@ -1,11 +1,7 @@
-# from pyparsing import dbl_slash_comment
-from tests.smoke.utils import open_dataset
-
-from owslib.wps import ComplexDataInput
 import json
 
-
 import pytest
+from owslib.wps import ComplexDataInput
 
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
@@ -214,6 +210,7 @@ WF_C3S_CMIP6_DECADAL = json.dumps(
 )
 
 
+@pytest.mark.smoke
 def test_smoke_get_capabilities(wps):
     caps = wps.getcapabilities()
     assert caps.identification.type == "WPS"
@@ -224,6 +221,7 @@ def test_smoke_get_capabilities(wps):
     assert "orchestrate" in processes
 
 
+@pytest.mark.smoke
 def test_smoke_describe_process_subset(wps):
     process = wps.describeprocess("subset")
     assert process.identifier == "subset"
@@ -233,6 +231,7 @@ def test_smoke_describe_process_subset(wps):
     assert "area" in inputs
 
 
+@pytest.mark.smoke
 def test_smoke_describe_process_average_dim(wps):
     process = wps.describeprocess("average")
     assert process.identifier == "average"
@@ -241,6 +240,7 @@ def test_smoke_describe_process_average_dim(wps):
     assert "dims" in inputs
 
 
+@pytest.mark.smoke
 def test_smoke_describe_process_average_time(wps):
     process = wps.describeprocess("average_time")
     assert process.identifier == "average_time"
@@ -249,6 +249,7 @@ def test_smoke_describe_process_average_time(wps):
     assert "freq" in inputs
 
 
+@pytest.mark.smoke
 def test_smoke_describe_process_orchestrate(wps):
     process = wps.describeprocess("orchestrate")
     assert process.identifier == "orchestrate"
@@ -256,7 +257,8 @@ def test_smoke_describe_process_orchestrate(wps):
     assert "workflow" in inputs
 
 
-def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP5_DAY_COLLECTION),
         ("time", "2005-01-01/2005-12-31"),
@@ -268,7 +270,8 @@ def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -280,7 +283,8 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_LEVEL_COLLECTION),
         ("time", "1850/1850"),
@@ -293,7 +297,8 @@ def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path):
     assert "ta" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_TASMIN_COLLECTION),
         ("time", "2010-01-01/2010-12-31"),
@@ -321,7 +326,8 @@ def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
     assert "coordinates" not in ds.time_bnds.encoding
 
 
-def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path, open_dataset):
     dsid = "c3s-cmip6.CMIP.NCAR.CESM2-WACCM.historical.r1i1p1f1.day.tas.gn.v20190227"
     inputs = [
         ("collection", dsid),
@@ -335,7 +341,8 @@ def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -350,7 +357,8 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP5_DAY_COLLECTION),
         ("time", "2005-01-01/2005-12-31"),
@@ -363,7 +371,8 @@ def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -376,7 +385,10 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(
+    wps, tmp_path, open_dataset
+):
     inputs = [
         ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
         ("time", "2015/2015"),
@@ -389,7 +401,8 @@ def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
     assert "pr" in ds.variables
 
 
-def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -405,6 +418,7 @@ def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
     assert "tas" in ds.variables
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     inputs = [
         ("collection", C3S_CMIP6_DAY_COLLECTION),
@@ -417,6 +431,7 @@ def test_smoke_execute_c3s_cmip6_subset_original_files(wps):
     assert "esg_c3s-cmip6" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
     inputs = [("collection", C3S_CMIP6_DAY_COLLECTION)]
     urls = wps.execute("subset", inputs)
@@ -428,6 +443,7 @@ def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
     inputs = [("collection", C3S_CORDEX_MON_COLLECTION)]
     urls = wps.execute("subset", inputs)
@@ -441,6 +457,7 @@ def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip5_subset_time_and_area_cross_meridian(wps):
     inputs = [
         ("collection", C3S_CMIP5_MON_COLLECTION),
@@ -452,6 +469,7 @@ def test_smoke_execute_c3s_cmip5_subset_time_and_area_cross_meridian(wps):
     assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_20050116-20051216.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_subset_time_and_area_cross_meridian(wps):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
@@ -463,6 +481,7 @@ def test_smoke_execute_c3s_cmip6_subset_time_and_area_cross_meridian(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip5_average_dim(wps):
     inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
@@ -470,6 +489,7 @@ def test_smoke_execute_c3s_cmip5_average_dim(wps):
     assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_avg-t.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip5_average_time(wps):
     inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
@@ -479,6 +499,7 @@ def test_smoke_execute_c3s_cmip5_average_time(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_average_dim(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
@@ -486,6 +507,7 @@ def test_smoke_execute_c3s_cmip6_average_dim(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_average_time(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
@@ -496,6 +518,7 @@ def test_smoke_execute_c3s_cmip6_average_time(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cordex_average_dim(wps):
     inputs = [("collection", C3S_CORDEX_MON_COLLECTION), ("dims", "time")]
     urls = wps.execute("average", inputs)
@@ -507,6 +530,7 @@ def test_smoke_execute_c3s_cordex_average_dim(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cordex_average_time(wps):
     inputs = [("collection", C3S_CORDEX_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
@@ -518,6 +542,7 @@ def test_smoke_execute_c3s_cordex_average_time(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_weighted_average(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION)]
     urls = wps.execute("weighted_average", inputs)
@@ -527,6 +552,7 @@ def test_smoke_execute_c3s_cmip6_weighted_average(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_regrid(wps):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
@@ -541,6 +567,7 @@ def test_smoke_execute_c3s_cmip6_regrid(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP5)),
@@ -550,6 +577,7 @@ def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     assert "tas_day_IPSL-CM5B-LR_historical_r1i1p1_avg-t.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
@@ -559,6 +587,7 @@ def test_smoke_execute_c3s_cmip6_orchestrate(wps):
     assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_avg-t.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_W_AVG)),
@@ -570,6 +599,7 @@ def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_REGRID)),
@@ -582,6 +612,7 @@ def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_360day_calendar_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_360DAY_CALENDAR)),
@@ -591,7 +622,8 @@ def test_smoke_execute_c3s_cmip6_360day_calendar_orchestrate(wps):
     assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
+@pytest.mark.smoke
+def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path, open_dataset):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
     ]
@@ -615,6 +647,7 @@ def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
     # assert "coordinates" not in ds.time_bnds.encoding
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cordex_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CORDEX)),
@@ -627,6 +660,7 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
@@ -637,6 +671,7 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     assert "19951116-19951216.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CMIP5_COLLECTION),
@@ -648,6 +683,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
     assert "tnn_CMIP5_rcp45_mon_200601-210012.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CMIP6_COLLECTION),
@@ -659,6 +695,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
     assert "tnn_CMIP6_historical_mon_185001-201412.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
     inputs = [
         ("collection", C3S_IPCC_ATLAS_CORDEX_COLLECTION),
@@ -670,6 +707,7 @@ def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
     assert "tnn_CORDEX-AFR_historical_mon_197001-200512.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CMIP6_COLLECTION),
@@ -681,6 +719,7 @@ def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     assert "cd_CMIP6_historical_yr_20000101-20000101.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_CORDEX_COLLECTION),
@@ -692,6 +731,7 @@ def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
     assert "cdd_CORDEX-CORE_historical_yr_20000101-20000101.nc" in urls[0]
 
 
+@pytest.mark.smoke
 def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     inputs = [
         ("collection", C3S_CICA_ATLAS_ERA5_COLLECTION),

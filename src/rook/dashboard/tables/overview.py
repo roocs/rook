@@ -1,9 +1,8 @@
 import pandas as pd
-from bokeh.models import ColumnDataSource
-from bokeh.models import TableColumn, DataTable
+from bokeh.models import ColumnDataSource, DataTable, TableColumn
 
-from .base import TableView
 from ..models import concurrent_requests
+from .base import TableView
 
 
 class OverviewTable(TableView):

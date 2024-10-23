@@ -1,11 +1,11 @@
 import os
 import time
-from jinja2 import FileSystemLoader, Environment
-import locust
-from pyquery import PyQuery
 from urllib.parse import urlparse
-import gevent
 
+import gevent
+import locust
+from jinja2 import Environment, FileSystemLoader
+from pyquery import PyQuery
 
 templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates")
 template_env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)

@@ -1,14 +1,21 @@
 import os
-import pandas as pd
-import humanize
+from pathlib import Path
+
 import bokeh
-
-from .plots import ActivityPlot, DurationPlot, ConcurrencyPlot
-from .plots import DayPlot, HourPlot
-from .plots import DownloadsPlot, TransferPlot
-from .tables import OverviewTable, MessageTable
-
+import humanize
+import pandas as pd
 from jinja2 import Environment, PackageLoader, select_autoescape
+
+from .plots import (
+    ActivityPlot,
+    ConcurrencyPlot,
+    DayPlot,
+    DownloadsPlot,
+    DurationPlot,
+    HourPlot,
+    TransferPlot,
+)
+from .tables import MessageTable, OverviewTable
 
 env = Environment(
     loader=PackageLoader("rook.dashboard"), autoescape=select_autoescape()
@@ -25,7 +32,7 @@ class Dashboard:
     def __init__(self, output_dir=None):
         self.df = None
         self.df_downloads = None
-        self.output_dir = output_dir or os.path.curdir
+        self.output_dir = output_dir or Path().cwd().as_posix()
 
     def load(self, url, filter=None):
         # read csv, parse start/end time
@@ -47,8 +54,8 @@ class Dashboard:
         self.df_downloads = df
 
     def write(self):
-        out = os.path.join(self.output_dir, "dashboard.html")
-        with open(out, "w") as f:
+        out = Path(self.output_dir).joinpath("dashboard.html").as_posix()
+        with Path(out).open("w") as f:
             f.write(self.render())
         return out
 
