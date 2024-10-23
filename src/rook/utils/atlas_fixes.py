@@ -1,3 +1,5 @@
+from typing import Union
+
 import xarray as xr
 
 
@@ -13,7 +15,7 @@ def add_project_id(ds_id, ds):
     return ds
 
 
-def fix_deflation(ds: xr.Dataset | xr.DataArray):
+def fix_deflation(ds: Union[xr.Dataset, xr.DataArray]):
     """See also: clisops.ops.base_operaton._remove_redundant_fill_values"""
     if isinstance(ds, xr.Dataset):
         var_list = list(ds.coords) + list(ds.data_vars)
