@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
-from pywps.inout.outputs import MetaFile, MetaLink4
 from pywps import FORMATS
+from pywps.inout.outputs import MetaFile, MetaLink4
 
 file_type_map = {"NetCDF": FORMATS.NETCDF}
 

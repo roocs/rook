@@ -1,6 +1,5 @@
 import pandas as pd
-from bokeh.models import ColumnDataSource
-from bokeh.models import TableColumn, DataTable, DateFormatter
+from bokeh.models import ColumnDataSource, DataTable, DateFormatter, TableColumn
 
 from .base import TableView
 

@@ -1,12 +1,12 @@
+import json
 import os
 import uuid
-import json
 from datetime import datetime
-import pathlib
+from pathlib import Path
 
-from prov.identifier import Namespace
 import prov.model as prov
 from prov.dot import prov_to_dot
+from prov.identifier import Namespace
 
 # prov namespace
 PROV_ORGANISATION = prov.PROV["Organization"]
@@ -14,7 +14,7 @@ PROV_SOFTWARE_AGENT = prov.PROV["SoftwareAgent"]
 
 # provone namespace
 PROVONE = Namespace(
-    "provone", uri="http://purl.dataone.org/provone/2015/01/15/ontology#"
+    "provone", uri="https://purl.dataone.org/provone/2015/01/15/ontology#"
 )
 PROVONE_WORKFLOW = PROVONE["Workflow"]
 PROVONE_DATA = PROVONE["Data"]
@@ -30,10 +30,10 @@ ROOCS = Namespace("roocs", uri="urn:roocs:")
 
 class Provenance:
     def __init__(self, output_dir):
-        if isinstance(output_dir, pathlib.Path):
+        if isinstance(output_dir, Path):
             self.output_dir = output_dir
         else:
-            self.output_dir = pathlib.Path(output_dir)
+            self.output_dir = Path(output_dir)
         self.doc = None
         self._identifier = None
         self._workflow = None
@@ -44,6 +44,7 @@ class Provenance:
 
     def start(self, workflow=False):
         from daops import __version__ as daops_version
+
         from rook import __version__ as rook_version
 
         self.doc = prov.ProvDocument()
@@ -132,7 +133,7 @@ class Provenance:
             attributes=attributes,
         )
         # input data
-        ds_in = os.path.basename(collection[0])
+        ds_in = Path(collection[0]).name
         op_input = self._data_entitiy(identifier=ROOCS[ds_in], label=ds_in)
         # operator started by daops
         if self._workflow:
@@ -141,7 +142,7 @@ class Provenance:
             self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
         # Generated output file
         for out in output:
-            ds_out = os.path.basename(out)
+            ds_out = Path(out).name
             op_output = self._data_entitiy(identifier=ROOCS[ds_out], label=ds_out)
             self.doc.wasDerivedFrom(op_output, op_input, activity=op)
 

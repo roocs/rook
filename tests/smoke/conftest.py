@@ -1,18 +1,26 @@
+from pathlib import Path
+
 import pytest
-
 import requests
-
+from lxml import etree
 from owslib.wps import WebProcessingService, monitorExecution
 from pywps import configuration as config
 
-from tests.smoke.utils import parse_metalink
-from tests.common import PYWPS_CFG
+TESTS_HOME = Path(__file__).parent.parent.absolute()
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 def server_url():
     config.load_configuration(cfgfiles=PYWPS_CFG)
     url = config.get_config_value("server", "url")
     return url
+
+
+def parse_metalink(xml):
+    xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
+    tree = etree.fromstring(xml_.encode())  # noqa: S320
+    urls = [m.text for m in tree.xpath("//metaurl")]
+    return urls
 
 
 class RookWPS:
@@ -34,7 +42,7 @@ class RookWPS:
         assert execution.isSucceded() is True
         assert len(execution.processOutputs) > 0
         ml_url = execution.processOutputs[0].reference
-        xml = requests.get(ml_url).text
+        xml = requests.get(ml_url, timeout=30).text
         urls = parse_metalink(xml)
         return urls
 

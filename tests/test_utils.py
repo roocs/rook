@@ -1,26 +1,19 @@
-import os
 import pytest
-
 from pywps.app import WPSRequest
 
 from rook.utils.input_utils import (
-    resolve_to_file_paths,
-    parse_wps_input,
     fix_time_components,
+    parse_wps_input,
+    resolve_to_file_paths,
 )
 from rook.utils.metalink_utils import build_metalink
 
-from .common import TESTS_HOME, MINI_ESGF_MASTER_DIR
 
-test_dir = f"{MINI_ESGF_MASTER_DIR}/test_data"
-
-
-def test_build_metalink(tmpdir, load_test_data):
-    cmip6_nc = os.path.join(
-        test_dir,
+def test_build_metalink(tmpdir, stratus):
+    cmip6_nc = stratus.path.joinpath(
         "badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/SImon/siconc"
         "/gn/latest/siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_185001-185412.nc",
-    )  # noqa
+    ).as_posix()
     ml4 = build_metalink(
         "workflow-result",
         "Workflow result as NetCDF files.",

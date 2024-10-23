@@ -8,8 +8,8 @@ from pywps.inout.outputs import MetaFile, MetaLink4
 from ..director import wrap_director
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
-from ..utils.response_utils import populate_response
 from ..utils.regrid_utils import run_regrid
+from ..utils.response_utils import populate_response
 
 LOGGER = logging.getLogger()
 

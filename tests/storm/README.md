@@ -1,4 +1,4 @@
-# Run locaust tests
+# Run locust tests
 
 ## Install
 

@@ -1,10 +1,9 @@
-import os
-import glob
-import subprocess
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 import ipaddress
 import logging
+import subprocess  # noqa: S404
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -39,7 +38,7 @@ def dot2longip(ip):
 def parse_record(line):
     """Parse a log record into a dictionary."""
     tokens = line.strip().split()
-    MIN_EXPECTED_TOKENS = 12
+    MIN_EXPECTED_TOKENS = 12  # noqa: N806
 
     if len(tokens) < MIN_EXPECTED_TOKENS:
         LOGGER.warning("Line does not contain the expected apache record format")
@@ -93,16 +92,17 @@ class Downloads(Usage):
         return self._http_log_path
 
     def collect(self, time_start=None, time_end=None, outdir=None):
-        log_files = sorted(glob.glob(os.path.join(self.http_log_path, "access.log*")))
+        log_files = sorted(Path(self.http_log_path).glob("access.log*"))
         return self.parse(log_files, time_start, time_end, outdir)
 
     def parse(self, log_files, time_start=None, time_end=None, outdir=None):
         def process_file(log_file):
             records = []
             try:
+                # FIXME: This is very insecure, as it allows for command injection
                 # Use zgrep to pre-filter logs based on the output path
-                p = subprocess.run(
-                    ["zgrep", search_pattern, log_file],
+                p = subprocess.run(  # noqa: S603
+                    ["zgrep", search_pattern, log_file],  # noqa: S607
                     stdout=subprocess.PIPE,
                     text=True,
                     check=True,
@@ -141,6 +141,6 @@ class Downloads(Usage):
         if time_end:
             df = df[df["datetime"] <= time_end]
 
-        fname = os.path.join(outdir, "downloads.csv")
+        fname = Path(outdir).joinpath("downloads.csv").as_posix()
         df.to_csv(fname, index=False)
         return fname

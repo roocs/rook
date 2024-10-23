@@ -3,7 +3,7 @@
 ###################################################################################
 # Apache Software License 2.0
 #
-# Copyright (c) 2024, Carsten Ehbrecht, Eleanor Smith, Ag Stephens
+# Copyright (c) 2024, Carsten Ehbrecht, Eleanor Smith, Ag Stephens, Trevor James Smith
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 # limitations under the License.
 ###################################################################################
 
-from .__version__ import __author__, __email__, __version__  # noqa: F401
-
 from roocs_utils.config import get_config
+
+from .__version__ import __author__, __email__, __version__  # noqa: F401
 
 
 # Workaround for roocs_utils to not re-import rook
@@ -31,4 +31,4 @@ class Package:
 package = Package()
 CONFIG = get_config(package)
 
-from .wsgi import application  # noqa: F401
+from .wsgi import application  # noqa: E402

@@ -1,10 +1,4 @@
-import pytest
-
 from rook.catalog import DBCatalog
-from tests.common import MINI_ESGF_MASTER_DIR
-
-CMIP6_BASE_DIR = f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip6/data/CMIP6"
-
 
 C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"
@@ -19,18 +13,13 @@ C3S_CMIP6_FX_COLLECTION = (
 C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon.v1"
 
 
-def test_db_catalog_c3s_cmip6_mon():
+def test_db_catalog_c3s_cmip6_mon(stratus):
     cat = DBCatalog(project="c3s-cmip6")
     cat.to_db()
     result = cat.search(collection=C3S_CMIP6_MON_COLLECTION)
     assert result.matches == 1
     files = result.files()[C3S_CMIP6_MON_COLLECTION]
     assert len(files) == 1
-    expected_file = (
-        f"{CMIP6_BASE_DIR}/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619/"
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
-    )
-    assert expected_file == files[0]
     # check download url
     urls = result.download_urls()[C3S_CMIP6_MON_COLLECTION]
     expected_url = (

@@ -1,7 +1,7 @@
 import pandas as pd
-from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource
 from bokeh.embed import components
+from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
 
 
 def data(df):

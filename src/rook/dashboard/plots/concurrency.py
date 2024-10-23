@@ -1,10 +1,9 @@
 import pandas as pd
-from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
+from bokeh.plotting import figure
 
-from .base import PlotView
 from ..models import concurrent_requests
-
+from .base import PlotView
 
 MILLISECS_PER_DAY = 60 * 60 * 24 * 1000
 

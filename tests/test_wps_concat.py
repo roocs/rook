@@ -1,15 +1,17 @@
-import pytest
+from pathlib import Path
 
+import pytest
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_concat import Concat
 
-from .common import PYWPS_CFG, get_output
+TESTS_HOME = Path(__file__).parent.absolute()
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 @pytest.mark.xfail(reason="c3s-cmip6 decdal not in catalog")
-def test_wps_concat_ec_earth():
+def test_wps_concat_ec_earth(get_output):
     client = client_for(Service(processes=[Concat()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r2i1p1f1.Amon.tas.gr.v20201215"  # noqa
     datainputs += ";collection=c3s-cmip6.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1960-r6i2p1f1.Amon.tas.gr.v20200508"  # noqa

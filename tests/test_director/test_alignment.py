@@ -1,24 +1,16 @@
-import glob
 import pytest
-import os
 
-import dateutil.parser as parser
-
-from tests.common import MINI_ESGF_MASTER_DIR
 from rook.director.alignment import SubsetAlignmentChecker
 
 
 class TestYearMonth:
     """Tests with year and month only, not day"""
 
-    test_path = (
-        f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
-        f"/r1i1p1/latest/tas/*.nc"
-    )
+    test_path = "badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon/r1i1p1/latest/tas/*.nc"
 
     @pytest.fixture
-    def get_files(self, load_test_data):
-        test_paths = sorted(glob.glob(self.test_path))
+    def get_files(self, load_test_data, stratus):
+        test_paths = sorted(stratus.path.glob(self.test_path))
         return test_paths
 
     # actual range in files is 185912-200511
@@ -62,14 +54,14 @@ class TestYearMonthDay1200:
     """Tests with year month and day for dataset with a 12:00:00 time step"""
 
     test_path = (
-        f"{MINI_ESGF_MASTER_DIR}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
+        f"gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
         f"EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231/*.nc"
     )
     # Actual range in files is: 18500101-20091130
 
     @pytest.fixture
-    def get_files(self, load_test_data):
-        test_paths = sorted(glob.glob(self.test_path))
+    def get_files(self, load_test_data, stratus):
+        test_paths = sorted(stratus.path.glob(self.test_path))
         return test_paths
 
     def test_no_subset(self, get_files):
@@ -96,15 +88,15 @@ class TestYearMonthDay1200:
         assert sac.is_aligned is False
         assert sac.aligned_files == []
 
-    def test_time_subset_matches_one_file(self, get_files):
+    def test_time_subset_matches_one_file(self, get_files, stratus):
         inputs = {"time": "1900-01-01T12:00:00/1909-12-31T12:00:00"}
         sac = SubsetAlignmentChecker(get_files, inputs)
         assert sac.is_aligned is True
-        assert sac.aligned_files == [
-            f"{MINI_ESGF_MASTER_DIR}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5"
-            f"/output1/ICHEC/EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231"
-            f"/tas_day_EC-EARTH_historical_r1i1p1_19000101-19091231.nc"
-        ]
+        assert sac.aligned_files[0].as_posix() == (
+            f"{stratus.path}/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5"
+            "/output1/ICHEC/EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231"
+            "/tas_day_EC-EARTH_historical_r1i1p1_19000101-19091231.nc"
+        )
 
     def test_time_subset_matches_exact_range_excluding_hour(self, get_files):
         """Tests alignment of full dataset where:
@@ -176,14 +168,11 @@ class TestYearMonthDay1200:
 class TestYearMonthDay0000:
     """Tests with year month and day for dataset with a 00:00:00 time step"""
 
-    test_path = (
-        f"{MINI_ESGF_MASTER_DIR}/test_data/badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon"
-        f"/r1i1p1/latest/tas/*.nc"
-    )
+    test_path = f"badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon/r1i1p1/latest/tas/*.nc"
 
     @pytest.fixture
-    def get_files(self, load_test_data):
-        test_paths = sorted(glob.glob(self.test_path))
+    def get_files(self, load_test_data, stratus):
+        test_paths = sorted(stratus.path.glob(self.test_path))
         return test_paths
 
     # actual range in files is 185912-200511
