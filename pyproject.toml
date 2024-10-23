@@ -202,8 +202,6 @@ addopts = [
 ]
 python_files = ["test_*.py"]
 markers = [
-  "online: mark test to need internet connection",
-  "slow: mark test to be slow",
   "smoke: mark test as a smoke/sanity test"
 ]
 
