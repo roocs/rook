@@ -18,7 +18,7 @@ def server_url():
 
 def parse_metalink(xml):
     xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
-    tree = etree.fromstring(xml_.encode())
+    tree = etree.fromstring(xml_.encode())  # noqa: S320
     urls = [m.text for m in tree.xpath("//metaurl")]
     return urls
 
@@ -42,7 +42,7 @@ class RookWPS:
         assert execution.isSucceded() is True
         assert len(execution.processOutputs) > 0
         ml_url = execution.processOutputs[0].reference
-        xml = requests.get(ml_url).text
+        xml = requests.get(ml_url, timeout=30).text
         urls = parse_metalink(xml)
         return urls
 

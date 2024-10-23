@@ -23,7 +23,7 @@ WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
 TESTS_HOME = Path(__file__).parent.absolute()
-ROOCS_CFG = os.path.join(TESTS_HOME, ".roocs.ini")
+ROOCS_CFG = TESTS_HOME.joinpath(".roocs.ini")
 
 
 @pytest.fixture(scope="session")
@@ -69,10 +69,10 @@ def write_roocs_cfg(stratus):
     base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
     """  # noqa
     cfg = Template(cfg_templ).render(base_dir=stratus.path)
-    with open(ROOCS_CFG, "w") as fp:
+    with ROOCS_CFG.open("w") as fp:
         fp.write(cfg)
     # point to roocs cfg in environment
-    os.environ["ROOCS_CONFIG"] = ROOCS_CFG
+    os.environ["ROOCS_CONFIG"] = ROOCS_CFG.as_posix()
 
 
 @pytest.fixture
@@ -93,7 +93,7 @@ def extract_paths_from_metalink():
 
     def _extract_paths_from_metalink(path):
         path = path.replace("file://", "")
-        doc = BeautifulSoup(open(path).read(), "xml")
+        doc = BeautifulSoup(Path(path).open().read(), "xml")
         paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
         return paths
 
@@ -105,7 +105,7 @@ def parse_metalink():
 
     def _parse_metalink(xml):
         xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
-        tree = etree.fromstring(xml_.encode())
+        tree = etree.fromstring(xml_.encode())  # noqa: S320
         urls = [m.text for m in tree.xpath("//metaurl")]
         return urls
 
@@ -159,10 +159,7 @@ def get_output():
 
 @pytest.fixture(scope="session", autouse=True)
 def load_test_data(stratus):
-    """
-    This fixture ensures that the required test data repository
-    has been cloned to the cache directory within the home directory.
-    """
+    """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
     repositories = {
         "stratus": {
             "worker_cache_dir": stratus.path,
@@ -172,7 +169,7 @@ def load_test_data(stratus):
         },
     }
 
-    for name, repo in repositories.items():
+    for repo in repositories.values():
         gather_testing_data(worker_id="master", **repo)
 
 

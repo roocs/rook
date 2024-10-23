@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import time
 from urllib.parse import urlparse
 
@@ -7,7 +7,7 @@ import locust
 from jinja2 import Environment, FileSystemLoader
 from pyquery import PyQuery
 
-templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates")
+templates_path = Path(__file__).absolute().joinpath("templates")
 template_env = Environment(loader=FileSystemLoader(templates_path), autoescape=True)
 
 
