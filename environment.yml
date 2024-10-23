@@ -1,7 +1,6 @@
 name: rook
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python >=3.9,<3.12
   - pywps >=4.5.2,<4.7
@@ -27,7 +26,7 @@ dependencies:
   - graphviz
   # catalog
   - intake
-  - pandas
+  - pandas <=1.5.3  # limited by daops and sqlalchemy
   - sqlalchemy >=1.4.45,<2.0  # Needed to pass existing tests
   - aiohttp
   # dashboard
