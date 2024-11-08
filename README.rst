@@ -10,7 +10,7 @@ rook
     :alt: Build Status
 
 .. image:: https://readthedocs.org/projects/rook/badge/?version=latest
-    :target: https://rook.readthedocs.io/en/latest/?version=latest
+    :target: https://rook-wps.readthedocs.io/en/latest/?version=latest
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/github/license/roocs/rook.svg
@@ -31,7 +31,7 @@ available in the daops_ library based on xarray.
 Documentation
 -------------
 
-Learn more about rook in its official documentation at https://rook.readthedocs.io.
+Learn more about rook in its official documentation at https://rook-wps.readthedocs.io.
 
 Submit bug reports, questions and feature requests at https://github.com/roocs/rook/issues
 
