@@ -214,6 +214,49 @@ WF_C3S_CMIP6_DECADAL = json.dumps(
 )
 
 
+WF_C3S_CMIP6_DECADAL_2 = json.dumps(
+    {
+        "doc": "subset on c3s-cmip6-decadal with proleptic gregorian calendar",
+        "inputs": {
+            "ds": [
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r10i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r1i1p1f1.Amon.psl.gr.v20201215",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r2i1p1f1.Amon.psl.gr.v20201215",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r3i1p1f1.Amon.psl.gr.v20201215",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r4i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r5i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r6i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",  # noqa
+                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
+            ]
+        },
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "concat": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/ds",
+                    "dims": "realization",
+                    "time": "1976-01-01/1976-12-31",
+                },
+            },
+            "average": {
+                "run": "average",
+                "in": {"collection": "concat/output", "dims": "realization"},
+            },
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "average/output",
+                    "time": "1976-01-01/1976-12-31",
+                },
+            },
+        },
+    }
+)
+
+
 def test_smoke_get_capabilities(wps):
     caps = wps.getcapabilities()
     assert caps.identification.type == "WPS"
@@ -635,6 +678,16 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     assert len(urls) == 1
     assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
     assert "19951116-19951216.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_2)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+    assert len(urls) == 1
+    assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
+    assert "19761116-19761216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
