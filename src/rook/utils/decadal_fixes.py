@@ -49,6 +49,7 @@ def apply_decadal_fixes(ds_id, ds):
     ds_mod = decadal_fix_3(ds_id, ds_mod)
     ds_mod = decadal_fix_4(ds_id, ds_mod)
     ds_mod = decadal_fix_5(ds_id, ds_mod)
+    ds_mod = decadal_fix_calendar(ds_id, ds_mod)
     return ds_mod
 
 
@@ -130,3 +131,12 @@ def decadal_fix_5(ds_id, ds):
 
     ds_mod = add_data_var(ds_id, ds, **operands)
     return ds_mod
+
+
+def decadal_fix_calendar(ds_id, ds):
+    # set proleptic_gregorian calendar to gregorian (standard).
+    # the proleptic gregorian calendar extends the gregorin backward in time before 1582.
+    calendar = ds.time.encoding.get("calendar", "standard")
+    if calendar == "proleptic_gregorian":
+        ds.time.encoding["calendar"] = "standard"
+    return ds
