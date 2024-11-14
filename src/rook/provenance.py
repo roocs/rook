@@ -65,7 +65,7 @@ class Provenance:
                 DCTERMS_SOURCE: "https://cds.climate.copernicus.eu",
             },
         )
-        rook_provider = self.doc.agent(
+        provider = self.doc.agent(
             ROOCS["Provider"],
             {
                 prov.PROV_TYPE: PROV_PROVIDER,
@@ -82,7 +82,7 @@ class Provenance:
             },
         )
         self.doc.wasAttributedTo(self.sw_rook, project_cds)
-        self.doc.wasAttributedTo(self.sw_rook, rook_provider)
+        self.doc.wasAttributedTo(self.sw_rook, provider)
         self.sw_clisops = self.doc.agent(
             ROOCS[f"clisops_v{clisops_version}"],
             {
