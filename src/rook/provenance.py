@@ -12,6 +12,7 @@ from pywps import configuration
 
 # prov namespace
 PROV_ORGANISATION = prov.PROV["Organization"]
+PROV_PROVIDER = prov.PROV["Agent"]
 PROV_SOFTWARE_AGENT = prov.PROV["SoftwareAgent"]
 
 # provone namespace
@@ -67,7 +68,7 @@ class Provenance:
         rook_provider = self.doc.agent(
             ROOCS["Provider"],
             {
-                prov.PROV_TYPE: PROV_ORGANISATION,
+                prov.PROV_TYPE: PROV_PROVIDER,
                 prov.PROV_LABEL: "Provider",
                 DCTERMS_SOURCE: configuration.get_config_value("metadata:main", "provider", "Rook"),
             },
