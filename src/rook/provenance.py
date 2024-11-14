@@ -8,6 +8,8 @@ from prov.identifier import Namespace
 import prov.model as prov
 from prov.dot import prov_to_dot
 
+from pywps import configuration
+
 # prov namespace
 PROV_ORGANISATION = prov.PROV["Organization"]
 PROV_SOFTWARE_AGENT = prov.PROV["SoftwareAgent"]
@@ -62,6 +64,14 @@ class Provenance:
                 DCTERMS_SOURCE: "https://cds.climate.copernicus.eu",
             },
         )
+        rook_provider = self.doc.agent(
+            ROOCS["Provider"],
+            {
+                prov.PROV_TYPE: PROV_ORGANISATION,
+                prov.PROV_LABEL: "Provider",
+                DCTERMS_SOURCE: configuration.get_config_value("metadata:main", "provider", "Rook"),
+            },
+        )
         self.sw_rook = self.doc.agent(
             ROOCS[f"rook_v{rook_version}"],
             {
@@ -71,6 +81,7 @@ class Provenance:
             },
         )
         self.doc.wasAttributedTo(self.sw_rook, project_cds)
+        self.doc.wasAttributedTo(self.sw_rook, rook_provider)
         self.sw_clisops = self.doc.agent(
             ROOCS[f"clisops_v{clisops_version}"],
             {
