@@ -8,8 +8,11 @@ from prov.identifier import Namespace
 import prov.model as prov
 from prov.dot import prov_to_dot
 
+from pywps import configuration
+
 # prov namespace
 PROV_ORGANISATION = prov.PROV["Organization"]
+PROV_PROVIDER = prov.PROV["Agent"]
 PROV_SOFTWARE_AGENT = prov.PROV["SoftwareAgent"]
 
 # provone namespace
@@ -43,7 +46,7 @@ class Provenance:
         return self._identifier
 
     def start(self, workflow=False):
-        from daops import __version__ as daops_version
+        from clisops import __version__ as clisops_version
         from rook import __version__ as rook_version
 
         self.doc = prov.ProvDocument()
@@ -62,6 +65,14 @@ class Provenance:
                 DCTERMS_SOURCE: "https://cds.climate.copernicus.eu",
             },
         )
+        provider = self.doc.agent(
+            ROOCS["Provider"],
+            {
+                prov.PROV_TYPE: PROV_PROVIDER,
+                prov.PROV_LABEL: "Provider",
+                DCTERMS_SOURCE: configuration.get_config_value("metadata:main", "provider", "Rook"),
+            },
+        )
         self.sw_rook = self.doc.agent(
             ROOCS[f"rook_v{rook_version}"],
             {
@@ -71,12 +82,13 @@ class Provenance:
             },
         )
         self.doc.wasAttributedTo(self.sw_rook, project_cds)
-        self.sw_daops = self.doc.agent(
-            ROOCS[f"daops_v{daops_version}"],
+        self.doc.wasAttributedTo(self.sw_rook, provider)
+        self.sw_clisops = self.doc.agent(
+            ROOCS[f"clisops_v{clisops_version}"],
             {
                 prov.PROV_TYPE: PROV_SOFTWARE_AGENT,
-                prov.PROV_LABEL: "DAOPS",
-                DCTERMS_SOURCE: f"https://github.com/roocs/daops/releases/tag/v{daops_version}",
+                prov.PROV_LABEL: "clisops",
+                DCTERMS_SOURCE: f"https://github.com/roocs/clisops/releases/tag/v{clisops_version}",
             },
         )
         # workflow
@@ -134,11 +146,11 @@ class Provenance:
         # input data
         ds_in = os.path.basename(collection[0])
         op_input = self._data_entitiy(identifier=ROOCS[ds_in], label=ds_in)
-        # operator started by daops
+        # operator started by clisops
         if self._workflow:
-            self.doc.wasAssociatedWith(op, agent=self.sw_daops, plan=self._workflow)
+            self.doc.wasAssociatedWith(op, agent=self.sw_clisops, plan=self._workflow)
         else:
-            self.doc.start(op, starter=self.sw_daops, trigger=self.sw_rook)
+            self.doc.start(op, starter=self.sw_clisops, trigger=self.sw_rook)
         # Generated output file
         for out in output:
             ds_out = os.path.basename(out)

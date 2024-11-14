@@ -16,6 +16,9 @@ def test_prov_simple(tmpdir):
     assert (
         doc["agent"]["roocs:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
     )
+    assert (
+        doc["agent"]["roocs:Provider"]["prov:label"] == "Provider"
+    )
 
 
 def test_prov_workflow(tmpdir):
@@ -31,4 +34,7 @@ def test_prov_workflow(tmpdir):
     doc = prov.json()
     assert (
         doc["agent"]["roocs:C3S_CDS"]["prov:label"] == "Copernicus Climate Data Store"
+    )
+    assert (
+        doc["agent"]["roocs:Provider"]["prov:label"] == "Provider"
     )
