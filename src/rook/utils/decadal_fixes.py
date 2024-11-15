@@ -142,7 +142,8 @@ def decadal_fix_calendar(ds_id, ds):
     if calendar == "proleptic_gregorian":
         # Decode the time using cftime
         decoded_times = xr.conventions.times.decode_cf_datetime(
-            ds.time, units=ds.time.encoding["units"], calendar="standard"
+            ds.time, units=ds.time.encoding["units"], calendar="standard",
+            use_cftime=True
         )
         # Assign the corrected time back to the dataset
         ds["time"] = decoded_times
