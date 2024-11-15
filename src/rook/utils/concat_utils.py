@@ -34,7 +34,8 @@ def patched_normalise(collection):
             decadal_fix_calendar(None, open_xr_dataset(file))
             for file in file_paths  
         ]
-        ds = xr.concat(fixed_datasets, dim="time")
+        # ds = xr.concat(fixed_datasets, dim="time")
+        ds = xr.merge(fixed_datasets)
         norm_collection[dset] = ds
 
     return norm_collection
