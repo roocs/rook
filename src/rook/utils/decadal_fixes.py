@@ -140,6 +140,11 @@ def decadal_fix_calendar(ds_id, ds):
     # the proleptic gregorian calendar extends the gregorin backward in time before 1582.
     calendar = ds.time.encoding.get("calendar", "standard")
     if calendar == "proleptic_gregorian":
-        ds["time"] = xr.decode_cf(ds.time)
+        # Decode the time using cftime
+        decoded_times = xr.conventions.times.decode_cf_datetime(
+            ds.time, units=ds.time.encoding["units"], calendar="standard"
+        )
+        # Assign the corrected time back to the dataset
+        ds["time"] = decoded_times
         ds.time.encoding["calendar"] = "standard"
     return ds
