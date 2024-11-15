@@ -9,9 +9,10 @@ from roocs_utils.parameter import time_parameter
 from roocs_utils.parameter import time_components_parameter
 
 from roocs_utils.project_utils import derive_ds_id
+from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
 
 from daops.ops.base import Operation
-from daops.utils import normalise
+# from daops.utils import normalise
 
 from clisops.ops import subset
 
@@ -24,6 +25,14 @@ coord_by_standard_name = {
     "realization": "realization",
 }
 
+def normalise(collection):
+    norm_collection = collections.OrderedDict()
+
+    for dset, file_paths in collection.items():
+        ds = open_xr_dataset(file_paths, use_cftime=False)
+        norm_collection[dset] = ds
+
+    return norm_collection
 
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
@@ -65,7 +74,7 @@ class Concat(Operation):
 
         # Normalise (i.e. "fix") data inputs based on "character"
         norm_collection = normalise.normalise(
-            new_collection, False  # self._apply_fixes
+            new_collection
         )
 
         rs = normalise.ResultSet(vars())
