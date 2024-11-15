@@ -12,7 +12,7 @@ from roocs_utils.project_utils import derive_ds_id
 from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
 
 from daops.ops.base import Operation
-# from daops.utils import normalise
+from daops.utils import normalise
 
 from clisops.ops import subset
 
@@ -25,7 +25,8 @@ coord_by_standard_name = {
     "realization": "realization",
 }
 
-def normalise(collection):
+def patched_normalise(collection):
+    # TODO: this is a patched function of daops to fix the gregorian calendar issue
     norm_collection = collections.OrderedDict()
 
     for dset, file_paths in collection.items():
@@ -73,7 +74,7 @@ class Concat(Operation):
             new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        norm_collection = normalise.normalise(
+        norm_collection = patched_normalise(
             new_collection
         )
 
