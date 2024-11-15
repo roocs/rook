@@ -241,14 +241,10 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
                     "time": "1976-01-01/1976-12-31",
                 },
             },
-            "average": {
-                "run": "average",
-                "in": {"collection": "concat/output", "dims": "realization"},
-            },
             "subset": {
                 "run": "subset",
                 "in": {
-                    "collection": "average/output",
+                    "collection": "concat/output",
                     "time": "1976-01-01/1976-12-31",
                 },
             },
