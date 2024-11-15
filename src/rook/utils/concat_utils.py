@@ -18,7 +18,7 @@ from clisops.ops import subset
 
 from clisops.core.average import average_over_dims as average
 
-from .decadal_fixes import apply_decadal_fixes
+from .decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 from .input_utils import fix_parameters
 
 coord_by_standard_name = {
@@ -30,7 +30,11 @@ def patched_normalise(collection):
     norm_collection = collections.OrderedDict()
 
     for dset, file_paths in collection.items():
-        ds = open_xr_dataset(file_paths, use_cftime=False)
+        fixed_datasets = [
+            decadal_fix_calendar(None, open_xr_dataset(file))
+            for file in file_paths  
+        ]
+        ds = xr.concat(fixed_datasets, dim="time")
         norm_collection[dset] = ds
 
     return norm_collection
