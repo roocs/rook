@@ -25,20 +25,21 @@ coord_by_standard_name = {
     "realization": "realization",
 }
 
+
 def patched_normalise(collection):
     # TODO: this is a patched function of daops to fix the gregorian calendar issue
     norm_collection = collections.OrderedDict()
 
     for dset, file_paths in collection.items():
         fixed_datasets = [
-            decadal_fix_calendar(None, open_xr_dataset(file))
-            for file in file_paths  
+            decadal_fix_calendar(None, open_xr_dataset(file)) for file in file_paths
         ]
-        # ds = xr.concat(fixed_datasets, dim="time")
-        ds = xr.merge(fixed_datasets)
+        ds = xr.concat(fixed_datasets, dim="time")
+        # ds = xr.merge(fixed_datasets)
         norm_collection[dset] = ds
 
     return norm_collection
+
 
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
@@ -79,9 +80,7 @@ class Concat(Operation):
             new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        norm_collection = patched_normalise(
-            new_collection
-        )
+        norm_collection = patched_normalise(new_collection)
 
         rs = normalise.ResultSet(vars())
 
