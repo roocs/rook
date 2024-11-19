@@ -89,7 +89,9 @@ class Concat(Operation):
         datasets = []
         for ds_id in norm_collection.keys():
             ds = norm_collection[ds_id]
-            ds_mod = apply_decadal_fixes(ds_id, ds)
+            ds_mod = apply_decadal_fixes(
+                ds_id, ds, output_dir=self.params.get("output_dir", ".")
+            )
             datasets.append(ds_mod)
 
         dims = dimension_parameter.DimensionParameter(
