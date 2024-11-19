@@ -683,7 +683,7 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
-    assert "19851116-19851216.nc" in urls[0]
+    assert "19850116-19851216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
