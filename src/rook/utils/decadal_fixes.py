@@ -46,12 +46,12 @@ def get_decadal_model_attr_from_dict(ds_id, ds, attr):
 
 
 def apply_decadal_fixes(ds_id, ds):
-    ds_mod = decadal_fix_1(ds_id, ds)
+    ds_mod = decadal_fix_calendar(ds_id, ds)
+    ds_mod = decadal_fix_1(ds_id, ds_mod)
     ds_mod = decadal_fix_2(ds_id, ds_mod)
     ds_mod = decadal_fix_3(ds_id, ds_mod)
     ds_mod = decadal_fix_4(ds_id, ds_mod)
     ds_mod = decadal_fix_5(ds_id, ds_mod)
-    ds_mod = decadal_fix_calendar(ds_id, ds_mod)
     return ds_mod
 
 
