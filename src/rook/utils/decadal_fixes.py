@@ -1,5 +1,7 @@
 import xarray as xr
 
+from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
+
 from daops.data_utils.attr_utils import (
     edit_var_attrs,
     edit_global_attrs,
@@ -140,12 +142,8 @@ def decadal_fix_calendar(ds_id, ds):
     # the proleptic gregorian calendar extends the gregorin backward in time before 1582.
     calendar = ds.time.encoding.get("calendar", "standard")
     if calendar == "proleptic_gregorian":
-        # Decode the time using cftime
-        # decoded_times = xr.conventions.times.decode_cf_datetime(
-        #     ds.time, units=ds.time.encoding["units"], calendar="standard",
-        #     use_cftime=True
-        # )
-        # Assign the corrected time back to the dataset
-        # ds["time"] = decoded_times
         ds.time.encoding["calendar"] = "standard"
+        # need to write and read file to rewrite time dimension for the standard calendar!
+        ds.to_netcdf("fixed_calendar.nc")
+        ds = open_xr_dataset("fixed_calendar.nc")
     return ds
