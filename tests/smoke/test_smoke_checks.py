@@ -238,18 +238,14 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
                 "in": {
                     "collection": "inputs/ds",
                     "dims": "realization",
-                    "time": "1976-01-01/1976-12-31",
+                    "time": "1985-01-01/1985-12-31",
                 },
-            },
-            "average": {
-                "run": "average",
-                "in": {"collection": "concat/output", "dims": "realization"},
             },
             "subset": {
                 "run": "subset",
                 "in": {
-                    "collection": "average/output",
-                    "time": "1976-01-01/1976-12-31",
+                    "collection": "concat/output",
+                    "time": "1985-01-01/1985-12-31",
                 },
             },
         },
@@ -687,7 +683,7 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
-    assert "19761116-19761216.nc" in urls[0]
+    assert "19850116-19851216.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):

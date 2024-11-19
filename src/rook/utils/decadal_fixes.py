@@ -1,3 +1,9 @@
+import xarray as xr
+import os
+import tempfile
+
+from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
+
 from daops.data_utils.attr_utils import (
     edit_var_attrs,
     edit_global_attrs,
@@ -43,13 +49,13 @@ def get_decadal_model_attr_from_dict(ds_id, ds, attr):
     return value
 
 
-def apply_decadal_fixes(ds_id, ds):
-    ds_mod = decadal_fix_1(ds_id, ds)
+def apply_decadal_fixes(ds_id, ds, output_dir=None):
+    ds_mod = decadal_fix_calendar(ds_id, ds, output_dir=output_dir)
+    ds_mod = decadal_fix_1(ds_id, ds_mod)
     ds_mod = decadal_fix_2(ds_id, ds_mod)
     ds_mod = decadal_fix_3(ds_id, ds_mod)
     ds_mod = decadal_fix_4(ds_id, ds_mod)
     ds_mod = decadal_fix_5(ds_id, ds_mod)
-    ds_mod = decadal_fix_calendar(ds_id, ds_mod)
     return ds_mod
 
 
@@ -133,10 +139,16 @@ def decadal_fix_5(ds_id, ds):
     return ds_mod
 
 
-def decadal_fix_calendar(ds_id, ds):
+def decadal_fix_calendar(ds_id, ds, output_dir=None):
     # set proleptic_gregorian calendar to gregorian (standard).
     # the proleptic gregorian calendar extends the gregorin backward in time before 1582.
     calendar = ds.time.encoding.get("calendar", "standard")
     if calendar == "proleptic_gregorian":
         ds.time.encoding["calendar"] = "standard"
+        # need to write and read file to rewrite time dimension for the standard calendar!
+        tmp_dir = tempfile.TemporaryDirectory(dir=output_dir)
+        fixed_nc = os.path.join(tmp_dir.name, "fixed_calendar.nc")
+        ds.to_netcdf(fixed_nc)
+        ds = open_xr_dataset(fixed_nc)
+        tmp_dir.cleanup()
     return ds
