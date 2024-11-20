@@ -1,6 +1,13 @@
 Changes
 *******
 
+0.15.0 (2024-11-20)
+===================
+
+* Updated decadal fixes to handle proleptic gregorian calendar (#263, #265).
+* Updated provenance to include local installation "site" name (#264).
+* Fixed links in documentation (#262).
+
 0.14.0 (2024-10-22)
 ===================
 * Added a Docker image testing step the GitHub Actions CI pipeline (#259).
