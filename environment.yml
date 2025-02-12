@@ -15,9 +15,8 @@ dependencies:
   - cf_xarray >=0.7
   - dask >=2021.12
   - netcdf4 >=1.4
-  - daops >=0.11.0,<0.12.0
-  - clisops >=0.11.0
-  - roocs-utils >=0.6.9,<0.7.0
+  # - daops >=0.14.0
+  - clisops >=0.15.0
   - roocs-grids >=0.1.2
   # workflow
   - networkx
