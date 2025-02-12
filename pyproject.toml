@@ -36,7 +36,19 @@ dependencies = [
   "click >=8.1.7",
   "jinja2 >=3.1.4",
   "psutil >=6.0.0",
-  "pywps >=4.5.1,<4.6"
+  "pywps >=4.5.2,<4.7",
+  "daops @ git+https://github.com/roocs/daops.git@main#egg=daops",
+  "clisops >=0.15.0",
+  "roocs_grids >=0.1.2",
+  "networkx",
+  "prov >=2.0.0",
+  "pydot",
+  "intake",
+  "pandas",
+  "SQLAlchemy >=1.4.45,<2.0",
+  "aiohttp",
+  "bokeh",
+  "humanize",
 ]
 
 [project.optional-dependencies]
