@@ -2,9 +2,9 @@ import os
 import xarray as xr
 
 import dateutil.parser as parser
-from roocs_utils.parameter import time_parameter
-from roocs_utils.utils.time_utils import to_isoformat
-from roocs_utils.project_utils import url_to_file_path
+from clisops.parameter import time_parameter
+from clisops.utils.time_utils import to_isoformat
+from clisops.project_utils import url_to_file_path
 
 
 class SubsetAlignmentChecker:

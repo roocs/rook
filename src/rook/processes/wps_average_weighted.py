@@ -67,7 +67,7 @@ class WeightedAverage(Process):
         )
 
     def _handler(self, request, response):
-        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
+        # from clisops.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )

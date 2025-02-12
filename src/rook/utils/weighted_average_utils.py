@@ -4,7 +4,7 @@ from pathlib import Path
 
 from typing import List, Optional, Sequence, Union
 
-from roocs_utils.parameter.dimension_parameter import DimensionParameter
+from clisops.parameter.dimension_parameter import DimensionParameter
 
 from daops.ops.average import Average as DaopsAverage
 from clisops.ops.average import Average as ClisopsAverage

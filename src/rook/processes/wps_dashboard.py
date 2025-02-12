@@ -6,7 +6,7 @@ from pywps.app.exceptions import ProcessError
 
 from ..usage import Combine
 from ..dashboard import Dashboard
-from roocs_utils.parameter import time_parameter
+from clisops.parameter import time_parameter
 
 
 LOGGER = logging.getLogger()
