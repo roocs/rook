@@ -1,9 +1,9 @@
 import pytest
 from pywps.app.exceptions import ProcessError
-from roocs_utils.exceptions import InvalidParameterValue
+from clisops.exceptions import InvalidParameterValue
 
 from rook.director import Director
-from roocs_utils.exceptions import InvalidCollection
+from clisops.exceptions import InvalidCollection
 
 # inputs = {"collection": None
 #           "area": None,
