@@ -235,7 +235,7 @@ def start(
                 with PID_FILE.open("w") as fp:
                     fp.write(f"{pid}")
         except OSError as e:
-            raise Exception(f"{e.strerror} [{e.errno}]")
+            raise click.FileError(filename=f"{PID_FILE}", hint=f"{e.strerror} [{e.errno}]")
 
         if pid == 0:
             os.setsid()
