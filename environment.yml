@@ -24,8 +24,8 @@ dependencies:
   - pydot
   - graphviz
   # catalog
-  - intake
-  - pandas
+  - intake <2.0
+  - pandas <2.0
   - sqlalchemy >=1.4.45,<2.0  # Needed to pass existing tests
   - aiohttp
   # dashboard
