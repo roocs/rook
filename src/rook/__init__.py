@@ -31,4 +31,4 @@ class Package:
 package = Package()
 CONFIG = get_config(package)
 
-from .wsgi import application  # noqa: F401
+from .wsgi import application  # noqa

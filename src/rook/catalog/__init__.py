@@ -14,6 +14,6 @@ def get_catalog(project):
 
 
 __all__ = [
-    "get_catalog",
     "DBCatalog",
+    "get_catalog",
 ]
