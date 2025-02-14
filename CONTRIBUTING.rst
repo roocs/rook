@@ -67,7 +67,7 @@ Ready to contribute? Here's how to set up `rook` for local development.
 
     $ mkvirtualenv rook
     $ cd rook/
-    $ python setup.py develop
+    $ pip install -e ".[dev]"
 
 4. Create a branch for local development::
 
