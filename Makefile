@@ -99,12 +99,9 @@ clean-docs: ## remove documentation artifacts
 	@-rm -f docs/modules.rst
 	$(MAKE) -C docs clean
 
-lint/flake8: ## check style with flake8
-	@echo "Running flake8 code style checks ..."
-	@bash -c 'flake8 src/rook tests'
-	@#bash -c 'ruff check src/rook tests'
-
-lint: lint/flake8 ## check style
+lint: ## check style with ruff
+	@echo "Running code style checks ..."
+	@bash -c 'ruff check src'
 
 ## Testing targets:
 

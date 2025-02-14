@@ -2,9 +2,10 @@ import numpy as np
 import xarray as xr
 from pathlib import Path
 
-from typing import List, Optional, Sequence, Union
+from typing import Optional, Union
+from collections.abc import Sequence
 
-from roocs_utils.parameter.dimension_parameter import DimensionParameter
+from clisops.parameter.dimension_parameter import DimensionParameter
 
 from daops.ops.average import Average as DaopsAverage
 from clisops.ops.average import Average as ClisopsAverage
@@ -48,7 +49,7 @@ def _weighted_average(
     output_type: str = "netcdf",
     split_method: str = "time:auto",
     file_namer: str = "standard",
-) -> List[Union[xr.Dataset, str]]:
+) -> list[Union[xr.Dataset, str]]:
     op = WeightedAverage_(**locals())
     return op.process()
 

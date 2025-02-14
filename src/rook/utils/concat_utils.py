@@ -3,13 +3,13 @@ import numpy as np
 
 import collections
 
-from roocs_utils.parameter import collection_parameter
-from roocs_utils.parameter import dimension_parameter
-from roocs_utils.parameter import time_parameter
-from roocs_utils.parameter import time_components_parameter
+from clisops.parameter import collection_parameter
+from clisops.parameter import dimension_parameter
+from clisops.parameter import time_parameter
+from clisops.parameter import time_components_parameter
 
-from roocs_utils.project_utils import derive_ds_id
-from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
+from clisops.project_utils import derive_ds_id
+from clisops.utils.dataset_utils import open_xr_dataset
 
 from daops.ops.base import Operation
 from daops.utils import normalise

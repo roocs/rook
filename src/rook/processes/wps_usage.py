@@ -5,7 +5,7 @@ from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
 from ..usage import WPSUsage, Downloads
-from roocs_utils.parameter import time_parameter
+from clisops.parameter import time_parameter
 
 
 LOGGER = logging.getLogger()

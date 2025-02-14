@@ -2,7 +2,7 @@ import xarray as xr
 import os
 import tempfile
 
-from roocs_utils.xarray_utils.xarray_utils import open_xr_dataset
+from clisops.utils.dataset_utils import open_xr_dataset
 
 from daops.data_utils.attr_utils import (
     edit_var_attrs,

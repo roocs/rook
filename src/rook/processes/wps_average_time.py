@@ -98,7 +98,7 @@ class AverageByTime(Process):
         # show me the environment used by the process in debug mode
         LOGGER.debug(f"Environment used in average: {os.environ}")
 
-        # from roocs_utils.exceptions import InvalidParameterValue, MissingParameterValue
+        # from clisops.exceptions import InvalidParameterValue, MissingParameterValue
         collection = parse_wps_input(
             request.inputs, "collection", as_sequence=True, must_exist=True
         )

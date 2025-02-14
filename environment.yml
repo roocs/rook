@@ -1,7 +1,6 @@
 name: rook
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python >=3.9,<3.12
   - pywps >=4.6
@@ -15,9 +14,8 @@ dependencies:
   - cf_xarray >=0.7
   - dask >=2021.12
   - netcdf4 >=1.4
-  - daops >=0.11.0,<0.12.0
-  - clisops >=0.11.0
-  - roocs-utils >=0.6.9,<0.7.0
+  - daops >=0.14.0
+  - clisops >=0.15.0
   - roocs-grids >=0.1.2
   # workflow
   - networkx
@@ -26,8 +24,8 @@ dependencies:
   - pydot
   - graphviz
   # catalog
-  - intake
-  - pandas
+  - intake <2.0
+  - pandas <2.0
   - sqlalchemy >=1.4.45,<2.0  # Needed to pass existing tests
   - aiohttp
   # dashboard
