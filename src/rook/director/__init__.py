@@ -1,7 +1,7 @@
 # TODO: patch daops for c3s-cmip6-decdal prefix
 from daops.utils.base_lookup import Lookup
-from roocs_utils.exceptions import InvalidProject
-from roocs_utils.project_utils import derive_ds_id
+from clisops.exceptions import InvalidProject
+from clisops.project_utils import derive_ds_id
 
 from .director import Director, wrap_director
 

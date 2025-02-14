@@ -2,8 +2,15 @@ import collections
 
 import numpy as np
 import xarray as xr
-from clisops.core.average import average_over_dims as average
-from clisops.ops import subset
+
+from clisops.parameter import collection_parameter
+from clisops.parameter import dimension_parameter
+from clisops.parameter import time_parameter
+from clisops.parameter import time_components_parameter
+
+from clisops.project_utils import derive_ds_id
+from clisops.utils.dataset_utils import open_xr_dataset
+
 from daops.ops.base import Operation
 from daops.utils import normalise
 from roocs_utils.parameter import (
@@ -14,12 +21,27 @@ from roocs_utils.parameter import (
 )
 from roocs_utils.project_utils import derive_ds_id
 
-from .decadal_fixes import apply_decadal_fixes
+from .decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 from .input_utils import fix_parameters
 
 coord_by_standard_name = {
     "realization": "realization",
 }
+
+
+def patched_normalise(collection):
+    # TODO: this is a patched function of daops to fix the gregorian calendar issue
+    norm_collection = collections.OrderedDict()
+
+    for dset, file_paths in collection.items():
+        fixed_datasets = [
+            decadal_fix_calendar(None, open_xr_dataset(file)) for file in file_paths
+        ]
+        ds = xr.concat(fixed_datasets, dim="time")
+        # ds = xr.merge(fixed_datasets)
+        norm_collection[dset] = ds
+
+    return norm_collection
 
 
 class Concat(Operation):
@@ -61,9 +83,7 @@ class Concat(Operation):
             new_collection[ds_id] = dset.file_paths
 
         # Normalise (i.e. "fix") data inputs based on "character"
-        norm_collection = normalise.normalise(
-            new_collection, False  # self._apply_fixes
-        )
+        norm_collection = patched_normalise(new_collection)
 
         rs = normalise.ResultSet(vars())
 
@@ -72,7 +92,9 @@ class Concat(Operation):
         datasets = []
         for ds_id in norm_collection.keys():
             ds = norm_collection[ds_id]
-            ds_mod = apply_decadal_fixes(ds_id, ds)
+            ds_mod = apply_decadal_fixes(
+                ds_id, ds, output_dir=self.params.get("output_dir", ".")
+            )
             datasets.append(ds_mod)
 
         dims = dimension_parameter.DimensionParameter(

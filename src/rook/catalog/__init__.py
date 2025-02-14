@@ -1,4 +1,4 @@
-from roocs_utils.exceptions import InvalidCollection
+from clisops.exceptions import InvalidCollection
 
 from rook import CONFIG
 

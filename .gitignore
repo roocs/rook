@@ -104,7 +104,6 @@ docs/source/output-sanitize.cfg
 
 # External Sources
 #src/external
-src/
 
 # Django stuff:
 local_settings.py

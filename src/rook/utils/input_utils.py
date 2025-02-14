@@ -1,8 +1,9 @@
 import os
 
 from pywps.app.exceptions import ProcessError
-from roocs_utils.exceptions import InvalidProject
-from roocs_utils.project_utils import url_to_file_path
+from clisops.project_utils import url_to_file_path
+from clisops.exceptions import InvalidProject
+from rook import CONFIG
 
 TC_ALL_MONTHS = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
 TC_ALL_MONTHS_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"

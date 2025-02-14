@@ -37,28 +37,18 @@ dependencies = [
   "jinja2 >=3.1.4",
   "psutil >=6.0.0",
   "pywps >=4.5.2,<4.7",
-  "daops >=0.11.0,<0.12.0",
-  "clisops >=0.14.0",
-  "roocs-utils >=0.6.9,<0.7.0",
+  "daops >=0.14.0",
+  "clisops >=0.15.0",
   "roocs_grids >=0.1.2",
-  "xarray >=0.21,<2023.3.0", # https://github.com/pydata/xarray/issues/7794
-  "cf-xarray >=0.7",
-  "cftime>=1.2.1",
-  "dask[complete] >=2021.12",
-  "netcdf4>=1.4",
-  # workflow
   "networkx",
-  # provenance
   "prov >=2.0.0",
   "pydot",
-  # catalog
-  "intake",
-  "pandas <=1.5.3",  # limited by daops and sqlalchemy
+  "intake <2.0",
+  "pandas <2.0",
   "SQLAlchemy >=1.4.45,<2.0",
   "aiohttp",
-  # dashboard
   "bokeh",
-  "humanize"
+  "humanize",
 ]
 
 [project.optional-dependencies]
@@ -105,7 +95,7 @@ target-version = [
 
 
 [tool.bumpversion]
-current_version = "0.14.0"
+current_version = "0.15.0"
 commit = true
 commit_args = "--no-verify"
 tag = true
@@ -265,7 +255,7 @@ max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["E402"]
-"src/rook/**/__init__.py" = ["F401", "F403"]
+"src/rook/**" = ["F401", "F403", "G004", "D100", "D101", "D102", "D103", "D104", "D200", "D406", "D407", "PERF203", "PTH113", "PTH118", "PTH119", "PTH123", "PTH207", "N806", "N801", "S110", "S112", "S607", "S603", "S404", "S608", "BLE001"]
 "tests/**" = ["D100", "D101", "D102", "D103", "S101"]
 
 [tool.ruff.lint.pycodestyle]

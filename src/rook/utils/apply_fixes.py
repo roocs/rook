@@ -1,4 +1,4 @@
-from roocs_utils.project_utils import derive_ds_id
+from clisops.project_utils import derive_ds_id
 
 from .atlas_fixes import apply_atlas_fixes
 

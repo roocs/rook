@@ -3,11 +3,11 @@ from collections import OrderedDict
 from daops.utils import fixer, is_characterised
 from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
-from roocs_utils.exceptions import InvalidCollection
-from roocs_utils.project_utils import get_project_name
-from roocs_utils.utils.file_utils import FileMapper
+from clisops.project_utils import get_project_name
+from clisops.utils.file_utils import FileMapper
 
 from rook import CONFIG
+from clisops.exceptions import InvalidCollection
 from rook.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs

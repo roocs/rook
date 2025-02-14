@@ -1,6 +1,7 @@
 import pytest
 from pywps.app.exceptions import ProcessError
-from roocs_utils.exceptions import InvalidCollection
+
+from clisops.exceptions import InvalidCollection
 
 from rook.director import Director
 

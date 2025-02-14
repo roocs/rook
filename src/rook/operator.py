@@ -15,6 +15,7 @@ from rook.utils.input_utils import resolve_to_file_paths
 from rook.utils.regrid_utils import run_regrid
 from rook.utils.subset_utils import run_subset
 from rook.utils.weighted_average_utils import run_weighted_average
+from clisops.utils.file_utils import is_file_list, FileMapper
 
 
 class Operator:

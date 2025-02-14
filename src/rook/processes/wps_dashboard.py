@@ -3,7 +3,8 @@ import logging
 from pywps import FORMATS, ComplexOutput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
-from roocs_utils.parameter import time_parameter
+
+from clisops.parameter import time_parameter
 
 from ..dashboard import Dashboard
 from ..usage import Combine
