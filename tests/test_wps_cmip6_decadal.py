@@ -32,4 +32,6 @@ def test_wps_subset_c3s_cmip6_decadal(get_output, extract_paths_from_metalink):
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
-    assert_decadal_fix_applied(get_output(resp.xml)["output"], extract_paths_from_metalink)
+    assert_decadal_fix_applied(
+        get_output(resp.xml)["output"], extract_paths_from_metalink
+    )
