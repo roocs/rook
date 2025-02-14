@@ -2,8 +2,6 @@ import pathlib
 import tempfile
 from copy import deepcopy
 
-from roocs_utils.utils.file_utils import FileMapper, is_file_list
-
 from rook.director import wrap_director
 from rook.utils.average_utils import (
     run_average_by_dim,
