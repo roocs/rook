@@ -70,7 +70,9 @@ class Provenance:
             {
                 prov.PROV_TYPE: PROV_PROVIDER,
                 prov.PROV_LABEL: "Provider",
-                DCTERMS_SOURCE: configuration.get_config_value("metadata:main", "provider", "Rook"),
+                DCTERMS_SOURCE: configuration.get_config_value(
+                    "metadata:main", "provider", "Rook"
+                ),
             },
         )
         self.sw_rook = self.doc.agent(
