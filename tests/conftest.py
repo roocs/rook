@@ -10,7 +10,6 @@ from clisops.utils.testing import (
     ESGF_TEST_DATA_VERSION,
     gather_testing_data,
 )
-from clisops.utils.testing import open_dataset as _open_dataset
 from clisops.utils.testing import stratus as _stratus
 from jinja2 import Template
 from lxml import etree
@@ -173,17 +172,17 @@ def load_test_data(stratus):
         gather_testing_data(worker_id="master", **repo)
 
 
-@pytest.fixture(scope="session")
-def open_esgf_dataset(stratus):
-    def _open_session_scoped_file(file: Union[str, os.PathLike], **xr_kwargs):
-        xr_kwargs.setdefault("cache", True)
-        xr_kwargs.setdefault("use_cftime", True)
-        return _open_dataset(
-            file,
-            branch=ESGF_TEST_DATA_VERSION,
-            repo=ESGF_TEST_DATA_REPO_URL,
-            cache_dir=stratus.path,
-            **xr_kwargs,
-        )
+# @pytest.fixture(scope="session")
+# def open_esgf_dataset(stratus):
+#     def _open_session_scoped_file(file: Union[str, os.PathLike], **xr_kwargs):
+#         xr_kwargs.setdefault("cache", True)
+#         xr_kwargs.setdefault("use_cftime", True)
+#         return _open_dataset(
+#             file,
+#             branch=ESGF_TEST_DATA_VERSION,
+#             repo=ESGF_TEST_DATA_REPO_URL,
+#             cache_dir=stratus.path,
+#             **xr_kwargs,
+#         )
 
-    return _open_session_scoped_file
+#     return _open_session_scoped_file
