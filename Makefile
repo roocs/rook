@@ -120,7 +120,7 @@ smoke: test-smoke
 
 test-all: ## run all tests quickly with the default Python
 	@echo "Running all tests (including slow and online tests) ..."
-	@bash -c 'pytest -v tests/'
+	@bash -c 'pytest -v -m "not smoke" tests/'
 
 notebook-sanitizer: ## download notebook output sanitizer
 	@echo "Copying notebook output sanitizer ..."
