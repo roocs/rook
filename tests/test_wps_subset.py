@@ -139,11 +139,7 @@ def test_wps_subset_cmip6_multiple_files_prov(get_output):
     print(doc.get_provn())
     assert 'roocs:time="1850-01-01/2013-12-30"' in doc.get_provn()
     assert (
-        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18500116-18960316.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
-        in doc.get_provn()
-    )
-    assert (
-        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18960416-19420616.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
+        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18500116-20131216.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
         in doc.get_provn()
     )
 

@@ -11,7 +11,7 @@ PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 def test_wps_average_time_cmip5(get_output):
     client = client_for(Service(processes=[AverageByDimension()], cfgfiles=[PYWPS_CFG]))
-    datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
+    datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.v20131231"
     datainputs += ";dims=time"
     resp = client.get(
         f"?service=WPS&request=Execute&version=1.0.0&identifier=average&datainputs={datainputs}"

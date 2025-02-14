@@ -41,38 +41,51 @@ def write_roocs_cfg(stratus):
     file_size_limit = 100KB
 
     [project:cmip5]
-    base_dir = {{ base_dir }}/test_data/badc/cmip5/data/cmip5
+    base_dir = {{ base_dir }}/badc/cmip5/data/cmip5
     use_inventory = False
 
     [project:cmip6]
-    base_dir = {{ base_dir }}/test_data/badc/cmip6/data/CMIP6
+    base_dir = {{ base_dir }}/badc/cmip6/data/CMIP6
     use_inventory = False
 
     [project:cordex]
-    base_dir = {{ base_dir }}/test_data/badc/cordex/data/cordex
+    base_dir = {{ base_dir }}/badc/cordex/data/cordex
     use_inventory = False
 
     [project:c3s-cmip5]
-    base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5
+    base_dir = {{ base_dir }}/gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5
 
     [project:c3s-cmip6]
-    base_dir = {{ base_dir }}/test_data/badc/cmip6/data/CMIP6
+    base_dir = {{ base_dir }}/badc/cmip6/data/CMIP6
 
     [project:c3s-cmip6-decadal]
-    base_dir = {{ base_dir }}/test_data/pool/data/CMIP6/data/CMIP6
+    base_dir = {{ base_dir }}/pool/data/CMIP6/data/CMIP6
 
     [project:c3s-cordex]
-    base_dir = {{ base_dir }}/test_data/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
+    base_dir = {{ base_dir }}/gws/nopw/j04/cp4cds1_vol1/data/c3s-cordex
 
     [project:c3s-cica-atlas]
-    base_dir = {{ base_dir }}/test_data/pool/data/c3s-cica-atlas
+    base_dir = {{ base_dir }}/pool/data/c3s-cica-atlas
     """  # noqa
     cfg = Template(cfg_templ).render(base_dir=stratus.path)
     with ROOCS_CFG.open("w") as fp:
         fp.write(cfg)
     # point to roocs cfg in environment
     os.environ["ROOCS_CONFIG"] = ROOCS_CFG.as_posix()
+    # TODO: reload configs in clisops
+    # workaround ... fix code in new clisops.
+    import daops
+    import clisops
+    import rook
 
+    cfg = daops.config_()
+    clisops.CONFIG = cfg
+    clisops.project_utils.CONFIG = cfg
+    rook.CONFIG = cfg
+    # rook.director.director.CONFIG = cfg
+    # rook.catalog.CONFIG = cfg
+    print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
+    print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
 
 @pytest.fixture
 def resource_file():
@@ -170,19 +183,3 @@ def load_test_data(stratus):
 
     for repo in repositories.values():
         gather_testing_data(worker_id="master", **repo)
-
-
-# @pytest.fixture(scope="session")
-# def open_esgf_dataset(stratus):
-#     def _open_session_scoped_file(file: Union[str, os.PathLike], **xr_kwargs):
-#         xr_kwargs.setdefault("cache", True)
-#         xr_kwargs.setdefault("use_cftime", True)
-#         return _open_dataset(
-#             file,
-#             branch=ESGF_TEST_DATA_VERSION,
-#             repo=ESGF_TEST_DATA_REPO_URL,
-#             cache_dir=stratus.path,
-#             **xr_kwargs,
-#         )
-
-#     return _open_session_scoped_file

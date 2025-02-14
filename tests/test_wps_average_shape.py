@@ -24,7 +24,7 @@ POLY = Polygon(
 )
 
 
-def test_wps_average_shape_cmip6(tmp_path, get_output):
+def test_wps_average_shape_cmip6(tmp_path, get_output, extract_paths_from_metalink):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
     gpd.GeoDataFrame([{"geometry": POLY}]).to_file(tmp_poly_path.as_posix())
@@ -38,7 +38,7 @@ def test_wps_average_shape_cmip6(tmp_path, get_output):
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
-    assert_geom_created(path=get_output(resp.xml)["output"])
+    assert_geom_created(get_output(resp.xml)["output"], extract_paths_from_metalink)
 
 
 def assert_geom_created(path, extract_paths_from_metalink):

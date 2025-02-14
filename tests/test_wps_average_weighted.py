@@ -19,7 +19,7 @@ def assert_weighted_average(path, extract_paths_from_metalink):
     assert "time" in ds.coords
 
 
-def test_wps_weighted_average_cmip6(get_output):
+def test_wps_weighted_average_cmip6(get_output, extract_paths_from_metalink):
     # test the case where the inventory is used
     client = client_for(Service(processes=[WeightedAverage()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
@@ -28,4 +28,4 @@ def test_wps_weighted_average_cmip6(get_output):
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
-    assert_weighted_average(path=get_output(resp.xml)["output"])
+    assert_weighted_average(get_output(resp.xml)["output"], extract_paths_from_metalink)
