@@ -84,8 +84,8 @@ def write_roocs_cfg(stratus):
     rook.CONFIG = cfg
     # rook.director.director.CONFIG = cfg
     # rook.catalog.CONFIG = cfg
-    print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
-    print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
+    # print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
+    # print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
 
 @pytest.fixture
 def resource_file():
