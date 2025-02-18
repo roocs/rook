@@ -212,6 +212,7 @@ line-ending = "auto"
 [tool.ruff.lint]
 preview = true
 ignore = [
+  "BLE001", # Do not catch blind exception: `Exception`
   "RUF100", # Unused blanket `noqa` directive
   "B904", # raise exceptions with `raise ... from err`
   "PERF203", # `try`-`except` within a loop incurs performance overhead
@@ -222,6 +223,7 @@ ignore = [
   "C419", # Unnecessary list comprehension
 ]
 select = [
+  "BLE", # blind-except
   # "D", # docstrings
   "E", # pycodestyle errors
   "F", # pyflakes errors
