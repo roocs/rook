@@ -230,6 +230,7 @@ select = [
   "N", # naming conventions
   "G", # logging-format
   "C", # complexity
+  "FLY", # modernizing string formatting
   "PERF", # iterator performance
   "S", # bandit security
 ]
