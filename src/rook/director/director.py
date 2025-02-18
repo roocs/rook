@@ -195,7 +195,7 @@ class Director:
             # use search result if available
             if self.search_result:
                 self.inputs["collection"] = []
-                for ds_id, file_uris in self.search_result.files().items():
+                for _ds_id, file_uris in self.search_result.files().items():
                     self.inputs["collection"].append(FileMapper(file_uris))
             try:
                 file_uris = runner(self.inputs)

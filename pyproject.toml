@@ -212,13 +212,15 @@ line-ending = "auto"
 [tool.ruff.lint]
 preview = true
 ignore = [
+  "B904", # raise exceptions with `raise ... from err`
 ]
 select = [
   # "D", # docstrings
   "E", # pycodestyle errors
   "F", # pyflakes errors
   "UP", # python version conventions
-  "W" # pycodestyle warnings
+  "W", # pycodestyle warnings
+  "B", # flake8-bugbear
 ]
 extend-select = [
   # "RUF022" # unsorted-dunder-all
