@@ -11,6 +11,9 @@ from clisops.parameter import time_components_parameter
 from clisops.project_utils import derive_ds_id
 from clisops.utils.dataset_utils import open_xr_dataset
 
+from clisops.ops import subset
+from clisops.core.average import average_over_dims as average
+
 from daops.ops.base import Operation
 from daops.utils import normalise
 
