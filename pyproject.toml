@@ -212,6 +212,7 @@ line-ending = "auto"
 [tool.ruff.lint]
 preview = true
 ignore = [
+  "RUF100", # Unused blanket `noqa` directive
   "B904", # raise exceptions with `raise ... from err`
   "PERF203", # `try`-`except` within a loop incurs performance overhead
   "G004", # Logging statement uses f-string
@@ -224,6 +225,7 @@ select = [
   # "D", # docstrings
   "E", # pycodestyle errors
   "F", # pyflakes errors
+  "RUF", # ruff checks
   "UP", # python version conventions
   "W", # pycodestyle warnings
   "B", # flake8-bugbear

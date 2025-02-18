@@ -132,7 +132,8 @@ class Workflow(BaseWorkflow):
         if step_id in steps:
             outputs = self._run_step(step_id, steps[step_id], tree_outputs)
         elif tree_outputs:
-            outputs = list(tree_outputs.values())[0]
+            outputs = next(iter(tree_outputs.values()))
+            # outputs = list(tree_outputs.values())[0]
         LOGGER.debug(f"outputs={outputs}")
         return outputs
 
