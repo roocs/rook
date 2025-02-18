@@ -1,15 +1,15 @@
-import pytest
+from pathlib import Path
 
-from pywps import Service
-from pywps.tests import assert_process_exception, assert_response_success, client_for
-from pywps.app.exceptions import ProcessError
-from rook.processes.wps_average_shape import AverageByShape
-from shapely import Polygon
 import geopandas as gpd
 import xarray as xr
+from pywps import Service
+from pywps.tests import assert_process_exception, assert_response_success, client_for
+from shapely import Polygon
 
-from .common import PYWPS_CFG, get_output, extract_paths_from_metalink
+from rook.processes.wps_average_shape import AverageByShape
 
+TESTS_HOME = Path(__file__).parent.absolute()
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 POLY = Polygon(
     [
@@ -24,10 +24,10 @@ POLY = Polygon(
 )
 
 
-def test_wps_average_shape_cmip6(tmp_path):
+def test_wps_average_shape_cmip6(tmp_path, get_output, extract_paths_from_metalink):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
-    gpd.GeoDataFrame([{"geometry": POLY}]).to_file(tmp_poly_path)
+    gpd.GeoDataFrame([{"geometry": POLY}]).to_file(tmp_poly_path.as_posix())
 
     # test the case where the inventory is used
     client = client_for(Service(processes=[AverageByShape()], cfgfiles=[PYWPS_CFG]))
@@ -38,10 +38,10 @@ def test_wps_average_shape_cmip6(tmp_path):
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
-    assert_geom_created(path=get_output(resp.xml)["output"])
+    assert_geom_created(get_output(resp.xml)["output"], extract_paths_from_metalink)
 
 
-def assert_geom_created(path):
+def assert_geom_created(path, extract_paths_from_metalink):
     assert "meta4" in path
     paths = extract_paths_from_metalink(path)
     assert len(paths) > 0

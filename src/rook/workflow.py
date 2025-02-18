@@ -1,18 +1,18 @@
 import logging
-import os
 from copy import deepcopy
+from pathlib import Path
 
 import networkx as nx
 import yaml
 
 from .exceptions import WorkflowValidationError
 from .operator import (
-    AverageByTime,
     AverageByDimension,
-    WeightedAverage,
-    Subset,
-    Regrid,
+    AverageByTime,
     Concat,
+    Regrid,
+    Subset,
+    WeightedAverage,
 )
 from .provenance import Provenance
 
@@ -20,8 +20,8 @@ LOGGER = logging.getLogger()
 
 
 def load_wfdoc(data):
-    if os.path.isfile(data):
-        wfdoc = yaml.load(open(data, "rb"), Loader=yaml.SafeLoader)
+    if Path(data).is_file():
+        wfdoc = yaml.load(Path(data).open("rb"), Loader=yaml.SafeLoader)
     else:
         wfdoc = yaml.load(data, Loader=yaml.SafeLoader)
     return wfdoc

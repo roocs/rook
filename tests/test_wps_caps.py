@@ -2,10 +2,8 @@ from pywps import Service
 
 from rook.processes import processes
 
-from .common import client_for
 
-
-def test_wps_caps():
+def test_wps_caps(client_for):
     client = client_for(Service(processes=processes))
     resp = client.get(service="wps", request="getcapabilities", version="1.0.0")
     names = resp.xpath_text(

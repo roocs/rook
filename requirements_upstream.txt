@@ -1,0 +1,2 @@
+daops @ git+https://github.com/roocs/daops.git@regrid-main-ce#egg=daops
+clisops @ git+https://github.com/roocs/clisops.git@master#egg=clisops

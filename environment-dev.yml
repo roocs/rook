@@ -1,7 +1,6 @@
 name: rook-dev
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python >=3.9,<3.13
   # development

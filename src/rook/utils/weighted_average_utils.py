@@ -1,3 +1,7 @@
+from collections.abc import Sequence
+from pathlib import Path
+from typing import Optional, Union
+
 import numpy as np
 import xarray as xr
 from pathlib import Path
@@ -10,6 +14,7 @@ from clisops.parameter.dimension_parameter import DimensionParameter
 from daops.ops.average import Average as DaopsAverage
 from clisops.ops.average import Average as ClisopsAverage
 from clisops.utils.file_namers import get_file_namer
+from daops.ops.average import Average as DaopsAverage
 
 
 def calc_weighted_mean(ds):
@@ -27,7 +32,7 @@ def calc_weighted_mean(ds):
     return ds_weighted_mean
 
 
-class WeightedAverage_(ClisopsAverage):
+class WeightedAverage_(ClisopsAverage):  # noqa: N801
     def _get_file_namer(self):
         extra = "_w-avg"
 

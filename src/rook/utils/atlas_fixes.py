@@ -1,3 +1,5 @@
+from typing import Union
+
 import xarray as xr
 
 
@@ -13,14 +15,14 @@ def add_project_id(ds_id, ds):
     return ds
 
 
-def fix_deflation(ds):
-    """
-    See also clisops.ops.base_operaton._remove_redundant_fill_values
-    """
+def fix_deflation(ds: Union[xr.Dataset, xr.DataArray]):
+    """See also: clisops.ops.base_operation._remove_redundant_fill_values"""
     if isinstance(ds, xr.Dataset):
         var_list = list(ds.coords) + list(ds.data_vars)
     elif isinstance(ds, xr.DataArray):
         var_list = list(ds.coords)
+    else:
+        raise ValueError("Input must be an xarray Dataset or DataArray")
     # DEBUG
     for var in var_list:
         print("debug var", var, ds[var].encoding)

@@ -1,18 +1,9 @@
 import pytest
 from pywps.app.exceptions import ProcessError
-from clisops.exceptions import InvalidParameterValue
 
-from rook.director import Director
 from clisops.exceptions import InvalidCollection
 
-# inputs = {"collection": None
-#           "area": None,
-#           "level": None,
-#           "time": None,
-#           "pre-checked": False,
-#           "apply_fixes": False,
-#           "original_files":False
-#           }
+from rook.director import Director
 
 
 class TestDirectorCMIP6:

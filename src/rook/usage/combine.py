@@ -1,14 +1,13 @@
-import os
 import concurrent.futures
-import pandas as pd
+import os
 import time as time_
+from pathlib import Path
 
+import pandas as pd
+from owslib.wps import ASYNC, WebProcessingService
 from pywps import configuration as config
 
-from owslib.wps import WebProcessingService, ASYNC
-
 from .base import Usage
-
 
 URLS = {
     "local": config.get_config_value("server", "url"),
@@ -82,10 +81,10 @@ class Combine(Usage):
                     df_downloads_list.append(df_downloads)
         # dump usage
         cdf = pd.concat(df_list, ignore_index=True)
-        fusage = os.path.join(outdir, "usage.csv")
+        fusage = Path(outdir).joinpath("usage.csv").as_posix()
         cdf.to_csv(fusage, index=False)
         # dump downloads
         cdf = pd.concat(df_downloads_list, ignore_index=True)
-        fdownloads = os.path.join(outdir, "downloads.csv")
+        fdownloads = Path(outdir).joinpath("downloads.csv").as_posix()
         cdf.to_csv(fdownloads, index=False)
         return fusage, fdownloads

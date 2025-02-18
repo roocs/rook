@@ -1,7 +1,8 @@
 from clisops.exceptions import InvalidCollection
 
-from .db import DBCatalog
 from rook import CONFIG
+
+from .db import DBCatalog
 
 
 def get_catalog(project):

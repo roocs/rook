@@ -1,10 +1,11 @@
-import os
-import xarray as xr
+from pathlib import Path
 
 import dateutil.parser as parser
 from clisops.parameter import time_parameter
 from clisops.utils.time_utils import to_isoformat
 from clisops.project_utils import url_to_file_path
+
+import xarray as xr
 
 
 class SubsetAlignmentChecker:
@@ -42,7 +43,7 @@ class SubsetAlignmentChecker:
         # get start and end times from the time dimension in the file
 
         # convert url to file path if needed
-        if fpath.startswith("http"):
+        if Path(fpath).as_posix().startswith("http"):
             fpath = url_to_file_path(fpath)
 
         ds = xr.open_dataset(fpath, use_cftime=True)

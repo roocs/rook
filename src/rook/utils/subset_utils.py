@@ -1,11 +1,11 @@
-from .input_utils import fix_parameters
-from .apply_fixes import apply_fixes
-
 from clisops.ops.subset import subset as clisops_subset
 from clisops.parameter import parameterise
 
 from daops.ops.base import Operation
 from daops.utils import normalise
+
+from .apply_fixes import apply_fixes
+from .input_utils import fix_parameters
 
 
 class Subset(Operation):

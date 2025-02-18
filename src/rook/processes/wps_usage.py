@@ -4,9 +4,9 @@ from pywps import FORMATS, ComplexOutput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
-from ..usage import WPSUsage, Downloads
 from clisops.parameter import time_parameter
 
+from ..usage import Downloads, WPSUsage
 
 LOGGER = logging.getLogger()
 

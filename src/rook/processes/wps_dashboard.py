@@ -4,10 +4,10 @@ from pywps import FORMATS, ComplexOutput, LiteralInput, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
-from ..usage import Combine
-from ..dashboard import Dashboard
 from clisops.parameter import time_parameter
 
+from ..dashboard import Dashboard
+from ..usage import Combine
 
 LOGGER = logging.getLogger()
 

@@ -1,7 +1,7 @@
-import xarray as xr
-import numpy as np
-
 import collections
+
+import numpy as np
+import xarray as xr
 
 from clisops.parameter import collection_parameter
 from clisops.parameter import dimension_parameter
@@ -13,10 +13,6 @@ from clisops.utils.dataset_utils import open_xr_dataset
 
 from daops.ops.base import Operation
 from daops.utils import normalise
-
-from clisops.ops import subset
-
-from clisops.core.average import average_over_dims as average
 
 from .decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 from .input_utils import fix_parameters

@@ -77,7 +77,8 @@ class Director:
             If YES: return (and use original files)
             If NO: return (and use WPS)
 
-        Raises:
+        Raises
+        ------
             ProcessError: [description]
             ProcessError: [description]
         """

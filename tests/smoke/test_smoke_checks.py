@@ -1,11 +1,7 @@
-# from pyparsing import dbl_slash_comment
-from tests.smoke.utils import open_dataset
-
-from owslib.wps import ComplexDataInput
 import json
 
-
 import pytest
+from owslib.wps import ComplexDataInput
 
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
@@ -295,7 +291,7 @@ def test_smoke_describe_process_orchestrate(wps):
     assert "workflow" in inputs
 
 
-def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
+def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP5_DAY_COLLECTION),
         ("time", "2005-01-01/2005-12-31"),
@@ -307,7 +303,7 @@ def test_smoke_execute_c3s_cmip5_subset(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -319,7 +315,7 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_LEVEL_COLLECTION),
         ("time", "1850/1850"),
@@ -332,7 +328,7 @@ def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path):
     assert "ta" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_TASMIN_COLLECTION),
         ("time", "2010-01-01/2010-12-31"),
@@ -360,7 +356,7 @@ def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path):
     assert "coordinates" not in ds.time_bnds.encoding
 
 
-def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path, open_dataset):
     dsid = "c3s-cmip6.CMIP.NCAR.CESM2-WACCM.historical.r1i1p1f1.day.tas.gn.v20190227"
     inputs = [
         ("collection", dsid),
@@ -374,7 +370,7 @@ def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
+def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -389,7 +385,7 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path):
+def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP5_DAY_COLLECTION),
         ("time", "2005-01-01/2005-12-31"),
@@ -402,7 +398,7 @@ def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path):
     assert "tas" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -415,7 +411,9 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(
+    wps, tmp_path, open_dataset
+):
     inputs = [
         ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
         ("time", "2015/2015"),
@@ -428,7 +426,7 @@ def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path):
     assert "pr" in ds.variables
 
 
-def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path):
+def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
         ("time", "2020-01-01/2020-12-30"),
@@ -630,7 +628,7 @@ def test_smoke_execute_c3s_cmip6_360day_calendar_orchestrate(wps):
     assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path):
+def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path, open_dataset):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6)),
     ]

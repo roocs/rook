@@ -7,14 +7,14 @@
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 
-import psutil
 import click
+import psutil
 from jinja2 import Environment, PackageLoader
 from pywps import configuration
 
 from . import wsgi
-from urllib.parse import urlparse
 
 PID_FILE = Path(__file__).parent.joinpath("pywps.pid").resolve()
 
@@ -235,7 +235,9 @@ def start(
                 with PID_FILE.open("w") as fp:
                     fp.write(f"{pid}")
         except OSError as e:
-            raise click.FileError(filename=f"{PID_FILE}", hint=f"{e.strerror} [{e.errno}]")
+            raise click.FileError(
+                filename=f"{PID_FILE}", hint=f"Fork failed: {e.strerror} [{e.errno}]"
+            )
 
         if pid == 0:
             os.setsid()

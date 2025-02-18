@@ -1,2 +1,2 @@
-from .overview import OverviewTable
 from .messages import MessageTable
+from .overview import OverviewTable

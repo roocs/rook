@@ -120,7 +120,7 @@ smoke: test-smoke
 
 test-all: ## run all tests quickly with the default Python
 	@echo "Running all tests (including slow and online tests) ..."
-	@bash -c 'pytest -v tests/'
+	@bash -c 'pytest -v -m "not smoke" tests/'
 
 notebook-sanitizer: ## download notebook output sanitizer
 	@echo "Copying notebook output sanitizer ..."
@@ -159,11 +159,12 @@ refresh-notebooks: notebook-sanitizer ## refreshing all notebook outputs under d
 
 ## Deployment targets:
 
-dist: clean ## build source and wheel package
-	@echo "Building source and wheel package ..."
-	@python -m build --sdist
-	@bash -c 'ls -l dist/'
+dist: clean ## builds source and wheel package
+	python -m flit build
+	ls -l dist
 
-release: dist ## upload source and wheel packages
-	@echo "Uploading source and wheel packages ..."
-	@python -m flit publish dist/*
+release: dist ## package and upload a release
+	python -m flit publish dist/*
+
+upstream: develop ## install the GitHub-based development branches of dependencies in editable mode to the active Python's site-packages
+	python -m pip install --no-user --requirement requirements_upstream.txt

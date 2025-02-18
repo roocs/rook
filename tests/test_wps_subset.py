@@ -1,16 +1,15 @@
-import pytest
+from pathlib import Path
 
-import xarray as xr
 import prov
-
+import pytest
+import xarray as xr
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
-from tests.smoke.utils import parse_metalink
-
 from rook.processes.wps_subset import Subset
 
-from .common import PYWPS_CFG, get_output
+TESTS_HOME = Path(__file__).parent.absolute()
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 C3S_CMIP6_MON_COLLECTION = (
@@ -33,47 +32,38 @@ def test_wps_subset_cmip6_no_inv():
     datainputs = "collection=c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
     datainputs += ";time=1860-01-01/1900-12-30"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
-    # assert resp.status_code == 200
-    print(resp.data)
-    # assert_response_success(resp)
     assert (
         "Process error: Some or all of the requested collection are not in the list of available data"
         in str(resp.data)
     )
 
 
-def test_wps_subset_c3s_cmip6():
+def test_wps_subset_c3s_cmip6(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     datainputs += ";time=2015-01-01/2015-12-30;area=1,1,300,89"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
 
 @pytest.mark.xfail(reason="fails on github workflow")
-def test_wps_subset_c3s_cmip6_time_series():
+def test_wps_subset_c3s_cmip6_time_series(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     datainputs += ";time=2015-01-16T12:00:00,2016-01-16T12:00:00"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_c3s_cmip6_time_components():
+def test_wps_subset_c3s_cmip6_time_components(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     # datainputs += ";time=2015/2016"
@@ -88,7 +78,7 @@ def test_wps_subset_c3s_cmip6_time_components():
 
 
 @pytest.mark.xfail(reason="fails on github workflow")
-def test_wps_subset_c3s_cmip6_metadata():
+def test_wps_subset_c3s_cmip6_metadata(get_output, parse_metalink):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_TASMIN_COLLECTION}"
     datainputs += ";time=2010/2010"
@@ -100,7 +90,7 @@ def test_wps_subset_c3s_cmip6_metadata():
     m_path = get_output(resp.xml)["output"]
     assert "meta4" in m_path
     # parse metalink
-    xml = open(m_path[7:]).read()
+    xml = Path(m_path[7:]).open().read()
     urls = parse_metalink(xml)
     # print(urls)
     ds = xr.open_dataset(urls[0][7:], use_cftime=True)
@@ -119,14 +109,12 @@ def test_wps_subset_c3s_cmip6_metadata():
     assert "coordinates" not in ds.time_bnds.encoding
 
 
-def test_wps_subset_cmip6_prov():
+def test_wps_subset_cmip6_prov(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;area=1,1,300,89"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
@@ -139,49 +127,39 @@ def test_wps_subset_cmip6_prov():
     )
 
 
-def test_wps_subset_cmip6_multiple_files_prov():
+def test_wps_subset_cmip6_multiple_files_prov(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
     datainputs += ";time=1850-01-01/2013-12-30"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
     print(doc.get_provn())
     assert 'roocs:time="1850-01-01/2013-12-30"' in doc.get_provn()
     assert (
-        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18500116-18960316.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
-        in doc.get_provn()
-    )
-    assert (
-        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18960416-19420616.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
+        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18500116-20131216.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
         in doc.get_provn()
     )
 
 
-def test_wps_subset_cmip6_original_files():
+def test_wps_subset_cmip6_original_files(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;original_files=1"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_c3s_cmip6_collection_only():
+def test_wps_subset_c3s_cmip6_collection_only(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
@@ -189,39 +167,32 @@ def test_wps_subset_c3s_cmip6_collection_only():
 
 def test_wps_subset_missing_collection():
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
-    # datainputs = "collection=c3s-cmip5.output1.ICHEC.EC-EARTH.historical.day.atmos.day.r1i1p1.tas.latest"
     datainputs = ""
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_process_exception(resp, code="MissingParameterValue")
 
 
 @pytest.mark.skip(reason="need a new test dataset")
-def test_wps_subset_time_invariant_dataset():
+def test_wps_subset_time_invariant_dataset(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.IPSL.IPSL-CM6A-LR.ssp119.r1i1p1f1.fx.mrsofc.gr.v20190410"
     datainputs += ";area=1,1,300,89"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_c3s_atlas_v1_cmip5():
+def test_wps_subset_c3s_atlas_v1_cmip5(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_ATLAS_V1_CMIP5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
@@ -231,15 +202,13 @@ def test_wps_subset_c3s_atlas_v1_cmip5():
     assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
 
 
-def test_wps_subset_c3s_atlas_v1_era5():
+def test_wps_subset_c3s_atlas_v1_era5(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_ATLAS_V1_ERA5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={}".format(
-            datainputs
-        )
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
