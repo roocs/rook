@@ -1,4 +1,3 @@
-import xarray as xr
 import os
 import tempfile
 
@@ -7,7 +6,6 @@ from clisops.utils.dataset_utils import open_xr_dataset
 from daops.data_utils.attr_utils import (
     edit_global_attrs,
     edit_var_attrs,
-    remove_coord_attr,
 )
 from daops.data_utils.coord_utils import add_coord, add_scalar_coord
 from daops.data_utils.var_utils import add_data_var

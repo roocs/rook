@@ -3,7 +3,7 @@ from daops.utils.base_lookup import Lookup
 from clisops.exceptions import InvalidProject
 from clisops.project_utils import derive_ds_id
 
-from .director import Director, wrap_director
+from .director import Director as Director, wrap_director as wrap_director
 
 
 def _patched_convert_to_ds_id(self):

@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from daops.utils import fixer, is_characterised
+from daops.utils import is_characterised
 from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
 from clisops.project_utils import get_project_name

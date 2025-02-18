@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import dateutil.parser as parser
 from clisops.parameter import time_parameter
 from clisops.utils.time_utils import to_isoformat
 from clisops.project_utils import url_to_file_path

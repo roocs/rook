@@ -3,7 +3,6 @@ import logging
 from pywps import FORMATS, ComplexInput, ComplexOutput, Format, Process
 from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
-from pywps.inout.outputs import MetaFile, MetaLink4
 
 from rook import workflow
 
