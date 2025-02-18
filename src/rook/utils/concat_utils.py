@@ -43,8 +43,9 @@ def patched_normalise(collection):
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         """
-        Resolve the input parameters to `self.params` and parameterise
-        collection parameter and set to `self.collection`.
+        Resolve the input parameters to `self.params`.
+
+        Parameterise the collection parameter and set it to `self.collection`.
         """
         time = time_parameter.TimeParameter(params.get("time"))
         time_components = time_components_parameter.TimeComponentsParameter(
