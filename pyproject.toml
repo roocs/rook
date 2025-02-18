@@ -240,7 +240,6 @@ select = [
   "S", # bandit security
 ]
 extend-select = [
-  # "RUF022" # unsorted-dunder-all
 ]
 
 [tool.ruff.lint.flake8-bandit]
@@ -250,9 +249,9 @@ check-typed-exception = true
 max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
-"docs/**" = ["E402"]
+"docs/**" = []
 "src/rook/**" = ["D100", "D101", "D102", "D103", "D104", "D205", "D400", "D401"]
-"tests/**" = ["D100", "D101", "D102", "D103"]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "D205", "D400", "D401", "RUF012", "RUF015", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180

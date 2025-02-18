@@ -54,8 +54,8 @@ class TestYearMonthDay1200:
     """Tests with year month and day for dataset with a 12:00:00 time step"""
 
     test_path = (
-        f"gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
-        f"EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231/*.nc"
+        "gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/"
+        "EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231/*.nc"
     )
     # Actual range in files is: 18500101-20091130
 
@@ -168,7 +168,7 @@ class TestYearMonthDay1200:
 class TestYearMonthDay0000:
     """Tests with year month and day for dataset with a 00:00:00 time step"""
 
-    test_path = f"badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon/r1i1p1/latest/tas/*.nc"
+    test_path = "badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon/r1i1p1/latest/tas/*.nc"
 
     @pytest.fixture
     def get_files(self, load_test_data, stratus):
