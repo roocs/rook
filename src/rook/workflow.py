@@ -38,7 +38,7 @@ def replace_inputs(wfdoc):
                 input_id = arg.split("/")[1]
                 steps[step_id]["in"][arg_id] = wfdoc["inputs"][input_id]
                 start_steps.append(step_id)
-    for step_id, _step in steps.items():
+    for step_id in steps.keys():
         # fixes are only applied to start steps
         if step_id in start_steps:
             steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(

@@ -213,6 +213,7 @@ line-ending = "auto"
 preview = true
 ignore = [
   "B904", # raise exceptions with `raise ... from err`
+  "PERF203", # `try`-`except` within a loop incurs performance overhead
 ]
 select = [
   # "D", # docstrings
@@ -221,6 +222,8 @@ select = [
   "UP", # python version conventions
   "W", # pycodestyle warnings
   "B", # flake8-bugbear
+  "N", # naming conventions
+  "PERF", # iterator performance
 ]
 extend-select = [
   # "RUF022" # unsorted-dunder-all
