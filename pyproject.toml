@@ -232,6 +232,7 @@ select = [
   "N", # naming conventions
   "G", # logging-format
   "C", # complexity
+  "PTH", # pathlib
   "FLY", # modernizing string formatting
   "PERF", # iterator performance
   "S", # bandit security
