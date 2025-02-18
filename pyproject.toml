@@ -217,6 +217,8 @@ ignore = [
   "G004", # Logging statement uses f-string
   "S110", # `try`-`except`-`pass` detected, consider logging the exception
   "S112", # `try`-`except`-`continue` detected, consider logging the exception
+  "C408", # Unnecessary `dict()` call (rewrite as a literal)
+  "C419", # Unnecessary list comprehension
 ]
 select = [
   # "D", # docstrings
@@ -227,6 +229,7 @@ select = [
   "B", # flake8-bugbear
   "N", # naming conventions
   "G", # logging-format
+  "C", # complexity
   "PERF", # iterator performance
   "S", # bandit security
 ]
