@@ -7,7 +7,7 @@ from .director import Director as Director, wrap_director as wrap_director
 
 
 def _patched_convert_to_ds_id(self):
-    """Converts the input dataset to a drs id form to use with the elasticsearch index."""
+    """Convert the input dataset to a drs id form to use with the elasticsearch index."""
     try:
         ds_id = derive_ds_id(self.dset)
         # TODO: change prefix in fixer database for c3s-cmip6-decadal

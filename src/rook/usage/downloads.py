@@ -27,7 +27,7 @@ class AddressValueError(ValueError):
 
 
 def dot2longip(ip):
-    """Converts an IPv4 address to an IP number."""
+    """Convert an IPv4 address to an IP number."""
     try:
         return int(ipaddress.IPv4Address(ip))
     except ipaddress.AddressValueError:

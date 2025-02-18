@@ -13,6 +13,8 @@ template_env = Environment(loader=FileSystemLoader(templates_path), autoescape=T
 
 def execute_async(client, name, identifier, inputs=None, complex_inputs=None):
     """
+    Run async request.
+
     The async request is taken from:
     https://github.com/pglass/how-do-i-locust
     """

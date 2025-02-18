@@ -143,7 +143,7 @@ class Director:
 
     def request_aligns_with_files(self):
         """
-        Checks if files in the collection are aligned with the subset request.
+        Check if files in the collection are aligned with the subset request.
         E.g.:
             coll = [dset1, dset2]
             inputs = {'time': '1999-01-01/2000-12-31'}
