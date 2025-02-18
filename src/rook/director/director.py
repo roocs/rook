@@ -64,7 +64,9 @@ class Director:
 
     def _resolve(self):
         """
-        Resolve how the WPS will handle this request. Steps through the following:
+        Resolve how the WPS will handle this request.
+
+        Steps through the following:
         - Are all datasets in the inventory?
             If NO: raise Exception
         - Does the user want to access original files only?
@@ -144,6 +146,7 @@ class Director:
     def request_aligns_with_files(self):
         """
         Check if files in the collection are aligned with the subset request.
+
         E.g.:
             coll = [dset1, dset2]
             inputs = {'time': '1999-01-01/2000-12-31'}
