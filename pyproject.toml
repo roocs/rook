@@ -214,6 +214,7 @@ preview = true
 ignore = [
   "B904", # raise exceptions with `raise ... from err`
   "PERF203", # `try`-`except` within a loop incurs performance overhead
+  "G004", # Logging statement uses f-string
 ]
 select = [
   # "D", # docstrings
@@ -223,6 +224,7 @@ select = [
   "W", # pycodestyle warnings
   "B", # flake8-bugbear
   "N", # naming conventions
+  "G", # logging-format
   "PERF", # iterator performance
 ]
 extend-select = [
