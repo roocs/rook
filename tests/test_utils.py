@@ -61,7 +61,6 @@ def test_resolve_to_file_paths_mixed():
         )
 
 
-# @pytest.mark.xfail(reason="fails on github workflow")
 def test_resolve_to_file_paths_urls(stratus):
     coll = [
         "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
