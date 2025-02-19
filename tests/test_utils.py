@@ -61,8 +61,7 @@ def test_resolve_to_file_paths_mixed():
         )
 
 
-@pytest.mark.xfail(reason="fails on github workflow")
-def test_resolve_to_file_paths_urls(load_test_data):
+def test_resolve_to_file_paths_urls(stratus):
     coll = [
         "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
@@ -72,9 +71,9 @@ def test_resolve_to_file_paths_urls(load_test_data):
 
     res = resolve_to_file_paths(coll)
     assert res == [
-        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
+        f"{stratus.path}/pool/data/CMIP6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_200001-200912.nc",
-        f"{test_dir}/badc/cmip6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
+        f"{stratus.path}/pool/data/CMIP6/data/CMIP6/CMIP/E3SM-Project/E3SM-1-1"
         "/historical/r1i1p1f1/Amon/rlus/gr/v20191211/rlus_Amon_E3SM-1-1_historical_r1i1p1f1_gr_201001-201412.nc",
     ]
 

@@ -1,13 +1,11 @@
-import xarray as xr
-import os
 import tempfile
+from pathlib import Path
 
 from clisops.utils.dataset_utils import open_xr_dataset
 
 from daops.data_utils.attr_utils import (
     edit_global_attrs,
     edit_var_attrs,
-    remove_coord_attr,
 )
 from daops.data_utils.coord_utils import add_coord, add_scalar_coord
 from daops.data_utils.var_utils import add_data_var
@@ -147,7 +145,7 @@ def decadal_fix_calendar(ds_id, ds, output_dir=None):
         ds.time.encoding["calendar"] = "standard"
         # need to write and read file to rewrite time dimension for the standard calendar!
         tmp_dir = tempfile.TemporaryDirectory(dir=output_dir)
-        fixed_nc = os.path.join(tmp_dir.name, "fixed_calendar.nc")
+        fixed_nc = Path(tmp_dir.name) / "fixed_calendar.nc"
         ds.to_netcdf(fixed_nc)
         ds = open_xr_dataset(fixed_nc)
         tmp_dir.cleanup()

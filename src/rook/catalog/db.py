@@ -55,7 +55,11 @@ class DBCatalog(Catalog):
             session.close()
 
     def _query(self, collection, time=None, time_components=None):
-        """https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause"""
+        """
+        Query database to get the given collection (dataset id).
+
+        https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause
+        """
         self.update()
         start, end = parse_time(time, time_components)
 

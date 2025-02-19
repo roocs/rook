@@ -210,41 +210,36 @@ exclude = [
 line-ending = "auto"
 
 [tool.ruff.lint]
-extend-select = [
-  "RUF022" # unsorted-dunder-all
-]
-ignore = [
-  "BLE001", # blind-except
-  "COM", # commas
-  "D100", # undocumented-public-module
-  "D101", # undocumented-public-class
-  "D102", # undocumented-public-method
-  "D103", # undocumented-public-function
-  "D104", # undocumented-public-package
-  "D205", # blank-line-after-summary
-  "D400", # ends-in-period
-  "D401", # non-imperative-mood
-  "G004", # logging-fstring-interpolation
-  "PERF203", # try-except-in-loop
-  "S110", # try-except-pass
-  "S112", # try-except-continue
-]
 preview = true
+ignore = [
+  "BLE001", # Do not catch blind exception: `Exception`
+  "RUF100", # Unused blanket `noqa` directive
+  "B904", # raise exceptions with `raise ... from err`
+  "PERF203", # `try`-`except` within a loop incurs performance overhead
+  "G004", # Logging statement uses f-string
+  "S110", # `try`-`except`-`pass` detected, consider logging the exception
+  "S112", # `try`-`except`-`continue` detected, consider logging the exception
+  "C408", # Unnecessary `dict()` call (rewrite as a literal)
+  "C419", # Unnecessary list comprehension
+]
 select = [
   "BLE", # blind-except
-  "C90", # mccabe-complexity
   "D", # docstrings
   "E", # pycodestyle errors
-  "FLY002", # static-join-to-fstring
-  "G", # logging-format
-  "N", # naming conventions
-  "PERF", # iterator performance
-  "PTH", # pathlib
-  "RUF010", # explicit-f-string-type-conversion
-  "RUF013", # implicit-optional
-  "S", # bandit
+  "F", # pyflakes errors
+  "RUF", # ruff checks
   "UP", # python version conventions
-  "W" # pycodestyle warnings
+  "W", # pycodestyle warnings
+  "B", # flake8-bugbear
+  "N", # naming conventions
+  "G", # logging-format
+  "C", # complexity
+  "PTH", # pathlib
+  "FLY", # modernizing string formatting
+  "PERF", # iterator performance
+  "S", # bandit security
+]
+extend-select = [
 ]
 
 [tool.ruff.lint.flake8-bandit]
@@ -254,9 +249,9 @@ check-typed-exception = true
 max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
-"docs/**" = ["E402"]
-"src/rook/**" = ["F401", "F403", "G004", "D100", "D101", "D102", "D103", "D104", "D200", "D406", "D407", "PERF203", "PTH113", "PTH118", "PTH119", "PTH123", "PTH207", "N806", "N801", "S110", "S112", "S607", "S603", "S404", "S608", "BLE001"]
-"tests/**" = ["D100", "D101", "D102", "D103", "S101"]
+"docs/**" = ["D100", "PTH100"]
+"src/rook/**" = ["D100", "D101", "D102", "D103", "D104"]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "RUF012", "RUF015", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180

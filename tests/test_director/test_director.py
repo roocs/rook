@@ -54,7 +54,7 @@ class TestDirectorCMIP6:
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
 
-    @pytest.mark.xfail(reason="fails on github workflow")
+    @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_time_subset_aligned(self):
         # original files
         inputs = {"time": "2015-01-01/2100-12-31"}
@@ -67,7 +67,7 @@ class TestDirectorCMIP6:
             "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
         ]
 
-    @pytest.mark.xfail(reason="fails on github workflow")
+    @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_only_time_no_match(self):
         inputs = {"time": "2015-01-01/2100-11-30"}
         d = Director(self.collection, inputs)

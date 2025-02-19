@@ -11,6 +11,9 @@ from clisops.parameter import time_components_parameter
 from clisops.project_utils import derive_ds_id
 from clisops.utils.dataset_utils import open_xr_dataset
 
+from clisops.ops import subset
+from clisops.core.average import average_over_dims as average
+
 from daops.ops.base import Operation
 from daops.utils import normalise
 
@@ -40,8 +43,9 @@ def patched_normalise(collection):
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         """
-        Resolve the input parameters to `self.params` and parameterise
-        collection parameter and set to `self.collection`.
+        Resolve the input parameters to `self.params`.
+
+        Parameterise the collection parameter and set it to `self.collection`.
         """
         time = time_parameter.TimeParameter(params.get("time"))
         time_components = time_components_parameter.TimeComponentsParameter(

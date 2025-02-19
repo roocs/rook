@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from daops.utils import fixer, is_characterised
+from daops.utils import is_characterised
 from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
 from clisops.project_utils import get_project_name
@@ -64,7 +64,9 @@ class Director:
 
     def _resolve(self):
         """
-        Resolve how the WPS will handle this request. Steps through the following:
+        Resolve how the WPS will handle this request.
+
+        Steps through the following:
         - Are all datasets in the inventory?
             If NO: raise Exception
         - Does the user want to access original files only?
@@ -143,7 +145,8 @@ class Director:
 
     def request_aligns_with_files(self):
         """
-        Checks if files in the collection are aligned with the subset request.
+        Check if files in the collection are aligned with the subset request.
+
         E.g.:
             coll = [dset1, dset2]
             inputs = {'time': '1999-01-01/2000-12-31'}
@@ -195,7 +198,7 @@ class Director:
             # use search result if available
             if self.search_result:
                 self.inputs["collection"] = []
-                for ds_id, file_uris in self.search_result.files().items():
+                for file_uris in self.search_result.files().values():
                     self.inputs["collection"].append(FileMapper(file_uris))
             try:
                 file_uris = runner(self.inputs)

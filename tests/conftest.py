@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from typing import Union
 
 import pytest
 from bs4 import BeautifulSoup
@@ -144,7 +143,7 @@ def client_for():
 
 @pytest.fixture
 def get_output():
-    """Copied from pywps/tests/test_execute.py."""
+    """Return the WPS output. This method is copied from pywps/tests/test_execute.py."""
 
     def _get_output(doc):
         output = {}

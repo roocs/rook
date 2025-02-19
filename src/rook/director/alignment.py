@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import dateutil.parser as parser
 from clisops.parameter import time_parameter
 from clisops.utils.time_utils import to_isoformat
 from clisops.project_utils import url_to_file_path
@@ -54,6 +53,8 @@ class SubsetAlignmentChecker:
 
     def _check_time_alignment(self, start, end):
         """
+        Check if data files can be aligned with start and end time.
+
         Loops through all data files to check if the `start` and `end` can be aligned
         with the exact start or end time in the file(s).
 

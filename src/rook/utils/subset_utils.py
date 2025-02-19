@@ -36,8 +36,8 @@ class Subset(Operation):
 
         rs = normalise.ResultSet(vars())
 
-        for dset, norm_collection in norm_collection.items():
-            fixed_collection = apply_fixes(dset, norm_collection)
+        for dset, _norm_collection in norm_collection.items():
+            fixed_collection = apply_fixes(dset, _norm_collection)
             rs.add(
                 dset,
                 clisops_subset(fixed_collection, **self.params),
