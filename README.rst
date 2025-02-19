@@ -14,7 +14,7 @@ rook
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/github/license/roocs/rook.svg
-    :target: https://github.com/roocs/rook/blob/master/LICENSE.txt
+    :target: https://github.com/roocs/rook/blob/main/LICENSE.txt
     :alt: GitHub license
 
 rook (the bird)
