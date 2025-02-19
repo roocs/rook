@@ -250,8 +250,8 @@ max-complexity = 15
 
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["D100", "PTH100"]
-"src/rook/**" = ["D100", "D101", "D102", "D103", "D104", "D205"]
-"tests/**" = ["D100", "D101", "D102", "D103", "D104", "D205", "RUF012", "RUF015", "S101"]
+"src/rook/**" = ["D100", "D101", "D102", "D103", "D104"]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "RUF012", "RUF015", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180
