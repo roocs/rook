@@ -80,7 +80,7 @@ rook = "rook.cli:cli"
 
 [project.urls]
 "Issue tracker" = "https://github.com/roocs/rook/issues"
-"Changelog" = "https://github.com/roocs/rook/blob/master/changelog.rst"
+"Changelog" = "https://github.com/roocs/rook/blob/main/changelog.rst"
 "Homepage" = "https://github.com/roocs/rook"
 
 [tool]
