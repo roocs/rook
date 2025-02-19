@@ -91,7 +91,7 @@ def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output):
     assert 'dims="latitude,longitude"' in doc.get_provn()
 
 
-@pytest.mark.xfail(reason="fails on github workflow")
+@pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_orchestrate_c3s_cmip6_subset_metadata(
     resource_file, get_output, parse_metalink
 ):

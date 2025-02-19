@@ -51,7 +51,7 @@ def test_wps_subset_c3s_cmip6(get_output):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-@pytest.mark.xfail(reason="fails on github workflow")
+@pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_subset_c3s_cmip6_time_series(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
@@ -77,7 +77,7 @@ def test_wps_subset_c3s_cmip6_time_components(get_output):
     assert b"year:2015,2016|month:01,02,03" in resp.data
 
 
-@pytest.mark.xfail(reason="fails on github workflow")
+@pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_subset_c3s_cmip6_metadata(get_output, parse_metalink):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_TASMIN_COLLECTION}"
