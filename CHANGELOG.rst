@@ -1,6 +1,14 @@
 Changes
 *******
 
+0.16.0 (2025-02-21)
+===================
+
+* Use pooch for testdata management and modernized python code and deployment (#261).
+* Skipped roocs-utils! Requires now the `clisops >=0.15.0` and `daops >=0.14.0` (#267).
+* Updated linting with ruff (#268).
+* Swtiched to `main` branch as default instead of `master` (#269).
+
 0.15.0 (2024-11-20)
 ===================
 
