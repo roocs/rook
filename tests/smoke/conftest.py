@@ -11,7 +11,7 @@ PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 def server_url():
-    config.load_configuration(cfgfiles=PYWPS_CFG)
+    config.load_configuration(cfgfiles=PYWPS_CFG.as_posix())
     url = config.get_config_value("server", "url")
     return url
 
