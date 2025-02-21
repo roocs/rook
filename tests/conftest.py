@@ -174,7 +174,7 @@ def download_file(url, tmp_path):
     # https://docs.pytest.org/en/stable/tmpdir.html
     local_filename = url.split("/")[-1]
     p = tmp_path / local_filename
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream=True, timeout=30) as r:
         with p.open(mode="wb") as f:
             shutil.copyfileobj(r.raw, f)
     return p.as_posix()

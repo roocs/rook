@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 import xarray as xr
 from pywps import Service
