@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import geopandas as gpd
 import xarray as xr
 from pywps import Service
@@ -9,8 +7,6 @@ from rook.utils.metalink_utils import parse_metalink
 
 from rook.processes.wps_average_shape import AverageByShape
 
-TESTS_HOME = Path(__file__).parent.absolute()
-PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 POLY = Polygon(
     [
@@ -25,13 +21,13 @@ POLY = Polygon(
 )
 
 
-def test_wps_average_shape_cmip6(tmp_path, get_output):
+def test_wps_average_shape_cmip6(tmp_path, get_output, pywps_cfg):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
     gpd.GeoDataFrame([{"geometry": POLY}]).to_file(tmp_poly_path.as_posix())
 
     # test the case where the inventory is used
-    client = client_for(Service(processes=[AverageByShape()], cfgfiles=[PYWPS_CFG]))
+    client = client_for(Service(processes=[AverageByShape()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     datainputs += f";shape={tmp_poly_path}"
     resp = client.get(
@@ -50,8 +46,8 @@ def assert_geom_created(path):
     assert "geom" in ds.coords
 
 
-def test_wps_average_no_shape():
-    client = client_for(Service(processes=[AverageByShape()], cfgfiles=[PYWPS_CFG]))
+def test_wps_average_no_shape(pywps_cfg):
+    client = client_for(Service(processes=[AverageByShape()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     resp = client.get(
         f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}"

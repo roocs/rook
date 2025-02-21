@@ -20,6 +20,7 @@ xpath_ns = get_xpath_ns(VERSION)
 
 TESTS_HOME = Path(__file__).parent.absolute()
 ROOCS_CFG = TESTS_HOME.joinpath(".roocs.ini")
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 @pytest.fixture(scope="session")
@@ -83,6 +84,11 @@ def write_roocs_cfg(stratus):
     # rook.catalog.CONFIG = cfg
     # print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
     # print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
+
+
+@pytest.fixture
+def pywps_cfg():
+    return PYWPS_CFG
 
 
 @pytest.fixture
