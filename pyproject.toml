@@ -49,12 +49,12 @@ dependencies = [
   "aiohttp",
   "bokeh",
   "humanize",
+  "beautifulsoup4",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pip >=24.2.0",
-  "beautifulsoup4",
   "black >=24.10.0",
   "bump-my-version >=0.26.0",
   "coverage >=7.5.0",

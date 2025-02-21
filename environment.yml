@@ -17,6 +17,7 @@ dependencies:
   - daops >=0.14.0
   - clisops >=0.15.0
   - roocs-grids >=0.1.2
+  - beautifulsoup4 >4.12.3
   # workflow
   - networkx
   # provenance
