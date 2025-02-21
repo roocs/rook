@@ -5,6 +5,7 @@ import xarray as xr
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 from shapely import Polygon
+from rook.utils.metalink_utils import parse_metalink
 
 from rook.processes.wps_average_shape import AverageByShape
 
@@ -24,7 +25,7 @@ POLY = Polygon(
 )
 
 
-def test_wps_average_shape_cmip6(tmp_path, get_output, extract_paths_from_metalink):
+def test_wps_average_shape_cmip6(tmp_path, get_output):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
     gpd.GeoDataFrame([{"geometry": POLY}]).to_file(tmp_poly_path.as_posix())
@@ -38,12 +39,12 @@ def test_wps_average_shape_cmip6(tmp_path, get_output, extract_paths_from_metali
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
-    assert_geom_created(get_output(resp.xml)["output"], extract_paths_from_metalink)
+    assert_geom_created(get_output(resp.xml)["output"])
 
 
-def assert_geom_created(path, extract_paths_from_metalink):
+def assert_geom_created(path):
     assert "meta4" in path
-    paths = extract_paths_from_metalink(path)
+    paths = parse_metalink(path)
     assert len(paths) > 0
     ds = xr.open_dataset(paths[0])
     assert "geom" in ds.coords

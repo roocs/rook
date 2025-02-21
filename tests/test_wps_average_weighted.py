@@ -5,21 +5,22 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_average_weighted import WeightedAverage
+from rook.utils.metalink_utils import parse_metalink
 
 TESTS_HOME = Path(__file__).parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
-def assert_weighted_average(path, extract_paths_from_metalink):
+def assert_weighted_average(path):
     assert "meta4" in path
-    paths = extract_paths_from_metalink(path)
+    paths = parse_metalink(path)
     assert len(paths) > 0
     print(paths)
     ds = xr.open_dataset(paths[0])
     assert "time" in ds.coords
 
 
-def test_wps_weighted_average_cmip6(get_output, extract_paths_from_metalink):
+def test_wps_weighted_average_cmip6(get_output):
     # test the case where the inventory is used
     client = client_for(Service(processes=[WeightedAverage()], cfgfiles=[PYWPS_CFG]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
@@ -28,4 +29,4 @@ def test_wps_weighted_average_cmip6(get_output, extract_paths_from_metalink):
     )
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
-    assert_weighted_average(get_output(resp.xml)["output"], extract_paths_from_metalink)
+    assert_weighted_average(get_output(resp.xml)["output"])

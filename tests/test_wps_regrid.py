@@ -6,17 +6,18 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_regrid import Regrid
+from rook.utils.metalink_utils import parse_metalink
 
 TESTS_HOME = Path(__file__).parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 @pytest.fixture
-def assert_regrid(extract_paths_from_metalink):
+def assert_regrid():
 
     def _assert_regrid(path):
         assert "meta4" in path
-        paths = extract_paths_from_metalink(path)
+        paths = parse_metalink(path)
         assert len(paths) > 0
         ds = xr.open_dataset(paths[0])
         assert "time" in ds.coords

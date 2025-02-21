@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import pytest
-from bs4 import BeautifulSoup
 from clisops.utils.testing import (
     ESGF_TEST_DATA_CACHE_DIR,
     ESGF_TEST_DATA_REPO_URL,
@@ -11,7 +10,6 @@ from clisops.utils.testing import (
 )
 from clisops.utils.testing import stratus as _stratus
 from jinja2 import Template
-from lxml import etree
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -98,30 +96,6 @@ def resource_file():
 @pytest.fixture
 def fake_inv():
     os.environ["ROOK_FAKE_INVENTORY"] = "1"
-
-
-@pytest.fixture
-def extract_paths_from_metalink():
-
-    def _extract_paths_from_metalink(path):
-        path = path.replace("file://", "")
-        doc = BeautifulSoup(Path(path).open().read(), "xml")
-        paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
-        return paths
-
-    return _extract_paths_from_metalink
-
-
-@pytest.fixture
-def parse_metalink():
-
-    def _parse_metalink(xml):
-        xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
-        tree = etree.fromstring(xml_.encode())  # noqa: S320
-        urls = [m.text for m in tree.xpath("//metaurl")]
-        return urls
-
-    return _parse_metalink
 
 
 class WpsTestClient(WpsClient):

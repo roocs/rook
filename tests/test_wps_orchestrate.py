@@ -7,6 +7,7 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_orchestrate import Orchestrate
+from rook.utils.metalink_utils import parse_metalink
 
 TESTS_HOME = Path(__file__).parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
@@ -92,9 +93,7 @@ def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output):
 
 
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
-def test_wps_orchestrate_c3s_cmip6_subset_metadata(
-    resource_file, get_output, parse_metalink
-):
+def test_wps_orchestrate_c3s_cmip6_subset_metadata(resource_file, get_output):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_c3s_cmip6_subset.json")

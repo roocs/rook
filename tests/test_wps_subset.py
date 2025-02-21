@@ -7,6 +7,7 @@ from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
 from rook.processes.wps_subset import Subset
+from rook.utils.metalink_utils import parse_metalink
 
 TESTS_HOME = Path(__file__).parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
@@ -78,7 +79,7 @@ def test_wps_subset_c3s_cmip6_time_components(get_output):
 
 
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
-def test_wps_subset_c3s_cmip6_metadata(get_output, parse_metalink):
+def test_wps_subset_c3s_cmip6_metadata(get_output):
     client = client_for(Service(processes=[Subset()], cfgfiles=[PYWPS_CFG]))
     datainputs = f"collection={C3S_CMIP6_MON_TASMIN_COLLECTION}"
     datainputs += ";time=2010/2010"
