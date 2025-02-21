@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 
+import xarray as xr
+import requests
+import shutil
+
 import pytest
 from clisops.utils.testing import (
     ESGF_TEST_DATA_CACHE_DIR,
@@ -163,3 +167,23 @@ def load_test_data(stratus):
 
     for repo in repositories.values():
         gather_testing_data(worker_id="master", **repo)
+
+
+def download_file(url, tmp_path):
+    # use tmp_path (pathlib.Path) from pytest:
+    # https://docs.pytest.org/en/stable/tmpdir.html
+    local_filename = url.split("/")[-1]
+    p = tmp_path / local_filename
+    with requests.get(url, stream=True) as r:
+        with p.open(mode="wb") as f:
+            shutil.copyfileobj(r.raw, f)
+    return p.as_posix()
+
+
+@pytest.fixture
+def open_dataset():
+    def _open_dataset(url, tmp_path):
+        ds = xr.open_dataset(download_file(url, tmp_path), use_cftime=True)
+        return ds
+
+    return _open_dataset
