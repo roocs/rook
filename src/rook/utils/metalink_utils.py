@@ -29,8 +29,13 @@ def build_metalink(identity, description, workdir, file_uris, file_type="NetCDF"
     return ml4
 
 
-def parse_metalink(path):
+def extract_paths_from_metalink(path):
     path = path.replace("file://", "")
-    doc = BeautifulSoup(Path(path).open().read(), "xml")
+    xml = Path(path).open().read()
+    return parse_metalink(xml)
+
+
+def parse_metalink(xml):
+    doc = BeautifulSoup(xml, "xml")
     paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
     return paths

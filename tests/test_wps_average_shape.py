@@ -3,7 +3,7 @@ import xarray as xr
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 from shapely import Polygon
-from rook.utils.metalink_utils import parse_metalink
+from rook.utils.metalink_utils import extract_paths_from_metalink
 
 from rook.processes.wps_average_shape import AverageByShape
 
@@ -40,7 +40,7 @@ def test_wps_average_shape_cmip6(tmp_path, get_output, pywps_cfg):
 
 def assert_geom_created(path):
     assert "meta4" in path
-    paths = parse_metalink(path)
+    paths = extract_paths_from_metalink(path)
     assert len(paths) > 0
     ds = xr.open_dataset(paths[0])
     assert "geom" in ds.coords

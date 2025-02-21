@@ -3,12 +3,12 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_average_weighted import WeightedAverage
-from rook.utils.metalink_utils import parse_metalink
+from rook.utils.metalink_utils import extract_paths_from_metalink
 
 
 def assert_weighted_average(path):
     assert "meta4" in path
-    paths = parse_metalink(path)
+    paths = extract_paths_from_metalink(path)
     assert len(paths) > 0
     print(paths)
     ds = xr.open_dataset(paths[0])
