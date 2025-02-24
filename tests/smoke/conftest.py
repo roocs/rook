@@ -2,25 +2,19 @@ from pathlib import Path
 
 import pytest
 import requests
-from lxml import etree
 from owslib.wps import WebProcessingService, monitorExecution
 from pywps import configuration as config
+
+from rook.utils.metalink_utils import parse_metalink
 
 TESTS_HOME = Path(__file__).parent.parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 def server_url():
-    config.load_configuration(cfgfiles=PYWPS_CFG)
+    config.load_configuration(cfgfiles=PYWPS_CFG.as_posix())
     url = config.get_config_value("server", "url")
     return url
-
-
-def parse_metalink(xml):
-    xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
-    tree = etree.fromstring(xml_.encode())  # noqa: S320
-    urls = [m.text for m in tree.xpath("//metaurl")]
-    return urls
 
 
 class RookWPS:

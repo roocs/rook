@@ -7,13 +7,11 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_orchestrate import Orchestrate
-
-TESTS_HOME = Path(__file__).parent.absolute()
-PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
+from rook.utils.metalink_utils import parse_metalink
 
 
-def test_wps_orchestrate(resource_file, get_output):
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_cmip6_subset_average.json")
     )
@@ -24,9 +22,9 @@ def test_wps_orchestrate(resource_file, get_output):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_orchestrate_subset_collection_only(resource_file, get_output):
+def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps_cfg):
     # TODO: this test is slow (25secs) ... but should be fast (1sec)
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_c3s_cmip6_subset_collection_only.json")
     )
@@ -38,8 +36,8 @@ def test_wps_orchestrate_subset_collection_only(resource_file, get_output):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_orchestrate_prov(resource_file, get_output):
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_cmip6_subset_average.json")
     )
@@ -61,8 +59,8 @@ def test_wps_orchestrate_prov(resource_file, get_output):
     )
 
 
-def test_wps_orchestrate_prov_with_fixes(resource_file, get_output):
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+def test_wps_orchestrate_prov_with_fixes(resource_file, get_output, pywps_cfg):
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_cmip6_subset_average_with_fixes.json")
     )
@@ -76,8 +74,8 @@ def test_wps_orchestrate_prov_with_fixes(resource_file, get_output):
     assert 'freq="year"' in doc.get_provn()
 
 
-def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output):
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output, pywps_cfg):
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_average_latlon_cmip6.json")
     )
@@ -93,9 +91,9 @@ def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output):
 
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_orchestrate_c3s_cmip6_subset_metadata(
-    resource_file, get_output, parse_metalink
+    resource_file, get_output, pywps_cfg
 ):
-    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[PYWPS_CFG]))
+    client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_c3s_cmip6_subset.json")
     )

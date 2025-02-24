@@ -19,8 +19,17 @@ from .provenance import Provenance
 LOGGER = logging.getLogger()
 
 
+def is_file(data):
+    try:
+        ok = Path(data).is_file()
+    except OSError as e:
+        LOGGER.warning(f"is_file check failed. reason={e}")
+        ok = False
+    return ok
+
+
 def load_wfdoc(data):
-    if Path(data).is_file():
+    if is_file(data):
         wfdoc = yaml.load(Path(data).open("rb"), Loader=yaml.SafeLoader)
     else:
         wfdoc = yaml.load(data, Loader=yaml.SafeLoader)

@@ -1,8 +1,11 @@
 import os
 from pathlib import Path
 
+import xarray as xr
+import requests
+import shutil
+
 import pytest
-from bs4 import BeautifulSoup
 from clisops.utils.testing import (
     ESGF_TEST_DATA_CACHE_DIR,
     ESGF_TEST_DATA_REPO_URL,
@@ -11,7 +14,6 @@ from clisops.utils.testing import (
 )
 from clisops.utils.testing import stratus as _stratus
 from jinja2 import Template
-from lxml import etree
 from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
@@ -22,6 +24,7 @@ xpath_ns = get_xpath_ns(VERSION)
 
 TESTS_HOME = Path(__file__).parent.absolute()
 ROOCS_CFG = TESTS_HOME.joinpath(".roocs.ini")
+PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 @pytest.fixture(scope="session")
@@ -88,6 +91,11 @@ def write_roocs_cfg(stratus):
 
 
 @pytest.fixture
+def pywps_cfg():
+    return PYWPS_CFG
+
+
+@pytest.fixture
 def resource_file():
     def _resource_file(filename):
         return Path(TESTS_HOME).joinpath("testdata", filename)
@@ -98,30 +106,6 @@ def resource_file():
 @pytest.fixture
 def fake_inv():
     os.environ["ROOK_FAKE_INVENTORY"] = "1"
-
-
-@pytest.fixture
-def extract_paths_from_metalink():
-
-    def _extract_paths_from_metalink(path):
-        path = path.replace("file://", "")
-        doc = BeautifulSoup(Path(path).open().read(), "xml")
-        paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
-        return paths
-
-    return _extract_paths_from_metalink
-
-
-@pytest.fixture
-def parse_metalink():
-
-    def _parse_metalink(xml):
-        xml_ = xml.replace(' xmlns="', ' xmlnamespace="')
-        tree = etree.fromstring(xml_.encode())  # noqa: S320
-        urls = [m.text for m in tree.xpath("//metaurl")]
-        return urls
-
-    return _parse_metalink
 
 
 class WpsTestClient(WpsClient):
@@ -183,3 +167,23 @@ def load_test_data(stratus):
 
     for repo in repositories.values():
         gather_testing_data(worker_id="master", **repo)
+
+
+def download_file(url, tmp_path):
+    # use tmp_path (pathlib.Path) from pytest:
+    # https://docs.pytest.org/en/stable/tmpdir.html
+    local_filename = url.split("/")[-1]
+    p = tmp_path / local_filename
+    with requests.get(url, stream=True, timeout=30) as r:
+        with p.open(mode="wb") as f:
+            shutil.copyfileobj(r.raw, f)
+    return p.as_posix()
+
+
+@pytest.fixture
+def open_dataset():
+    def _open_dataset(url, tmp_path):
+        ds = xr.open_dataset(download_file(url, tmp_path), use_cftime=True)
+        return ds
+
+    return _open_dataset

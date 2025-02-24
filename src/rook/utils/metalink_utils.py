@@ -1,4 +1,7 @@
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
+from pathlib import Path
+
 
 from pywps import FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
@@ -24,3 +27,15 @@ def build_metalink(identity, description, workdir, file_uris, file_type="NetCDF"
         ml4.append(mf)
 
     return ml4
+
+
+def extract_paths_from_metalink(path):
+    path = path.replace("file://", "")
+    xml = Path(path).open().read()
+    return parse_metalink(xml)
+
+
+def parse_metalink(xml):
+    doc = BeautifulSoup(xml, "xml")
+    paths = [el.text.replace("file://", "") for el in doc.find_all("metaurl")]
+    return paths
