@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.16.1 (2025-02-26)
+===================
+
+* Fixed smoke tests and added beautifulsoup to requirements (#271).
+
 0.16.0 (2025-02-21)
 ===================
 
