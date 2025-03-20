@@ -40,7 +40,7 @@ dependencies = [
   "xarray >=0.21,<2023.3.0",
   "cf-xarray >=0.7,<0.9",
   "daops >=0.14.0",
-  "clisops >=0.15.0",
+  "clisops >=0.16.1",
   "roocs_grids >=0.1.2",
   "networkx",
   "prov >=2.0.0",

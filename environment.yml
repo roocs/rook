@@ -2,20 +2,20 @@ name: rook
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.12
+  - python >=3.10,<3.12
   - pywps >=4.5.2,<4.7
   - jinja2 >=3.1.4
   - click >=8.1.7
   - psutil >=6.0.0
   - requests
   - cftime >=1.2.1
-  - xarray >=0.21,<2023.3.0 # https://github.com/pydata/xarray/issues/7794
+  - xarray >=2025.1.1 
   - xesmf >=0.8.2
   - cf_xarray >=0.7
   - dask >=2021.12
   - netcdf4 >=1.4
   - daops >=0.14.0
-  - clisops >=0.15.0
+  - clisops >=0.16.1
   - roocs-grids >=0.1.2
   - beautifulsoup4 >4.12.3
   # workflow
