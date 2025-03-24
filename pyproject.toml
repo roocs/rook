@@ -12,7 +12,7 @@ maintainers = [
   {name = "Trevor James Smith", email = "smith.trevorj@ouranos.ca"},
 ]
 readme = {file = "README.rst", content-type = "text/x-rst"}
-requires-python = ">=3.9.0"
+requires-python = ">=3.10.0"
 keywords = ["wps", "pywps", "birdhouse", "rook"]
 license = {file = "LICENSE"}
 classifiers = [
@@ -25,7 +25,6 @@ classifiers = [
   "Programming Language :: Python",
   "Natural Language :: English",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -37,16 +36,14 @@ dependencies = [
   "jinja2 >=3.1.4",
   "psutil >=6.0.0",
   "pywps >=4.5.2,<4.7",
-  "xarray >=0.21,<2023.3.0",
-  "cf-xarray >=0.7,<0.9",
-  "daops >=0.14.0",
+  "daops >=0.15.0",
   "clisops >=0.16.1",
   "roocs_grids >=0.1.2",
   "networkx",
   "prov >=2.0.0",
   "pydot",
   "intake <2.0",
-  "pandas <2.0",
+  "pandas >=2.0",
   "SQLAlchemy >=1.4.45,<2.0",
   "aiohttp",
   "bokeh",
@@ -89,7 +86,6 @@ rook = "rook.cli:cli"
 
 [tool.black]
 target-version = [
-  "py39",
   "py310",
   "py311",
   "py312"
