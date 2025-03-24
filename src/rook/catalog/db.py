@@ -3,6 +3,7 @@ from daops.catalog.base import Catalog
 from daops.catalog.intake import IntakeCatalog
 from daops.catalog.util import MAX_DATETIME, MIN_DATETIME, parse_time
 from pywps.dblog import get_session
+from sqlalchemy import text
 
 
 class DBCatalog(Catalog):
@@ -80,7 +81,7 @@ class DBCatalog(Catalog):
                     f"SELECT * FROM {self.table_name} WHERE ds_id='{collection[0]}' "  # noqa: S608
                     f"and end_time>='{start}' and start_time<='{end}'"  # noqa: S608
                 )
-            result = session.execute(query_).fetchall()
+            result = session.execute(text(query_)).fetchall()
 
         except Exception:
             result = []
