@@ -40,11 +40,13 @@ class DBCatalog(Catalog):
 
         # db connection
         session = get_session()
+        
         try:
             # FIXME: This pattern is deprecated in Pandas v2.0+
+            engine = get_session().get_bind()
             df.to_sql(
                 name=self.table_name,
-                con=session.connection(),
+                con=engine,
                 schema=None,
                 if_exists="replace",
                 index=True,
