@@ -14,8 +14,8 @@ class DBCatalog(Catalog):
 
     def exists(self):
         with get_session() as session:
-            engine = session.get_bind()
             try:
+                engine = session.get_bind()
                 ins = sqlalchemy.inspect(engine)
                 return ins.dialect.has_table(engine.connect(), self.table_name)
             except Exception:
@@ -58,6 +58,7 @@ class DBCatalog(Catalog):
             try:
                 # Parameterized query to avoid SQL injection
                 if len(collection) > 1:
+                    # FIXME: This is vulnerable to SQL injection
                     query_ = text(
                         f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "
                         f"AND end_time >= :start AND start_time <= :end"
