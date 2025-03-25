@@ -44,11 +44,11 @@ C3S_IPCC_ATLAS_CMIP6_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP6.historical.mon"
 
 C3S_IPCC_ATLAS_CORDEX_COLLECTION = "c3s-ipcc-atlas.tnn.CORDEX-AFR.historical.mon"
 
-C3S_CICA_ATLAS_ERA5_COLLECTION = "c3s-cica-atlas.cd.ERA5.yr.v1"
+C3S_CICA_ATLAS_ERA5_COLLECTION = "c3s-cica-atlas.cd.ERA5.yr.v2"
 
-C3S_CICA_ATLAS_CORDEX_COLLECTION = "c3s-cica-atlas.cdd.CORDEX-CORE.historical.yr.v1"
+C3S_CICA_ATLAS_CORDEX_COLLECTION = "c3s-cica-atlas.cdd.CORDEX-CORE.historical.yr.v2"
 
-C3S_CICA_ATLAS_CMIP6_COLLECTION = "c3s-cica-atlas.cd.CMIP6.historical.yr.v1"
+C3S_CICA_ATLAS_CMIP6_COLLECTION = "c3s-cica-atlas.cd.CMIP6.historical.yr.v2"
 
 WF_C3S_CMIP5 = json.dumps(
     {
