@@ -107,14 +107,14 @@ lint: ## check style with ruff
 
 test: ## run tests quickly with the default Python (skip slow and online tests)
 	@echo "Running tests (skip slow and online tests) ..."
-	@bash -c 'pytest -v -m "not slow and not online" tests/'
+	@bash -c 'pytest -v -m "not slow and not online" -n auto tests/'
 
 test-tox: ## run tests on every available Python version with tox
 	@bash -c 'tox'
 
-test-smoke: ## run smoke tests only
+test-smoke: ## run smoke tests only and in parallel
 	@echo "Running smoke tests (only smoke tests) ..."
-	@bash -c 'pytest -v -m "smoke" tests/'
+	@bash -c 'pytest -v -m "smoke" -n auto tests/'
 
 smoke: test-smoke
 
