@@ -48,9 +48,7 @@ class DBCatalog(Catalog):
             session.commit()
 
     def _query(self, collection, time=None, time_components=None):
-        """
-        Query database to get the given collection (dataset id).
-        """
+        """Query database to get the given collection (dataset id)."""
         self.update()
         start, end = parse_time(time, time_components)
 
@@ -60,20 +58,26 @@ class DBCatalog(Catalog):
                 if len(collection) > 1:
                     # FIXME: This is vulnerable to SQL injection
                     query_ = text(
-                        f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "
+                        f"SELECT * FROM :table_name WHERE ds_id IN {tuple(collection)} "  # noqa: S608
                         f"AND end_time >= :start AND start_time <= :end"
                     )
                     result = session.execute(query_, {
+                        "table_name": self.table_name,
                         # "collection": tuple(collection),
                         "start": start,
                         "end": end
                     }).fetchall()
                 else:
                     query_ = text(
-                        f"SELECT * FROM {self.table_name} WHERE ds_id = :ds_id "
-                        f"AND end_time >= :start AND start_time <= :end"
+                        "SELECT * FROM :table_name WHERE ds_id = :ds_id "
+                        "AND end_time >= :start AND start_time <= :end"
                     )
-                    result = session.execute(query_, {"ds_id": collection[0], "start": start, "end": end}).fetchall()
+                    result = session.execute(query_, {
+                        "table_name": self.table_name,
+                        "ds_id": collection[0],
+                        "start": start,
+                        "end": end
+                    }).fetchall()
             except Exception:
                 result = []
 
