@@ -16,11 +16,12 @@ from clisops.utils.file_namers import get_file_namer
 def calc_weighted_mean(ds):
     # fix cftime calendar
     ds["time"] = ds.indexes["time"].to_numpy()
-    ds = ds.drop_vars(["time_bnds"])
-    # weights
+    ds = ds.drop_vars(["time_bnds"], errors="ignore")
+    # Generate weights with both lat & lon dimensions
     weights = np.cos(np.deg2rad(ds.lat))
+    weights = weights / weights.sum()  # Normalize
+    weights = weights.broadcast_like(ds)  # Ensure shape matches ds
     weights.name = "weights"
-    weights.fillna(0)
     # apply weights
     ds_weighted = ds.weighted(weights)
     # apply mean
