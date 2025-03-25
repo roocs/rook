@@ -27,7 +27,7 @@ class DBCatalog(Catalog):
 
     def to_db(self):
         df = self.intake_catalog.load()
-        
+
         # Handle NaN values and undefined values
         df = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
         df = df.replace({"start_time": {"undefined": MIN_DATETIME}})
