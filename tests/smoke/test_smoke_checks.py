@@ -747,4 +747,4 @@ def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" in urls[0]
     assert "esg_c3s-cica-atlas" in urls[0]
-    assert "cd_ERA5-Land_yr_1950-2023.nc" in urls[0]
+    assert "cd_ERA5-Land_yr_1950-2024_v02.nc" in urls[0]
