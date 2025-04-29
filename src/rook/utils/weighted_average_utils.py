@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Union
 
 import numpy as np
 import xarray as xr
@@ -16,11 +15,12 @@ from clisops.utils.file_namers import get_file_namer
 def calc_weighted_mean(ds):
     # fix cftime calendar
     ds["time"] = ds.indexes["time"].to_numpy()
-    ds = ds.drop_vars(["time_bnds"])
-    # weights
+    ds = ds.drop_vars(["time_bnds"], errors="ignore")
+    # Generate weights with both lat & lon dimensions
     weights = np.cos(np.deg2rad(ds.lat))
+    weights = weights / weights.sum()  # Normalize
+    weights = weights.broadcast_like(ds)  # Ensure shape matches ds
     weights.name = "weights"
-    weights.fillna(0)
     # apply weights
     ds_weighted = ds.weighted(weights)
     # apply mean
@@ -43,14 +43,14 @@ class WeightedAverage_(ClisopsAverage):  # noqa: N801
 
 
 def _weighted_average(
-    ds: Union[xr.Dataset, str],
-    dims: Optional[Union[Sequence[str], DimensionParameter]] = None,
+    ds: xr.Dataset | str,
+    dims: Sequence[str] | DimensionParameter | None = None,
     ignore_undetected_dims: bool = False,
-    output_dir: Optional[Union[str, Path]] = None,
+    output_dir: str | Path | None = None,
     output_type: str = "netcdf",
     split_method: str = "time:auto",
     file_namer: str = "standard",
-) -> list[Union[xr.Dataset, str]]:
+) -> list[xr.Dataset | str]:
     op = WeightedAverage_(**locals())
     return op.process()
 

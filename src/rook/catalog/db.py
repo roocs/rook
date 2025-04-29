@@ -3,6 +3,7 @@ from daops.catalog.base import Catalog
 from daops.catalog.intake import IntakeCatalog
 from daops.catalog.util import MAX_DATETIME, MIN_DATETIME, parse_time
 from pywps.dblog import get_session
+from sqlalchemy import text
 
 
 class DBCatalog(Catalog):
@@ -12,16 +13,13 @@ class DBCatalog(Catalog):
         self.intake_catalog = IntakeCatalog(project, url)
 
     def exists(self):
-        session = get_session()
-        engine = get_session().get_bind()
-        try:
-            ins = sqlalchemy.inspect(engine)
-            exists_ = ins.dialect.has_table(engine.connect(), self.table_name)
-        except Exception:
-            exists_ = False
-        finally:
-            session.close()
-        return exists_
+        with get_session() as session:
+            try:
+                engine = session.get_bind()
+                ins = sqlalchemy.inspect(engine)
+                return ins.dialect.has_table(engine.connect(), self.table_name)
+            except Exception:
+                return False
 
     def update(self):
         if not self.exists():
@@ -29,61 +27,62 @@ class DBCatalog(Catalog):
 
     def to_db(self):
         df = self.intake_catalog.load()
-        # workaround for NaN values when no time axis (fx datasets)
-        df = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
 
-        # needed when catalog created from catalog_maker instead of above - can remove the above eventually
+        # Handle NaN values and undefined values
+        df = df.fillna({"start_time": MIN_DATETIME, "end_time": MAX_DATETIME})
         df = df.replace({"start_time": {"undefined": MIN_DATETIME}})
         df = df.replace({"end_time": {"undefined": MAX_DATETIME}})
 
         df = df.set_index("ds_id")
 
         # db connection
-        session = get_session()
-        try:
-            # FIXME: This pattern is deprecated in Pandas v2.0+
+        with get_session() as session:
+            engine = session.get_bind()
             df.to_sql(
                 name=self.table_name,
-                con=session.connection(),
-                schema=None,
+                con=engine,
                 if_exists="replace",
                 index=True,
                 chunksize=500,
             )
             session.commit()
-        finally:
-            session.close()
 
     def _query(self, collection, time=None, time_components=None):
-        """
-        Query database to get the given collection (dataset id).
-
-        https://stackoverflow.com/questions/8603088/sqlalchemy-in-clause
-        """
+        """Query database to get the given collection (dataset id)."""
         self.update()
         start, end = parse_time(time, time_components)
 
-        session = get_session()
-        try:
-            if len(collection) > 1:
-                # FIXME: This is vulnerable to SQL injection
-                query_ = (
-                    f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "  # noqa: S608
-                    f"and end_time>='{start}' and start_time<='{end}'"  # noqa: S608
-                )
+        with get_session() as session:
+            try:
+                # Parameterized query to avoid SQL injection
+                if len(collection) > 1:
+                    # FIXME: This is vulnerable to SQL injection
+                    query_ = text(
+                        f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "  # noqa: S608
+                        f"AND end_time >= :start AND start_time <= :end"
+                    )
+                    result = session.execute(query_, {
+                        # "table_name": self.table_name,
+                        # "collection": tuple(collection),
+                        "start": start,
+                        "end": end
+                    }).fetchall()
+                else:
+                    # FIXME: This is vulnerable to SQL injection
+                    query_ = text(
+                        f"SELECT * FROM {self.table_name} WHERE ds_id = :ds_id "  # noqa: S608
+                        f"AND end_time >= :start AND start_time <= :end"
+                    )
+                    result = session.execute(query_, {
+                        # "table_name": self.table_name,
+                        "ds_id": collection[0],
+                        "start": start,
+                        "end": end
+                    }).fetchall()
+            except Exception:
+                result = []
 
-            else:
-                # FIXME: This is vulnerable to SQL injection
-                query_ = (  # noqa: S608
-                    f"SELECT * FROM {self.table_name} WHERE ds_id='{collection[0]}' "  # noqa: S608
-                    f"and end_time>='{start}' and start_time<='{end}'"  # noqa: S608
-                )
-            result = session.execute(query_).fetchall()
-
-        except Exception:
-            result = []
-        finally:
-            session.close()
+        # Processing result
         records = {}
         for row in result:
             if row.ds_id not in records:
