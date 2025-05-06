@@ -1,7 +1,4 @@
-import tempfile
-from pathlib import Path
-
-from clisops.utils.dataset_utils import open_xr_dataset
+from rook.utils.fixes_utils import convert_calendar_to_gregorian
 
 from daops.data_utils.attr_utils import (
     edit_global_attrs,
@@ -142,11 +139,6 @@ def decadal_fix_calendar(ds_id, ds, output_dir=None):
     # the proleptic gregorian calendar extends the gregorin backward in time before 1582.
     calendar = ds.time.encoding.get("calendar", "standard")
     if calendar == "proleptic_gregorian":
-        ds.time.encoding["calendar"] = "standard"
-        # need to write and read file to rewrite time dimension for the standard calendar!
-        tmp_dir = tempfile.TemporaryDirectory(dir=output_dir)
-        fixed_nc = Path(tmp_dir.name) / "fixed_calendar.nc"
-        ds.to_netcdf(fixed_nc)
-        ds = open_xr_dataset(fixed_nc.as_posix())
-        tmp_dir.cleanup()
+        # ds.time.encoding["calendar"] = "standard"
+        ds = convert_calendar_to_gregorian(ds)
     return ds
