@@ -1,6 +1,11 @@
 Changes
 *******
 
+0.17.1 (2025-05-06)
+===================
+
+* Updated the calendar fix for proleptic gregorian calendar (#277).
+
 0.17.0 (2025-04-29)
 ===================
 
