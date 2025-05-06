@@ -147,9 +147,10 @@ def decadal_fix_calendar(ds_id, ds, output_dir=None):
         # ds.time.encoding["calendar"] = "standard"
         ds = convert_calendar_to_gregorian(ds)
         # need to write and read file to rewrite time dimension for the standard calendar!
-        tmp_dir = tempfile.TemporaryDirectory(dir=output_dir)
-        fixed_nc = Path(tmp_dir.name) / "fixed_calendar.nc"
-        ds.to_netcdf(fixed_nc)
-        ds = open_xr_dataset(fixed_nc.as_posix())
-        tmp_dir.cleanup()
+        if False:
+            tmp_dir = tempfile.TemporaryDirectory(dir=output_dir)
+            fixed_nc = Path(tmp_dir.name) / "fixed_calendar.nc"
+            ds.to_netcdf(fixed_nc)
+            ds = open_xr_dataset(fixed_nc.as_posix())
+            tmp_dir.cleanup()
     return ds
