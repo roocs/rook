@@ -3,7 +3,7 @@ FROM condaforge/mambaforge
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors="https://github.com/roocs/rook"
-LABEL Description="rook WPS" Vendor="Birdhouse" Version="0.17.0"
+LABEL Description="rook WPS" Vendor="Birdhouse" Version="0.17.1"
 
 # Set the working directory to /code
 WORKDIR /code
