@@ -1,15 +1,18 @@
 import xarray as xr
 import cftime
 
+
 def convert_calendar_to_gregorian(ds: xr.Dataset, reference_date="1850-01-01") -> xr.Dataset:
     """
     Convert a Dataset from proleptic_gregorian to gregorian calendar, including time_bnds if present.
 
-    Parameters:
+    Parameters
+    ----------
     - ds (xarray.Dataset): Input dataset with time coordinate using proleptic_gregorian calendar.
     - reference_date (str): Time units origin (e.g., '1850-01-01').
 
-    Returns:
+    Returns
+    -------
     - xarray.Dataset: A new dataset with calendar set to 'gregorian'.
     """
     # ds = ds.copy(deep=True)  # avoid modifying original
