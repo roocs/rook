@@ -18,11 +18,11 @@ C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
 
-C3S_ATLAS_V1_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v1"
+C3S_ATLAS_V2_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v2"
 
-C3S_ATLAS_V1_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v1"
+C3S_ATLAS_V2_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v2"
 
-C3S_ATLAS_V1_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v1"
+C3S_ATLAS_V2_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v2"
 
 
 def test_wps_subset_cmip6_no_inv(pywps_cfg):
@@ -184,9 +184,10 @@ def test_wps_subset_time_invariant_dataset(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-def test_wps_subset_c3s_atlas_v1_cmip5(get_output, pywps_cfg):
+@pytest.mark.xfail(reason="no atlas v2 data in /pool/data")
+def test_wps_subset_c3s_atlas_v2_cmip5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
-    datainputs = f"collection={C3S_ATLAS_V1_CMIP5_COLLECTION}"
+    datainputs = f"collection={C3S_ATLAS_V2_CMIP5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(
@@ -200,9 +201,10 @@ def test_wps_subset_c3s_atlas_v1_cmip5(get_output, pywps_cfg):
     assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
 
 
-def test_wps_subset_c3s_atlas_v1_era5(get_output, pywps_cfg):
+@pytest.mark.xfail(reason="no atlas v2 data in /pool/data")
+def test_wps_subset_c3s_atlas_v2_era5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
-    datainputs = f"collection={C3S_ATLAS_V1_ERA5_COLLECTION}"
+    datainputs = f"collection={C3S_ATLAS_V2_ERA5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
     resp = client.get(

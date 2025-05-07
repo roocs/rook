@@ -10,7 +10,7 @@ C3S_CMIP6_FX_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MRI.MRI-ESM2-0.ssp370.r1i1p1f1.fx.orog.gn.v20190603"
 )
 
-C3S_ATLAS_V1_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon.v1"
+C3S_ATLAS_V2_CMIP6_COLLECTION = "c3s-cica-atlas.sst.CMIP6.ssp245.mon.v2"
 
 
 def test_db_catalog_c3s_cmip6_mon(stratus):
@@ -81,9 +81,9 @@ def test_db_catalog_c3s_cmip6_multiple():
 def test_db_catalog_c3s_cica_atlas():
     cat = DBCatalog(project="c3s-cica-atlas")
     # all files
-    result = cat.search(collection=C3S_ATLAS_V1_CMIP6_COLLECTION)
+    result = cat.search(collection=C3S_ATLAS_V2_CMIP6_COLLECTION)
     assert result.matches == 1
-    files = result.files()[C3S_ATLAS_V1_CMIP6_COLLECTION]
+    files = result.files()[C3S_ATLAS_V2_CMIP6_COLLECTION]
     # print(files)
     assert len(files) == 1
-    assert "CMIP6/ssp245/sst_CMIP6_ssp245_mon_201501-210012.nc" in files[0]
+    assert "CMIP6/ssp245/sst_CMIP6_ssp245_mon_201501-210012_v02.nc" in files[0]
