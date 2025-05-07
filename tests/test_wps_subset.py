@@ -184,6 +184,7 @@ def test_wps_subset_time_invariant_dataset(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.xfail(reason="no atlas v2 data in /pool/data")
 def test_wps_subset_c3s_atlas_v2_cmip5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_ATLAS_V2_CMIP5_COLLECTION}"
@@ -200,6 +201,7 @@ def test_wps_subset_c3s_atlas_v2_cmip5(get_output, pywps_cfg):
     assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
 
 
+@pytest.mark.xfail(reason="no atlas v2 data in /pool/data")
 def test_wps_subset_c3s_atlas_v2_era5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_ATLAS_V2_ERA5_COLLECTION}"
