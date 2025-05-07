@@ -46,7 +46,7 @@ dependencies = [
   "pandas >=2.0",
   "SQLAlchemy >=2.0",
   "aiohttp",
-  "bokeh",
+  "bokeh >=3.7.0",
   "humanize",
   "beautifulsoup4 >4.12.3",
 ]

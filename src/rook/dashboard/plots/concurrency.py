@@ -27,7 +27,7 @@ class ConcurrencyPlot(PlotView):
             x_axis_type="datetime",
             # y_axis_label="Jobs in parallel",
             sizing_mode="scale_width",
-            plot_height=100,
+            height=100,
         )
         plot.vbar(
             x="time",

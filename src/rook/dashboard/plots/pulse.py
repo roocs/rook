@@ -22,8 +22,8 @@ class PulsePlot(PlotView):
             tools="",
             toolbar_location=None,
             sizing_mode="scale_width",
-            # plot_width=800,
-            plot_height=300,
+            # width=800,
+            height=300,
             y_range=list(reversed(DAYS)),
             x_axis_type="datetime",
         )

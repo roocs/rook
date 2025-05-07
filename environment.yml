@@ -30,5 +30,5 @@ dependencies:
   - sqlalchemy >=2.0
   - aiohttp
   # dashboard
-  - bokeh
+  - bokeh >= 3.7.0
   - humanize

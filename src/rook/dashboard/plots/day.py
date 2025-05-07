@@ -29,7 +29,7 @@ class DayPlot(PlotView):
             toolbar_location=None,
             x_range=DAYS,  # Set x-axis range to days of the week
             sizing_mode="scale_width",
-            plot_height=100,
+            height=100,
         )
 
         # Create a vertical bar chart
