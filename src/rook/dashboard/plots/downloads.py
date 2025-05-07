@@ -20,7 +20,7 @@ class DownloadsPlot(PlotView):
             toolbar_location=None,
             x_axis_type="datetime",
             sizing_mode="scale_width",
-            plot_height=100,
+            height=100,
         )
         plot.vbar(
             x="datetime",

@@ -25,7 +25,7 @@ class DurationPlot(PlotView):
             tools="",
             toolbar_location=None,
             sizing_mode="scale_width",
-            plot_height=100,
+            height=100,
         )
         plot.quad(
             top=hist,

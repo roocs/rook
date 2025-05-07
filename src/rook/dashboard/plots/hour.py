@@ -25,7 +25,7 @@ class HourPlot(PlotView):
         plot = figure(
             title="Requests per Hour of Day",
             sizing_mode="scale_width",
-            plot_height=100,
+            height=100,
             # x_axis_label="Hour of Day",
             # y_axis_label="Request Count",
             # x_range=HOURS,

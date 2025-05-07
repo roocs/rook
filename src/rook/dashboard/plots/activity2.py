@@ -21,7 +21,7 @@ def plot(df):
         x_axis_type="datetime",
         # y_axis_label="Requests per day",
         sizing_mode="scale_width",
-        plot_height=100,
+        height=100,
     )
     plot.line(x="Date", y="Jobs", source=ColumnDataSource(data(df)), color="green")
     return components(plot)
