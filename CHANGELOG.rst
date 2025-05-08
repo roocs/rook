@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.17.2 (2025-05-08)
+===================
+
+* Updated tests for atlas v2 (#280).
+* Fixed dashboard for latest `bokeh >=3.7` (#279).
+
 0.17.1 (2025-05-06)
 ===================
 
