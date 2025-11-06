@@ -54,6 +54,14 @@ class Regrid(Process):
                 ],
                 default="auto",
             ),
+            LiteralInput(
+                "grid_desc",
+                "Optional description of the regrid target grid",
+                abstract="Description of the target grid (optional)",
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
         ]
         outputs = [
             ComplexOutput(
