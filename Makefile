@@ -107,7 +107,7 @@ lint: ## check style with ruff
 
 test: ## run tests quickly with the default Python (skip slow and online tests)
 	@echo "Running tests (skip slow and online tests) ..."
-	@bash -c 'pytest -v -m "not slow and not online" -n auto tests/'
+	@bash -c 'pytest -v -m "not slow and not online" -n 2 tests/'
 
 test-tox: ## run tests on every available Python version with tox
 	@bash -c 'tox'
