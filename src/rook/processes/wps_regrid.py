@@ -59,9 +59,15 @@ class Regrid(Process):
             LiteralInput(
                 "custom_grid",
                 "Custom grid definition",
-                abstract="Only used if grid='custom'. Provide space-separated numbers. "
-                         "Allowed lengths: 1 (d), 2 (d_lon d_lat), 3 (lonlat_0 lonlat_1 d_lonlat), "
-                         "6 (lon_0 lon_1 d_lon lat_0 lat_1 d_lat).",
+                abstract=(
+                    "Only used if grid='custom'. Provide space-separated numbers defining the target grid. "
+                    "Allowed lengths: 1 (d), 2 (d_lon d_lat), 3 (lonlat_0 lonlat_1 d_lonlat), 6 (lon_0 lon_1 d_lon lat_0 lat_1 d_lat). "
+                    "Examples: "
+                    "'0.5' (uniform 0.5° grid), "
+                    "'0.5 0.25' (0.5° lon x 0.25° lat), "
+                    "'-90 90 0.25' (lat-only range), "
+                    "'-10 30 0.25 35 70 0.25' (full bounding box)."
+                ),
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
