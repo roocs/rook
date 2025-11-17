@@ -4,7 +4,7 @@ from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
 from ..director import wrap_director
-from ..utils.input_utils import parse_wps_input
+from ..utils.input_utils import parse_wps_input, get_grid_param
 from ..utils.metalink_utils import build_metalink
 from ..utils.regrid_utils import run_regrid
 from ..utils.response_utils import populate_response
@@ -37,7 +37,8 @@ class Regrid(Process):
             LiteralInput(
                 "grid",
                 "Regrid target grid",
-                abstract="Please specify output grid resolution for regridding. Default: auto",
+                abstract="Select target grid resolution for regridding. "
+                         "Choose a predefined grid or select 'custom' to provide your own.",
                 data_type="string",
                 min_occurs=1,
                 max_occurs=1,
@@ -51,8 +52,25 @@ class Regrid(Process):
                     "1deg",
                     "1pt25deg",
                     "2pt5deg",
+                    "custom",
                 ],
                 default="auto",
+            ),
+            LiteralInput(
+                "custom_grid",
+                "Custom grid definition",
+                abstract=(
+                    "Only used if grid='custom'. Provide space-separated numbers defining the target grid. "
+                    "Allowed lengths: 1 (d), 2 (d_lon d_lat), 3 (lonlat_0 lonlat_1 d_lonlat), 6 (lon_0 lon_1 d_lon lat_0 lat_1 d_lat). "
+                    "Examples: "
+                    "'0.5' (uniform 0.5° grid), "
+                    "'0.5 0.25' (0.5° lon x 0.25° lat), "
+                    "'-90 90 0.25' (lat-only range), "
+                    "'-10 30 0.25 35 70 0.25' (full bounding box)."
+                ),
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
             ),
         ]
         outputs = [
@@ -102,13 +120,16 @@ class Regrid(Process):
             request.inputs, "collection", as_sequence=True, must_exist=True
         )
 
+        grid = parse_wps_input(request.inputs, "grid", default="auto")
+        custom_grid = parse_wps_input(request.inputs, "custom_grid", default="")
+
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
             "apply_fixes": False,
             "pre_checked": False,
             "method": parse_wps_input(request.inputs, "method", default="nearest_s2d"),
-            "grid": parse_wps_input(request.inputs, "grid", default="auto"),
+            "grid": get_grid_param(grid, custom_grid),
             "adaptive_masking_threshold": 0.5,
         }
         # print(inputs)

@@ -7,6 +7,32 @@ TC_ALL_MONTHS_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
 TC_ALL_DAYS = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
 
 
+def parse_custom_grid(grid_str: str):
+    """
+    Parse the custom grid string into a tuple/list for clisops regrid.
+
+    Allowed lengths: 1, 2, 3, 6.
+    """
+    parts = [float(x) for x in grid_str.split()]
+    if len(parts) in (1, 2, 3, 6):
+        return tuple(parts)
+    raise ProcessError(
+        f"Invalid custom_grid format: expected 1, 2, 3, or 6 values, got {len(parts)}"
+    )
+
+
+def get_grid_param(grid: str, custom_grid: str | None):
+    if grid == "custom":
+        if not custom_grid:
+            raise ProcessError(
+                "Parameter 'custom_grid' is required when grid='custom'"
+            )
+        grid_param = parse_custom_grid(custom_grid)
+    else:
+        grid_param = grid
+    return grid_param
+
+
 def fix_parameters(parameters):
     if "time_components" in parameters:
         parameters["time_components"] = fix_time_components(
