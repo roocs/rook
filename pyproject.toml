@@ -28,6 +28,7 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 dynamic = ["description", "version"]
@@ -36,8 +37,10 @@ dependencies = [
   "jinja2 >=3.1.4",
   "psutil >=6.0.0",
   "pywps >=4.5.2,<4.7",
+  "xarray >=2025.6.0",
+  "numpy >=1.25.0",
   "daops >=0.15.0",
-  "clisops >=0.16.1",
+  "clisops >=0.16.2",
   "roocs_grids >=0.1.2",
   "networkx",
   "prov >=2.0.0",
