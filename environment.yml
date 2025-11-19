@@ -10,7 +10,7 @@ dependencies:
   - requests
   - cftime >=1.2.1
   - numpy >=1.25.0
-  - xarray >=2025.6.0
+  - xarray >=2025.1.0
   - xesmf >=0.8.2
   - cf_xarray >=0.7
   - dask >=2021.12
