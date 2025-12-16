@@ -15,7 +15,8 @@ dependencies:
   - dask >=2021.12
   - netcdf4 >=1.4
   - daops >=0.15.0
-  - clisops >=0.16.1
+  - clisops >=0.17.0
+  - h5netcdf
   - roocs-grids >=0.1.2
   - beautifulsoup4 >4.12.3
   # workflow
