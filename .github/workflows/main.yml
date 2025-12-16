@@ -28,23 +28,25 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: block
-          allowed-endpoints: >
+          allowed-endpoints: |
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
+
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
       - name: Setup Python${{ matrix.python-version }}
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+
       - name: Install linting libraries
-        run: |
-          python -m pip install ruff
+        run: python -m pip install ruff
+
       - name: Run Lint 📦
-        run: |
-          make lint
+        run: make lint
 
   build:
     name: Conda Build with Python${{ matrix.python-version }}
@@ -53,29 +55,28 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
-    defaults:
-      run:
-        shell: bash -l {0}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - name: Install packages
-        run: |
-          sudo apt-get -y install pandoc graphviz
+
+      - name: Install system packages
+        run: sudo apt-get -y install pandoc graphviz
+
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@f8b8a1e23a26f60a44c853292711bacfd3eac822 # v1.9.0
+        uses: mamba-org/setup-micromamba@v2.2.0 # updated from v1.9.0
         with:
+          environment-file: environment.yml
+          create-args: "python=${{ matrix.python-version }}"
+          init-shell: false
           cache-downloads: true
           cache-environment: true
-          environment-file: environment.yml
-          create-args: >-
-            python=${{ matrix.python-version }}
+
       - name: Install requirements 📦
-        run: |
-          python -m pip install -e ".[dev]"
+        run: python -m pip install -e ".[dev]"
+
       - name: Test with pytest ⚙️
-        run: |
-          pytest -v -m "not smoke" tests
+        run: pytest -v -m "not smoke" tests
 
   docs:
     name: Docs (Python${{ matrix.python-version }})
@@ -91,20 +92,22 @@ jobs:
         with:
           disable-sudo: true
           egress-policy: block
-          allowed-endpoints: >
+          allowed-endpoints: |
             files.pythonhosted.org:443
             github.com:443
             pypi.org:443
+
       - name: Checkout Repository
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
       - name: Setup Python${{ matrix.python-version }}
         uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+
       - name: Install rook with dev requirements 📦
-        run: |
-          python -m pip install -e ".[dev]"
+        run: python -m pip install -e ".[dev]"
+
       - name: Build Docs 📚
-        run: |
-          make docs
+        run: make docs
