@@ -70,7 +70,7 @@ jobs:
           create-args: "python=${{ matrix.python-version }}"
           init-shell: none
           cache-downloads: true
-          cache-environment: true
+          cache-environment: false
 
       - name: Install requirements 📦
         run: python -m pip install -e ".[dev]"
