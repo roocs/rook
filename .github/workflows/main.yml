@@ -69,7 +69,7 @@ jobs:
           environment-file: environment.yml
           create-args: "python=${{ matrix.python-version }}"
           init-shell: none
-          cache-downloads: true
+          cache-downloads: false
           cache-environment: false
 
       - name: Install requirements 📦
