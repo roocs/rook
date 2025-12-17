@@ -27,7 +27,6 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Atmospheric Science"
 ]
 dynamic = ["description", "version"]
@@ -38,9 +37,11 @@ dependencies = [
   "pywps >=4.5.2,<4.8",
   "daops >=0.15.0",
   "clisops >=0.17.0",
+  "h5netcdf",
   "roocs_grids >=0.1.2",
   "networkx",
   "prov >=2.0.0",
+  "rdflib",
   "pydot",
   "intake <2.0",
   "pandas >=2.0",
@@ -87,7 +88,6 @@ rook = "rook.cli:cli"
 
 [tool.black]
 target-version = [
-  "py310",
   "py311",
   "py312"
 ]
