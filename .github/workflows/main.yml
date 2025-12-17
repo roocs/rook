@@ -64,7 +64,7 @@ jobs:
         run: sudo apt-get -y install pandoc graphviz
 
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
-        uses: mamba-org/setup-micromamba@v2.2.0 # updated from v1.9.0
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
           create-args: "python=${{ matrix.python-version }}"
