@@ -76,7 +76,7 @@ jobs:
         run: python -m pip install -e ".[dev]"
 
       - name: Test with pytest ⚙️
-        run: pytest -v -m "not smoke" tests
+        run: make test
 
   docs:
     name: Docs (Python${{ matrix.python-version }})
