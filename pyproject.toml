@@ -37,7 +37,7 @@ dependencies = [
   "psutil >=6.0.0",
   "pywps >=4.5.2,<4.8",
   "daops >=0.15.0",
-  "clisops >=0.16.1",
+  "clisops >=0.17.0",
   "roocs_grids >=0.1.2",
   "networkx",
   "prov >=2.0.0",
