@@ -10,8 +10,9 @@ dependencies:
   - psutil >=6.0.0
   - requests
   - cftime >=1.2.1
-  - xarray >=2025.1.1 
-  - xesmf >=0.8.2
+  - xarray >=2025.6.0,<2025.11.0
+  - zarr >=2.13.0,<3.0
+  - xesmf >=0.9.2
   - cf_xarray >=0.7
   - dask >=2021.12
   - netcdf4 >=1.4
