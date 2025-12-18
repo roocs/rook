@@ -55,6 +55,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
+      defaults:
+        run:
+          shell: bash -l {0}
 
     steps:
       - name: Checkout Repository
@@ -74,7 +77,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --no-user --editable ".[dev]"
+          python -m pip install --editable ".[dev]"
 
       - name: Test with pytest ⚙️
         run: pytest -v -m "not slow and not online" tests/
