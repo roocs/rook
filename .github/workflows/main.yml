@@ -55,9 +55,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
-      defaults:
-        run:
-          shell: bash -l {0}
 
     steps:
       - name: Checkout Repository
