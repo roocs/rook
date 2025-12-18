@@ -4,6 +4,7 @@ from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 from shapely import Polygon
 from rook.utils.metalink_utils import extract_paths_from_metalink
+import pytest
 
 from rook.processes.wps_average_shape import AverageByShape
 
@@ -21,6 +22,7 @@ POLY = Polygon(
 )
 
 
+@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
 def test_wps_average_shape_cmip6(tmp_path, get_output, pywps_cfg):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
