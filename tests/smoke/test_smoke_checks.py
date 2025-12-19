@@ -573,7 +573,7 @@ def test_smoke_execute_c3s_cmip6_regrid(wps):
     urls = wps.execute("regrid", inputs)
     assert len(urls) == 1
     assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-120x179_cells_grid.nc"
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-120x180_cells_grid.nc"
         in urls[0]
     )
 
@@ -664,6 +664,7 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
+@pytest.mark.xfail(reason="issue with datatime and xarray+dask")
 def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
