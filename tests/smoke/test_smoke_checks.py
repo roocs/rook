@@ -664,7 +664,6 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
-@pytest.mark.xfail(reason="issue with datatime and xarray+dask")
 def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
