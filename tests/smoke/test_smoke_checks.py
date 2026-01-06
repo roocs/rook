@@ -126,7 +126,7 @@ WF_C3S_CMIP6_REGRID = json.dumps(
     }
 )
 
-WF_C3S_CMIP6_REGRID_CUSTOM= json.dumps(
+WF_C3S_CMIP6_REGRID_CUSTOM = json.dumps(
     {
         "doc": "subset+regrid on cmip6 with custom grid",
         "inputs": {"ds": [C3S_CMIP6_MON_COLLECTION]},
@@ -600,6 +600,7 @@ def test_smoke_execute_c3s_cmip6_regrid(wps):
         in urls[0]
     )
 
+
 def test_smoke_execute_c3s_cmip6_regrid_custom(wps):
     inputs = [
         ("collection", C3S_CMIP6_MON_COLLECTION),
@@ -654,6 +655,7 @@ def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
         "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20160116-20161216_regrid-nearest_s2d-180x360_cells_grid.nc"
         in urls[0]
     )
+
 
 def test_smoke_execute_c3s_cmip6_regrid_custom_orchestrate(wps):
     inputs = [
