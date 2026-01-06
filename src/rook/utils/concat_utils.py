@@ -25,6 +25,18 @@ coord_by_standard_name = {
 }
 
 
+def drop_time_bnds(ds: xr.Dataset) -> xr.Dataset:
+    """
+    Drop time_bnds variable.
+
+    Drop time_bnds to avoid xarray CF encoding failures
+    with dask + datetime objects.
+    """
+    if "time_bnds" in ds.variables:
+        ds = ds.drop_vars("time_bnds")
+    return ds
+
+
 def patched_normalise(collection):
     # TODO: this is a patched function of daops to fix the gregorian calendar issue
     norm_collection = collections.OrderedDict()
@@ -108,6 +120,8 @@ class Concat(Operation):
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
+        # fix time_bnds issue
+        processed_ds = drop_time_bnds(processed_ds)
         # optional: average
         if self.params.get("apply_average", False):
             processed_ds = average(processed_ds, dims=[dim])
