@@ -27,6 +27,8 @@ coord_by_standard_name = {
 
 def drop_time_bnds(ds: xr.Dataset) -> xr.Dataset:
     """
+    Drop time_bnds variable.
+
     Drop time_bnds to avoid xarray CF encoding failures
     with dask + datetime objects.
     """
