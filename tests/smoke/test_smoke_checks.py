@@ -587,7 +587,7 @@ def test_smoke_execute_c3s_cmip6_regrid_custom(wps):
     urls = wps.execute("regrid", inputs)
     assert len(urls) == 1
     assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-120x180_cells_grid.nc"
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-360x720_cells_grid.nc"
         in urls[0]
     )
 
