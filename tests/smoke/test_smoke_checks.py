@@ -577,6 +577,20 @@ def test_smoke_execute_c3s_cmip6_regrid(wps):
         in urls[0]
     )
 
+def test_smoke_execute_c3s_cmip6_regrid_custom(wps):
+    inputs = [
+        ("collection", C3S_CMIP6_MON_COLLECTION),
+        ("grid", "custom"),
+        ("custom_grid", "0.5"),
+        ("method", "nearest_s2d"),
+    ]
+    urls = wps.execute("regrid", inputs)
+    assert len(urls) == 1
+    assert (
+        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr_20150116-21001216_regrid-nearest_s2d-120x180_cells_grid.nc"
+        in urls[0]
+    )
+
 
 def test_smoke_execute_c3s_cmip5_orchestrate(wps):
     inputs = [
