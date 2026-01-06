@@ -118,10 +118,11 @@ class Concat(Operation):
             {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
         )
         processed_ds.coords[dim].attrs = {"standard_name": standard_name}
+        # fix time_bnds issue
+        processed_ds = drop_time_bnds(processed_ds)
         # optional: average
         if self.params.get("apply_average", False):
             processed_ds = average(processed_ds, dims=[dim])
-            processed_ds = drop_time_bnds(processed_ds)
         # subset
         outputs = subset(
             processed_ds,
