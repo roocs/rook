@@ -393,6 +393,22 @@ def test_smoke_execute_c3s_cmip6_subset_area_fill_value(wps, tmp_path, open_data
     assert "tas" in ds.variables
 
 
+def test_smoke_execute_c3s_cmip6_subset_noresm2_fix_282(wps, tmp_path, open_dataset):
+    # TEST FOR ISSUE #282
+    dsid = "c3s-cmip6.ScenarioMIP.NCC.NorESM2-MM.ssp245.r1i1p1f1.Omon.tos.gn.v20191108"
+    inputs = [
+        ("collection", dsid),
+        ("time", "2050/2051"),
+        ("time_components", "year:2050,2051|month:april"),
+        ("area", "90,-180,-90,180"),
+    ]
+    urls = wps.execute("subset", inputs)
+    assert len(urls) == 1
+    assert "tos_mon_NorESM2-MM_ssp245_r1i1p1f1_gn_20500401-20510430.nc" in urls[0]
+    ds = open_dataset(urls[0], tmp_path)
+    assert "tos" in ds.variables
+
+
 def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CORDEX_MON_COLLECTION),
