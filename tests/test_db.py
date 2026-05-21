@@ -86,4 +86,4 @@ def test_db_catalog_c3s_cica_atlas():
     files = result.files()[C3S_ATLAS_V25_CMIP6_COLLECTION]
     # print(files)
     assert len(files) == 1
-    assert "CMIP6/ssp245/sst_CMIP6_ssp245_mon_201501-210012_v25.nc" in files[0]
+    assert "CMIP6/ssp245/sst_CMIP6_ssp245_mon_201501-210012_v025.nc" in files[0]
