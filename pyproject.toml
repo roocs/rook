@@ -222,6 +222,7 @@ ignore = [
   "S112", # `try`-`except`-`continue` detected, consider logging the exception
   "C408", # Unnecessary `dict()` call (rewrite as a literal)
   "C419", # Unnecessary list comprehension
+  "RUF067", # `__init__` module should only contain docstrings and re-exports
 ]
 select = [
   "BLE", # blind-except
