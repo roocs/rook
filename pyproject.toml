@@ -38,6 +38,7 @@ dependencies = [
   "daops >=0.16.0",
   "clisops >=0.17.0",
   "h5netcdf >=1.5.0",
+  "h5py",
   "xesmf >=0.9.2",
   "xarray >=2025.6.0",
   "roocs_grids >=0.1.2",
@@ -222,6 +223,7 @@ ignore = [
   "S112", # `try`-`except`-`continue` detected, consider logging the exception
   "C408", # Unnecessary `dict()` call (rewrite as a literal)
   "C419", # Unnecessary list comprehension
+  "RUF067", # `__init__` module should only contain docstrings and re-exports
 ]
 select = [
   "BLE", # blind-except
