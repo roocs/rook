@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.19.0 (2026-05-27)
+===================
+
+* Added support for atlas v2.5 data (#290).
+* Updated smoke tests.
+
 0.18.0 (2025-12-19)
 ===================
 
