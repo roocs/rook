@@ -6,4 +6,4 @@
 
 __author__ = """Carsten Ehbrecht"""
 __email__ = "ehbrecht@dkrz.de"
-__version__ = "0.18.0"
+__version__ = "0.19.0"
