@@ -3,11 +3,6 @@
 import collections
 import os
 
-try:
-    from daops.utils import is_characterised as _daops_is_characterised
-except Exception:  # pragma: no cover
-    _daops_is_characterised = None
-
 class ResultSet:
     """A class to hold operation results with file URI extraction."""
 
@@ -28,8 +23,5 @@ class ResultSet:
 
 
 def is_characterised(*args, **kwargs):
-    """Proxy to daops characterisation lookup, with safe fallback."""
-    if _daops_is_characterised is None:
-        # Conservative fallback: treat as not characterised when daops is absent.
-        return False
-    return _daops_is_characterised(*args, **kwargs)
+    """Return False until characterisation lookup is reintroduced locally."""
+    return False
