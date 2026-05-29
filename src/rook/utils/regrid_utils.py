@@ -1,5 +1,5 @@
 from rook.utils.input_utils import parse_custom_grid
-from rook.utils.ops.compat import run_daops_regrid
+from rook.utils.ops.compat import run_regrid
 
 
 def run_regrid(args):
@@ -10,4 +10,4 @@ def run_regrid(args):
         # parse the string into a tuple/list
         args["grid"] = parse_custom_grid(args.pop("custom_grid"))
 
-    return run_daops_regrid(args)
+    return run_regrid(args)

@@ -5,9 +5,7 @@ from clisops.ops.average import average_shape as clisops_average_shape
 from clisops.ops.average import average_time as clisops_average_time
 from clisops.parameter import collection_parameter, dimension_parameter
 
-from .base_selector import get_operation_base
-
-Operation = get_operation_base(default_local=True)
+from .base import Operation
 
 __all__ = ["average_over_dims", "average_shape", "average_time", "Average"]
 

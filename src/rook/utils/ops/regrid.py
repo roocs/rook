@@ -3,9 +3,7 @@
 from clisops.ops.regrid import regrid as clisops_regrid
 from clisops.parameter import collection_parameter
 
-from .base_selector import get_operation_base
-
-Operation = get_operation_base(default_local=True)
+from .base import Operation
 
 __all__ = ["regrid", "Regrid"]
 
