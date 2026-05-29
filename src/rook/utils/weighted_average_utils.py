@@ -7,9 +7,9 @@ import xarray as xr
 
 from clisops.parameter.dimension_parameter import DimensionParameter
 
-from daops.ops.average import Average as DaopsAverage
 from clisops.ops.average import Average as ClisopsAverage
 from clisops.utils.file_namers import get_file_namer
+from rook.utils.ops_compat import run_daops_custom_average
 
 
 def calc_weighted_mean(ds):
@@ -55,25 +55,5 @@ def _weighted_average(
     return op.process()
 
 
-class WeightedAverage(DaopsAverage):
-    def get_operation_callable(self):
-        return _weighted_average
-
-
-def weighted_average(
-    collection,
-    dims=None,
-    ignore_undetected_dims=False,
-    output_dir=None,
-    output_type="netcdf",
-    split_method="time:auto",
-    file_namer="standard",
-    apply_fixes=False,
-):
-    result_set = WeightedAverage(**locals()).calculate()
-    return result_set
-
-
 def run_weighted_average(args):
-    result = weighted_average(**args)
-    return result.file_uris
+    return run_daops_custom_average(args, _weighted_average)

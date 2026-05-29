@@ -23,3 +23,13 @@ def run_daops_regrid(args):
     from daops.ops.regrid import regrid
 
     return regrid(**args).file_uris
+
+
+def run_daops_custom_average(args, operation_callable):
+    from daops.ops.average import Average as DaopsAverage
+
+    class _Average(DaopsAverage):
+        def get_operation_callable(self):
+            return operation_callable
+
+    return _Average(**args).calculate().file_uris
