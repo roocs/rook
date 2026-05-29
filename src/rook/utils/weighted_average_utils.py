@@ -9,7 +9,7 @@ from clisops.parameter.dimension_parameter import DimensionParameter
 
 from clisops.ops.average import Average as ClisopsAverage
 from clisops.utils.file_namers import get_file_namer
-from rook.utils.ops.compat import run_custom_average
+from rook.utils.ops.average import Average as OpsAverage
 
 
 def calc_weighted_mean(ds):
@@ -56,4 +56,8 @@ def _weighted_average(
 
 
 def run_weighted_average(args):
-    return run_custom_average(args, _weighted_average)
+    class _Average(OpsAverage):
+        def get_operation_callable(self):
+            return _weighted_average
+
+    return _Average(**args).calculate().file_uris
