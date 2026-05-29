@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -12,7 +13,8 @@ PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
 def server_url():
-    config.load_configuration(cfgfiles=PYWPS_CFG.as_posix())
+    cfgfile = os.getenv("PYWPS_CFG", PYWPS_CFG.as_posix())
+    config.load_configuration(cfgfiles=cfgfile)
     url = config.get_config_value("server", "url")
     return url
 
