@@ -117,7 +117,7 @@ class Concat(Process):
             title="Concat",
             abstract="Run concat on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

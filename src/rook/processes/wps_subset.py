@@ -125,9 +125,9 @@ class Subset(Process):
             self._handler,
             identifier="subset",
             title="Subset",
-            abstract="Run subsetting on climate model data. Calls daops operators.",
+            abstract="Run subsetting on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

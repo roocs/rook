@@ -37,7 +37,7 @@ model_specific_global_attrs = {
 
 
 def get_decadal_model_attr_from_dict(ds_id, ds, attr):
-    # TODO: method taken from daops.fix_utils.decadal_utils.py
+    # TODO: method originally ported from legacy decadal utility code.
     # Add the model-specific global attr
     model = ds_id.split(".")[3]
     value = model_specific_global_attrs[model][attr]

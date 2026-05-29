@@ -103,9 +103,9 @@ class Regrid(Process):
             self._handler,
             identifier="regrid",
             title="Regrid",
-            abstract="Run regridding operator on climate model data using daops (xarray).",
+            abstract="Run regridding operator on climate model data using clisops (xarray).",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

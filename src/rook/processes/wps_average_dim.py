@@ -91,7 +91,7 @@ class AverageByDimension(Process):
             title="Average by Dimensions",
             abstract="Run averaging by dimensions on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

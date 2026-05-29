@@ -85,7 +85,7 @@ class AverageByTime(Process):
             title="Average by Time",
             abstract="Run averaging by time on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,
