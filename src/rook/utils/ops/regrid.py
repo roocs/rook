@@ -3,7 +3,9 @@
 from clisops.ops.regrid import regrid as clisops_regrid
 from clisops.parameter import collection_parameter
 
-from daops.ops.base import Operation
+from .base_selector import get_operation_base
+
+Operation = get_operation_base(default_local=True)
 
 __all__ = ["regrid", "Regrid"]
 
