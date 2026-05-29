@@ -8,33 +8,23 @@ try:
 except Exception:  # pragma: no cover
     _daops_is_characterised = None
 
-try:
-    from daops.utils.normalise import ResultSet as _DaopsResultSet
-except Exception:  # pragma: no cover
-    _DaopsResultSet = None
+class ResultSet:
+    """A class to hold operation results with file URI extraction."""
 
+    def __init__(self, inputs=None):  # noqa: D107
+        self._results = collections.OrderedDict()
+        self.metadata = {"inputs": inputs, "process": "something", "version": 0.1}
+        self.file_uris = []
 
-if _DaopsResultSet is not None:
-    ResultSet = _DaopsResultSet
-else:
+    def add(self, dset, result):
+        """Add outputs for a dataset and collect file-like URIs."""
+        self._results[dset] = result
 
-    class ResultSet:
-        """A class to hold operation results with file URI extraction."""
-
-        def __init__(self, inputs=None):  # noqa: D107
-            self._results = collections.OrderedDict()
-            self.metadata = {"inputs": inputs, "process": "something", "version": 0.1}
-            self.file_uris = []
-
-        def add(self, dset, result):
-            """Add outputs for a dataset and collect file-like URIs."""
-            self._results[dset] = result
-
-            for item in result:
-                if isinstance(item, str) and (
-                    os.path.isfile(item) or item.startswith("https")
-                ):
-                    self.file_uris.append(item)
+        for item in result:
+            if isinstance(item, str) and (
+                os.path.isfile(item) or item.startswith("https")
+            ):
+                self.file_uris.append(item)
 
 
 def is_characterised(*args, **kwargs):
