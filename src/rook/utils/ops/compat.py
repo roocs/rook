@@ -23,7 +23,7 @@ def run_daops_average_shape(args):
 
 
 def run_daops_regrid(args):
-    from daops.ops.regrid import regrid
+    from rook.utils.ops.regrid import regrid
 
     return regrid(**args).file_uris
 
