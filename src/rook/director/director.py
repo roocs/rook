@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-from daops.utils import is_characterised
-from daops.utils.normalise import ResultSet
 from pywps.app.exceptions import ProcessError
 from clisops.project_utils import get_project_name
 from clisops.utils.file_utils import FileMapper
@@ -12,6 +10,7 @@ from rook.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
+from .compat import ResultSet, is_characterised
 
 
 def wrap_director(collection, inputs, runner):
