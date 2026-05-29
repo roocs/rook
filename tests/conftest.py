@@ -76,11 +76,11 @@ def write_roocs_cfg(stratus):
     os.environ["ROOCS_CONFIG"] = ROOCS_CFG.as_posix()
     # TODO: reload configs in clisops
     # workaround ... fix code in new clisops.
-    import daops
     import clisops
+    from clisops.config import get_config
     import rook
 
-    cfg = daops.config_()
+    cfg = get_config(rook.package)
     clisops.CONFIG = cfg
     clisops.project_utils.CONFIG = cfg
     rook.CONFIG = cfg
