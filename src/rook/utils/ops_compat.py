@@ -1,7 +1,7 @@
 """Compatibility wrappers around operation backends."""
 
-from daops.ops.base import Operation as DaopsOperation
-from daops.utils import normalise as daops_normalise
+from rook.utils.ops_base import Operation as DaopsOperation
+from rook.utils import ops_normalise as daops_normalise
 
 
 def run_daops_average_time(args):
