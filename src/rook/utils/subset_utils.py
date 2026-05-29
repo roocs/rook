@@ -1,14 +1,13 @@
 from clisops.ops.subset import subset as clisops_subset
 from clisops.parameter import parameterise
 
-from daops.ops.base import Operation
-from daops.utils import normalise
+from rook.utils.ops_compat import DaopsOperation, daops_normalise
 
 from .apply_fixes import apply_fixes
 from .input_utils import fix_parameters
 
 
-class Subset(Operation):
+class Subset(DaopsOperation):
     def _resolve_params(self, collection, **params):
         parameters = parameterise(
             collection=collection,
@@ -32,9 +31,9 @@ class Subset(Operation):
         self.params.update(config)
 
         # Normalise data inputs based
-        norm_collection = normalise.normalise(self.collection, False)
+        norm_collection = daops_normalise.normalise(self.collection, False)
 
-        rs = normalise.ResultSet(vars())
+        rs = daops_normalise.ResultSet(vars())
 
         for dset, norm_collection_ in norm_collection.items():
             fixed_collection = apply_fixes(dset, norm_collection_)

@@ -14,8 +14,7 @@ from clisops.utils.dataset_utils import open_xr_dataset
 from clisops.ops import subset
 from clisops.core.average import average_over_dims as average
 
-from daops.ops.base import Operation
-from daops.utils import normalise
+from rook.utils.ops_compat import DaopsOperation, daops_normalise
 
 from .decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 from .input_utils import fix_parameters
@@ -52,7 +51,7 @@ def patched_normalise(collection):
     return norm_collection
 
 
-class Concat(Operation):
+class Concat(DaopsOperation):
     def _resolve_params(self, collection, **params):
         """
         Resolve the input parameters to `self.params`.
@@ -94,7 +93,7 @@ class Concat(Operation):
         # Normalise (i.e. "fix") data inputs based on "character"
         norm_collection = patched_normalise(new_collection)
 
-        rs = normalise.ResultSet(vars())
+        rs = daops_normalise.ResultSet(vars())
 
         # datasets = list(norm_collection.values())
         # apply decadal fixes
