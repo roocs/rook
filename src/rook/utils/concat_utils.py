@@ -14,7 +14,7 @@ from clisops.utils.dataset_utils import open_xr_dataset
 from clisops.ops import subset
 from clisops.core.average import average_over_dims as average
 
-from rook.utils.ops_compat import DaopsOperation, daops_normalise
+from rook.utils.ops.compat import DaopsOperation, daops_normalise
 
 from .decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 from .input_utils import fix_parameters

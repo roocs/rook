@@ -1,7 +1,7 @@
 from clisops.ops.subset import subset as clisops_subset
 from clisops.parameter import parameterise
 
-from rook.utils.ops_compat import DaopsOperation, daops_normalise
+from rook.utils.ops.compat import DaopsOperation, daops_normalise
 
 from .apply_fixes import apply_fixes
 from .input_utils import fix_parameters

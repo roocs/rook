@@ -1,5 +1,5 @@
 from rook.utils.input_utils import parse_custom_grid
-from rook.utils.ops_compat import run_daops_regrid
+from rook.utils.ops.compat import run_daops_regrid
 
 
 def run_regrid(args):

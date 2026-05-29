@@ -2,8 +2,8 @@
 
 from clisops.parameter import collection_parameter
 
-from . import ops_consolidate, ops_normalise
-from .ops_processor import process
+from . import consolidate, normalise
+from .processor import process
 
 
 class Operation:
@@ -33,11 +33,11 @@ class Operation:
 
     def _consolidate_collection(self):
         if "time" in self.params:
-            self.collection = ops_consolidate.consolidate(
+            self.collection = consolidate.consolidate(
                 self.collection, time=self.params.get("time")
             )
         else:
-            self.collection = ops_consolidate.consolidate(self.collection)
+            self.collection = consolidate.consolidate(self.collection)
 
     def get_operation_callable(self):
         raise NotImplementedError
@@ -52,9 +52,9 @@ class Operation:
 
         self.params.update(config)
 
-        norm_collection = ops_normalise.normalise(self.collection, self._apply_fixes)
+        norm_collection = normalise.normalise(self.collection, self._apply_fixes)
 
-        rs = ops_normalise.ResultSet(vars())
+        rs = normalise.ResultSet(vars())
 
         for dset, collection in norm_collection.items():
             rs.add(
