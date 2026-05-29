@@ -13,9 +13,9 @@
       "prov:type": "prov:SoftwareAgent",
       "dcterms:source": "https://github.com/roocs/rook/releases/tag/v0.2.0"
     },
-    "daops": {
+    "clisops": {
       "prov:type": "prov:SoftwareAgent",
-      "dcterms:source": "https://github.com/roocs/daops/releases/tag/v0.3.0"
+      "dcterms:source": "https://github.com/roocs/clisops"
     }
   },
   "wasAttributedTo": {
@@ -55,12 +55,12 @@
     },
     "_:id3": {
       "prov:activity": "subset_tas_1",
-      "prov:agent": "daops",
+      "prov:agent": "clisops",
       "prov:plan": "workflow"
     },
     "_:id5": {
       "prov:activity": "subset_tas_2",
-      "prov:agent": "daops",
+      "prov:agent": "clisops",
       "prov:plan": "workflow"
     }
   },

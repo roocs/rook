@@ -125,4 +125,4 @@ Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
-.. _daops: https://github.com/roocs/daops
+.. _clisops: https://github.com/roocs/clisops

@@ -86,7 +86,6 @@ autodoc_mock_imports = [
     "zlib",
     # roocs
     "clisops",
-    "daops",
 ]
 
 # Monkeypatch constant because the following are mock imports.
