@@ -7,7 +7,7 @@ from clisops.parameter import collection_parameter, dimension_parameter
 
 from .base import Operation
 
-__all__ = ["average_over_dims", "average_shape", "average_time", "Average"]
+__all__ = ["Average", "average_over_dims", "average_shape", "average_time"]
 
 
 class Average(Operation):

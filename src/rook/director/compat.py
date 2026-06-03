@@ -1,7 +1,8 @@
 """Compatibility helpers for director runtime dependencies."""
 
 import collections
-import os
+import pathlib
+
 
 class ResultSet:
     """A class to hold operation results with file URI extraction."""
@@ -17,7 +18,7 @@ class ResultSet:
 
         for item in result:
             if isinstance(item, str) and (
-                os.path.isfile(item) or item.startswith("https")
+                pathlib.Path(item).is_file() or item.startswith("https")
             ):
                 self.file_uris.append(item)
 

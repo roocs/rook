@@ -5,7 +5,7 @@ from clisops.parameter import collection_parameter
 
 from .base import Operation
 
-__all__ = ["regrid", "Regrid"]
+__all__ = ["Regrid", "regrid"]
 
 
 class Regrid(Operation):

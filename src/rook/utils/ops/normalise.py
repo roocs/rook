@@ -1,10 +1,10 @@
 """Normalise datasets and hold operation results."""
 
-import os
 
 from loguru import logger
 
 from .helpers import open_dataset, ordered_dict
+import pathlib
 
 
 def normalise(collection, apply_fixes=True):
@@ -33,6 +33,6 @@ class ResultSet:
 
         for item in result:
             if isinstance(item, str) and (
-                os.path.isfile(item) or item.startswith("https")
+                pathlib.Path(item).is_file() or item.startswith("https")
             ):
                 self.file_uris.append(item)

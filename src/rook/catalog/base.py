@@ -1,6 +1,6 @@
 """Base class for catalog."""
 
-import os
+from pathlib import Path
 
 from rook import CONFIG
 
@@ -52,7 +52,10 @@ class Result:
     def _records(self, prefix):
         new_records = {}
         for ds_id, fpaths in self.records.items():
-            new_records[ds_id] = [os.path.join(prefix, fpath) for fpath in fpaths]
+            if str(prefix).startswith(("http://", "https://")):
+                new_records[ds_id] = [f"{str(prefix).rstrip('/')}/{fpath.lstrip('/')}" for fpath in fpaths]
+            else:
+                new_records[ds_id] = [str(Path(prefix) / fpath) for fpath in fpaths]
         return new_records
 
     def files(self):

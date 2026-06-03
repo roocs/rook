@@ -8,7 +8,7 @@ from rook.utils.apply_fixes import apply_fixes
 from .base import Operation
 from . import normalise
 
-__all__ = ["subset", "Subset"]
+__all__ = ["Subset", "subset"]
 
 
 class Subset(Operation):

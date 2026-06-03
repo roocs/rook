@@ -1,7 +1,7 @@
 """Consolidate file paths for each dataset in a collection."""
 
-import os
 import re
+from pathlib import Path
 
 from clisops.exceptions import InvalidCollection
 from clisops.project_utils import derive_ds_id, dset_to_filepaths, get_project_name
@@ -28,7 +28,7 @@ def get_year(value, default):
 
 def get_years_from_file(fpath):
     """Attempt to extract years from file name or file time axis."""
-    time_comps = os.path.splitext(os.path.basename(fpath))[0].split("_")[-1].split("-")
+    time_comps = Path(fpath).stem.split("_")[-1].split("-")
     years = {int(tm[:4]) for tm in time_comps if re.match(r"^\d{4,}", tm)}
 
     if len(years) > 1:
