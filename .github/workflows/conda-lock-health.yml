@@ -1,0 +1,30 @@
+name: conda-lock health
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  lock-health:
+    name: Lock Refresh Health Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Conda (Micromamba)
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
+        with:
+          cache-downloads: true
+          cache-environment: true
+          environment-name: lockcheck
+          create-args: >-
+            python=3.12 conda-lock=4.0.0
+          channels: conda-forge
+
+      - name: Try lock/spec generation
+        run: micromamba run -n lockcheck make conda-lock

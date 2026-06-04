@@ -90,17 +90,37 @@ Do the same as above using the ``Makefile``.
 Prepare a release
 -----------------
 
-Update the Conda specification file to build identical environments_ on a specific OS.
+Update dependency locks with ``conda-lock`` and keep the explicit deployment spec
+for transition compatibility.
 
 .. note:: You should run this on your target OS, in our case Linux.
 
 .. code-block:: console
 
-  $ conda env create -f environment.yml
-  $ source activate rook
-  $ make clean
-  $ make install
-  $ conda list -n rook --explicit > spec-list.txt
+  $ conda-lock -f environment.yml -p linux-64
+  $ conda-lock render -p linux-64 -k explicit conda-lock.yml
+  $ cp conda-linux-64.lock linux-64.spec
+
+Or use the Makefile helper:
+
+.. code-block:: console
+
+  $ make conda-lock
+
+Transition model
+~~~~~~~~~~~~~~~~
+
+* Source of truth: ``environment.yml``.
+* Generated artifacts: ``conda-lock.yml`` and ``linux-64.spec``.
+* Deployment stays unchanged: Ansible continues to install from ``linux-64.spec``.
+* Dependency updates are intentional and typically performed before a release.
+
+CI policy
+~~~~~~~~~
+
+* CI must not auto-update lock or spec artifacts.
+* CI verifies artifacts are in sync by regenerating and checking for diffs.
+* A scheduled lock-health workflow can run periodically to detect solver/channel regressions without committing changes.
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 

@@ -48,9 +48,43 @@ jobs:
       - name: Run Lint 📦
         run: make lint
 
+  conda-artifacts:
+    name: Verify Conda Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Conda (Micromamba)
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
+        with:
+          cache-downloads: true
+          cache-environment: true
+          environment-name: lockcheck
+          create-args: >-
+            python=3.12 conda-lock=4.0.0
+          channels: conda-forge
+
+      - name: Check conda-lock.yml matches environment.yml input hash
+        run: |
+          set +e
+          micromamba run -n lockcheck conda-lock lock -f environment.yml -p linux-64 --lockfile conda-lock.yml --check-input-hash
+          exit_code=$?
+          set -e
+          if [ "$exit_code" -ne 0 ] && [ "$exit_code" -ne 4 ]; then
+            echo "conda-lock input hash check failed."
+            exit 1
+          fi
+          git diff --exit-code -- conda-lock.yml
+
+      - name: Check linux-64.spec matches committed conda-lock.yml
+        run: |
+          micromamba run -n lockcheck conda-lock render -p linux-64 -k explicit conda-lock.yml
+          cmp --silent linux-64.spec conda-linux-64.lock || (echo "linux-64.spec is out of date with conda-lock.yml" && diff -u linux-64.spec conda-linux-64.lock && exit 1)
+
   build:
     name: Conda Build with Python${{ matrix.python-version }}
-    needs: lint
+    needs: [lint, conda-artifacts]
     runs-on: ubuntu-latest
     strategy:
       matrix:

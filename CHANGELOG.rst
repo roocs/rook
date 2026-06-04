@@ -6,6 +6,7 @@ Unreleased (towards 1.0.0)
 
 * Removed the direct ``daops`` dependency; rook now uses its internal ops layer with ``clisops``.
 * Fixed test configuration loading order/reload in ``tests/conftest.py`` so regular test paths resolve consistently.
+* Added a conda transition workflow: ``environment.yml`` as source of truth, generated ``conda-lock.yml`` and ``linux-64.spec``, and CI verification to detect artifact drift.
 
 0.19.0 (2026-05-27)
 ===================
