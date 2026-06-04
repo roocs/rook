@@ -22,8 +22,9 @@ jobs:
           cache-downloads: true
           cache-environment: true
           environment-file: environment.yml
-          create-args: >-
-            conda-lock
+
+      - name: Install conda-lock
+        run: micromamba install -n rook -y -c conda-forge conda-lock
 
       - name: Try lock/spec generation
-        run: make conda-lock
+        run: micromamba run -n rook make conda-lock

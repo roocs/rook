@@ -61,11 +61,12 @@ jobs:
           cache-downloads: true
           cache-environment: true
           environment-file: environment.yml
-          create-args: >-
-            conda-lock
+
+      - name: Install conda-lock
+        run: micromamba install -n rook -y -c conda-forge conda-lock
 
       - name: Regenerate lock/spec artifacts
-        run: make conda-lock
+        run: micromamba run -n rook make conda-lock
 
       - name: Ensure committed artifacts are up-to-date
         run: git diff --exit-code -- conda-lock.yml linux-64.spec
