@@ -90,17 +90,22 @@ Do the same as above using the ``Makefile``.
 Prepare a release
 -----------------
 
-Update the Conda specification file to build identical environments_ on a specific OS.
+Update dependency locks with ``conda-lock`` and keep the legacy explicit Conda spec
+for transition compatibility.
 
 .. note:: You should run this on your target OS, in our case Linux.
 
 .. code-block:: console
 
-  $ conda env create -f environment.yml
-  $ source activate rook
-  $ make clean
-  $ make install
-  $ conda list -n rook --explicit > spec-list.txt
+  $ conda-lock -f environment.yml -p linux-64
+  $ conda-lock render -p linux-64 -k explicit conda-lock.yml
+  $ cp conda-linux-64.lock spec-list.txt
+
+Or use the Makefile helper:
+
+.. code-block:: console
+
+  $ make update-conda-lock
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 

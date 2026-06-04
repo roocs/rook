@@ -159,6 +159,12 @@ refresh-notebooks: notebook-sanitizer ## refreshing all notebook outputs under d
 
 ## Deployment targets:
 
+update-conda-lock: ## generate linux-64 conda lock and refresh spec-list.txt for transition
+	@echo "Locking dependencies for linux-64 and updating spec-list.txt ..."
+	@bash -c 'conda-lock -f environment.yml -p linux-64'
+	@bash -c 'conda-lock render -p linux-64 -k explicit conda-lock.yml'
+	@bash -c 'cp conda-linux-64.lock spec-list.txt'
+
 dist: clean ## builds source and wheel package
 	python -m flit build
 	ls -l dist
