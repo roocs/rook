@@ -71,10 +71,11 @@ jobs:
           micromamba run -n lockcheck conda-lock lock -f environment.yml -p linux-64 --lockfile conda-lock.yml --check-input-hash
           exit_code=$?
           set -e
-          if [ "$exit_code" -ne 4 ]; then
-            echo "conda-lock.yml is out of date with environment.yml (or lock check failed)."
+          if [ "$exit_code" -ne 0 ] && [ "$exit_code" -ne 4 ]; then
+            echo "conda-lock input hash check failed."
             exit 1
           fi
+          git diff --exit-code -- conda-lock.yml
 
       - name: Check linux-64.spec matches committed conda-lock.yml
         run: |
