@@ -62,7 +62,7 @@ jobs:
           cache-environment: true
           environment-name: lockcheck
           create-args: >-
-            python=3.12 conda-lock
+            python=3.12 conda-lock=4.0.0
           channels: conda-forge
 
       - name: Regenerate lock/spec artifacts
