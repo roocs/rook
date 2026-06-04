@@ -159,7 +159,7 @@ refresh-notebooks: notebook-sanitizer ## refreshing all notebook outputs under d
 
 ## Deployment targets:
 
-update-conda-lock: ## generate conda-lock.yml and linux-64.spec from environment.yml
+conda-lock: ## generate conda-lock.yml and linux-64.spec from environment.yml
 	@echo "Locking dependencies for linux-64 and updating linux-64.spec ..."
 	@bash -c 'conda-lock -f environment.yml -p linux-64'
 	@bash -c 'conda-lock render -p linux-64 -k explicit conda-lock.yml'

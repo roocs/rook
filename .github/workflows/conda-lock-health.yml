@@ -26,4 +26,4 @@ jobs:
             conda-lock
 
       - name: Try lock/spec generation
-        run: make update-conda-lock
+        run: make conda-lock

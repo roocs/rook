@@ -65,7 +65,7 @@ jobs:
             conda-lock
 
       - name: Regenerate lock/spec artifacts
-        run: make update-conda-lock
+        run: make conda-lock
 
       - name: Ensure committed artifacts are up-to-date
         run: git diff --exit-code -- conda-lock.yml linux-64.spec

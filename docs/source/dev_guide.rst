@@ -105,7 +105,7 @@ Or use the Makefile helper:
 
 .. code-block:: console
 
-  $ make update-conda-lock
+  $ make conda-lock
 
 Transition model
 ~~~~~~~~~~~~~~~~
