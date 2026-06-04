@@ -48,9 +48,31 @@ jobs:
       - name: Run Lint 📦
         run: make lint
 
+  conda-artifacts:
+    name: Verify Conda Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup Conda (Micromamba)
+        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
+        with:
+          cache-downloads: true
+          cache-environment: true
+          environment-file: environment.yml
+          create-args: >-
+            conda-lock
+
+      - name: Regenerate lock/spec artifacts
+        run: make update-conda-lock
+
+      - name: Ensure committed artifacts are up-to-date
+        run: git diff --exit-code -- conda-lock.yml linux-64.spec
+
   build:
     name: Conda Build with Python${{ matrix.python-version }}
-    needs: lint
+    needs: [lint, conda-artifacts]
     runs-on: ubuntu-latest
     strategy:
       matrix:

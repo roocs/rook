@@ -90,7 +90,7 @@ Do the same as above using the ``Makefile``.
 Prepare a release
 -----------------
 
-Update dependency locks with ``conda-lock`` and keep the legacy explicit Conda spec
+Update dependency locks with ``conda-lock`` and keep the explicit deployment spec
 for transition compatibility.
 
 .. note:: You should run this on your target OS, in our case Linux.
@@ -99,13 +99,28 @@ for transition compatibility.
 
   $ conda-lock -f environment.yml -p linux-64
   $ conda-lock render -p linux-64 -k explicit conda-lock.yml
-  $ cp conda-linux-64.lock spec-list.txt
+  $ cp conda-linux-64.lock linux-64.spec
 
 Or use the Makefile helper:
 
 .. code-block:: console
 
   $ make update-conda-lock
+
+Transition model
+~~~~~~~~~~~~~~~~
+
+* Source of truth: ``environment.yml``.
+* Generated artifacts: ``conda-lock.yml`` and ``linux-64.spec``.
+* Deployment stays unchanged: Ansible continues to install from ``linux-64.spec``.
+* Dependency updates are intentional and typically performed before a release.
+
+CI policy
+~~~~~~~~~
+
+* CI must not auto-update lock or spec artifacts.
+* CI verifies artifacts are in sync by regenerating and checking for diffs.
+* A scheduled lock-health workflow can run periodically to detect solver/channel regressions without committing changes.
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
