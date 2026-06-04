@@ -76,16 +76,22 @@ def write_roocs_cfg(stratus):
     os.environ["ROOCS_CONFIG"] = ROOCS_CFG.as_posix()
     # TODO: reload configs in clisops
     # workaround ... fix code in new clisops.
-    import daops
     import clisops
+    from clisops.config import reload_config
     import rook
+    import rook.catalog
+    import rook.catalog.base
+    import rook.catalog.intake
+    import rook.director.director
 
-    cfg = daops.config_()
+    cfg = reload_config()
     clisops.CONFIG = cfg
     clisops.project_utils.CONFIG = cfg
     rook.CONFIG = cfg
-    # rook.director.director.CONFIG = cfg
-    # rook.catalog.CONFIG = cfg
+    rook.director.director.CONFIG = cfg
+    rook.catalog.CONFIG = cfg
+    rook.catalog.base.CONFIG = cfg
+    rook.catalog.intake.CONFIG = cfg
     # print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
     # print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
 
@@ -154,7 +160,7 @@ def get_output():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def load_test_data(stratus):
+def load_test_data(stratus, write_roocs_cfg):
     """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
     repositories = {
         "stratus": {

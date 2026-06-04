@@ -91,7 +91,7 @@ class AverageByShape(Process):
             title="Average over polygonal shape",
             abstract="Run averaging over a specified shape on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

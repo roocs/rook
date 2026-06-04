@@ -1,11 +1,11 @@
 from rook.utils.fixes_utils import convert_calendar_to_gregorian
 
-from daops.data_utils.attr_utils import (
+from rook.utils.data_utils.attr_utils import (
     edit_global_attrs,
     edit_var_attrs,
 )
-from daops.data_utils.coord_utils import add_coord, add_scalar_coord
-from daops.data_utils.var_utils import add_data_var
+from rook.utils.data_utils.coord_utils import add_coord, add_scalar_coord
+from rook.utils.data_utils.var_utils import add_data_var
 
 model_specific_global_attrs = {
     "CMCC-CM2-SR5": {
@@ -37,7 +37,7 @@ model_specific_global_attrs = {
 
 
 def get_decadal_model_attr_from_dict(ds_id, ds, attr):
-    # TODO: method taken from daops.fix_utils.decadal_utils.py
+    # TODO: method originally ported from legacy decadal utility code.
     # Add the model-specific global attr
     model = ds_id.split(".")[3]
     value = model_specific_global_attrs[model][attr]
@@ -72,8 +72,8 @@ def decadal_fix_2(ds_id, ds):
             "initialization_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "initialization_description"
             ),  # noqa
-            "startdate": "derive: daops.fix_utils.decadal_utils.get_sub_experiment_id",
-            "sub_experiment_id": "derive: daops.fix_utils.decadal_utils.get_sub_experiment_id",
+            "startdate": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
+            "sub_experiment_id": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
         }
     }
 
@@ -84,7 +84,7 @@ def decadal_fix_2(ds_id, ds):
 def decadal_fix_3(ds_id, ds):
     operands = {
         "var_id": "reftime",
-        "value": "derive: daops.fix_utils.decadal_utils.get_reftime",
+        "value": "derive: rook.utils.decadal_utils.get_reftime",
         "dtype": "datetime64[ns]",
         "attrs": {
             "long_name": "Start date of the forecast",
@@ -93,7 +93,7 @@ def decadal_fix_3(ds_id, ds):
         "encoding": {
             "dtype": "int32",
             "units": "days since 1850-01-01",
-            "calendar": "derive: daops.fix_utils.decadal_utils.get_time_calendar",
+            "calendar": "derive: rook.utils.decadal_utils.get_time_calendar",
         },
     }
 
@@ -104,7 +104,7 @@ def decadal_fix_3(ds_id, ds):
 def decadal_fix_4(ds_id, ds):
     operands = {
         "var_id": "leadtime",
-        "value": "derive: daops.fix_utils.decadal_utils.get_lead_times",
+        "value": "derive: rook.utils.decadal_utils.get_lead_times",
         "dim": ["time"],
         "dtype": "float64",
         "attrs": {

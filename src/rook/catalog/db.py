@@ -1,9 +1,10 @@
 import sqlalchemy
-from daops.catalog.base import Catalog
-from daops.catalog.intake import IntakeCatalog
-from daops.catalog.util import MAX_DATETIME, MIN_DATETIME, parse_time
 from pywps.dblog import get_session
 from sqlalchemy import text
+
+from .base import Catalog
+from .intake import IntakeCatalog
+from .util import MAX_DATETIME, MIN_DATETIME, parse_time
 
 
 class DBCatalog(Catalog):

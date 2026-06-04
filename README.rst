@@ -26,7 +26,7 @@ rook
 Rook is a Web Processing Service (WPS) of the roocs project
 to allow remote operations like subsetting on climate model data.
 This service provides a one-to-one mapping to the operations
-available in the daops_ library based on xarray.
+available through rook's operations layer built on clisops and xarray.
 
 Documentation
 -------------
@@ -65,5 +65,4 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
 .. _bump-my-version: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
-.. _daops: https://github.com/roocs/daops
 .. _locust: https://locust.io/

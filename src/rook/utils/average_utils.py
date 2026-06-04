@@ -1,20 +1,16 @@
 def run_average_by_time(args):
-    # TODO: handle lazy load of daops
-    from daops.ops.average import average_time
+    from .ops.average import average_time
 
-    result = average_time(**args)
-    return result.file_uris
+    return average_time(**args).file_uris
 
 
 def run_average_by_dim(args):
-    from daops.ops.average import average_over_dims
+    from .ops.average import average_over_dims
 
-    result = average_over_dims(**args)
-    return result.file_uris
+    return average_over_dims(**args).file_uris
 
 
 def run_average_by_shape(args):
-    from daops.ops.average import average_shape
+    from .ops.average import average_shape
 
-    result = average_shape(**args)
-    return result.file_uris
+    return average_shape(**args).file_uris

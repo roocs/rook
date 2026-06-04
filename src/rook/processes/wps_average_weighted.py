@@ -57,7 +57,7 @@ class WeightedAverage(Process):
             title="Weighted Average",
             abstract="Run weighted averaging on climate model data.",
             metadata=[
-                Metadata("DAOPS", "https://github.com/roocs/daops"),
+                Metadata("CLISOPS", "https://github.com/roocs/clisops"),
             ],
             version="1.0",
             inputs=inputs,

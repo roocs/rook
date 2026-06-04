@@ -13,7 +13,7 @@ Introduction
 The *rook* processes are recording `provenance information`_ about the process execution details.
 This information includes:
 
-* used software and versions (``rook``, ``daops``, ...)
+* used software and versions (``rook``, ``clisops``, ...)
 * applied operators like ``subset`` and ``average``
 * used input data and parameters (cmip6 dataset, time, area)
 * generated outputs (NetCDF files)
@@ -67,7 +67,7 @@ W3C PROV
 
 In *rook* we use *agents* for:
 
-* software like *rook* and *daops*,
+* software like *rook* and *clisops*,
 * organisations like *Copernicus Climate Data Store*.
 
 Namespaces
@@ -88,7 +88,7 @@ Subset Example
 
 .. image:: _images/prov-subset.png
 
-The *activity* ``subset`` is started by the software *agent* ``daops`` (Python library)
+The *activity* ``subset`` is started by the software *agent* ``clisops`` (Python library)
 which was triggered by ``rook`` (data-reduction service).
 
 The NetCDF file ``tas_day_...nc`` *entity* was derived from ``c3s-cmip6`` dataset *entity*
@@ -107,7 +107,7 @@ In W3C PROV workflows are named *plans*.
 
 The *activity* ``orchestrate`` is started by the *agent* ``rook``. It uses
 a workflow document ``entity`` (*plan*) which consists of a ``subset`` and ``average``
-*activity*. These activities are started by the software *agent* ``daops``.
+*activity*. These activities are started by the software *agent* ``clisops``.
 
 Example: Workflow with Subsetting Operators
 -------------------------------------------

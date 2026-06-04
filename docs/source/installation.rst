@@ -50,7 +50,7 @@ For development you can use this command:
 Configure roocs
 ---------------
 
-``rook`` is using daops_ for the operations. It needs a ``roocs.ini`` configuration file.
+``rook`` uses clisops-based operations via its internal operations layer. It needs a ``roocs.ini`` configuration file.
 You can overwrite the defaults by setting the environment variable ``ROOCS_CONFIG``.
 
 .. code-block:: console
@@ -125,4 +125,4 @@ Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
-.. _daops: https://github.com/roocs/daops
+.. _clisops: https://github.com/roocs/clisops
