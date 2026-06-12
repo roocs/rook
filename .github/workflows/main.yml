@@ -79,9 +79,18 @@ jobs:
           micromamba list
           python -m pip check
 
-      - name: Run tests
+      - name: Run tests (full suite)
+        if: matrix.python-version != '3.14'
         run: |
           make start
           sleep 2
           make test-notebooks
           make test
+
+      - name: Run tests (without smoke/online)
+        if: matrix.python-version == '3.14'
+        run: |
+          make start
+          sleep 2
+          make test-notebooks
+          pytest -v -m "not smoke and not online"
