@@ -24,7 +24,7 @@ Unreleased (towards 1.1.0)
 ===================
 
 * Updated `clisops >=0.17.0`, `daops >=0.16.0`` and `pywps >=4.7` (#284).
-* Updated regrid operator (#283). 
+* Updated regrid operator (#283).
 
 0.17.2 (2025-05-08)
 ===================
