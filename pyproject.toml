@@ -321,7 +321,14 @@ convention = "numpy"
 [tool.vulture]
 exclude = []
 ignore_decorators = ["@pytest.fixture"]
-ignore_names = []
+ignore_names = [
+  "adaptive_masking_threshold",
+  "area",
+  "level",
+  "load_test_data",
+  "variable",
+  "write_roocs_cfg"
+]
 min_confidence = 90
 paths = ["src/rook", "tests"]
 sort_by_size = true
