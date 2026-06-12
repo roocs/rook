@@ -7,13 +7,17 @@ Command-line options
 --------------------
 
 You can overwrite the default `PyWPS`_ configuration by using command-line options.
-See the rook help which options are available::
+See the rook help which options are available:
+
+.. code-block:: console
 
     $ rook start --help
     --hostname HOSTNAME        hostname in PyWPS configuration.
     --port PORT                port in PyWPS configuration.
 
-Start service with different hostname and port::
+Start service with different hostname and port:
+
+.. code-block:: console
 
     $ rook start --hostname localhost --port 5001
 
@@ -21,7 +25,7 @@ Use a custom configuration file
 -------------------------------
 
 You can overwrite the default `PyWPS`_ configuration by providing your own
-PyWPS configuration file (just modifiy the options you want to change).
+PyWPS configuration file (just modify the options you want to change).
 Use one of the existing ``sample-*.cfg`` files as example and copy them to ``etc/custom.cfg``.
 
 For example change the hostname (*demo.org*) and logging level:

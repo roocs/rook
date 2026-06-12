@@ -16,25 +16,13 @@ First install dependencies for the documentation:
 
 .. code-block:: console
 
-  $ make develop
+    $ make develop
 
 Run the Sphinx docs generator:
 
 .. code-block:: console
 
-  $ make docs
-
-Add pre-commit hooks
---------------------
-
-Before committing your changes, we ask that you install `pre-commit` in your environment.
-`Pre-commit` runs git hooks that ensure that your code resembles that of the project
-and catches and corrects any small errors or inconsistencies when you `git commit`:
-
-.. code-block:: console
-
-     $ conda install -c conda-forge pre_commit
-     $ pre-commit install
+    $ make docs
 
 .. _testing:
 
@@ -47,16 +35,10 @@ First activate the ``rook`` Conda environment and install ``pytest``.
 
 .. code-block:: console
 
-   $ source activate rook
-   $ pip install -r requirements_dev.txt  # if not already installed
-   OR
-   $ make develop
-
-Configure the pywps configuration with path to test data.
-
-.. code-block:: console
-
-    $ export PYWPS_CFG=/path/to/test/pywps.cfg
+    $ source activate rook
+    $ pip install -r requirements_dev.txt  # if not already installed
+    OR
+    $ make develop
 
 Run quick tests (skip slow and online):
 
@@ -90,37 +72,17 @@ Do the same as above using the ``Makefile``.
 Prepare a release
 -----------------
 
-Update dependency locks with ``conda-lock`` and keep the explicit deployment spec
-for transition compatibility.
+Update the Conda specification file to build identical environments_ on a specific OS.
 
 .. note:: You should run this on your target OS, in our case Linux.
 
 .. code-block:: console
 
-  $ conda-lock -f environment.yml -p linux-64
-  $ conda-lock render -p linux-64 -k explicit conda-lock.yml
-  $ cp conda-linux-64.lock linux-64.spec
-
-Or use the Makefile helper:
-
-.. code-block:: console
-
-  $ make conda-lock
-
-Transition model
-~~~~~~~~~~~~~~~~
-
-* Source of truth: ``environment.yml``.
-* Generated artifacts: ``conda-lock.yml`` and ``linux-64.spec``.
-* Deployment stays unchanged: Ansible continues to install from ``linux-64.spec``.
-* Dependency updates are intentional and typically performed before a release.
-
-CI policy
-~~~~~~~~~
-
-* CI must not auto-update lock or spec artifacts.
-* CI verifies artifacts are in sync by regenerating and checking for diffs.
-* A scheduled lock-health workflow can run periodically to detect solver/channel regressions without committing changes.
+    $ conda env create -f environment.yml
+    $ source activate rook
+    $ make clean
+    $ make install
+    $ conda list -n rook --explicit > spec-file.txt
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
@@ -131,7 +93,7 @@ Bump a new version
 Make a new version of rook in the following steps:
 
 * Make sure everything is commit to GitHub.
-* Update ``CHANGES.rst`` with the next version.
+* Update ``CHANGELOG.rst`` with the next version.
 * Dry Run: ``bumpversion --dry-run --verbose --new-version 0.8.1 patch``
 * Do it: ``bumpversion --new-version 0.8.1 patch``
 * ... or: ``bumpversion --new-version 0.9.0 minor``

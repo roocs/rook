@@ -2,7 +2,7 @@ name: rook-dev
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.13
+  - python >=3.9,<3.15
   # development
   - bump-my-version >=0.26.0
   - coverage >=7.5.0

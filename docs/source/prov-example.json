@@ -29,15 +29,21 @@
       "prov:type": "provone:Workflow"
     },
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.day.tas.gr1.v20190619": {},
-    "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20160101-20201229.nc": [{}, {}],
+    "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20160101-20201229.nc": [
+      {},
+      {}
+    ],
     "tas_day_INM-CM5-0_ssp245_r1i1p1f1_gr1_20170101-20171229.nc": {}
   },
   "activity": {
-    "orchestrate": [{
-      "prov:startedAtTime": "2021-02-15T13:24:33"
-    }, {
-      "prov:endedAtTime": "2021-02-15T13:24:57"
-    }],
+    "orchestrate": [
+      {
+        "prov:startedAtTime": "2021-02-15T13:24:33"
+      },
+      {
+        "prov:endedAtTime": "2021-02-15T13:24:57"
+      }
+    ],
     "subset_tas_1": {
       "time": "2016-01-01/2020-12-30",
       "apply_fixes": false
