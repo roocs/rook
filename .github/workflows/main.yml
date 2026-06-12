@@ -1,4 +1,4 @@
-name: build ⚙️
+name: rook Testing Suite ⚙️
 
 on:
   push:
@@ -16,86 +16,50 @@ permissions:
 
 jobs:
   lint:
-    name: Lint (Python${{ matrix.python-version }})
+    name: Code linting
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - "3.11"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
           disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: |
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
+          egress-policy: audit
 
       - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Python${{ matrix.python-version }}
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          python-version: ${{ matrix.python-version }}
+          persist-credentials: false
+
+      - name: Set up Python${{ matrix.python-version }}
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: "3.x"
           cache: pip
 
-      - name: Install linting libraries
-        run: python -m pip install ruff
+      - name: Run pre-commit
+        uses: j178/prek-action@bdca6f102f98e2b4c7029491a53dfd366469e33d # v2.0.4
 
-      - name: Run Lint 📦
-        run: make lint
-
-  conda-artifacts:
-    name: Verify Conda Artifacts
+  conda:
+    name: Build ⚙️ and test 🧪
+    needs: lint
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Conda (Micromamba)
-        uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
-        with:
-          cache-downloads: true
-          cache-environment: true
-          environment-name: lockcheck
-          create-args: >-
-            python=3.12 conda-lock=4.0.0
-          channels: conda-forge
-
-      - name: Check conda-lock.yml matches environment.yml input hash
-        run: |
-          set +e
-          micromamba run -n lockcheck conda-lock lock -f environment.yml -p linux-64 --lockfile conda-lock.yml --check-input-hash
-          exit_code=$?
-          set -e
-          if [ "$exit_code" -ne 0 ] && [ "$exit_code" -ne 4 ]; then
-            echo "conda-lock input hash check failed."
-            exit 1
-          fi
-          git diff --exit-code -- conda-lock.yml
-
-      - name: Check linux-64.spec matches committed conda-lock.yml
-        run: |
-          micromamba run -n lockcheck conda-lock render -p linux-64 -k explicit conda-lock.yml
-          cmp --silent linux-64.spec conda-linux-64.lock || (echo "linux-64.spec is out of date with conda-lock.yml" && diff -u linux-64.spec conda-linux-64.lock && exit 1)
-
-  build:
-    name: Conda Build with Python${{ matrix.python-version }}
-    needs: [lint, conda-artifacts]
-    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
-
+        python-version: [ "3.11", "3.12", "3.13", "3.14" ]
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
 
-      - name: Install system packages
-        run: sudo apt-get -y install pandoc graphviz
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup Conda (Micromamba) with Python${{ matrix.python-version }}
         uses: mamba-org/setup-micromamba@0dea6379afdaffa5d528b3d1dabc45da37f443fc # v2.0.4
@@ -106,43 +70,18 @@ jobs:
           create-args: >-
             python=${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install
         run: |
-          python -m pip install --editable ".[dev]"
+          make develop
 
-      - name: Test with pytest ⚙️
-        run: pytest -v -m "not slow and not online" tests/
+      - name: Check versions
+        run: |
+          micromamba list
+          python -m pip check
 
-  docs:
-    name: Docs (Python${{ matrix.python-version }})
-    needs: lint
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - "3.11"
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
-        with:
-          disable-sudo: true
-          egress-policy: block
-          allowed-endpoints: |
-            files.pythonhosted.org:443
-            github.com:443
-            pypi.org:443
-
-      - name: Checkout Repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-
-      - name: Setup Python${{ matrix.python-version }}
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-
-      - name: Install rook with dev requirements 📦
-        run: python -m pip install -e ".[dev]"
-
-      - name: Build Docs 📚
-        run: make docs
+      - name: Run tests
+        run: |
+          make start
+          sleep 2
+          make test-notebooks
+          make test

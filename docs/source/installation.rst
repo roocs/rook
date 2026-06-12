@@ -7,13 +7,6 @@ Installation
     :local:
     :depth: 1
 
-Install from Conda
-------------------
-
-.. warning::
-
-   TODO: Prepare Conda package.
-
 Install from GitHub
 -------------------
 
@@ -35,31 +28,17 @@ Install rook app:
 
 .. code-block:: console
 
-  $ pip install -e .
-  OR
-  make install
+   $ pip install -e .
+   OR
+   $ make install
 
 For development you can use this command:
 
 .. code-block:: console
 
-  $ pip install -e ".[dev]"
-  OR
-  $ make develop
-
-Configure roocs
----------------
-
-``rook`` uses clisops-based operations via its internal operations layer. It needs a ``roocs.ini`` configuration file.
-You can overwrite the defaults by setting the environment variable ``ROOCS_CONFIG``.
-
-.. code-block:: console
-
-  $ export ROOCS_CONFIG=~/.roocs.ini
-
-There is an example in ``etc/sample-roocs.ini``.
-
-For more information on the configuration settings, see https://roocs-utils.readthedocs.io/en/latest/configuration.html
+   $ pip install -e .[dev]
+   OR
+   $ make develop
 
 Start rook PyWPS service
 ------------------------
@@ -103,10 +82,10 @@ You can also use the ``Makefile`` to start and stop the service:
 
 .. code-block:: console
 
-  $ make start
-  $ make status
-  $ tail -f pywps.log
-  $ make stop
+   $ make start
+   $ make status
+   $ tail -f pywps.log
+   $ make stop
 
 
 Run rook as Docker container
@@ -125,4 +104,3 @@ Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
 .. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
-.. _clisops: https://github.com/roocs/clisops

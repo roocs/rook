@@ -1,16 +1,18 @@
-
+=======
 Credits
 =======
 
-Lead
-----
+Development Lead
+----------------
 
+* Carsten Ehbrecht <ehbrecht@dkrz.de> `@roocs <https://github.com/roocs>`_
 
-* Carsten Ehbrecht ehbrecht@dkrz.de
+Co-Developers
+-------------
+
+None yet. Why not be the first?
 
 Contributors
 ------------
 
-
-* Eleanor Smith eleanor.smith@stfc.ac.uk
-* Ag Stephens ag.stephens@stfc.ac.uk
+None yet. Why not be the first?

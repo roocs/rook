@@ -2,16 +2,26 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Table of Contents
 
    installation
    configuration
+   notebooks/index
    dev_guide
-   notebooks
    processes
    authors
-   prov
    changelog
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Package Structure
+
+   apidoc/modules
+
+.. toctree::
+   :caption: GitHub Repository
+
+   roocs/rook <https://github.com/roocs/rook>
 
 Indices and tables
 ==================

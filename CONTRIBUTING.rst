@@ -4,8 +4,9 @@
 Contributing
 ============
 
-Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+Contributions are welcome, and they are greatly appreciated! Every little bit helps, and credit will always be given.
+
+Please read the Birdhouse [Developer Guide](https://birdhouse.readthedocs.io/en/latest/guide_dev.html) and this document to get started.
 
 You can contribute in many ways:
 
@@ -26,21 +27,17 @@ If you are reporting a bug, please include:
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
-wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for bugs. Anything tagged with "bug" and "help wanted" is open to whoever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with "enhancement"
-and "help wanted" is open to whoever wants to implement it.
+Look through the GitHub issues for features. Anything tagged with "enhancement" and "help wanted" is open to whoever wants to implement it.
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-rook could always use more documentation, whether as part of the
-official rook docs, in docstrings, or even on the web in blog posts,
-articles, and such.
+rook could always use more documentation, whether as part of the official rook docs, in docstrings, or even on the web in blog posts, articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
@@ -67,7 +64,7 @@ Ready to contribute? Here's how to set up `rook` for local development.
 
     $ mkvirtualenv rook
     $ cd rook/
-    $ pip install -e ".[dev]"
+    $ python setup.py develop
 
 4. Create a branch for local development::
 
@@ -105,9 +102,12 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+To run a subset of tests:
 
-$ pytest tests.test_rook
+.. code-block:: console
+
+    $ pytest tests.test_rook
+
 
 
 Deploying
@@ -115,7 +115,9 @@ Deploying
 
 A reminder for the maintainers on how to deploy.
 Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run::
+Then run:
+
+.. code-block:: console
 
     $ bump-my-version bump patch # possible: major / minor / patch
     $ git push

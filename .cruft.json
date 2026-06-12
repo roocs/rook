@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-  "commit": "d25191ecc41c091d9b4a392f0ac89d70ff27db55",
+  "commit": "3320c68367f8e88839a21a331cb5c75e65162f4a",
   "context": {
     "cookiecutter": {
       "full_name": "Carsten Ehbrecht",
@@ -15,14 +15,15 @@
       "open_source_license": "Apache Software License 2.0",
       "http_port": "5000",
       "use_pytest": "y",
-      "use_black": "n",
       "create_author_file": "y",
+      "generated_with_cruft": "y",
       "_copy_without_render": [
         "{{cookiecutter.project_slug}}/templates/*.cfg"
       ],
-      "__gh_slug": "roocs/rook",
-      "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
+      "__gh_slug": "https://github.com/roocs/rook",
+      "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
+      "_commit": "3320c68367f8e88839a21a331cb5c75e65162f4a"
     }
   },
-  "checkout": null
+  "checkout": "v2.0.0"
 }

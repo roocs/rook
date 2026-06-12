@@ -1,0 +1,4 @@
+rules:
+  dangerous-triggers:
+    ignore:
+      - label.yml:9

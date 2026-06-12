@@ -17,4 +17,7 @@ help:
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" -W $(SPHINXOPTS) $(O)
+
+livehtml:
+	sphinx-autobuild --port 54345 --open-browser --delay 3 --re-ignore "$(BUILDDIR)|$(SOURCEDIR)/apidoc|Makefile|__pycache__" "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
