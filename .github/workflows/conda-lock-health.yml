@@ -23,6 +23,7 @@ jobs:
         with:
           cache-downloads: true
           cache-environment: true
+          post-cleanup: none
           environment-name: lockcheck
           create-args: >-
             python=3.12 conda-lock=4.0.0

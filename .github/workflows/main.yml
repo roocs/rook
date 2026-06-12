@@ -65,6 +65,7 @@ jobs:
         with:
           cache-downloads: true
           cache-environment: true
+          post-cleanup: none
           environment-file: environment.yml
           create-args: >-
             python=${{ matrix.python-version }}
