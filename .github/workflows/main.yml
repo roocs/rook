@@ -30,11 +30,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
         with:
           python-version: "3.x"
-          cache: pip
 
       - name: Run pre-commit
         uses: j178/prek-action@bdca6f102f98e2b4c7029491a53dfd366469e33d # v2.0.4
