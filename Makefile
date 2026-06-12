@@ -104,19 +104,19 @@ clean-docs: ## remove documentation artifacts
 
 install-dev:
 	@echo "Installing development requirements for tests and docs ..."
-	@python -m pip install --group dev
+	@python -m pip install --editable ".[dev]"
 
 install-lint: ## install dependencies needed for linting
-	@python -m pip install --quiet --group lint
+	@python -m pip install --quiet --editable ".[dev]"
 
 install-docs: ## install dependencies needed for building the docs
-	@python -m pip install --quiet --group docs
+	@python -m pip install --quiet --editable ".[dev]"
 
 install-test: ## install dependencies needed for standard testing
-	@python -m pip install --quiet --group test
+	@python -m pip install --quiet --editable ".[dev]"
 
 install-tox: ## install base dependencies needed for running tox
-	@python -m pip install --quiet --group tox
+	@python -m pip install --quiet --editable ".[dev]"
 
 lint: ## check style
 	@echo "Running flake8 code style checks ..."
