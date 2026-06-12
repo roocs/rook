@@ -285,7 +285,7 @@ def test_smoke_get_capabilities(wps):
 def test_smoke_describe_process_subset(wps):
     process = wps.describeprocess("subset")
     assert process.identifier == "subset"
-    inputs = [inpt.identifier for inpt in process.dataInputs]
+    inputs = [inp.identifier for inp in process.dataInputs]
     assert "collection" in inputs
     assert "time" in inputs
     assert "area" in inputs
@@ -294,7 +294,7 @@ def test_smoke_describe_process_subset(wps):
 def test_smoke_describe_process_average_dim(wps):
     process = wps.describeprocess("average")
     assert process.identifier == "average"
-    inputs = [inpt.identifier for inpt in process.dataInputs]
+    inputs = [inp.identifier for inp in process.dataInputs]
     assert "collection" in inputs
     assert "dims" in inputs
 
@@ -302,7 +302,7 @@ def test_smoke_describe_process_average_dim(wps):
 def test_smoke_describe_process_average_time(wps):
     process = wps.describeprocess("average_time")
     assert process.identifier == "average_time"
-    inputs = [inpt.identifier for inpt in process.dataInputs]
+    inputs = [inp.identifier for inp in process.dataInputs]
     assert "collection" in inputs
     assert "freq" in inputs
 
@@ -310,7 +310,7 @@ def test_smoke_describe_process_average_time(wps):
 def test_smoke_describe_process_orchestrate(wps):
     process = wps.describeprocess("orchestrate")
     assert process.identifier == "orchestrate"
-    inputs = [inpt.identifier for inpt in process.dataInputs]
+    inputs = [inp.identifier for inp in process.dataInputs]
     assert "workflow" in inputs
 
 

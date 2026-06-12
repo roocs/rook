@@ -22,7 +22,7 @@ class Usage(Process):
             LiteralInput(
                 "time",
                 "Time Period",
-                abstract="The time period for usage collection seperated by /"
+                   abstract="The time period for usage collection separated by /"
                 "Example: 2024-06-01/2024-06-30",
                 data_type="string",
                 min_occurs=0,
