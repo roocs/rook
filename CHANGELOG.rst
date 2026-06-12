@@ -1,7 +1,7 @@
 Changes
 *******
 
-Unreleased (towards 1.0.1)
+Unreleased (towards 1.1.0)
 ==========================
 
 * Fixed remote intake catalog loading for partner environments behind proxies by using proxy-aware HTTP filesystem handling and safer catalog storage option resets.
