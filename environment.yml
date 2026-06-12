@@ -31,6 +31,7 @@ dependencies:
   - graphviz
   # catalog
   - intake <2.0
+  - fsspec
   - pandas >=2.0
   - sqlalchemy >=2.0
   - aiohttp

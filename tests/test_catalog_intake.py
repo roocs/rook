@@ -1,3 +1,5 @@
+import types
+
 from rook.catalog.intake import IntakeCatalog
 
 C3S_CMIP6_DAY_COLLECTION = (
@@ -78,3 +80,52 @@ def test_intake_catalog_c3s_cmip6_multiple():
     assert len(files) == 1
     files = result.files()[C3S_CMIP6_FX_COLLECTION]
     assert len(files) == 1
+
+
+def test_intake_catalog_uses_proxy_aware_http_fs(monkeypatch):
+    calls = {}
+
+    class DummyProjectCatalog:
+        def read(self):
+            return "ok"
+
+    def fake_open_catalog(url, **kwargs):
+        calls["url"] = url
+        calls["kwargs"] = kwargs
+        return {"c3s-cmip6": DummyProjectCatalog()}
+
+    def fake_filesystem(protocol, client_kwargs):
+        calls["protocol"] = protocol
+        calls["client_kwargs"] = client_kwargs
+        return "dummy-fs"
+
+    monkeypatch.setattr("rook.catalog.intake.intake.open_catalog", fake_open_catalog)
+    monkeypatch.setattr(
+        "rook.catalog.intake.fsspec",
+        types.SimpleNamespace(filesystem=fake_filesystem),
+    )
+
+    cat = IntakeCatalog(project="c3s-cmip6", url="https://example.com/catalog.yml")
+    _ = cat.catalog
+
+    assert calls["url"] == "https://example.com/catalog.yml"
+    assert calls["protocol"] == "http"
+    assert calls["client_kwargs"] == {"trust_env": True}
+    assert calls["kwargs"]["fs"] == "dummy-fs"
+
+
+def test_intake_catalog_resets_project_storage_options(monkeypatch):
+    class DummyProjectCatalog:
+        _storage_options = {"foo": "bar"}
+
+        def read(self):
+            assert self._storage_options is None
+            return "ok"
+
+    def fake_open_catalog(_url, **_kwargs):
+        return {"c3s-cmip6": DummyProjectCatalog()}
+
+    monkeypatch.setattr("rook.catalog.intake.intake.open_catalog", fake_open_catalog)
+
+    cat = IntakeCatalog(project="c3s-cmip6", url="https://example.com/catalog.yml")
+    assert cat.load() == "ok"
