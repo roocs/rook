@@ -2,3 +2,6 @@ rules:
   dangerous-triggers:
     ignore:
       - label.yml:9
+  superfluous-actions:
+    ignore:
+      - docker-testing.yml:49
