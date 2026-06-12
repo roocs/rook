@@ -46,6 +46,7 @@ dependencies = [
   "rdflib",
   "pydot",
   "intake <2.0",
+  "fsspec",
   "pandas >=2.0",
   "SQLAlchemy >=2.0",
   "aiohttp",

@@ -1,5 +1,8 @@
 """Utilities for working with Intake catalogs."""
 
+from urllib.parse import urlparse
+
+import fsspec
 import intake
 
 from rook import CONFIG
@@ -30,13 +33,30 @@ class IntakeCatalog(Catalog):
     def catalog(self):
         """Return the intake catalog."""
         if not self._cat:
-            self._cat = intake.open_catalog(self.url)
+            parsed_url = urlparse(self.url)
+            is_http_catalog = parsed_url.scheme in {"http", "https"}
+
+            if is_http_catalog:
+                fs = fsspec.filesystem("http", client_kwargs={"trust_env": True})
+                try:
+                    self._cat = intake.open_catalog(self.url, fs=fs)
+                except TypeError:
+                    # Keep compatibility with intake variants that do not accept fs.
+                    self._cat = intake.open_catalog(self.url)
+            else:
+                self._cat = intake.open_catalog(self.url)
         return self._cat
 
     def load(self):
         """Load the catalog."""
         if self.project not in self._store:
-            self._store[self.project] = self.catalog[self.project].read()
+            project_catalog = self.catalog[self.project]
+
+            # Avoid stale transport options on nested catalogs for some partner deployments.
+            if hasattr(project_catalog, "_storage_options"):
+                project_catalog._storage_options = None
+
+            self._store[self.project] = project_catalog.read()
         return self._store[self.project]
 
     def _query(self, collection, time=None, time_components=None):
