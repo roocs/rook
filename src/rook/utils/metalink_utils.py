@@ -31,7 +31,8 @@ def build_metalink(identity, description, workdir, file_uris, file_type="NetCDF"
 
 def extract_paths_from_metalink(path):
     path = path.replace("file://", "")
-    xml = Path(path).open().read()
+    with Path(path).open() as fp:
+        xml = fp.read()
     return parse_metalink(xml)
 
 

@@ -242,6 +242,17 @@ markers = [
   "online: mark test to need internet connection",
   "smoke: mark test as a smoke/sanity test"
 ]
+filterwarnings = [
+  "ignore:numpy.ndarray size changed, may indicate binary incompatibility.*:RuntimeWarning",
+  "ignore:More than one coordinate variable found for type 'time'. Selecting the best fit.*:UserWarning",
+  "ignore:Variable time has datetime type and a bounds variable but time.encoding does not have units specified.*:UserWarning",
+  "ignore:In a future version of xarray the default value for data_vars will change.*:FutureWarning",
+  "ignore:'crs' was not provided.*:UserWarning",
+  "ignore:.*polys.*large.*segments.*:UserWarning",
+  "ignore:For coordinate variable 'lat' no bounds can be identified.*:UserWarning",
+  "ignore:For coordinate variable 'lon' no bounds can be identified.*:UserWarning",
+  "ignore:The file '.*/grid_weights/.*' already exists.*:UserWarning"
+]
 
 [tool.ruff]
 src = ["rook"]

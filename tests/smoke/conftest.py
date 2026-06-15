@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import requests
 from owslib.wps import WebProcessingService, monitorExecution
+from owslib.util import ServiceException
 from pywps import configuration as config
 
 from rook.utils.metalink_utils import parse_metalink
@@ -45,5 +46,10 @@ class RookWPS:
 
 @pytest.fixture
 def wps():
-    wps_ = RookWPS(server_url())
+    url = server_url()
+    wps_ = RookWPS(url)
+    try:
+        wps_.getcapabilities()
+    except (requests.RequestException, ServiceException) as exc:
+        pytest.skip(f"WPS endpoint unavailable for smoke tests at {url}: {exc}")
     return wps_

@@ -45,7 +45,11 @@ class SubsetAlignmentChecker:
         if Path(fpath).as_posix().startswith("http"):
             fpath = url_to_file_path(fpath)
 
-        ds = xr.open_dataset(fpath, use_cftime=True)
+        try:
+            time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
+            ds = xr.open_dataset(fpath, decode_times=time_coder)
+        except (AttributeError, TypeError):
+            ds = xr.open_dataset(fpath, use_cftime=True)
         start = to_isoformat(ds.time.values[0])
         end = to_isoformat(ds.time.values[-1])
         ds.close()
