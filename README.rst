@@ -34,6 +34,26 @@ xarray and the `clisops`_ library, enabling efficient subsetting,
 averaging, and extraction of climate data from archives such as
 CMIP and CORDEX.
 
+Rook in a Minute
+----------------
+
+Get a local service running with the minimal setup:
+
+.. code-block:: console
+
+        $ git clone https://github.com/roocs/rook.git
+        $ cd rook
+        $ conda env create -f environment.yml
+        $ conda activate rook
+        $ make develop
+        $ make start
+
+Then test the service endpoint in your browser:
+
+https://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities
+
+Use ``make stop`` to stop the local service.
+
 Documentation
 -------------
 
