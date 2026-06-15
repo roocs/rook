@@ -14,12 +14,6 @@
    changelog
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Package Structure
-
-   apidoc/modules
-
-.. toctree::
    :caption: GitHub Repository
 
    roocs/rook <https://github.com/roocs/rook>
