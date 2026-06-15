@@ -30,7 +30,8 @@ def is_file(data):
 
 def load_wfdoc(data):
     if is_file(data):
-        wfdoc = yaml.load(Path(data).open("rb"), Loader=yaml.SafeLoader)
+        with Path(data).open("rb") as fp:
+            wfdoc = yaml.load(fp, Loader=yaml.SafeLoader)
     else:
         wfdoc = yaml.load(data, Loader=yaml.SafeLoader)
     return wfdoc
