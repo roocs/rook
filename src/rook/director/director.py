@@ -143,22 +143,7 @@ class Director:
         # return False
 
     def request_aligns_with_files(self):
-        """
-        Check if files in the collection are aligned with the subset request.
-
-        E.g.:
-            coll = [dset1, dset2]
-            inputs = {'time': '1999-01-01/2000-12-31'}
-
-        If input datasets have files that exactly start/end on those times, then:
-            - return True (and the original files are provided).
-
-        If, however, there are other subset options OR one of the datasets does not
-        align, then:
-            - return False (and the WPS is used to generate the output files).
-
-        return: boolean
-        """
+        """Return whether collection files already align with the requested subset."""
         required_files = OrderedDict()
 
         for ds_id, urls in self.search_result.download_urls().items():

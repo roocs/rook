@@ -6,7 +6,8 @@
 
    installation
    configuration
-   notebooks/index
+   notebooks
+   prov
    dev_guide
    processes
    authors
