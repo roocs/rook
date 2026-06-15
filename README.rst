@@ -31,7 +31,7 @@ Catalog and ops behavior now live inside rook.
 Documentation
 -------------
 
-Learn more about rook in its official documentation at https://rook.readthedocs.io.
+Learn more about rook in its official documentation at https://rook-wps.readthedocs.io.
 
 Submit bug reports, questions and feature requests at https://github.com/roocs/rook/issues
 
@@ -55,7 +55,7 @@ License
 -------
 
 * Free software: Apache Software License 2.0
-* Documentation: https://rook.readthedocs.io.
+* Documentation: https://rook-wps.readthedocs.io.
 
 
 Credits
@@ -65,8 +65,8 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
-.. _`Developer Guide`: https://rook.readthedocs.io/en/latest/dev_guide.html
-.. _bump-my-version: https://rook.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
+.. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
+.. _bump-my-version: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
 .. |build| image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg
         :target: https://github.com/roocs/rook/actions/workflows/main.yml
@@ -77,7 +77,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :alt: Conda-forge Build Version
 
 .. |docs| image:: https://readthedocs.org/projects/rook/badge/?version=latest
-        :target: https://rook.readthedocs.io/en/latest/?version=latest
+        :target: https://rook-wps.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 .. |gitter| image:: https://badges.gitter.im/bird-house/birdhouse.svg

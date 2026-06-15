@@ -78,6 +78,13 @@ dev = [
   "watchdog >=4.0.0",
   "wheel >=0.40.0"
 ]
+docs = [
+  "ipython >=8.13.0",
+  "nbsphinx >=0.9.5",
+  "sphinx >=7.0.0",
+  "sphinx-codeautolink",
+  "sphinx-copybutton"
+]
 
 [project.scripts]
 rook = "rook.cli:cli"
