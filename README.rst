@@ -50,7 +50,7 @@ Get a local service running with the minimal setup:
 
 Then test the service endpoint in your browser:
 
-https://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities
+http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities
 
 Use ``make stop`` to stop the local service.
 

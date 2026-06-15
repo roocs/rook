@@ -40,23 +40,29 @@ First activate the ``rook`` Conda environment and install ``pytest``.
     OR
     $ make develop
 
-Run quick tests (skip slow and online):
+Run default local tests (skip smoke and online):
 
 .. code-block:: console
 
-    $ pytest -m 'not slow and not online'"
+    $ pytest -v -m "not smoke and not online"
+
+Run smoke tests against a deployed production service only:
+
+.. code-block:: console
+
+    $ pytest -v -m "smoke" tests/smoke
 
 Run all tests:
 
 .. code-block:: console
 
-    $ pytest
+    $ pytest -v
 
-Check pep8:
+Run lint checks:
 
 .. code-block:: console
 
-    $ flake8
+    $ ruff check src/rook tests
 
 Run tests the lazy way
 ----------------------
@@ -66,7 +72,7 @@ Do the same as above using the ``Makefile``.
 .. code-block:: console
 
     $ make test
-    $ make test-all
+    $ make smoke
     $ make lint
 
 Prepare a release
