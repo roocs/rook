@@ -15,37 +15,43 @@ rook
 +----------------------------+-----------------------------------------------------+
 
 rook (the bird)
-  *rook is a bird ...*
+  *An intelligent and social bird that surveys vast landscapes,
+  finds what matters, and brings it within easy reach.*
 
-A WPS service for roocs.
+rook
+  *Remote Operations On Klimadaten.*
 
-Rook-specific Notes
--------------------
+Rook: Smart access to climate data.
 
-rook is the roocs Web Processing Service used to run remote operations on climate data.
-It maps WPS processes to the rook operations layer built on clisops and xarray.
+Like the bird, Rook surveys vast climate archives, finds what
+matters, and brings it within easy reach.
 
-From 1.x onward, the legacy daops dependency is no longer required as a separate package.
-Catalog and ops behavior now live inside rook.
+Rook is a service of the roocs project that provides remote
+operations for large climate datasets.
+
+The processing operations are implemented in Python on top of
+xarray and the `clisops`_ library, enabling efficient subsetting,
+averaging, and extraction of climate data from archives such as
+CMIP and CORDEX.
 
 Documentation
 -------------
 
-Learn more about rook in its official documentation at https://rook-wps.readthedocs.io.
+Learn more about Rook in its official documentation at https://rook-wps.readthedocs.io.
 
-Submit bug reports, questions and feature requests at https://github.com/roocs/rook/issues
+Submit bug reports, questions, and feature requests at https://github.com/roocs/rook/issues
 
 Contributing
 ------------
 
 You can find information about contributing in our `Developer Guide`_.
 
-Please use bump-my-version_ to release a new version.
+Use bump-my-version_ to release a new version.
 
 Tests
 -----
 
-The tests folder includes additional tests for deployed rook services.
+The tests folder includes additional tests for deployed Rook services.
 
 * Smoke test: ensure the service is operational. See tests/smoke/README.md.
 * Storm test: load-test using locust. See tests/storm/README.md.
@@ -65,6 +71,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
+.. _`clisops`: https://github.com/roocs/clisops/tree/master
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
 .. _bump-my-version: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
