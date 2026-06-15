@@ -125,8 +125,12 @@ lint: ## check style
 ## Testing targets:
 
 test: ## run tests quickly with the default Python
-	@echo "Running tests excluding smoke (production service checks) ..."
-	@bash -c 'pytest -v -m "not smoke"'
+	@echo "Running tests excluding smoke/online checks ..."
+	@bash -c 'pytest -v -m "not smoke and not online"'
+
+smoke: ## run production service smoke tests only
+	@echo "Running smoke tests (intended for production service checks) ..."
+	@bash -c 'pytest -v -m "smoke" tests/smoke'
 
 test-tox: ## run tests on every available Python version with tox
 	@bash -c 'tox'
