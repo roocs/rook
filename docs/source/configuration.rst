@@ -50,4 +50,4 @@ Start the service with your custom configuration:
    $ rook start -c etc/custom.cfg
 
 
-.. _PyWPS: http://pywps.org/
+.. _PyWPS: https://pywps.org/

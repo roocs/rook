@@ -103,4 +103,4 @@ Use Ansible to deploy rook on your System
 Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
 
 
-.. _Ansible playbook: http://ansible-wps-playbook.readthedocs.io/en/latest/index.html
+.. _Ansible playbook: https://ansible-wps-playbook.readthedocs.io/en/latest/index.html
