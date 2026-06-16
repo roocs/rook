@@ -100,16 +100,16 @@ Bump a new version
 
 Make a new version of rook in the following steps:
 
-* Make sure everything is commit to GitHub.
+* Make sure everything is committed to GitHub.
 * Update ``CHANGELOG.rst`` with the next version.
-* Dry Run: ``bumpversion --dry-run --verbose --new-version 0.8.1 patch``
-* Do it: ``bumpversion --new-version 0.8.1 patch``
-* ... or: ``bumpversion --new-version 0.9.0 minor``
+* Dry Run: ``bump-my-version bump --dry-run --verbose --new-version 0.8.1 patch``
+* Do it: ``bump-my-version bump --new-version 0.8.1 patch``
+* ... or: ``bump-my-version bump --new-version 0.9.0 minor``
 * Push it: ``git push``
 * Push tag: ``git push --tags``
 
-See the bumpversion_ documentation for details.
+See the bump-my-version_ documentation for details.
 
-.. _bumpversion: https://pypi.org/project/bumpversion/
+.. _bump-my-version: https://pypi.org/project/bump-my-version/
 .. _pytest: https://docs.pytest.org/en/latest/
 .. _Emu: https://github.com/bird-house/emu
