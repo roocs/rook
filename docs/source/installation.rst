@@ -22,7 +22,7 @@ Create Conda environment named `rook`:
 .. code-block:: console
 
    $ conda env create -f environment.yml
-   $ source activate rook
+   $ conda activate rook
 
 Install rook app:
 
@@ -66,7 +66,7 @@ You can find which process uses a given port using the following command (here f
 
 .. code-block:: console
 
-   $ netstat -nlp | grep :5000
+   $ lsof -i :5000
 
 
 Check the log files for errors:
@@ -93,9 +93,25 @@ Run rook as Docker container
 
 You can also run rook as a Docker container.
 
-.. warning::
+Build and run the image directly:
 
-  TODO: Describe Docker container support.
+.. code-block:: console
+
+   $ docker build -t roocs/rook .
+   $ docker run --rm -p 5000:5000 roocs/rook
+
+Or use Docker Compose:
+
+.. code-block:: console
+
+   $ docker compose build
+   $ docker compose up
+
+Stop the service with ``Ctrl+C``, then remove the stack with:
+
+.. code-block:: console
+
+   $ docker compose down
 
 Use Ansible to deploy rook on your System
 -----------------------------------------

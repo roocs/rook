@@ -25,7 +25,7 @@ def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
 
 @pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
 def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps_cfg):
-    # TODO: this test is slow (25secs) ... but should be fast (1sec)
+    # This integration path remains slower than the other orchestrate scenarios.
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
         resource_file("wf_c3s_cmip6_subset_collection_only.json")
