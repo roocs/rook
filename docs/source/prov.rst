@@ -166,6 +166,6 @@ The Climate4Impact_ project is using provenance to record the workflow of data s
 .. _PROV-JSON: https://openprovenance.org/prov-json/
 .. _DataONE: https://www.dataone.org/
 .. _rooki: https://rooki.readthedocs.io/en/latest/
-.. _notebooks: https://nbviewer.jupyter.org/github/roocs/rooki/tree/master/notebooks/demo/
+.. _notebooks: https://nbviewer.jupyter.org/github/roocs/rooki/tree/main/notebooks/demo/
 .. _ESMValTool: https://docs.esmvaltool.org/en/latest/community/diagnostic.html?highlight=provenance#recording-provenance
 .. _Climate4Impact: https://is.enes.org/files/C4ISWIRRLTraining.pdf
