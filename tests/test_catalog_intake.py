@@ -112,6 +112,7 @@ def test_intake_catalog_uses_proxy_aware_http_fs(monkeypatch):
     assert calls["protocol"] == "http"
     assert calls["client_kwargs"] == {"trust_env": True}
     assert calls["kwargs"]["fs"] == "dummy-fs"
+    assert calls["kwargs"]["getshell"] is False
 
 
 def test_intake_catalog_resets_project_storage_options(monkeypatch):
@@ -129,3 +130,20 @@ def test_intake_catalog_resets_project_storage_options(monkeypatch):
 
     cat = IntakeCatalog(project="c3s-cmip6", url="https://example.com/catalog.yml")
     assert cat.load() == "ok"
+
+
+def test_intake_catalog_disables_shell_expansion_for_local_catalog(monkeypatch):
+    calls = {}
+
+    def fake_open_catalog(url, **kwargs):
+        calls["url"] = url
+        calls["kwargs"] = kwargs
+        return {}
+
+    monkeypatch.setattr("rook.catalog.intake.intake.open_catalog", fake_open_catalog)
+
+    cat = IntakeCatalog(project="c3s-cmip6", url="catalog.yml")
+    _ = cat.catalog
+
+    assert calls["url"] == "catalog.yml"
+    assert calls["kwargs"]["getshell"] is False
