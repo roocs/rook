@@ -1,4 +1,5 @@
 from pathlib import Path
+import importlib.util
 
 import prov
 import pytest
@@ -10,7 +11,10 @@ from rook.processes.wps_orchestrate import Orchestrate
 from rook.utils.metalink_utils import parse_metalink
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
+
+
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
@@ -23,7 +27,7 @@ def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps_cfg):
     # This integration path remains slower than the other orchestrate scenarios.
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
@@ -38,7 +42,7 @@ def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps
     assert "meta4" in get_output(resp.xml)["output"]
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
@@ -62,7 +66,7 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     )
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_prov_with_fixes(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(
@@ -78,7 +82,7 @@ def test_wps_orchestrate_prov_with_fixes(resource_file, get_output, pywps_cfg):
     assert 'freq="year"' in doc.get_provn()
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
     datainputs = "workflow=@xlink:href=file://{}".format(

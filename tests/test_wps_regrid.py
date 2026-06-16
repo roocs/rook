@@ -1,3 +1,5 @@
+import importlib.util
+
 import pytest
 import xarray as xr
 from pywps import Service
@@ -5,6 +7,9 @@ from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_regrid import Regrid
 from rook.utils.metalink_utils import extract_paths_from_metalink
+
+
+ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
 
 
 @pytest.fixture
@@ -20,7 +25,7 @@ def assert_regrid():
     return _assert_regrid
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_regrid_cmip6(assert_regrid, get_output, pywps_cfg):
     client = client_for(Service(processes=[Regrid()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
@@ -34,7 +39,7 @@ def test_wps_regrid_cmip6(assert_regrid, get_output, pywps_cfg):
     assert_regrid(path=get_output(resp.xml)["output"])
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_regrid_cmip6_custom(assert_regrid, get_output, pywps_cfg):
     client = client_for(Service(processes=[Regrid()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
