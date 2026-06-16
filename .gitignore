@@ -101,6 +101,7 @@ docs/_html/
 docs/doctrees/
 docs/make.bat
 docs/source/output-sanitize.cfg
+docs/source/apidoc/
 
 # External Sources
 #src/external

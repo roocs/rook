@@ -17,8 +17,4 @@ __all__ = [
     "average_over_dims",
     "average_shape",
     "average_time",
-    "concat",
-    "normalise",
-    "regrid",
-    "subset",
 ]
