@@ -6,6 +6,7 @@ Unreleased (towards 1.1.0)
 
 * Fixed remote intake catalog loading for partner environments behind proxies by using proxy-aware HTTP filesystem handling and safer catalog storage option resets.
 * Made ``fsspec`` an explicit runtime dependency for intake catalog loading.
+* Mitigated the intake ``shell(...)`` catalog default expansion risk by disabling shell-based parameter expansion when loading intake catalogs (see https://github.com/roocs/rook/security/dependabot/3).
 
 1.0.0 (2026-06-12)
 ==================

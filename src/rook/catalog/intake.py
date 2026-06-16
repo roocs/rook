@@ -39,12 +39,14 @@ class IntakeCatalog(Catalog):
             if is_http_catalog:
                 fs = fsspec.filesystem("http", client_kwargs={"trust_env": True})
                 try:
-                    self._cat = intake.open_catalog(self.url, fs=fs)
+                    # Disable shell-based default expansion in intake catalogs.
+                    # Ref: https://github.com/roocs/rook/security/dependabot/3
+                    self._cat = intake.open_catalog(self.url, fs=fs, getshell=False)
                 except TypeError:
                     # Keep compatibility with intake variants that do not accept fs.
-                    self._cat = intake.open_catalog(self.url)
+                    self._cat = intake.open_catalog(self.url, getshell=False)
             else:
-                self._cat = intake.open_catalog(self.url)
+                self._cat = intake.open_catalog(self.url, getshell=False)
         return self._cat
 
     def load(self):
