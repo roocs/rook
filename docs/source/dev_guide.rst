@@ -88,7 +88,9 @@ Update the Conda specification file to build identical environments_ on a specif
     $ source activate rook
     $ make clean
     $ make install
-    $ conda list -n rook --explicit > spec-file.txt
+    $ conda list -n rook --explicit > linux-64.spec
+
+For backward compatibility during migration, ``spec-file.txt`` is kept as a symlink alias to ``linux-64.spec``.
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
