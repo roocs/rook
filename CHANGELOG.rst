@@ -1,8 +1,13 @@
 Changes
 *******
 
-Unreleased (towards 1.1.0)
-==========================
+Unreleased
+==========
+
+* No changes yet.
+
+1.1.0 (2026-06-16)
+==================
 
 * Fixed remote intake catalog loading for partner environments behind proxies by using proxy-aware HTTP filesystem handling and safer catalog storage option resets.
 * Made ``fsspec`` an explicit runtime dependency for intake catalog loading.

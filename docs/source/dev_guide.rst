@@ -102,9 +102,9 @@ Make a new version of rook in the following steps:
 
 * Make sure everything is committed to GitHub.
 * Update ``CHANGELOG.rst`` with the next version.
-* Dry Run: ``bump-my-version bump --dry-run --verbose --new-version 0.8.1 patch``
-* Do it: ``bump-my-version bump --new-version 0.8.1 patch``
-* ... or: ``bump-my-version bump --new-version 0.9.0 minor``
+* Dry Run: ``bump-my-version bump --dry-run --verbose --new-version 1.1.1 patch``
+* Do it: ``bump-my-version bump --new-version 1.1.1 patch``
+* ... or: ``bump-my-version bump --new-version 1.2.0 minor``
 * Push it: ``git push``
 * Push tag: ``git push --tags``
 

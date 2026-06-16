@@ -131,9 +131,9 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :target: https://github.com/astral-sh/ruff
         :alt: Ruff
 
-.. |status| image:: https://www.repostatus.org/badges/latest/wip.svg
-        :alt: Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.
-        :target: https://www.repostatus.org/#wip
+.. |status| image:: https://www.repostatus.org/badges/latest/active.svg
+        :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
+        :target: https://www.repostatus.org/#active
 
 .. |versions| image:: https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
         :target: https://github.com/roocs/rook/blob/main/.github/workflows/main.yml
