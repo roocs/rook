@@ -10,6 +10,7 @@
    prov
    dev_guide
    processes
+   apidoc/modules
    authors
    changelog
 

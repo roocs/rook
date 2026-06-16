@@ -2,10 +2,10 @@
 
 from .base import Operation
 from .average import Average, average_over_dims, average_shape, average_time
-from .concat import Concat, concat
-from .regrid import Regrid, regrid
-from .subset import Subset, subset
-from .normalise import ResultSet, normalise
+from .concat import Concat, concat  # noqa: F401
+from .regrid import Regrid, regrid  # noqa: F401
+from .subset import Subset, subset  # noqa: F401
+from .normalise import ResultSet, normalise  # noqa: F401
 
 __all__ = [
     "Average",
@@ -17,8 +17,4 @@ __all__ = [
     "average_over_dims",
     "average_shape",
     "average_time",
-    "concat",
-    "normalise",
-    "regrid",
-    "subset",
 ]

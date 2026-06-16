@@ -26,12 +26,6 @@ class TestWorkflowTree:
             ("average_tas", "subset_tas"),
         ]
 
-    # FIXME: Does this test rely on output from previous tests?
-    # def test_run_tree_wf(self, tmp_path, resource_file):
-    #     wf = workflow.WorkflowRunner(output_dir=tmp_path)
-    #     output = wf.run(resource_file(self.TREE_WF))
-    #     assert "tas_mon_HadGEM2-ES_rcp85_r1i1p1_20850101-21200101_avg-year.nc" in output[0]
-
 
 def test_run_wf_cmip6_subset_average(tmp_path, resource_file):
     wfdoc = resource_file("wf_cmip6_subset_average.json")

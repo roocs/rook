@@ -95,8 +95,8 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
 .. _bump-my-version: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
-.. |build| image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg
-        :target: https://github.com/roocs/rook/actions/workflows/main.yml
+.. |build| image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg?branch=main
+        :target: https://github.com/roocs/rook/actions/workflows/main.yml?query=branch%3Amain
         :alt: Build Status
 
 .. |conda| image:: https://img.shields.io/conda/vn/conda-forge/rook.svg
@@ -111,19 +111,19 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :target: https://gitter.im/bird-house/birdhouse
         :alt: Bird-house Gitter Chat
 
-.. |license| image:: https://img.shields.io/github/license/roocs/rook.svg
+.. |license| image:: https://img.shields.io/badge/license-Apache%202.0-blue.svg
         :target: https://github.com/roocs/rook/blob/main/LICENSE.txt
         :alt: License
 
 .. |pypi| image:: https://img.shields.io/pypi/v/rook.svg
-        :target: https://pypi.python.org/pypi/rook
+        :target: https://pypi.org/project/rook/
         :alt: Python Package Index Build
 
-.. |pre-commit-ci| image:: https://results.pre-commit.ci/badge/github/roocs/rook/main.svg
-        :target: https://results.pre-commit.ci/latest/github/roocs/rook/main
+.. |pre-commit-ci| image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
+        :target: https://pre-commit.com/
         :alt: pre-commit.ci status
 
-.. |prek| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json
+.. |prek| image:: https://img.shields.io/pypi/v/prek.svg?label=prek
         :target: https://github.com/j178/prek
         :alt: prek
 
@@ -135,6 +135,6 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :alt: Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.
         :target: https://www.repostatus.org/#wip
 
-.. |versions| image:: https://img.shields.io/pypi/pyversions/rook.svg
-        :target: https://pypi.python.org/pypi/rook
+.. |versions| image:: https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
+        :target: https://github.com/roocs/rook/blob/main/.github/workflows/main.yml
         :alt: Supported Python Versions

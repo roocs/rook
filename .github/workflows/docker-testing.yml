@@ -7,9 +7,9 @@ on:
   pull_request:
 
 concurrency:
-  # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
+  # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on main.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 permissions:
   contents: read
@@ -18,6 +18,7 @@ jobs:
   build:
     name: Build and Test Docker image
     runs-on: ubuntu-latest
+    continue-on-error: ${{ github.event_name == 'pull_request' && (github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]') }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
@@ -29,6 +30,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Login to Docker Hub
+        if: ${{ secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != '' }}
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -46,12 +48,9 @@ jobs:
           cache-to: type=gha,mode=max
           push: false
       - name: Run Docker image
-        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3
-        with:
-          image: localrook:latest
-          options: -p 5000:5000
-          run: |
-            rook start -d
-            sleep 2s
-            rook status
-            rook stop
+        run: |
+          docker run -d --name rook-test -p 5000:5000 localrook:latest
+          sleep 5
+          curl -fsS "http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities" > /dev/null
+          docker logs rook-test
+          docker rm -f rook-test

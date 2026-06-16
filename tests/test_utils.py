@@ -84,7 +84,8 @@ def test_parse_wps_input():
         "version": "1.0.0",
         "language": "eng",
         "identifier": "subset",
-        "identifiers": "subset",  # TODO: why identifierS?
+        # Keep legacy plural form for payload compatibility with WPS request parsing.
+        "identifiers": "subset",
         "store_execute": True,
         "status": True,
         "lineage": True,

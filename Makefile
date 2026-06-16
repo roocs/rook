@@ -110,7 +110,7 @@ install-lint: ## install dependencies needed for linting
 	@python -m pip install --quiet --editable ".[dev]"
 
 install-docs: ## install dependencies needed for building the docs
-	@python -m pip install --quiet --editable ".[dev]"
+	@python -m pip install --quiet --editable ".[docs]"
 
 install-test: ## install dependencies needed for standard testing
 	@python -m pip install --quiet --editable ".[dev]"

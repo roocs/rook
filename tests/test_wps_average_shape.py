@@ -1,3 +1,5 @@
+import importlib.util
+
 import geopandas as gpd
 import xarray as xr
 from pywps import Service
@@ -7,6 +9,9 @@ from rook.utils.metalink_utils import extract_paths_from_metalink
 import pytest
 
 from rook.processes.wps_average_shape import AverageByShape
+
+
+ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
 
 
 POLY = Polygon(
@@ -22,7 +27,7 @@ POLY = Polygon(
 )
 
 
-@pytest.mark.xfail(reason="Fails on github actions due to missing esmpy")
+@pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_average_shape_cmip6(tmp_path, get_output, pywps_cfg):
     # Save POLY to tmpdir
     tmp_poly_path = tmp_path / "tmppoly.json"
