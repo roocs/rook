@@ -5,13 +5,13 @@ from pathlib import Path
 
 from clisops.exceptions import InvalidCollection
 from clisops.project_utils import derive_ds_id, dset_to_filepaths, get_project_name
-from clisops.utils.dataset_utils import is_kerchunk_file, open_xr_dataset
+from clisops.utils.dataset_utils import open_xr_dataset
 from clisops.utils.file_utils import FileMapper
 from loguru import logger
 
 from rook.catalog import get_catalog
 
-from .helpers import ordered_dict, wrap_sequence
+from .helpers import is_kerchunk_file, ordered_dict, wrap_sequence
 
 
 def to_year(time_string):
