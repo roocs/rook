@@ -65,3 +65,24 @@ def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
 
     assert result == "DATASET"
     assert calls == {"open": 1, "fix": 0}
+
+
+def test_is_kerchunk_file_local_json():
+    assert helpers.is_kerchunk_file("kerchunk.json") is True
+
+
+def test_is_kerchunk_file_url_with_query():
+    assert (
+        helpers.is_kerchunk_file(
+            "https://example.org/path/catalog.parquet?token=abc123"
+        )
+        is True
+    )
+
+
+def test_is_kerchunk_file_reference_scheme():
+    assert helpers.is_kerchunk_file("reference://") is True
+
+
+def test_is_kerchunk_file_non_kerchunk_path():
+    assert helpers.is_kerchunk_file("/tmp/file.nc") is False

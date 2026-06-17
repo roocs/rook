@@ -1,10 +1,14 @@
 """Helper utilities for operation plumbing."""
 
 import collections
+from pathlib import Path
+from urllib.parse import urlsplit
 
-from clisops.utils.dataset_utils import is_kerchunk_file, open_xr_dataset
+from clisops.utils.dataset_utils import open_xr_dataset
 
 from rook.utils.apply_fixes import apply_fixes as apply_dataset_fixes
+
+KERCHUNK_EXTS = (".json", ".zst", ".zstd", ".parquet")
 
 
 def wrap_sequence(obj):
@@ -27,3 +31,25 @@ def open_dataset(ds_id, file_paths, apply_fixes=True):
 def ordered_dict():
     """Return an OrderedDict instance."""
     return collections.OrderedDict()
+
+
+def is_kerchunk_file(dset):
+    # Keep this local detector in sync with clisops and upstream when possible.
+    # Rook currently needs URL-aware kerchunk detection before clisops changes land.
+    """Return True when the input looks like a kerchunk reference file."""
+    if isinstance(dset, Path):
+        dset = str(dset)
+
+    if not isinstance(dset, str):
+        return False
+
+    value = dset.strip()
+    if not value:
+        return False
+
+    if value.lower().startswith("reference://"):
+        return True
+
+    # Support local paths and URLs, including query fragments.
+    path = urlsplit(value).path.lower()
+    return path.endswith(KERCHUNK_EXTS)
