@@ -29,7 +29,7 @@ def test_consolidate_s3_bypasses_catalog_and_mapper(monkeypatch):
     def fail_get_catalog(_project):
         raise AssertionError("Catalog lookup should not be called for s3 input")
 
-    def fail_dset_to_filepaths(_dset, force=False):
+    def fail_dset_to_filepaths(_dset, **_kwargs):
         raise AssertionError("dset_to_filepaths should not be called for s3 input")
 
     monkeypatch.setattr(consolidate, "get_project_name", fail_get_project_name)
