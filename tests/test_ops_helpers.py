@@ -85,4 +85,4 @@ def test_is_kerchunk_file_reference_scheme():
 
 
 def test_is_kerchunk_file_non_kerchunk_path():
-    assert helpers.is_kerchunk_file("/tmp/file.nc") is False
+    assert helpers.is_kerchunk_file("/data/file.nc") is False
