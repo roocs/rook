@@ -68,6 +68,27 @@ You can find information about contributing in our `Developer Guide`_.
 
 Use bump-my-version_ to release a new version.
 
+Patch Release Quickstart
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Minimal patch release flow (example: ``1.1.1``):
+
+.. code-block:: console
+
+        $ edit CHANGELOG.rst
+        $ make conda-spec
+        $ bump-my-version bump --new-version 1.1.1 patch
+        $ git push
+        $ git push --tags
+
+What this does:
+
+* ``edit CHANGELOG.rst`` adds the release notes for the new patch version.
+* ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec`` (and refreshes ``spec-file.txt``).
+* ``bump-my-version`` updates version metadata and creates the release tag.
+* ``git push`` publishes the commit.
+* ``git push --tags`` publishes the release tag and triggers release/tag workflows.
+
 Tests
 -----
 

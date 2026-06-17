@@ -20,7 +20,7 @@
    roocs/rook <https://github.com/roocs/rook>
 
 Indices and tables
-==================
+------------------
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
