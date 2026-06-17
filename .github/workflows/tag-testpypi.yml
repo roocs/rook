@@ -12,6 +12,7 @@ permissions:
 jobs:
   build-n-publish-testpypi:
     name: Build and publish Python 🐍 distributions 📦 to TestPyPI
+    if: ${{ vars.ENABLE_TESTPYPI_PUBLISH == 'true' }}
     environment: staging
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
