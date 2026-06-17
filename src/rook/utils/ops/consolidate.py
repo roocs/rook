@@ -11,7 +11,7 @@ from loguru import logger
 
 from rook.catalog import get_catalog
 
-from .helpers import is_kerchunk_file, ordered_dict, wrap_sequence
+from .helpers import is_kerchunk_file, is_s3_uri, ordered_dict, wrap_sequence
 
 
 def to_year(time_string):
@@ -78,7 +78,11 @@ def consolidate(collection, **kwargs):
 
     collection = wrap_sequence(collection.value)
 
-    if not isinstance(collection[0], FileMapper) and not is_kerchunk_file(collection[0]):
+    if (
+        not isinstance(collection[0], FileMapper)
+        and not is_kerchunk_file(collection[0])
+        and not is_s3_uri(collection[0])
+    ):
         project = get_project_name(collection[0])
         catalog = get_catalog(project)
 
@@ -89,6 +93,9 @@ def consolidate(collection, **kwargs):
     for dset in collection:
         if is_kerchunk_file(dset):
             filtered_refs[dset] = dset
+
+        elif is_s3_uri(dset):
+            filtered_refs[dset] = [dset]
 
         elif not catalog:
             file_paths = dset_to_filepaths(dset, force=True)

@@ -86,3 +86,111 @@ def test_is_kerchunk_file_reference_scheme():
 
 def test_is_kerchunk_file_non_kerchunk_path():
     assert helpers.is_kerchunk_file("/data/file.nc") is False
+
+
+def test_is_s3_uri_true():
+    assert helpers.is_s3_uri("s3://my-bucket/path/file.nc") is True
+
+
+def test_is_s3_uri_false_for_https():
+    assert helpers.is_s3_uri("https://example.org/file.nc") is False
+
+
+def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):
+    monkeypatch.setattr(
+        helpers,
+        "CONFIG",
+        {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
+    )
+
+    kwargs = helpers.get_s3_open_kwargs(
+        "s3://example-bucket/path/file.nc", ["s3://example-bucket/path/file.nc"]
+    )
+
+    assert kwargs == {
+        "backend_kwargs": {
+            "storage_options": {
+                "anon": True,
+                "client_kwargs": {"endpoint_url": "https://s3.example.org"},
+            }
+        }
+    }
+
+
+def test_get_s3_open_kwargs_without_s3_config(monkeypatch):
+    monkeypatch.setattr(helpers, "CONFIG", {})
+
+    kwargs = helpers.get_s3_open_kwargs(
+        "s3://example-bucket/path/file.nc", ["s3://example-bucket/path/file.nc"]
+    )
+
+    assert kwargs == {}
+
+
+def test_get_s3_open_kwargs_skips_kerchunk(monkeypatch):
+    monkeypatch.setattr(
+        helpers,
+        "CONFIG",
+        {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
+    )
+
+    kwargs = helpers.get_s3_open_kwargs(
+        "s3://example-bucket/path/ref.json", ["s3://example-bucket/path/ref.json"]
+    )
+
+    assert kwargs == {}
+
+
+def test_get_s3_storage_options_merges_client_kwargs(monkeypatch):
+    monkeypatch.setattr(
+        helpers,
+        "CONFIG",
+        {
+            "s3": {
+                "storage_options_json": '{"anon": true, "client_kwargs": {"region_name": "eu-west-1"}}',
+                "client_kwargs_json": '{"use_ssl": false}',
+                "endpoint_url": "https://s3.example.org",
+            }
+        },
+    )
+
+    assert helpers.get_s3_storage_options() == {
+        "anon": True,
+        "client_kwargs": {
+            "region_name": "eu-west-1",
+            "use_ssl": False,
+            "endpoint_url": "https://s3.example.org",
+        },
+    }
+
+
+def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
+    calls = {"open_kwargs": None}
+
+    def fake_open(file_paths, **kwargs):
+        calls["open_kwargs"] = kwargs
+        return "DATASET"
+
+    monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
+    monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
+    monkeypatch.setattr(helpers, "apply_dataset_fixes", lambda _ds_id, ds: ds)
+    monkeypatch.setattr(
+        helpers,
+        "CONFIG",
+        {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
+    )
+
+    _ = helpers.open_dataset(
+        "s3://example-bucket/path/file.nc",
+        ["s3://example-bucket/path/file.nc"],
+        apply_fixes=False,
+    )
+
+    assert calls["open_kwargs"] == {
+        "backend_kwargs": {
+            "storage_options": {
+                "anon": True,
+                "client_kwargs": {"endpoint_url": "https://s3.example.org"},
+            }
+        }
+    }

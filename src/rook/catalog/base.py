@@ -37,8 +37,13 @@ class Result:
 
         Records are an OrderedDict of dataset ids with a list of files: {'ds_id': [files]}.
         """
-        self.base_dir = CONFIG.get(f"project:{project}", {}).get("base_dir")
-        self.base_url = CONFIG.get(f"project:{project}", {}).get("data_node_root")
+        project_config = CONFIG.get(f"project:{project}", {})
+        s3_config = CONFIG.get("s3", {})
+        self.base_dir = project_config.get("base_dir")
+        self.s3_base_dir = project_config.get("s3_base_dir") or s3_config.get(
+            "base_dir"
+        )
+        self.base_url = project_config.get("data_node_root")
         self.records = records
 
     @property
@@ -52,7 +57,7 @@ class Result:
     def _records(self, prefix):
         new_records = {}
         for ds_id, fpaths in self.records.items():
-            if str(prefix).startswith(("http://", "https://")):
+            if str(prefix).startswith(("http://", "https://", "s3://")):
                 new_records[ds_id] = [f"{str(prefix).rstrip('/')}/{fpath.lstrip('/')}" for fpath in fpaths]
             else:
                 new_records[ds_id] = [str(Path(prefix) / fpath) for fpath in fpaths]
@@ -60,7 +65,7 @@ class Result:
 
     def files(self):
         """Return matched records with file path."""
-        return self._records(prefix=self.base_dir)
+        return self._records(prefix=self.s3_base_dir or self.base_dir)
 
     def download_urls(self):
         """Return matched records with download URL."""

@@ -32,6 +32,7 @@ dependencies:
   # catalog
   - intake <2.0
   - fsspec
+  - s3fs
   - pandas >=2.0
   - sqlalchemy >=2.0
   - aiohttp
