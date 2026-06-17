@@ -86,3 +86,11 @@ def test_is_kerchunk_file_reference_scheme():
 
 def test_is_kerchunk_file_non_kerchunk_path():
     assert helpers.is_kerchunk_file("/data/file.nc") is False
+
+
+def test_is_s3_uri_true():
+    assert helpers.is_s3_uri("s3://my-bucket/path/file.nc") is True
+
+
+def test_is_s3_uri_false_for_https():
+    assert helpers.is_s3_uri("https://example.org/file.nc") is False

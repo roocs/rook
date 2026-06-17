@@ -53,3 +53,18 @@ def is_kerchunk_file(dset):
     # Support local paths and URLs, including query fragments.
     path = urlsplit(value).path.lower()
     return path.endswith(KERCHUNK_EXTS)
+
+
+def is_s3_uri(dset):
+    """Return True when the input points to an S3 object URI."""
+    if isinstance(dset, Path):
+        dset = str(dset)
+
+    if not isinstance(dset, str):
+        return False
+
+    value = dset.strip()
+    if not value:
+        return False
+
+    return value.lower().startswith("s3://")
