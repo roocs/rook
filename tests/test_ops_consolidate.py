@@ -1,4 +1,6 @@
 import rook.utils.ops.consolidate as consolidate
+from rook.catalog import base
+from rook.catalog.base import Result
 
 
 class DummyCollection:
@@ -39,4 +41,36 @@ def test_consolidate_s3_bypasses_catalog_and_mapper(monkeypatch):
 
     assert result == {
         "s3://example-bucket/path/file.nc": ["s3://example-bucket/path/file.nc"]
+    }
+
+
+def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
+    class DummyCatalog:
+        def search(self, collection, time):
+            assert collection == "dataset"
+            assert time is None
+            return Result(
+                "c3s-cmip6",
+                {"c3s-cmip6.dataset": ["ScenarioMIP/Model/file_201501-210012.nc"]},
+            )
+
+    monkeypatch.setattr(consolidate, "get_project_name", lambda _dset: "c3s-cmip6")
+    monkeypatch.setattr(consolidate, "derive_ds_id", lambda _dset: "dataset")
+    monkeypatch.setattr(consolidate, "get_catalog", lambda _project: DummyCatalog())
+    monkeypatch.setattr(
+        base,
+        "CONFIG",
+        {
+            "project:c3s-cmip6": {"base_dir": "/data/CMIP6"},
+            "s3": {"base_dir": "s3://example-bucket/data/CMIP6"},
+        },
+    )
+
+    collection = DummyCollection(["c3s-cmip6.dataset"])
+    result = consolidate.consolidate(collection)
+
+    assert result == {
+        "c3s-cmip6.dataset": [
+            "s3://example-bucket/data/CMIP6/ScenarioMIP/Model/file_201501-210012.nc"
+        ]
     }

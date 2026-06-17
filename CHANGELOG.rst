@@ -4,7 +4,9 @@ Changes
 Unreleased
 ==========
 
-* No changes yet.
+* Added preliminary S3 support by declaring ``s3fs``, allowing direct ``s3://``
+  NetCDF inputs, and preparing optional S3 base-path mapping for catalog-backed
+  processing paths.
 
 1.1.1 (2026-06-17)
 ==================
