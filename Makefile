@@ -3,6 +3,9 @@ APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := rook
 
 WPS_URL = http://localhost:5000
+CONDA_LOCK_PLATFORM ?= linux-64
+CONDA_LOCK_FILE ?= conda-lock.yml
+CONDA_SPEC_FILE ?= $(CONDA_LOCK_PLATFORM).spec
 
 # Used in target refresh-notebooks to make it looks like the notebooks have
 # been refreshed from the production server below instead of from the local dev
@@ -179,6 +182,16 @@ refresh-notebooks: ## refreshing all notebook outputs under docs/source/notebook
 	@bash -c 'for nb in $(CURDIR)/docs/source/notebooks/*.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)'
 
 ## Deployment targets:
+
+conda-lock: ## regenerate conda lock file from environment.yml
+	@echo "Regenerating $(CONDA_LOCK_FILE) for $(CONDA_LOCK_PLATFORM) ..."
+	@conda-lock lock -f environment.yml -p $(CONDA_LOCK_PLATFORM) --lockfile $(CONDA_LOCK_FILE)
+
+conda-spec: conda-lock ## regenerate explicit conda spec file and refresh spec-file.txt alias
+	@echo "Rendering $(CONDA_SPEC_FILE) from $(CONDA_LOCK_FILE) ..."
+	@conda-lock render -k explicit -p $(CONDA_LOCK_PLATFORM) --filename-template '{platform}.spec' $(CONDA_LOCK_FILE)
+	@ln -sfn $(CONDA_SPEC_FILE) spec-file.txt
+	@ls -l $(CONDA_SPEC_FILE) spec-file.txt
 
 dist: clean ## build source and wheel package
 	@echo "Building source and wheel package ..."
