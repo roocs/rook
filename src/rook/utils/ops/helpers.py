@@ -107,7 +107,7 @@ def get_s3_storage_options():
     if raw_client:
         parsed = _parse_json_dict(raw_client)
         if parsed:
-            options["client_kwargs"] = parsed
+            options.setdefault("client_kwargs", {}).update(parsed)
 
     endpoint_url = cfg.get("endpoint_url")
     if endpoint_url:
