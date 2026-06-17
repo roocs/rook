@@ -4,6 +4,11 @@ Changes
 Unreleased
 ==========
 
+* No changes yet.
+
+1.1.1 (2026-06-17)
+==================
+
 * Fixed post-merge CI behavior by skipping the ``no-commit-to-branch`` pre-commit hook on ``main`` workflow runs while keeping it active for pull requests and local use.
 * Gated PyPI/TestPyPI publish jobs behind explicit repository variables to avoid failing release/tag post-process workflows when publishing is not enabled.
 * Added ``make conda-lock`` and ``make conda-spec`` targets to automate regeneration of ``conda-lock.yml`` and ``linux-64.spec`` (with ``spec-file.txt`` alias refresh) for release prep.
