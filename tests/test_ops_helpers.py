@@ -1,7 +1,7 @@
 import xarray as xr
 
 from rook import config
-import rook.utils.ops.helpers as helpers
+import rook.io.datasets as helpers
 
 
 def test_open_dataset_applies_fixes(monkeypatch):

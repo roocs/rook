@@ -10,14 +10,9 @@ from clisops.utils.file_utils import FileMapper
 from loguru import logger
 
 from rook.catalog import get_catalog
+from rook.io.datasets import is_kerchunk_file, is_s3_uri, is_zarr_store
 
-from .helpers import (
-    is_kerchunk_file,
-    is_s3_uri,
-    is_zarr_store,
-    ordered_dict,
-    wrap_sequence,
-)
+from .helpers import ordered_dict, wrap_sequence
 
 
 def to_year(time_string):
