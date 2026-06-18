@@ -99,3 +99,41 @@ def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
             ),
         ),
     )
+
+
+def test_consolidate_resolves_mixed_sources_independently(monkeypatch):
+    catalog_calls = []
+
+    class DummyResult:
+        def __init__(self, dataset_id):
+            self.dataset_id = dataset_id
+
+        def __len__(self):
+            return 1
+
+        def files(self):
+            return {self.dataset_id: [f"/data/{self.dataset_id}.nc"]}
+
+    class DummyCatalog:
+        def search(self, collection, time):
+            assert time is None
+            return DummyResult(collection)
+
+    def fake_get_catalog(project):
+        catalog_calls.append(project)
+        return DummyCatalog()
+
+    monkeypatch.setattr(consolidate, "get_project_name", lambda _dset: "project")
+    monkeypatch.setattr(consolidate, "derive_ds_id", lambda dset: dset)
+    monkeypatch.setattr(consolidate, "get_catalog", fake_get_catalog)
+
+    collection = DummyCollection(
+        ["s3://bucket/direct.nc", "project.one", "project.two"]
+    )
+
+    assert consolidate.consolidate(collection) == (
+        DatasetSource(dataset_id=None, paths="s3://bucket/direct.nc"),
+        DatasetSource(dataset_id="project.one", paths="/data/project.one.nc"),
+        DatasetSource(dataset_id="project.two", paths="/data/project.two.nc"),
+    )
+    assert catalog_calls == ["project"]

@@ -30,6 +30,46 @@ def _bypasses_catalog(value):
     )
 
 
+def _resolve_file_source(dset, time_param):
+    """Resolve a mapped file input or a dataset without a Rook catalog."""
+    file_paths = dset_to_filepaths(dset, force=True)
+
+    if time_param:
+        file_paths = get_files_matching_time_range(time_param, file_paths)
+
+    if not file_paths:
+        raise Exception(f"No files found in given time range for {dset}")
+
+    dataset_id = None if isinstance(dset, FileMapper) else str(dset)
+    return DatasetSource(dataset_id=dataset_id, paths=file_paths)
+
+
+def _resolve_catalog_sources(dset, catalog, time_param):
+    """Resolve one catalog input into normalized dataset sources."""
+    dataset_id = derive_ds_id(dset)
+    result = catalog.search(collection=dataset_id, time=time_param)
+
+    if len(result) == 0:
+        result = catalog.search(collection=dataset_id, time=None)
+        if len(result) > 0:
+            raise Exception(f"No files found in given time range for {dset}")
+        raise InvalidCollection(f"{dset} is not in the list of available data.")
+
+    logger.info(f"Found {len(result)} files")
+    return tuple(
+        DatasetSource(dataset_id=matched_id, paths=paths)
+        for matched_id, paths in result.files().items()
+    )
+
+
+def _catalog_for(dset, catalogs):
+    """Return a cached project catalog for a dataset input."""
+    project = get_project_name(dset)
+    if project not in catalogs:
+        catalogs[project] = get_catalog(project)
+    return catalogs[project]
+
+
 def to_year(time_string):
     """Return the year in a time string as an integer."""
     return int(time_string.split("-")[0])
@@ -90,53 +130,20 @@ def get_files_matching_time_range(time_param, file_paths):
 
 def consolidate(collection, **kwargs):
     """Find file paths relating to each input dataset."""
-    catalog = None
-
     collection = wrap_sequence(collection.value)
-
-    if (
-        not isinstance(collection[0], FileMapper)
-        and not _bypasses_catalog(collection[0])
-    ):
-        project = get_project_name(collection[0])
-        catalog = get_catalog(project)
-
     sources = []
-
     time_param = kwargs.get("time")
+    catalogs = {}
 
     for dset in collection:
         if not isinstance(dset, FileMapper) and _bypasses_catalog(dset):
             sources.append(DatasetSource(dataset_id=None, paths=dset))
+            continue
 
-        elif not catalog:
-            file_paths = dset_to_filepaths(dset, force=True)
-
-            if time_param:
-                file_paths = get_files_matching_time_range(time_param, file_paths)
-
-            if len(file_paths) == 0:
-                raise Exception(f"No files found in given time range for {dset}")
-
-            dataset_id = None if isinstance(dset, FileMapper) else str(dset)
-            sources.append(DatasetSource(dataset_id=dataset_id, paths=file_paths))
-
+        catalog = None if isinstance(dset, FileMapper) else _catalog_for(dset, catalogs)
+        if catalog:
+            sources.extend(_resolve_catalog_sources(dset, catalog, time_param))
         else:
-            ds_id = derive_ds_id(dset)
-            result = catalog.search(collection=ds_id, time=time_param)
-
-            if len(result) == 0:
-                result = catalog.search(collection=ds_id, time=None)
-                if len(result) > 0:
-                    raise Exception(f"No files found in given time range for {dset}")
-                else:
-                    raise InvalidCollection(
-                        f"{dset} is not in the list of available data."
-                    )
-
-            logger.info(f"Found {len(result)} files")
-
-            for dataset_id, paths in result.files().items():
-                sources.append(DatasetSource(dataset_id=dataset_id, paths=paths))
+            sources.append(_resolve_file_source(dset, time_param))
 
     return tuple(sources)

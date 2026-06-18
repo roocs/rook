@@ -66,7 +66,7 @@ install: ## install rook application
 
 develop: install-dev ## install rook application with development libraries
 	@python -m pip install .
-	@-bash -c 'prek install'
+	@prek install
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
