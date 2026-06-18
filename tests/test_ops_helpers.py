@@ -140,12 +140,14 @@ def test_is_kerchunk_file_non_kerchunk_path():
     assert helpers.is_kerchunk_file("/data/file.nc") is False
 
 
-def test_is_s3_uri_true():
-    assert helpers.is_s3_uri("s3://my-bucket/path/file.nc") is True
+def test_detect_format_netcdf():
+    assert helpers.detect_format(source(None, "file.nc")) is helpers.DatasetFormat.NETCDF
 
 
-def test_is_s3_uri_false_for_https():
-    assert helpers.is_s3_uri("https://example.org/file.nc") is False
+def test_detect_format_kerchunk_url_with_query():
+    dataset_source = source(None, "https://example.org/ref.json?token=abc")
+
+    assert helpers.detect_format(dataset_source) is helpers.DatasetFormat.KERCHUNK
 
 
 def test_is_zarr_store_local_path():
@@ -160,13 +162,30 @@ def test_is_zarr_store_netcdf_path():
     assert helpers.is_zarr_store("s3://bucket/example.nc") is False
 
 
-def test_get_zarr_store_from_catalog_file_paths():
+def test_detect_format_zarr_from_catalog_paths():
+    assert helpers.detect_format(
+        source("project.dataset", ["s3://bucket/example.zarr"])
+    ) is helpers.DatasetFormat.ZARR
+
+
+def test_detect_transport_is_independent_of_format():
     assert (
-        helpers.get_zarr_store(
-            source("project.dataset", ["s3://bucket/example.zarr"])
-        )
-        == "s3://bucket/example.zarr"
+        helpers.detect_transport(source(None, "s3://bucket/file.nc"))
+        is helpers.Transport.S3
     )
+    assert (
+        helpers.detect_transport(source(None, "s3://bucket/example.zarr"))
+        is helpers.Transport.S3
+    )
+    assert (
+        helpers.detect_transport(source(None, "https://example.org/ref.json"))
+        is helpers.Transport.HTTP
+    )
+
+
+def test_detect_transport_rejects_mixed_transports():
+    with pytest.raises(ValueError, match="mixed transports"):
+        helpers.detect_transport(source(None, ["/data/one.nc", "s3://bucket/two.nc"]))
 
 
 def test_open_dataset_opens_local_zarr_store(tmp_path):
@@ -245,72 +264,67 @@ def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
     assert result == "DATASET"
 
 
-def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):
+def test_get_storage_options_for_s3_source(monkeypatch):
     monkeypatch.setattr(
         config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
-    kwargs = helpers.get_s3_open_kwargs(
-        source(None, "s3://example-bucket/path/file.nc")
-    )
+    options = helpers.get_storage_options(source(None, "s3://bucket/file.nc"))
 
-    assert kwargs == {
-        "backend_kwargs": {
-            "storage_options": {
-                "anon": True,
-                "client_kwargs": {"endpoint_url": "https://s3.example.org"},
-            }
-        }
+    assert options == {
+        "anon": True,
+        "client_kwargs": {"endpoint_url": "https://s3.example.org"},
     }
 
 
-def test_get_s3_open_kwargs_without_s3_config(monkeypatch):
+def test_get_storage_options_without_s3_config(monkeypatch):
     monkeypatch.setattr(config, "CONFIG", {})
 
-    kwargs = helpers.get_s3_open_kwargs(
-        source(None, "s3://example-bucket/path/file.nc")
-    )
+    options = helpers.get_storage_options(source(None, "s3://bucket/file.nc"))
 
-    assert kwargs == {}
+    assert options == {}
 
 
-def test_get_s3_open_kwargs_skips_kerchunk(monkeypatch):
+def test_get_storage_options_does_not_depend_on_format(monkeypatch):
     monkeypatch.setattr(
         config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
-    kwargs = helpers.get_s3_open_kwargs(
-        source(None, "s3://example-bucket/path/ref.json")
+    options = helpers.get_storage_options(source(None, "s3://bucket/ref.json"))
+
+    assert options["anon"] is True
+
+
+def test_open_dataset_passes_s3_options_to_kerchunk(monkeypatch):
+    calls = {}
+
+    def fake_open(path, **kwargs):
+        calls["path"] = path
+        calls["kwargs"] = kwargs
+        return "DATASET"
+
+    monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
+    monkeypatch.setattr(config, "CONFIG", {"s3": {"anon": "true"}})
+
+    result = helpers.open_dataset(
+        source(None, "s3://bucket/reference.json"), apply_fixes=False
     )
 
-    assert kwargs == {}
-
-
-def test_get_s3_storage_options_merges_client_kwargs(monkeypatch):
-    monkeypatch.setattr(
-        config,
-        "CONFIG",
-        {
-            "s3": {
-                "storage_options_json": '{"anon": true, "client_kwargs": {"region_name": "eu-west-1"}}',
-                "client_kwargs_json": '{"use_ssl": false}',
-                "endpoint_url": "https://s3.example.org",
-            }
-        },
-    )
-
-    assert helpers.get_s3_storage_options() == {
-        "anon": True,
-        "client_kwargs": {
-            "region_name": "eu-west-1",
-            "use_ssl": False,
-            "endpoint_url": "https://s3.example.org",
-        },
+    assert result == "DATASET"
+    assert calls == {
+        "path": "s3://bucket/reference.json",
+        "kwargs": {"target_options": {"anon": True}},
     }
+
+
+def test_get_storage_options_skips_local_files(monkeypatch):
+    monkeypatch.setattr(config, "get_s3_storage_options", lambda: pytest.fail())
+
+    assert helpers.get_storage_options(source(None, "/data/file.nc")) == {}
 
 
 def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
