@@ -1,5 +1,7 @@
 """Utilities for detecting and opening supported datasets."""
 
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -13,17 +15,54 @@ KERCHUNK_EXTS = (".json", ".zst", ".zstd", ".parquet")
 ZARR_EXT = ".zarr"
 
 
-def open_dataset(ds_id, file_paths, apply_fixes=True):
+@dataclass(frozen=True, init=False)
+class DatasetSource:
+    """A normalized set of paths and its optional catalog dataset id."""
+
+    dataset_id: str | None
+    paths: tuple[str, ...]
+
+    def __init__(
+        self,
+        dataset_id: str | None,
+        paths: str | Path | Iterable[str | Path],
+    ):
+        """Normalize and validate source paths."""
+        if isinstance(paths, (str, Path)):
+            paths = (str(paths),)
+        else:
+            paths = tuple(str(path) for path in paths)
+
+        if not paths:
+            raise ValueError("A dataset source requires at least one path.")
+        if len(paths) > 1 and any(
+            is_kerchunk_file(path) or is_zarr_store(path) for path in paths
+        ):
+            raise ValueError("Zarr and Kerchunk sources require exactly one path.")
+
+        if dataset_id is not None:
+            dataset_id = str(dataset_id)
+        object.__setattr__(self, "dataset_id", dataset_id)
+        object.__setattr__(self, "paths", paths)
+
+    @property
+    def key(self):
+        """Return the identifier used for operation result mappings."""
+        return self.dataset_id or self.paths[0]
+
+
+def open_dataset(source: DatasetSource, *, apply_fixes=True):
     """Open an xarray Dataset and optionally apply rook-native fixes."""
-    zarr_store = get_zarr_store(ds_id, file_paths)
+    zarr_store = get_zarr_store(source)
     if zarr_store:
         ds = xr.open_zarr(zarr_store, **get_zarr_open_kwargs(zarr_store))
     else:
-        open_kwargs = get_s3_open_kwargs(ds_id, file_paths)
-        ds = open_xr_dataset(file_paths, **open_kwargs)
+        open_kwargs = get_s3_open_kwargs(source)
+        paths = source.paths[0] if is_kerchunk_file(source.paths[0]) else list(source.paths)
+        ds = open_xr_dataset(paths, **open_kwargs)
 
-    if apply_fixes and not is_kerchunk_file(ds_id) and not is_zarr_store(ds_id):
-        ds = apply_dataset_fixes(ds_id, ds)
+    if apply_fixes and source.dataset_id:
+        ds = apply_dataset_fixes(source.dataset_id, ds)
 
     return ds
 
@@ -81,16 +120,10 @@ def is_zarr_store(dset):
     return path.endswith(ZARR_EXT)
 
 
-def get_zarr_store(ds_id, file_paths):
-    """Return a single Zarr store from a dataset id or resolved file paths."""
-    if is_zarr_store(ds_id):
-        return str(ds_id)
-
-    if isinstance(file_paths, (str, Path)):
-        return str(file_paths) if is_zarr_store(file_paths) else None
-
-    if file_paths and len(file_paths) == 1 and is_zarr_store(file_paths[0]):
-        return str(file_paths[0])
+def get_zarr_store(source: DatasetSource):
+    """Return the store path when a source contains exactly one Zarr store."""
+    if len(source.paths) == 1 and is_zarr_store(source.paths[0]):
+        return source.paths[0]
 
     return None
 
@@ -107,11 +140,9 @@ def get_zarr_open_kwargs(store):
     return {"storage_options": storage_options}
 
 
-def get_s3_open_kwargs(ds_id, file_paths):
+def get_s3_open_kwargs(source: DatasetSource):
     """Return opener kwargs for S3-hosted NetCDF inputs."""
-    dset = ds_id
-    if not isinstance(dset, str) and file_paths:
-        dset = str(file_paths[0])
+    dset = source.paths[0]
 
     if not is_s3_uri(dset) or is_kerchunk_file(dset) or is_zarr_store(dset):
         return {}

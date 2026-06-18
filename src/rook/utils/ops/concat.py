@@ -71,9 +71,9 @@ class Concat(Operation):
 
         new_collection = collections.OrderedDict()
 
-        for dset in self.collection:
-            ds_id = derive_ds_id(dset)
-            new_collection[ds_id] = dset.file_paths
+        for source in self.collection:
+            ds_id = source.dataset_id or derive_ds_id(source.paths[0])
+            new_collection[ds_id] = source.paths
 
         norm_collection = patched_normalise(new_collection)
 

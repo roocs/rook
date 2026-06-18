@@ -1,5 +1,5 @@
 """Dataset input and output utilities."""
 
-from .datasets import open_dataset
+from .datasets import DatasetSource, open_dataset
 
-__all__ = ["open_dataset"]
+__all__ = ["DatasetSource", "open_dataset"]

@@ -14,9 +14,9 @@ def normalise(collection, apply_fixes=True):
     logger.info(f"Working on datasets: {collection}")
     norm_collection = ordered_dict()
 
-    for dset, file_paths in collection.items():
-        ds = open_dataset(dset, file_paths, apply_fixes)
-        norm_collection[dset] = ds
+    for source in collection:
+        ds = open_dataset(source, apply_fixes=apply_fixes)
+        norm_collection[source.key] = ds
 
     return norm_collection
 
