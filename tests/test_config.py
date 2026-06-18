@@ -1,3 +1,5 @@
+import pytest
+
 import rook
 from rook import config
 
@@ -43,14 +45,68 @@ def test_get_storage_base_falls_back_to_local_project_root(monkeypatch):
     assert config.get_storage_base("demo") == "/data/demo"
 
 
-def test_s3_options_ignore_malformed_optional_json(monkeypatch):
+def test_s3_options_reject_malformed_optional_json_without_exposing_value(monkeypatch):
+    malformed_value = "not-json-private-value"
     monkeypatch.setattr(
         config,
         "_CONFIG",
-        {"s3": {"storage_options_json": "not-json", "anon": "false"}},
+        {"s3": {"storage_options_json": malformed_value}},
     )
 
-    assert config.get_s3_storage_options() == {"anon": False}
+    with pytest.raises(config.ConfigurationError) as exc_info:
+        config.get_s3_storage_options()
+
+    assert "storage_options_json" in str(exc_info.value)
+    assert malformed_value not in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    "s3_config, option",
+    [
+        ({"storage_options_json": "[]"}, "storage_options_json"),
+        ({"client_kwargs_json": "[]"}, "client_kwargs_json"),
+        ({"anon": "sometimes"}, "anon"),
+        (
+            {"storage_options_json": '{"client_kwargs": "invalid"}'},
+            "client_kwargs",
+        ),
+    ],
+)
+def test_s3_options_reject_invalid_types(monkeypatch, s3_config, option):
+    monkeypatch.setattr(config, "_CONFIG", {"s3": s3_config})
+
+    with pytest.raises(config.ConfigurationError, match=option):
+        config.get_s3_storage_options()
+
+
+def test_s3_options_merge_valid_structured_options(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "s3": {
+                "storage_options_json": '{"anon": true, "client_kwargs": {"region_name": "eu-west-1"}}',
+                "client_kwargs_json": '{"use_ssl": false}',
+                "endpoint_url": "https://s3.example.org",
+            }
+        },
+    )
+
+    assert config.get_s3_storage_options() == {
+        "anon": True,
+        "client_kwargs": {
+            "region_name": "eu-west-1",
+            "use_ssl": False,
+            "endpoint_url": "https://s3.example.org",
+        },
+    }
+
+
+def test_project_config_rejects_malformed_section(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {"project:demo": "invalid"})
+
+    with pytest.raises(config.ConfigurationError, match=r"\[project:demo\]"):
+        config.get_project_config("demo")
 
 
 def test_reload_config_updates_current_config(monkeypatch):
