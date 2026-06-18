@@ -10,9 +10,14 @@ from clisops.utils.file_utils import FileMapper
 from loguru import logger
 
 from rook.catalog import get_catalog
-from rook.io.datasets import is_kerchunk_file, is_s3_uri, is_zarr_store
+from rook.io.datasets import (
+    DatasetSource,
+    is_kerchunk_file,
+    is_s3_uri,
+    is_zarr_store,
+)
 
-from .helpers import ordered_dict, wrap_sequence
+from .helpers import wrap_sequence
 
 
 def to_year(time_string):
@@ -88,16 +93,13 @@ def consolidate(collection, **kwargs):
         project = get_project_name(collection[0])
         catalog = get_catalog(project)
 
-    filtered_refs = ordered_dict()
+    sources = []
 
     time_param = kwargs.get("time")
 
     for dset in collection:
-        if is_kerchunk_file(dset) or is_zarr_store(dset):
-            filtered_refs[dset] = dset
-
-        elif is_s3_uri(dset):
-            filtered_refs[dset] = [dset]
+        if is_kerchunk_file(dset) or is_zarr_store(dset) or is_s3_uri(dset):
+            sources.append(DatasetSource(dataset_id=None, paths=dset))
 
         elif not catalog:
             file_paths = dset_to_filepaths(dset, force=True)
@@ -108,7 +110,8 @@ def consolidate(collection, **kwargs):
             if len(file_paths) == 0:
                 raise Exception(f"No files found in given time range for {dset}")
 
-            filtered_refs[dset] = file_paths
+            dataset_id = None if isinstance(dset, FileMapper) else str(dset)
+            sources.append(DatasetSource(dataset_id=dataset_id, paths=file_paths))
 
         else:
             ds_id = derive_ds_id(dset)
@@ -125,6 +128,7 @@ def consolidate(collection, **kwargs):
 
             logger.info(f"Found {len(result)} files")
 
-            filtered_refs = result.files()
+            for dataset_id, paths in result.files().items():
+                sources.append(DatasetSource(dataset_id=dataset_id, paths=paths))
 
-    return filtered_refs
+    return tuple(sources)

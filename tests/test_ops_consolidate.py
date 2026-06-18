@@ -1,6 +1,7 @@
 import rook.utils.ops.consolidate as consolidate
 from rook import config
 from rook.catalog.base import Result
+from rook.io.datasets import DatasetSource
 
 
 class DummyCollection:
@@ -17,9 +18,12 @@ def test_consolidate_kerchunk_bypasses_catalog(monkeypatch):
     collection = DummyCollection(["https://example.org/refs/mydataset.json"])
     result = consolidate.consolidate(collection)
 
-    assert result == {
-        "https://example.org/refs/mydataset.json": "https://example.org/refs/mydataset.json"
-    }
+    assert result == (
+        DatasetSource(
+            dataset_id=None,
+            paths=("https://example.org/refs/mydataset.json",),
+        ),
+    )
 
 
 def test_consolidate_s3_bypasses_catalog_and_mapper(monkeypatch):
@@ -39,9 +43,12 @@ def test_consolidate_s3_bypasses_catalog_and_mapper(monkeypatch):
     collection = DummyCollection(["s3://example-bucket/path/file.nc"])
     result = consolidate.consolidate(collection)
 
-    assert result == {
-        "s3://example-bucket/path/file.nc": ["s3://example-bucket/path/file.nc"]
-    }
+    assert result == (
+        DatasetSource(
+            dataset_id=None,
+            paths=("s3://example-bucket/path/file.nc",),
+        ),
+    )
 
 
 def test_consolidate_zarr_bypasses_catalog_and_mapper(monkeypatch):
@@ -56,7 +63,7 @@ def test_consolidate_zarr_bypasses_catalog_and_mapper(monkeypatch):
     collection = DummyCollection([store])
     result = consolidate.consolidate(collection)
 
-    assert result == {store: store}
+    assert result == (DatasetSource(dataset_id=None, paths=(store,)),)
 
 
 def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
@@ -84,8 +91,11 @@ def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     collection = DummyCollection(["c3s-cmip6.dataset"])
     result = consolidate.consolidate(collection)
 
-    assert result == {
-        "c3s-cmip6.dataset": [
-            "s3://example-bucket/data/CMIP6/ScenarioMIP/Model/file_201501-210012.nc"
-        ]
-    }
+    assert result == (
+        DatasetSource(
+            dataset_id="c3s-cmip6.dataset",
+            paths=(
+                "s3://example-bucket/data/CMIP6/ScenarioMIP/Model/file_201501-210012.nc",
+            ),
+        ),
+    )

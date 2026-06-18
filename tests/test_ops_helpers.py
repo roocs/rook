@@ -1,7 +1,37 @@
+from dataclasses import FrozenInstanceError
+
+import pytest
 import xarray as xr
 
 from rook import config
 import rook.io.datasets as helpers
+
+
+def source(dataset_id, paths):
+    return helpers.DatasetSource(dataset_id=dataset_id, paths=paths)
+
+
+def test_dataset_source_normalizes_scalar_and_list_paths():
+    assert source(None, "one.nc").paths == ("one.nc",)
+    assert source("project.dataset", ["one.nc", "two.nc"]).paths == (
+        "one.nc",
+        "two.nc",
+    )
+
+
+def test_dataset_source_is_immutable():
+    dataset_source = source(None, "one.nc")
+
+    with pytest.raises(FrozenInstanceError):
+        dataset_source.paths = ("two.nc",)
+
+
+def test_dataset_source_rejects_multiple_zarr_or_kerchunk_paths():
+    with pytest.raises(ValueError, match="exactly one path"):
+        source(None, ["one.zarr", "two.zarr"])
+
+    with pytest.raises(ValueError, match="exactly one path"):
+        source(None, ["one.json", "two.json"])
 
 
 def test_open_dataset_applies_fixes(monkeypatch):
@@ -22,7 +52,9 @@ def test_open_dataset_applies_fixes(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
-    result = helpers.open_dataset("project.dataset", ["a.nc"], apply_fixes=True)
+    result = helpers.open_dataset(
+        source("project.dataset", ["a.nc"]), apply_fixes=True
+    )
 
     assert result == "FIXED"
     assert calls == {"open": 1, "fix": 1}
@@ -43,7 +75,9 @@ def test_open_dataset_skips_fixes_when_disabled(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
-    result = helpers.open_dataset("project.dataset", ["a.nc"], apply_fixes=False)
+    result = helpers.open_dataset(
+        source("project.dataset", ["a.nc"]), apply_fixes=False
+    )
 
     assert result == "DATASET"
     assert calls == {"open": 1, "fix": 0}
@@ -64,10 +98,25 @@ def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: True)
 
-    result = helpers.open_dataset("kerchunk.json", ["a.nc"], apply_fixes=True)
+    result = helpers.open_dataset(
+        source(None, ["kerchunk.json"]), apply_fixes=True
+    )
 
     assert result == "DATASET"
     assert calls == {"open": 1, "fix": 0}
+
+
+def test_open_dataset_skips_fixes_without_catalog_dataset_id(monkeypatch):
+    monkeypatch.setattr(helpers, "open_xr_dataset", lambda _paths: "DATASET")
+
+    def fail_apply_fixes(_ds_id, _ds):
+        raise AssertionError("Direct paths must not trigger project fixes")
+
+    monkeypatch.setattr(helpers, "apply_dataset_fixes", fail_apply_fixes)
+
+    result = helpers.open_dataset(source(None, "direct.nc"), apply_fixes=True)
+
+    assert result == "DATASET"
 
 
 def test_is_kerchunk_file_local_json():
@@ -112,9 +161,12 @@ def test_is_zarr_store_netcdf_path():
 
 
 def test_get_zarr_store_from_catalog_file_paths():
-    assert helpers.get_zarr_store(
-        "project.dataset", ["s3://bucket/example.zarr"]
-    ) == "s3://bucket/example.zarr"
+    assert (
+        helpers.get_zarr_store(
+            source("project.dataset", ["s3://bucket/example.zarr"])
+        )
+        == "s3://bucket/example.zarr"
+    )
 
 
 def test_open_dataset_opens_local_zarr_store(tmp_path):
@@ -122,7 +174,7 @@ def test_open_dataset_opens_local_zarr_store(tmp_path):
     expected = xr.Dataset({"tas": ("time", [280.0, 281.0])})
     expected.to_zarr(store, mode="w")
 
-    result = helpers.open_dataset(str(store), str(store), apply_fixes=False)
+    result = helpers.open_dataset(source(None, str(store)), apply_fixes=False)
 
     xr.testing.assert_equal(result, expected)
     result.close()
@@ -139,7 +191,7 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
     monkeypatch.setattr(helpers.xr, "open_zarr", fail_open_zarr)
 
     result = helpers.open_dataset(
-        "project.dataset", [str(path)], apply_fixes=False
+        source("project.dataset", [str(path)]), apply_fixes=False
     )
 
     xr.testing.assert_equal(result, expected)
@@ -162,8 +214,7 @@ def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
     )
 
     result = helpers.open_dataset(
-        "s3://example-bucket/path/example.zarr",
-        "s3://example-bucket/path/example.zarr",
+        source(None, "s3://example-bucket/path/example.zarr"),
         apply_fixes=False,
     )
 
@@ -188,7 +239,7 @@ def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fail_apply_fixes)
 
     result = helpers.open_dataset(
-        "/data/example.zarr", "/data/example.zarr", apply_fixes=True
+        source(None, "/data/example.zarr"), apply_fixes=True
     )
 
     assert result == "DATASET"
@@ -202,7 +253,7 @@ def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):
     )
 
     kwargs = helpers.get_s3_open_kwargs(
-        "s3://example-bucket/path/file.nc", ["s3://example-bucket/path/file.nc"]
+        source(None, "s3://example-bucket/path/file.nc")
     )
 
     assert kwargs == {
@@ -219,7 +270,7 @@ def test_get_s3_open_kwargs_without_s3_config(monkeypatch):
     monkeypatch.setattr(config, "CONFIG", {})
 
     kwargs = helpers.get_s3_open_kwargs(
-        "s3://example-bucket/path/file.nc", ["s3://example-bucket/path/file.nc"]
+        source(None, "s3://example-bucket/path/file.nc")
     )
 
     assert kwargs == {}
@@ -233,7 +284,7 @@ def test_get_s3_open_kwargs_skips_kerchunk(monkeypatch):
     )
 
     kwargs = helpers.get_s3_open_kwargs(
-        "s3://example-bucket/path/ref.json", ["s3://example-bucket/path/ref.json"]
+        source(None, "s3://example-bucket/path/ref.json")
     )
 
     assert kwargs == {}
@@ -279,8 +330,7 @@ def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
     )
 
     _ = helpers.open_dataset(
-        "s3://example-bucket/path/file.nc",
-        ["s3://example-bucket/path/file.nc"],
+        source(None, "s3://example-bucket/path/file.nc"),
         apply_fixes=False,
     )
 
