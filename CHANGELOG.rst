@@ -4,11 +4,29 @@ Changes
 Unreleased
 ==========
 
+1.2.0 (2026-06-18)
+==================
+
+* Added preliminary support for Kerchunk reference inputs, including URL-aware
+  detection for JSON, Zstandard, and Parquet references.
 * Added preliminary S3 support by declaring ``s3fs``, allowing direct ``s3://``
   NetCDF inputs, and preparing optional S3 base-path mapping for catalog-backed
   processing paths.
 * Added preliminary support for opening local and S3-backed Zarr stores as
   operation inputs.
+* Added a common dataset-opening API with immutable ``DatasetSource`` inputs,
+  explicit NetCDF, Zarr, and Kerchunk dispatch, and independent transport
+  detection and configuration.
+* Centralized Rook configuration loading, project lookup, storage roots, and
+  shared S3 options, with strict validation that avoids exposing configured
+  values in errors.
+* Simplified catalog consolidation, including independent handling of mixed
+  direct and catalog inputs and per-project catalog caching.
+* Replaced captured configuration globals and aligned the development setup
+  with ``prek``.
+* Live S3 integration coverage remains deferred; current object-storage
+  behavior is covered by unit and characterization tests.
+
 
 1.1.1 (2026-06-17)
 ==================
