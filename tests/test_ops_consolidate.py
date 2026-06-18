@@ -1,5 +1,5 @@
 import rook.utils.ops.consolidate as consolidate
-from rook.catalog import base
+from rook import config
 from rook.catalog.base import Result
 
 
@@ -73,7 +73,7 @@ def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     monkeypatch.setattr(consolidate, "derive_ds_id", lambda _dset: "dataset")
     monkeypatch.setattr(consolidate, "get_catalog", lambda _project: DummyCatalog())
     monkeypatch.setattr(
-        base,
+        config,
         "CONFIG",
         {
             "project:c3s-cmip6": {"base_dir": "/data/CMIP6"},

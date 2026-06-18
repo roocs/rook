@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from rook import CONFIG
+from rook import config
 
 
 def make_list(value):
@@ -37,12 +37,10 @@ class Result:
 
         Records are an OrderedDict of dataset ids with a list of files: {'ds_id': [files]}.
         """
-        project_config = CONFIG.get(f"project:{project}", {})
-        s3_config = CONFIG.get("s3", {})
+        project_config = config.get_project_config(project)
         self.base_dir = project_config.get("base_dir")
-        self.s3_base_dir = project_config.get("s3_base_dir") or s3_config.get(
-            "base_dir"
-        )
+        storage_base = config.get_storage_base(project)
+        self.s3_base_dir = storage_base if storage_base != self.base_dir else None
         self.base_url = project_config.get("data_node_root")
         self.records = records
 

@@ -1,5 +1,6 @@
 import xarray as xr
 
+from rook import config
 import rook.utils.ops.helpers as helpers
 
 
@@ -155,7 +156,7 @@ def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
 
     monkeypatch.setattr(helpers.xr, "open_zarr", fake_open_zarr)
     monkeypatch.setattr(
-        helpers,
+        config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
@@ -195,7 +196,7 @@ def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
 
 def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):
     monkeypatch.setattr(
-        helpers,
+        config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
@@ -215,7 +216,7 @@ def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):
 
 
 def test_get_s3_open_kwargs_without_s3_config(monkeypatch):
-    monkeypatch.setattr(helpers, "CONFIG", {})
+    monkeypatch.setattr(config, "CONFIG", {})
 
     kwargs = helpers.get_s3_open_kwargs(
         "s3://example-bucket/path/file.nc", ["s3://example-bucket/path/file.nc"]
@@ -226,7 +227,7 @@ def test_get_s3_open_kwargs_without_s3_config(monkeypatch):
 
 def test_get_s3_open_kwargs_skips_kerchunk(monkeypatch):
     monkeypatch.setattr(
-        helpers,
+        config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
@@ -240,7 +241,7 @@ def test_get_s3_open_kwargs_skips_kerchunk(monkeypatch):
 
 def test_get_s3_storage_options_merges_client_kwargs(monkeypatch):
     monkeypatch.setattr(
-        helpers,
+        config,
         "CONFIG",
         {
             "s3": {
@@ -272,7 +273,7 @@ def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
     monkeypatch.setattr(helpers, "apply_dataset_fixes", lambda _ds_id, ds: ds)
     monkeypatch.setattr(
-        helpers,
+        config,
         "CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
