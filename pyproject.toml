@@ -48,6 +48,7 @@ dependencies = [
   "intake <2.0",
   "fsspec",
   "s3fs",
+  "zarr >=2.13.0,<3.0",
   "pandas >=2.0",
   "SQLAlchemy >=2.0",
   "aiohttp",

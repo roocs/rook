@@ -7,6 +7,8 @@ Unreleased
 * Added preliminary S3 support by declaring ``s3fs``, allowing direct ``s3://``
   NetCDF inputs, and preparing optional S3 base-path mapping for catalog-backed
   processing paths.
+* Added preliminary support for opening local and S3-backed Zarr stores as
+  operation inputs.
 
 1.1.1 (2026-06-17)
 ==================
