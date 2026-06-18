@@ -81,7 +81,7 @@ def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     monkeypatch.setattr(consolidate, "get_catalog", lambda _project: DummyCatalog())
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {
             "project:c3s-cmip6": {"base_dir": "/data/CMIP6"},
             "s3": {"base_dir": "s3://example-bucket/data/CMIP6"},

@@ -4,7 +4,7 @@ from pywps.app.exceptions import ProcessError
 from clisops.project_utils import get_project_name
 from clisops.utils.file_utils import FileMapper
 
-from rook import CONFIG
+from rook import config
 from clisops.exceptions import InvalidCollection
 from rook.catalog import get_catalog
 
@@ -35,7 +35,7 @@ class Director:
         self.output_uris = None
         self.search_result = None
 
-        if CONFIG[f"project:{self.project}"].get("use_catalog"):
+        if config.get_project_config(self.project).get("use_catalog"):
             try:
                 self.catalog = get_catalog(self.project)
             except Exception:
@@ -48,7 +48,7 @@ class Director:
     def use_fixes(self):
         # TODO: don't use fixes
         return False
-        # return CONFIG[f"project:{self.project}"].get("use_fixes", False)
+        # return config.get_project_config(self.project).get("use_fixes", False)
 
     def _check_apply_fixes(self):
         if (

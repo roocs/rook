@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 import fsspec
 import intake
 
-from rook import CONFIG
+from rook import config
 
 from .base import Catalog
 from .util import MAX_DATETIME, MIN_DATETIME, parse_time
@@ -23,7 +23,7 @@ class IntakeCatalog(Catalog):
         super().__init__(project)
         self.url = (
             url
-            or CONFIG.get("catalog", {}).get("intake_catalog_url")
+            or config.get_config().get("catalog", {}).get("intake_catalog_url")
             or DEFAULT_INTAKE_CATALOG_URL
         )
         self._cat = None

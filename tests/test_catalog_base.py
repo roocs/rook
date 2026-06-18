@@ -12,7 +12,7 @@ RECORDS = {
 def test_result_files_uses_project_base_dir(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {"project:c3s-cmip6": {"base_dir": "/data/CMIP6"}},
     )
 
@@ -26,7 +26,7 @@ def test_result_files_uses_project_base_dir(monkeypatch):
 def test_result_files_uses_global_s3_base_dir(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {
             "project:c3s-cmip6": {"base_dir": "/data/CMIP6"},
             "s3": {"base_dir": "s3://example-bucket/data/CMIP6"},
@@ -45,7 +45,7 @@ def test_result_files_uses_global_s3_base_dir(monkeypatch):
 def test_result_files_uses_project_s3_base_dir_override(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {
             "project:c3s-cmip6": {
                 "base_dir": "/data/CMIP6",
@@ -67,7 +67,7 @@ def test_result_files_uses_project_s3_base_dir_override(monkeypatch):
 def test_result_download_urls_keep_data_node_root(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {
             "project:c3s-cmip6": {
                 "base_dir": "/data/CMIP6",
