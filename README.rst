@@ -71,13 +71,13 @@ Use bump-my-version_ to release a new version.
 Patch Release Quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Minimal patch release flow (example: ``1.1.1``):
+Minimal patch release flow (example: ``1.2.1``):
 
 .. code-block:: console
 
         $ edit CHANGELOG.rst
         $ make conda-spec
-        $ bump-my-version bump --new-version 1.1.1 patch
+        $ bump-my-version bump --new-version 1.2.1 patch
         $ git push
         $ git push --tags
 
