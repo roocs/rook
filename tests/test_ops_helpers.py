@@ -1,3 +1,5 @@
+import xarray as xr
+
 import rook.utils.ops.helpers as helpers
 
 
@@ -94,6 +96,83 @@ def test_is_s3_uri_true():
 
 def test_is_s3_uri_false_for_https():
     assert helpers.is_s3_uri("https://example.org/file.nc") is False
+
+
+def test_is_zarr_store_local_path():
+    assert helpers.is_zarr_store("/data/example.zarr") is True
+
+
+def test_is_zarr_store_url_with_query_and_trailing_slash():
+    assert helpers.is_zarr_store("s3://bucket/example.zarr/?token=abc") is True
+
+
+def test_is_zarr_store_netcdf_path():
+    assert helpers.is_zarr_store("s3://bucket/example.nc") is False
+
+
+def test_get_zarr_store_from_catalog_file_paths():
+    assert helpers.get_zarr_store(
+        "project.dataset", ["s3://bucket/example.zarr"]
+    ) == "s3://bucket/example.zarr"
+
+
+def test_open_dataset_opens_local_zarr_store(tmp_path):
+    store = tmp_path / "example.zarr"
+    expected = xr.Dataset({"tas": ("time", [280.0, 281.0])})
+    expected.to_zarr(store, mode="w")
+
+    result = helpers.open_dataset(str(store), str(store), apply_fixes=False)
+
+    xr.testing.assert_equal(result, expected)
+    result.close()
+
+
+def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
+    calls = {}
+
+    def fake_open_zarr(store, **kwargs):
+        calls["store"] = store
+        calls["kwargs"] = kwargs
+        return "DATASET"
+
+    monkeypatch.setattr(helpers.xr, "open_zarr", fake_open_zarr)
+    monkeypatch.setattr(
+        helpers,
+        "CONFIG",
+        {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
+    )
+
+    result = helpers.open_dataset(
+        "s3://example-bucket/path/example.zarr",
+        "s3://example-bucket/path/example.zarr",
+        apply_fixes=False,
+    )
+
+    assert result == "DATASET"
+    assert calls == {
+        "store": "s3://example-bucket/path/example.zarr",
+        "kwargs": {
+            "storage_options": {
+                "anon": True,
+                "client_kwargs": {"endpoint_url": "https://s3.example.org"},
+            }
+        },
+    }
+
+
+def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
+    monkeypatch.setattr(helpers.xr, "open_zarr", lambda _store, **_kwargs: "DATASET")
+
+    def fail_apply_fixes(_ds_id, _ds):
+        raise AssertionError("Fix lookup should not be called for direct Zarr input")
+
+    monkeypatch.setattr(helpers, "apply_dataset_fixes", fail_apply_fixes)
+
+    result = helpers.open_dataset(
+        "/data/example.zarr", "/data/example.zarr", apply_fixes=True
+    )
+
+    assert result == "DATASET"
 
 
 def test_get_s3_open_kwargs_for_s3_netcdf(monkeypatch):

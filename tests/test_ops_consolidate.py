@@ -44,6 +44,21 @@ def test_consolidate_s3_bypasses_catalog_and_mapper(monkeypatch):
     }
 
 
+def test_consolidate_zarr_bypasses_catalog_and_mapper(monkeypatch):
+    def fail_lookup(*_args, **_kwargs):
+        raise AssertionError("Catalog and file lookup should not run for Zarr input")
+
+    monkeypatch.setattr(consolidate, "get_project_name", fail_lookup)
+    monkeypatch.setattr(consolidate, "get_catalog", fail_lookup)
+    monkeypatch.setattr(consolidate, "dset_to_filepaths", fail_lookup)
+
+    store = "s3://example-bucket/path/example.zarr"
+    collection = DummyCollection([store])
+    result = consolidate.consolidate(collection)
+
+    assert result == {store: store}
+
+
 def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     class DummyCatalog:
         def search(self, collection, time):
