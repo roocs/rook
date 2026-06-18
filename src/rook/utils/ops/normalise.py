@@ -1,10 +1,12 @@
 """Normalise datasets and hold operation results."""
 
+import pathlib
 
 from loguru import logger
 
-from .helpers import open_dataset, ordered_dict
-import pathlib
+from rook.io.datasets import open_dataset
+
+from .helpers import ordered_dict
 
 
 def normalise(collection, apply_fixes=True):
