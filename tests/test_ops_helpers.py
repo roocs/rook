@@ -127,6 +127,24 @@ def test_open_dataset_opens_local_zarr_store(tmp_path):
     result.close()
 
 
+def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
+    path = tmp_path / "example.nc"
+    expected = xr.Dataset({"tas": ("time", [280.0, 281.0])})
+    expected.to_netcdf(path)
+
+    def fail_open_zarr(*_args, **_kwargs):
+        raise AssertionError("NetCDF inputs must not use the Zarr opener")
+
+    monkeypatch.setattr(helpers.xr, "open_zarr", fail_open_zarr)
+
+    result = helpers.open_dataset(
+        "project.dataset", [str(path)], apply_fixes=False
+    )
+
+    xr.testing.assert_equal(result, expected)
+    result.close()
+
+
 def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
     calls = {}
 
