@@ -20,15 +20,6 @@
 
 from .__version__ import __author__, __email__, __version__  # noqa: F401
 
-from clisops.config import get_config
-
-
-# Workaround for clisops to not re-import rook
-class Package:
-    __file__ = __file__  # noqa
-
-
-package = Package()
-CONFIG = get_config(package)
+from .config import CONFIG  # noqa: F401
 
 from .wsgi import application  # noqa
