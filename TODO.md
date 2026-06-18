@@ -1,182 +1,208 @@
-# Rook Architecture Cleanup TODO
+# Rook Cleanup TODO
 
-This document is an unreferenced engineering reminder for future work. It
-describes cleanup that should follow the initial Kerchunk, S3, and Zarr support.
-Do not treat every item as part of one pull request.
+This document describes the cleanup phase following the initial Kerchunk, S3,
+and Zarr support released in Rook 1.2.0. The aim is to make the existing code
+smaller, clearer, and easier to change without adding new storage features.
 
-## Current Situation
+Keep the work in small, reviewable pull requests. Preserve WPS behavior unless
+a change is explicitly documented and tested.
 
-Rook can partially handle:
+## Goals
 
-- local and catalog-resolved NetCDF files;
-- Kerchunk reference files;
-- direct S3 paths and S3-backed catalog paths;
-- local and S3-backed Zarr stores.
+- remove dead code, obsolete branches, and misleading options;
+- give operators a clear namespace and a small, useful shared abstraction;
+- remove duplicated execution paths and unnecessary wrappers;
+- separate request planning from operation execution;
+- simplify or replace the director;
+- document the final dataset-processing flow once it has settled.
 
-The initial implementations intentionally kept their scope small. As a result,
-configuration parsing, storage transport handling, format detection, catalog
-resolution, and dataset opening are still spread across modules such as
-`rook.__init__`, `rook.catalog`, and `rook.utils.ops.helpers`.
+## 1. Characterize the Current Execution Paths
 
-Two structural improvements are desired:
+Before changing structure, add or improve tests around the decisions that are
+currently spread across the WPS processes, `rook.operator`, `rook.director`, and
+`rook.utils.ops`.
 
-1. Centralize Rook configuration access and parsing.
-2. Delegate dataset opening to a common, extensible API.
+Cover at least:
 
-The cleanup should preserve existing production filesystem and NetCDF behavior.
+- a catalog collection resolved to files and processed by an operator;
+- a direct filesystem collection processed without catalog lookup;
+- returning original catalog file URLs when a subset aligns with whole files;
+- generating a subset when the request does not align with whole files;
+- operators that must always process data rather than return original files;
+- a later workflow step receiving files produced by an earlier step;
+- errors for unknown collections and unavailable pre-checked data.
 
-## Configuration Module
+Tests should describe observable behavior, not preserve incidental class or
+module structure. They will provide room to simplify the implementation.
 
-Introduce a central module, probably `rook/config.py`, around the existing
-clisops configuration loader. `roocs.ini` should remain the source of truth.
+## 2. Deprecate the `apply_fixes` WPS Parameter
 
-The module should eventually own:
+Rook already decides internally whether a dataset fix is required. Callers
+should not control that decision.
 
-- loading and reloading configuration;
-- project configuration lookup;
-- parsing booleans and structured JSON options;
-- global and project-specific storage roots;
-- S3 credentials, endpoint options, and anonymous access;
-- validation and useful errors for malformed values;
-- protection against accidentally logging secrets.
+- keep `apply_fixes` in the WPS process inputs for compatibility;
+- mark it as deprecated in each WPS parameter description and user-facing
+  documentation;
+- continue accepting both true and false values, but do not use the supplied
+  value to select internal behavior;
+- make fix application an internal dataset-opening or preparation decision;
+- remove `apply_fixes` plumbing from workflows, operators, utility functions,
+  provenance filtering, and internal APIs where it no longer has meaning;
+- remove disabled fix-selection branches in the director after their behavior
+  has been replaced;
+- add tests proving that the deprecated input is accepted and does not alter
+  results.
 
-A small public API is preferable to modules importing a mutable global mapping:
+Use one internal policy for fixes. Catalog-backed datasets may carry the
+dataset ID needed to select a fix; direct paths should not accidentally receive
+project-specific fixes.
 
-```python
-get_config()
-reload_config()
-get_project_config(project)
-get_s3_storage_options()
-get_storage_base(project)
-```
+## 3. Clean Up the Operator Layer
 
-Keep `rook.CONFIG` temporarily as a compatibility alias during migration. Avoid
-an immediate rewrite of every consumer. The current test setup has to replace
-captured `CONFIG` references in several modules after reload; central access
-should remove that problem.
+There are currently overlapping operator concepts in `rook.operator` and
+`rook.utils.ops`, with operation-specific runners elsewhere in `rook.utils`.
+Give this code one obvious home and one vocabulary.
 
-Do not create a separate credential stack for Zarr. NetCDF, Zarr, and Kerchunk
-are data formats, while local filesystems, HTTP, and S3 are transports. S3
-transport options should be shared by every compatible format.
-
-## Dataset Opening API
-
-Introduce a focused module such as `rook/io/datasets.py`. It should expose one
-common entry point:
-
-```python
-open_dataset(source, *, apply_fixes=True) -> xarray.Dataset
-```
-
-Internally, separate format detection from transport configuration:
-
-```python
-detect_format(source)
-open_netcdf(source, storage_options)
-open_zarr(source, storage_options)
-open_kerchunk(source, storage_options)
-```
-
-The implementations should continue using proven upstream behavior where
-possible:
-
-- use `clisops.utils.dataset_utils.open_xr_dataset` for existing NetCDF paths;
-- use `xarray.open_zarr` for Zarr stores;
-- reuse the established clisops/fsspec Kerchunk path;
-- pass transport-specific options without duplicating format logic.
-
-Avoid a class hierarchy unless it removes real complexity. A dispatcher plus
-small functions or a registry may be sufficient.
-
-## Normalize Dataset Inputs
-
-The current consolidation output mixes scalar references and lists of files.
-Consider an internal immutable value object:
-
-```python
-@dataclass(frozen=True)
-class DatasetSource:
-    dataset_id: str | None
-    paths: tuple[str, ...]
-```
-
-The object should make these rules explicit:
-
-- NetCDF may contain one or many paths;
-- Zarr requires one store;
-- Kerchunk requires one reference;
-- a catalog dataset ID may be eligible for Rook fixes;
-- a direct path or URL generally should not trigger project-specific fixes;
-- storage options are selected from the paths' transport protocol.
-
-`consolidate()` should eventually resolve collections and paths only. It should
-not decide how a format is opened.
-
-## Target Flow
-
-The intended processing flow is:
+A likely target namespace is `rook.operations`, containing:
 
 ```text
-WPS parameters
-    -> catalog and path resolution
-    -> DatasetSource
-    -> format detection
-    -> transport configuration
-    -> dataset opener
-    -> optional Rook fixes
-    -> operation
+rook/operations/
+    base.py
+    subset.py
+    average.py
+    concat.py
+    regrid.py
+    execution.py
 ```
 
-Keep returning original HTTP download URLs separate from paths used internally
-for processing. Configuring an S3 processing root must not silently change the
-public original-file response behavior.
+The exact layout should follow the responsibilities discovered during the
+cleanup; do not preserve a package structure merely for symmetry.
 
-## Migration Plan
+- inventory the public and internal imports before moving modules;
+- decide whether `Operator` and `Operation` represent genuinely different
+  concepts; merge or rename them if they do not;
+- define a small base class only for behavior shared by every operation;
+- prefer explicit functions and composition for optional behavior;
+- replace `_get_runner()` subclasses that only return a function with a simpler
+  registration or direct callable when appropriate;
+- centralize output-directory creation and result handling;
+- remove pass-through wrappers and duplicated parameter normalization;
+- keep clisops calls visible and easy to trace;
+- use names that distinguish WPS process adapters from data operations.
 
-Use small, reviewable pull requests:
+Avoid designing a large framework. The base classes should remove repetition,
+not hide control flow.
 
-1. Add characterization tests for current filesystem NetCDF, Kerchunk, direct
-   S3 NetCDF, catalog-backed S3 paths, local Zarr, and S3 Zarr behavior.
-2. Introduce `rook/config.py` while preserving `rook.CONFIG` compatibility.
-3. Extract existing opening behavior into `rook/io/datasets.py` without changing
-   results or configuration semantics.
-4. Introduce `DatasetSource` and normalize scalar/list handling internally.
-5. Separate format detection from transport option selection.
-6. Migrate callers and remove compatibility globals only after coverage exists.
+## 4. Reconsider the Director
 
-Do not combine unrelated config cleanup, new storage features, and broad catalog
-refactoring in a single change.
+The director currently performs several jobs at once:
 
-## Compatibility Requirements
+- catalog lookup and validation;
+- deciding whether original files can be returned;
+- checking subset-to-file alignment;
+- rewriting collections for processing;
+- invoking an operation runner;
+- translating exceptions and packaging results.
+
+First make these decisions explicit, then decide whether the `Director` class
+still earns its place. A useful intermediate design may be a small request plan
+with an explicit outcome, for example:
+
+```python
+plan = plan_request(collection, parameters)
+
+if plan.returns_original_files:
+    return plan.original_file_urls
+
+return run_operation(plan.dataset_sources, parameters)
+```
+
+Possible focused components are:
+
+- catalog collection resolution;
+- original-file eligibility and subset alignment;
+- operation execution;
+- WPS exception and response adaptation.
+
+The result should avoid mutable input dictionaries as hidden communication.
+Decision results should be explicit values with clear types. If the director
+becomes only a thin wrapper after extraction, remove it.
+
+## 5. Remove Dead and Misleading Code
+
+Do this continuously, but keep behavior changes separate from mechanical moves.
+
+- remove unreachable code after unconditional returns;
+- remove commented-out implementations and stale TODO comments;
+- find parameters, attributes, helpers, compatibility modules, and imports with
+  no callers;
+- remove old module names once all internal imports have moved;
+- replace broad exception handling where a narrower boundary is known;
+- remove mutation and defensive copying that no longer serve a purpose;
+- simplify boolean branches and duplicated conditionals;
+- update tests that only exercise deleted implementation details.
+
+For each candidate, use repository-wide searches and test coverage before
+removal. Code that supports a real WPS input or response remains public even if
+Rook's Python modules have no external users.
+
+## 6. Document the Dataset-Processing Flow
+
+Add the architecture documentation only after the operator and director cleanup
+has stabilized, so the diagram describes the code rather than an aspiration.
+
+The documentation should include a Mermaid flowchart showing:
+
+- entry through a WPS process;
+- catalog dataset IDs versus direct filesystem, URL, S3, Zarr, and Kerchunk
+  inputs;
+- catalog lookup and file resolution;
+- the decision to return original files or perform processing;
+- construction of `DatasetSource` values;
+- format detection and transport configuration;
+- internal dataset fixes where applicable;
+- subset or other operator execution;
+- output file and original-file responses.
+
+Keep the diagram at the architectural level. Link important nodes to short
+sections explaining ownership and decision rules rather than embedding every
+special case in the chart.
+
+## Suggested Pull Request Order
+
+1. Characterization tests and an inventory of operator/director responsibilities.
+2. Deprecate the WPS `apply_fixes` input and remove its internal control flow.
+3. Introduce the operator namespace and consolidate common execution behavior.
+4. Migrate individual operators in small groups, removing old wrappers as they
+   become unused.
+5. Extract catalog resolution and original-file planning from the director.
+6. Remove or reduce the director and clean up the resulting dead code.
+7. Add the Mermaid architecture documentation and a final terminology pass.
+
+## Guardrails
 
 Every cleanup pull request should demonstrate that:
 
-- ordinary local and catalog-resolved NetCDF files still use the established
-  clisops opener;
-- multi-file NetCDF behavior is unchanged;
-- existing project fixes still receive a meaningful catalog dataset ID;
-- original-file download URLs remain HTTP/data-node URLs where configured;
-- S3 options are only applied to S3-backed inputs;
-- missing S3 or Zarr configuration does not alter local filesystem behavior;
-- Kerchunk, Zarr, and NetCDF detection is URL-aware and handles query strings;
-- malformed optional configuration fails clearly or falls back deliberately,
-  rather than being silently misinterpreted.
+- the WPS process interface remains compatible, including deprecated inputs;
+- ordinary local and catalog-resolved NetCDF processing is unchanged;
+- Kerchunk, Zarr, and S3 inputs continue through the common dataset-opening API;
+- direct paths do not require catalog configuration;
+- original-file responses still contain public download URLs, not internal
+  processing paths;
+- multi-step workflows can consume files created by earlier steps;
+- output naming, splitting, provenance, and error responses remain stable unless
+  a deliberate change is documented.
 
-Always run tests and pre-commit hooks using the existing `rook` conda
-environment, for example:
+Run the focused tests while iterating, followed by the full test suite and all
+repository hooks before each pull request.
 
-```shell
-conda run -n rook pytest ...
-conda run -n rook pre-commit run --all-files
-```
+## Deferred Features
 
-## Explicitly Deferred Features
+These remain outside this cleanup phase:
 
-These may be useful later but are not prerequisites for the structural cleanup:
-
+- live S3 integration tests requiring external test data or credentials;
 - writing operation output directly to S3 or Zarr;
-- opening and combining multiple Zarr stores;
-- selecting Zarr groups through WPS parameters;
+- combining multiple Zarr stores or selecting Zarr groups through WPS inputs;
 - supporting additional object-store protocols;
-- replacing clisops dataset-opening behavior;
-- redesigning all of `roocs.ini` at once.
+- replacing established clisops dataset-opening behavior;
+- redesigning all Rook configuration at once.
