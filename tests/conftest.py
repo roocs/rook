@@ -77,19 +77,12 @@ def write_roocs_cfg(stratus):
     # TODO: reload configs in clisops
     # workaround ... fix code in new clisops.
     import clisops
-    import rook.catalog
-    import rook.catalog.intake
-    import rook.director.director
     from rook.config import reload_config
 
     cfg = reload_config()
     clisops.CONFIG = cfg
     clisops.project_utils.CONFIG = cfg
-    rook.director.director.CONFIG = cfg
-    rook.catalog.CONFIG = cfg
-    rook.catalog.intake.CONFIG = cfg
     # print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
-    # print("rook.config", rook.CONFIG["project:cmip6"]["base_dir"])
 
 
 @pytest.fixture

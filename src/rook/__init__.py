@@ -20,6 +20,4 @@
 
 from .__version__ import __author__, __email__, __version__  # noqa: F401
 
-from .config import CONFIG  # noqa: F401
-
 from .wsgi import application  # noqa

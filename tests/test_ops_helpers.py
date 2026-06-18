@@ -228,7 +228,7 @@ def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
     monkeypatch.setattr(helpers.xr, "open_zarr", fake_open_zarr)
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
@@ -267,7 +267,7 @@ def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
 def test_get_storage_options_for_s3_source(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
@@ -280,7 +280,7 @@ def test_get_storage_options_for_s3_source(monkeypatch):
 
 
 def test_get_storage_options_without_s3_config(monkeypatch):
-    monkeypatch.setattr(config, "CONFIG", {})
+    monkeypatch.setattr(config, "_CONFIG", {})
 
     options = helpers.get_storage_options(source(None, "s3://bucket/file.nc"))
 
@@ -290,7 +290,7 @@ def test_get_storage_options_without_s3_config(monkeypatch):
 def test_get_storage_options_does_not_depend_on_format(monkeypatch):
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
@@ -308,7 +308,7 @@ def test_open_dataset_passes_s3_options_to_kerchunk(monkeypatch):
         return "DATASET"
 
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
-    monkeypatch.setattr(config, "CONFIG", {"s3": {"anon": "true"}})
+    monkeypatch.setattr(config, "_CONFIG", {"s3": {"anon": "true"}})
 
     result = helpers.open_dataset(
         source(None, "s3://bucket/reference.json"), apply_fixes=False
@@ -339,7 +339,7 @@ def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", lambda _ds_id, ds: ds)
     monkeypatch.setattr(
         config,
-        "CONFIG",
+        "_CONFIG",
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 

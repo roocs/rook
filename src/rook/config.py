@@ -1,7 +1,6 @@
 """Central access to Rook configuration."""
 
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -10,27 +9,20 @@ from clisops.config import reload_config as _reload_clisops_config
 
 
 _PACKAGE_FILE = Path(__file__)
-CONFIG = _get_clisops_config(_PACKAGE_FILE)
+_CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
 
 def get_config() -> dict[str, Any]:
     """Return the current Rook configuration."""
-    return CONFIG
+    return _CONFIG
 
 
 def reload_config() -> dict[str, Any]:
     """Reload Rook configuration from the standard clisops sources."""
-    global CONFIG
+    global _CONFIG
 
-    CONFIG = _reload_clisops_config(_PACKAGE_FILE)
-
-    # Keep the public compatibility alias current without making config depend
-    # on importing the rest of Rook.
-    rook_module = sys.modules.get("rook")
-    if rook_module is not None:
-        rook_module.CONFIG = CONFIG
-
-    return CONFIG
+    _CONFIG = _reload_clisops_config(_PACKAGE_FILE)
+    return _CONFIG
 
 
 def get_project_config(project: str) -> dict[str, Any]:
