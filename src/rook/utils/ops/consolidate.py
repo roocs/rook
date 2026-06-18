@@ -11,13 +11,23 @@ from loguru import logger
 
 from rook.catalog import get_catalog
 from rook.io.datasets import (
+    DatasetFormat,
     DatasetSource,
-    is_kerchunk_file,
-    is_s3_uri,
-    is_zarr_store,
+    Transport,
+    detect_format,
+    detect_transport,
 )
 
 from .helpers import wrap_sequence
+
+
+def _bypasses_catalog(value):
+    """Return whether a direct source should skip project resolution."""
+    source = DatasetSource(dataset_id=None, paths=value)
+    return (
+        detect_format(source) is not DatasetFormat.NETCDF
+        or detect_transport(source) is Transport.S3
+    )
 
 
 def to_year(time_string):
@@ -86,9 +96,7 @@ def consolidate(collection, **kwargs):
 
     if (
         not isinstance(collection[0], FileMapper)
-        and not is_kerchunk_file(collection[0])
-        and not is_s3_uri(collection[0])
-        and not is_zarr_store(collection[0])
+        and not _bypasses_catalog(collection[0])
     ):
         project = get_project_name(collection[0])
         catalog = get_catalog(project)
@@ -98,7 +106,7 @@ def consolidate(collection, **kwargs):
     time_param = kwargs.get("time")
 
     for dset in collection:
-        if is_kerchunk_file(dset) or is_zarr_store(dset) or is_s3_uri(dset):
+        if not isinstance(dset, FileMapper) and _bypasses_catalog(dset):
             sources.append(DatasetSource(dataset_id=None, paths=dset))
 
         elif not catalog:
