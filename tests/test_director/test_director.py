@@ -13,6 +13,7 @@ class FakeSearchResult:
         self._download_records = download_records or records
 
     def __len__(self):
+        """Return the number of matched catalog records."""
         return len(self._records)
 
     def files(self):
