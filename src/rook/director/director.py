@@ -132,8 +132,10 @@ class Director:
             # use search result if available
             if self.search_result:
                 self.inputs["collection"] = []
-                for file_uris in self.search_result.files().values():
-                    self.inputs["collection"].append(FileMapper(file_uris))
+                for ds_id, file_uris in self.search_result.files().items():
+                    file_mapper = FileMapper(file_uris)
+                    file_mapper.dataset_id = ds_id
+                    self.inputs["collection"].append(file_mapper)
             try:
                 file_uris = runner(self.inputs)
             except Exception as e:

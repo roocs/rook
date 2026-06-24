@@ -1,3 +1,5 @@
+from clisops.utils.file_utils import FileMapper
+
 import rook.utils.ops.consolidate as consolidate
 from rook import config
 from rook.catalog.base import Result
@@ -64,6 +66,22 @@ def test_consolidate_zarr_bypasses_catalog_and_mapper(monkeypatch):
     result = consolidate.consolidate(collection)
 
     assert result == (DatasetSource(dataset_id=None, paths=(store,)),)
+
+
+def test_consolidate_preserves_dataset_id_from_file_mapper(tmp_path):
+    source = tmp_path / "input.nc"
+    source.touch()
+    file_mapper = FileMapper([source.as_posix()])
+    file_mapper.dataset_id = "c3s-cica-atlas.example.dataset"
+
+    result = consolidate.consolidate(DummyCollection([file_mapper]))
+
+    assert result == (
+        DatasetSource(
+            dataset_id="c3s-cica-atlas.example.dataset",
+            paths=(source.as_posix(),),
+        ),
+    )
 
 
 def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):

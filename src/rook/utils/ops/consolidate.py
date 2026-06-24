@@ -40,7 +40,9 @@ def _resolve_file_source(dset, time_param):
     if not file_paths:
         raise Exception(f"No files found in given time range for {dset}")
 
-    dataset_id = None if isinstance(dset, FileMapper) else str(dset)
+    dataset_id = (
+        getattr(dset, "dataset_id", None) if isinstance(dset, FileMapper) else str(dset)
+    )
     return DatasetSource(dataset_id=dataset_id, paths=file_paths)
 
 
