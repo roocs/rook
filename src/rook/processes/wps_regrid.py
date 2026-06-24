@@ -4,9 +4,9 @@ from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
 from ..director import wrap_director
+from ..operations import run_regrid
 from ..utils.input_utils import parse_wps_input, get_grid_param
 from ..utils.metalink_utils import build_metalink
-from ..utils.regrid_utils import run_regrid
 from ..utils.response_utils import populate_response
 
 LOGGER = logging.getLogger()

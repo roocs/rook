@@ -6,7 +6,7 @@ import networkx as nx
 import yaml
 
 from .exceptions import WorkflowValidationError
-from .operator import (
+from .operations import (
     AverageByDimension,
     AverageByTime,
     Concat,

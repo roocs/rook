@@ -4,7 +4,7 @@ from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
 from ..director import wrap_director
-from ..utils.concat_utils import run_concat
+from ..operations import run_concat
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
