@@ -44,7 +44,7 @@ class AverageByShape(Process):
                 "pre_checked",
                 "Pre-Checked",
                 data_type="boolean",
-                abstract="Use checked data only.",
+                abstract="Deprecated compatibility parameter. Rook no longer uses pre-checked data selection.",
                 default="0",
                 min_occurs=1,
                 max_occurs=1,
@@ -111,9 +111,6 @@ class AverageByShape(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "pre_checked": parse_wps_input(
-                request.inputs, "pre_checked", default=False
-            ),
             "shape": parse_wps_input(request.inputs, "shape", default=None),
         }
 

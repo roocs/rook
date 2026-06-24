@@ -30,7 +30,7 @@ Cover at least:
 - generating a subset when the request does not align with whole files;
 - operators that must always process data rather than return original files;
 - a later workflow step receiving files produced by an earlier step;
-- errors for unknown collections and unavailable pre-checked data.
+- errors for unknown collections.
 
 Tests should describe observable behavior, not preserve incidental class or
 module structure. They will provide room to simplify the implementation.

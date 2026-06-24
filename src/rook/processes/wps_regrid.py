@@ -126,7 +126,6 @@ class Regrid(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "pre_checked": False,
             "method": parse_wps_input(request.inputs, "method", default="nearest_s2d"),
             "grid": get_grid_param(grid, custom_grid),
             "adaptive_masking_threshold": 0.5,
