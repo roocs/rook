@@ -157,6 +157,7 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     assert "pre_checked" not in captured["inputs"]
     assert "original_files" not in captured["inputs"]
     assert len(captured["inputs"]["collection"]) == 1
+    assert captured["inputs"]["collection"][0].dataset_id == collection[0]
 
 
 def test_catalog_original_files_are_returned_when_requested(catalog_director):
