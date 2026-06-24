@@ -39,7 +39,6 @@ def load_wfdoc(data):
 
 def replace_inputs(wfdoc):
     steps = {}
-    start_steps = []
     for step_id, step in wfdoc["steps"].items():
         steps[step_id] = deepcopy(step)
         # replace inputs
@@ -47,15 +46,6 @@ def replace_inputs(wfdoc):
             if isinstance(arg, str) and arg.startswith("inputs/"):
                 input_id = arg.split("/")[1]
                 steps[step_id]["in"][arg_id] = wfdoc["inputs"][input_id]
-                start_steps.append(step_id)
-    for step_id in steps.keys():
-        # fixes are only applied to start steps
-        if step_id in start_steps:
-            steps[step_id]["in"]["apply_fixes"] = steps[step_id]["in"].get(
-                "apply_fixes", False
-            )
-        else:
-            steps[step_id]["in"]["apply_fixes"] = False
     LOGGER.debug(f"steps: {steps}")
     return steps
 

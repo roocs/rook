@@ -9,13 +9,13 @@ from rook.io.datasets import open_dataset
 from .helpers import ordered_dict
 
 
-def normalise(collection, apply_fixes=True):
-    """Open input collections and apply fixes when requested."""
+def normalise(collection):
+    """Open input collections."""
     logger.info(f"Working on datasets: {collection}")
     norm_collection = ordered_dict()
 
     for source in collection:
-        ds = open_dataset(source, apply_fixes=apply_fixes)
+        ds = open_dataset(source)
         norm_collection[source.key] = ds
 
     return norm_collection

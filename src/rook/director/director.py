@@ -42,24 +42,6 @@ class Director:
                 raise InvalidCollection()
 
             self._resolve()
-        # if enabled for the project then check if a fix will be applied
-        self._check_apply_fixes()
-
-    def use_fixes(self):
-        # TODO: don't use fixes
-        return False
-        # return config.get_project_config(self.project).get("use_fixes", False)
-
-    def _check_apply_fixes(self):
-        if (
-            self.use_fixes()
-            and self.inputs.get("apply_fixes")
-            and not self.use_original_files
-            and self.requires_fixes()
-        ):
-            self.inputs["apply_fixes"] = True
-        else:
-            self.inputs["apply_fixes"] = False
 
     def _resolve(self):
         """
@@ -72,8 +54,6 @@ class Director:
             If YES: return (and use original files)
         - Does the user require data to be pre-checked AND has the collection been pre-checked?
             If NO: raise Exception
-        - Does the user want to apply fixes AND fixes are required for this collection?
-            If YES: return (and use WPS)
         - Does the requested temporal subset align with files in all datasets in this collection?
             If YES: return (and use original files)
             If NO: return (and use WPS)
@@ -109,10 +89,6 @@ class Director:
         ):
             raise ProcessError("Data has not been pre-checked")
 
-        # Check if fixes are required. If so, then return (and subset will be generated).
-        if self.inputs.get("apply_fixes") and self.requires_fixes():
-            return
-
         # TODO: quick fix for average, regrid and concat. Don't use original files for these operators.
         if "dims" in self.inputs or "freq" in self.inputs or "grid" in self.inputs:
             return
@@ -123,24 +99,6 @@ class Director:
             pass
 
         # If we got here: then WPS will be used, because `self.use_original_files == False`
-
-    def requires_fixes(self):
-        # TODO: don't use fixes
-        return False
-        # if not self.use_fixes():
-        #     return False
-
-        # if self.search_result:
-        #     ds_ids = self.search_result.files()
-        # else:
-        #     ds_ids = self.coll
-        # for ds_id in ds_ids:
-        #     fix = fixer.Fixer(ds_id)
-
-        #     if fix.pre_processor or fix.post_processors:
-        #         return True
-
-        # return False
 
     def request_aligns_with_files(self):
         """Return whether collection files already align with the requested subset."""

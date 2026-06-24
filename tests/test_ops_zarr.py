@@ -33,7 +33,6 @@ def test_subset_local_zarr_store(tmp_path):
     result = subset(
         collection=str(store),
         output_dir=output_dir,
-        apply_fixes=False,
     )
 
     assert len(result.file_uris) == 1

@@ -32,6 +32,5 @@ def regrid(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
 ):
     return Regrid(**locals()).calculate()

@@ -1,9 +1,7 @@
-"""Subset operation with rook-specific fix application."""
+"""Subset operation."""
 
 from clisops.ops.subset import subset as clisops_subset
 from clisops.parameter import parameterise
-
-from rook.utils.apply_fixes import apply_fixes
 
 from .base import Operation
 from . import normalise
@@ -34,12 +32,11 @@ class Subset(Operation):
 
         self.params.update(config)
 
-        norm_collection = normalise.normalise(self.collection, False)
+        norm_collection = normalise.normalise(self.collection)
         rs = normalise.ResultSet(vars())
 
-        for dset, norm_collection_ in norm_collection.items():
-            fixed_collection = apply_fixes(dset, norm_collection_)
-            rs.add(dset, clisops_subset(fixed_collection, **self.params))
+        for dset, dataset in norm_collection.items():
+            rs.add(dset, clisops_subset(dataset, **self.params))
 
         return rs
 
@@ -54,6 +51,5 @@ def subset(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=False,
 ):
     return Subset(**locals()).calculate()

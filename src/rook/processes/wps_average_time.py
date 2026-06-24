@@ -47,7 +47,7 @@ class AverageByTime(Process):
                 "apply_fixes",
                 "Apply Fixes",
                 data_type="boolean",
-                abstract="Apply fixes to datasets.",
+                abstract="Deprecated compatibility parameter. Rook now applies required dataset fixes automatically.",
                 default="1",
                 min_occurs=1,
                 max_occurs=1,
@@ -106,7 +106,6 @@ class AverageByTime(Process):
         inputs = {
             "collection": collection,
             "output_dir": self.workdir,
-            "apply_fixes": parse_wps_input(request.inputs, "apply_fixes", default=True),
             "pre_checked": parse_wps_input(
                 request.inputs, "pre_checked", default=False
             ),

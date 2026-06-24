@@ -3,8 +3,6 @@ from rook.utils.ops.regrid import regrid as ops_regrid
 
 
 def run_regrid(args):
-    args["apply_fixes"] = False
-
     # Handle custom grid parsing
     if args.get("grid") == "custom" and "custom_grid" in args:
         # parse the string into a tuple/list

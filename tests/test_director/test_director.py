@@ -87,18 +87,6 @@ class TestDirectorCMIP6:
         with pytest.raises(ProcessError):
             Director(self.collection, inputs)
 
-    def apply_fixes_not_required(self):
-        # no subset so original files
-        inputs = {"apply_fixes": True}
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is True
-        assert list(d.original_file_urls.items())[0][1] == [
-            "https://data.mips.climate.copernicus.eu/thredds/fileServer"
-            "/esg_c3s-cmip6/CMIP/IPSL/IPSL-CM6A-LR/historical"
-            "/r1i1p1f1/Amon/rlds/gr/v20180803/rlds_Amon_"
-            "IPSL-CM6A-LR_historical_r1i1p1f1_gr_185001-201412.nc"
-        ]
-
     def test_area_or_level(self):
         # WPS output
         inputs = {"area": "0.,49.,10.,65"}
@@ -287,20 +275,3 @@ def test_catalog_pre_checked_requires_characterised_data(catalog_director):
 
     with pytest.raises(ProcessError, match="Data has not been pre-checked"):
         Director(collection, {"pre_checked": True})
-
-
-# need to test a  different dataset that has been characterised:
-
-# def test_apply_fixes_required(self):
-#     # wps output - can't test this with this dataset
-#     inputs = {"apply_fixes": True}
-#     pass
-#     d = Director(self.collection, inputs)
-#     assert d.use_original_files is False
-#
-#
-# def test_pre_checked_charactersied(self):
-#     # fine - can't test this with this dataset
-#     inputs = {"pre_checked": True}
-#     pass
-#     d = Director(self.collection, inputs)

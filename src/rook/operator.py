@@ -9,7 +9,7 @@ from rook.utils.average_utils import (
     run_average_by_time,
 )
 from rook.utils.concat_utils import run_concat
-from rook.utils.input_utils import resolve_to_file_paths
+from rook.utils.input_utils import clean_inputs, resolve_to_file_paths
 from rook.utils.regrid_utils import run_regrid
 from rook.utils.subset_utils import run_subset
 from rook.utils.weighted_average_utils import run_weighted_average
@@ -27,7 +27,6 @@ class Operator:
             output_dir_ = output_dir
         self.config = {
             "output_dir": output_dir_,
-            # "apply_fixes": apply_fixes,
             # 'original_files': original_files
             # 'chunk_rules': dconfig.chunk_rules,
             # 'filenamer': dconfig.filenamer,
@@ -43,8 +42,8 @@ class Operator:
         if is_file_list(collection):
             # This block is called if this is NOT the first stage of a workflow, and
             # the collection will be a file list (one or more files)
-            args["apply_fixes"] = False
             kwargs = deepcopy(args)
+            clean_inputs(kwargs)
             file_paths = resolve_to_file_paths(args.get("collection"))
             kwargs["collection"] = FileMapper(file_paths)
             output_uris = runner(kwargs)  # this needs to be in a list
