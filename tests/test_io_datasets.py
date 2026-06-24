@@ -52,15 +52,13 @@ def test_open_dataset_applies_fixes(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
-    result = helpers.open_dataset(
-        source("project.dataset", ["a.nc"]), apply_fixes=True
-    )
+    result = helpers.open_dataset(source("project.dataset", ["a.nc"]))
 
     assert result == "FIXED"
     assert calls == {"open": 1, "fix": 1}
 
 
-def test_open_dataset_skips_fixes_when_disabled(monkeypatch):
+def test_open_dataset_applies_catalog_fixes_without_external_switch(monkeypatch):
     calls = {"open": 0, "fix": 0}
 
     def fake_open(file_paths):
@@ -75,12 +73,10 @@ def test_open_dataset_skips_fixes_when_disabled(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
-    result = helpers.open_dataset(
-        source("project.dataset", ["a.nc"]), apply_fixes=False
-    )
+    result = helpers.open_dataset(source("project.dataset", ["a.nc"]))
 
-    assert result == "DATASET"
-    assert calls == {"open": 1, "fix": 0}
+    assert result == "FIXED"
+    assert calls == {"open": 1, "fix": 1}
 
 
 def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
@@ -98,9 +94,7 @@ def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fake_apply)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: True)
 
-    result = helpers.open_dataset(
-        source(None, ["kerchunk.json"]), apply_fixes=True
-    )
+    result = helpers.open_dataset(source(None, ["kerchunk.json"]))
 
     assert result == "DATASET"
     assert calls == {"open": 1, "fix": 0}
@@ -114,7 +108,7 @@ def test_open_dataset_skips_fixes_without_catalog_dataset_id(monkeypatch):
 
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fail_apply_fixes)
 
-    result = helpers.open_dataset(source(None, "direct.nc"), apply_fixes=True)
+    result = helpers.open_dataset(source(None, "direct.nc"))
 
     assert result == "DATASET"
 
@@ -193,7 +187,7 @@ def test_open_dataset_opens_local_zarr_store(tmp_path):
     expected = xr.Dataset({"tas": ("time", [280.0, 281.0])})
     expected.to_zarr(store, mode="w")
 
-    result = helpers.open_dataset(source(None, str(store)), apply_fixes=False)
+    result = helpers.open_dataset(source(None, str(store)))
 
     xr.testing.assert_equal(result, expected)
     result.close()
@@ -209,9 +203,9 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
 
     monkeypatch.setattr(helpers.xr, "open_zarr", fail_open_zarr)
 
-    result = helpers.open_dataset(
-        source("project.dataset", [str(path)]), apply_fixes=False
-    )
+    monkeypatch.setattr(helpers, "apply_dataset_fixes", lambda _ds_id, ds: ds)
+
+    result = helpers.open_dataset(source("project.dataset", [str(path)]))
 
     xr.testing.assert_equal(result, expected)
     result.close()
@@ -232,10 +226,7 @@ def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
-    result = helpers.open_dataset(
-        source(None, "s3://example-bucket/path/example.zarr"),
-        apply_fixes=False,
-    )
+    result = helpers.open_dataset(source(None, "s3://example-bucket/path/example.zarr"))
 
     assert result == "DATASET"
     assert calls == {
@@ -257,9 +248,7 @@ def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
 
     monkeypatch.setattr(helpers, "apply_dataset_fixes", fail_apply_fixes)
 
-    result = helpers.open_dataset(
-        source(None, "/data/example.zarr"), apply_fixes=True
-    )
+    result = helpers.open_dataset(source(None, "/data/example.zarr"))
 
     assert result == "DATASET"
 
@@ -310,9 +299,7 @@ def test_open_dataset_passes_s3_options_to_kerchunk(monkeypatch):
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
     monkeypatch.setattr(config, "_CONFIG", {"s3": {"anon": "true"}})
 
-    result = helpers.open_dataset(
-        source(None, "s3://bucket/reference.json"), apply_fixes=False
-    )
+    result = helpers.open_dataset(source(None, "s3://bucket/reference.json"))
 
     assert result == "DATASET"
     assert calls == {
@@ -343,10 +330,7 @@ def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
         {"s3": {"anon": "true", "endpoint_url": "https://s3.example.org"}},
     )
 
-    _ = helpers.open_dataset(
-        source(None, "s3://example-bucket/path/file.nc"),
-        apply_fixes=False,
-    )
+    _ = helpers.open_dataset(source(None, "s3://example-bucket/path/file.nc"))
 
     assert calls["open_kwargs"] == {
         "backend_kwargs": {

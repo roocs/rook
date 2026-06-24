@@ -125,7 +125,6 @@ def _concat(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
     apply_average=False,
 ):
     return Concat(**locals())._calculate()
@@ -141,7 +140,6 @@ def concat(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
     apply_average=False,
 ):
     args = dict(
@@ -154,7 +152,6 @@ def concat(
         output_type=output_type,
         split_method=split_method,
         file_namer=file_namer,
-        apply_fixes=apply_fixes,
         apply_average=apply_average,
     )
     return _concat(**args)

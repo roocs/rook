@@ -16,14 +16,12 @@ class Operation:
         split_method="time:auto",
         output_dir=None,
         output_type="netcdf",
-        apply_fixes=True,
         **params,
     ):
         self._file_namer = file_namer
         self._split_method = split_method
         self._output_dir = output_dir
         self._output_type = output_type
-        self._apply_fixes = apply_fixes
         self._resolve_params(collection, **params)
         self._consolidate_collection()
 
@@ -52,7 +50,7 @@ class Operation:
 
         self.params.update(config)
 
-        norm_collection = normalise.normalise(self.collection, self._apply_fixes)
+        norm_collection = normalise.normalise(self.collection)
 
         rs = normalise.ResultSet(vars())
 

@@ -33,7 +33,6 @@ def average_over_dims(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
 ):
     return Average(**locals()).calculate()
 
@@ -61,7 +60,6 @@ def average_shape(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
 ):
     return AverageShape(**locals()).calculate()
 
@@ -87,6 +85,5 @@ def average_time(
     output_type="netcdf",
     split_method="time:auto",
     file_namer="standard",
-    apply_fixes=True,
 ):
     return AverageTime(**locals()).calculate()

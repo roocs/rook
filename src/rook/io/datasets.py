@@ -123,12 +123,12 @@ _OPENERS = {
 }
 
 
-def open_dataset(source: DatasetSource, *, apply_fixes=True):
-    """Open an xarray Dataset and optionally apply rook-native fixes."""
+def open_dataset(source: DatasetSource):
+    """Open an xarray Dataset and apply catalog-specific fixes when available."""
     opener = _OPENERS[detect_format(source)]
     ds = opener(source, get_storage_options(source))
 
-    if apply_fixes and source.dataset_id:
+    if source.dataset_id:
         ds = apply_dataset_fixes(source.dataset_id, ds)
 
     return ds

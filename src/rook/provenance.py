@@ -131,7 +131,6 @@ class Provenance:
             "method",
             "grid",
             "adaptive_masking_threshold",
-            "apply_fixes",
             "apply_average",
         ]:
             if param in parameters:

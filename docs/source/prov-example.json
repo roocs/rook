@@ -45,12 +45,10 @@
       }
     ],
     "subset_tas_1": {
-      "time": "2016-01-01/2020-12-30",
-      "apply_fixes": false
+      "time": "2016-01-01/2020-12-30"
     },
     "subset_tas_2": {
-      "time": "2017-01-01/2017-12-30",
-      "apply_fixes": false
+      "time": "2017-01-01/2017-12-30"
     }
   },
   "wasAssociatedWith": {

@@ -39,7 +39,9 @@ def test_direct_file_collection_is_processed_without_director(tmp_path, monkeypa
     )
 
     assert output_uris == ["processed.nc"]
-    assert operator.runner_inputs["apply_fixes"] is False
+    assert "apply_fixes" not in operator.runner_inputs
+    assert "original_files" not in operator.runner_inputs
+    assert "pre_checked" not in operator.runner_inputs
     assert isinstance(operator.runner_inputs["collection"], FileMapper)
     assert operator.runner_inputs["output_dir"].startswith(tmp_path.as_posix())
 
