@@ -1,19 +1,54 @@
+"""Execution adapters used by WPS processes and workflows."""
+
 import pathlib
 import tempfile
 from copy import deepcopy
 
+from clisops.utils.file_utils import FileMapper, is_file_list
+
 from rook.director import wrap_director
-from rook.utils.average_utils import (
-    run_average_by_dim,
-    run_average_by_shape,
-    run_average_by_time,
+from rook.utils.input_utils import (
+    clean_inputs,
+    fix_parameters,
+    parse_custom_grid,
+    resolve_to_file_paths,
 )
-from rook.utils.concat_utils import run_concat
-from rook.utils.input_utils import clean_inputs, resolve_to_file_paths
-from rook.utils.regrid_utils import run_regrid
-from rook.utils.subset_utils import run_subset
+from rook.utils.ops.average import average_over_dims, average_shape, average_time
+from rook.utils.ops.concat import concat
+from rook.utils.ops.regrid import regrid
+from rook.utils.ops.subset import subset
 from rook.utils.weighted_average_utils import run_weighted_average
-from clisops.utils.file_utils import is_file_list, FileMapper
+
+
+def run_subset(args):
+    args = fix_parameters(args)
+
+    return subset(**args).file_uris
+
+
+def run_average_by_time(args):
+    return average_time(**args).file_uris
+
+
+def run_average_by_dim(args):
+    return average_over_dims(**args).file_uris
+
+
+def run_average_by_shape(args):
+    return average_shape(**args).file_uris
+
+
+def run_concat(args):
+    args = fix_parameters(args)
+
+    return concat(**args).file_uris
+
+
+def run_regrid(args):
+    if args.get("grid") == "custom" and "custom_grid" in args:
+        args["grid"] = parse_custom_grid(args.pop("custom_grid"))
+
+    return regrid(**args).file_uris
 
 
 class Operator:

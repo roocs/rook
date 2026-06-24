@@ -4,10 +4,10 @@ from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
 from ..director import wrap_director
+from ..operations import run_weighted_average
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
 from ..utils.response_utils import populate_response
-from ..utils.weighted_average_utils import run_weighted_average
 
 LOGGER = logging.getLogger()
 
