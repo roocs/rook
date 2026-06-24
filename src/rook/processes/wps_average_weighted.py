@@ -76,7 +76,6 @@ class WeightedAverage(Process):
             "collection": collection,
             "output_dir": self.workdir,
             "dims": ["latitude", "longitude"],
-            "pre_checked": False,
         }
 
         # Let the director manage the processing or redirection to original files

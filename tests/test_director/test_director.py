@@ -1,6 +1,4 @@
 import pytest
-from pywps.app.exceptions import ProcessError
-
 from clisops.exceptions import InvalidCollection
 
 import rook.director.director as director_mod
@@ -79,13 +77,6 @@ class TestDirectorCMIP6:
             "/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619"
             "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
         ]
-
-    @pytest.mark.skip(reason="not relevant")
-    def test_pre_checked_not_characterised(self):
-        # raise exception
-        inputs = {"pre_checked": True}
-        with pytest.raises(ProcessError):
-            Director(self.collection, inputs)
 
     def test_area_or_level(self):
         # WPS output
@@ -267,11 +258,3 @@ def test_catalog_unknown_collection_raises_invalid_collection(catalog_director):
 
     with pytest.raises(InvalidCollection):
         Director(collection, {})
-
-
-def test_catalog_pre_checked_requires_characterised_data(catalog_director):
-    collection = ["c3s-cmip6.example.dataset"]
-    catalog_director(FakeSearchResult({collection[0]: ["/data/input.nc"]}))
-
-    with pytest.raises(ProcessError, match="Data has not been pre-checked"):
-        Director(collection, {"pre_checked": True})

@@ -10,7 +10,7 @@ from rook.catalog import get_catalog
 
 from ..utils.input_utils import clean_inputs
 from .alignment import SubsetAlignmentChecker
-from .compat import ResultSet, is_characterised
+from .compat import ResultSet
 
 
 def wrap_director(collection, inputs, runner):
@@ -52,8 +52,6 @@ class Director:
             If NO: raise Exception
         - Does the user want to access original files only?
             If YES: return (and use original files)
-        - Does the user require data to be pre-checked AND has the collection been pre-checked?
-            If NO: raise Exception
         - Does the requested temporal subset align with files in all datasets in this collection?
             If YES: return (and use original files)
             If NO: return (and use WPS)
@@ -82,12 +80,6 @@ class Director:
             self.original_file_urls = self.search_result.download_urls()
             self.use_original_files = True
             return
-
-        # Raise exception if "pre_checked" selected but data has not been characterised by dachar
-        if self.inputs.get("pre_checked") and not is_characterised(
-            self.coll, require_all=True
-        ):
-            raise ProcessError("Data has not been pre-checked")
 
         # TODO: quick fix for average, regrid and concat. Don't use original files for these operators.
         if "dims" in self.inputs or "freq" in self.inputs or "grid" in self.inputs:
