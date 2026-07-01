@@ -1,7 +1,7 @@
 import pytest
 from clisops.exceptions import InvalidCollection
 
-import rook.director.director as director_mod
+import rook.director.planning as planning_mod
 from rook.director import Director
 
 
@@ -45,11 +45,11 @@ def catalog_director(monkeypatch):
     def _catalog_director(search_result):
         catalog = FakeCatalog(search_result)
         monkeypatch.setattr(
-            director_mod.config,
+            planning_mod.config,
             "get_project_config",
             lambda _project: {"use_catalog": True},
         )
-        monkeypatch.setattr(director_mod, "get_catalog", lambda _project: catalog)
+        monkeypatch.setattr(planning_mod, "get_catalog", lambda _project: catalog)
         return catalog
 
     return _catalog_director
@@ -61,26 +61,39 @@ class TestDirectorCMIP6:
         "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     ]
 
-    def test_project(self):
+    def test_project(self, monkeypatch):
         inputs = {}
+        monkeypatch.setattr(
+            planning_mod.config,
+            "get_project_config",
+            lambda _project: {"use_catalog": False},
+        )
         d = Director(self.collection, inputs)
         assert d.project == "c3s-cmip6"
 
-    def test_original_files(self):
+    def test_original_files(self, catalog_director):
         # original files
         inputs = {"original_files": True}
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is True
-        assert list(d.original_file_urls.items())[0][1] == [
+        url = (
             "https://data.mips.climate.copernicus.eu/thredds/fileServer"
             "/esg_c3s-cmip6"
             "/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619"
             "/rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_201501-210012.nc"
-        ]
+        )
+        catalog_director(
+            FakeSearchResult(
+                {self.collection[0]: ["/data/input.nc"]},
+                download_records={self.collection[0]: [url]},
+            )
+        )
+        d = Director(self.collection, inputs)
+        assert d.use_original_files is True
+        assert list(d.original_file_urls.items())[0][1] == [url]
 
-    def test_area_or_level(self):
+    def test_area_or_level(self, catalog_director):
         # WPS output
         inputs = {"area": "0.,49.,10.,65"}
+        catalog_director(FakeSearchResult({self.collection[0]: ["/data/input.nc"]}))
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
 
@@ -103,8 +116,9 @@ class TestDirectorCMIP6:
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
 
-    def test_invalid_collection(self):
+    def test_invalid_collection(self, catalog_director):
         inputs = {"time": "2015-01-01/2100-11-30"}
+        catalog_director(FakeSearchResult({}))
         with pytest.raises(InvalidCollection):
             Director(
                 [
@@ -154,6 +168,11 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     }
     assert director.use_original_files is False
     assert director.output_uris == ["processed.nc"]
+    assert inputs == {
+        "area": "0,0,10,10",
+        "pre_checked": False,
+        "original_files": False,
+    }
     assert "pre_checked" not in captured["inputs"]
     assert "original_files" not in captured["inputs"]
     assert len(captured["inputs"]["collection"]) == 1
@@ -195,7 +214,7 @@ def test_catalog_aligned_subset_returns_matching_original_files(
         is_aligned = True
         aligned_files = aligned_urls
 
-    monkeypatch.setattr(director_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
+    monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
 
     director = Director(collection, {"time": "2001-01-01/2001-12-31"})
     director.process(lambda _inputs: pytest.fail("runner should not be called"))
@@ -220,7 +239,7 @@ def test_catalog_non_aligned_subset_is_processed(
         is_aligned = False
         aligned_files = []
 
-    monkeypatch.setattr(director_mod, "SubsetAlignmentChecker", NotAlignedFakeAlignment)
+    monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", NotAlignedFakeAlignment)
 
     director = Director(collection, {"time": "2001-02-01/2001-02-28"})
     director.process(lambda _inputs: ["subset.nc"])
@@ -242,7 +261,7 @@ def test_catalog_operations_that_change_data_are_always_processed(
     )
     catalog_director(result)
     monkeypatch.setattr(
-        director_mod,
+        planning_mod,
         "SubsetAlignmentChecker",
         lambda _urls, _inputs: pytest.fail("alignment should not be checked"),
     )

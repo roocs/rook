@@ -128,6 +128,18 @@ The result should avoid mutable input dictionaries as hidden communication.
 Decision results should be explicit values with clear types. If the director
 becomes only a thin wrapper after extraction, remove it.
 
+### Note for Future Us
+
+After the first `planning.py` extraction, the split between `Director` and
+request planning is intentionally intermediate. It is better than the previous
+all-in-one director, but it is not the final design.
+
+When returning to this area, first ask whether `Director` still adds value or
+has become a thin compatibility wrapper. Also revisit whether request plans
+should carry prepared dataset sources directly, and whether WPS
+exception/response adaptation can be separated cleanly from operation
+execution.
+
 ## 5. Remove Dead and Misleading Code
 
 Do this continuously, but keep behavior changes separate from mechanical moves.
