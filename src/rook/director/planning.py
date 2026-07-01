@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from clisops.exceptions import InvalidCollection
 from clisops.project_utils import get_project_name
+from clisops.utils.file_utils import FileMapper
 
 from rook import config
 from rook.catalog import get_catalog
@@ -18,6 +19,7 @@ class RequestPlan:
 
     project: str
     search_result: object | None = None
+    dataset_sources: tuple[FileMapper, ...] = ()
     original_file_urls: OrderedDict | None = None
 
     @property
@@ -99,7 +101,11 @@ def original_files_plan(project, search_result, original_file_urls=None):
 
 def operation_plan(project, search_result):
     """Return a plan that runs operation execution."""
-    return RequestPlan(project=project, search_result=search_result)
+    return RequestPlan(
+        project=project,
+        search_result=search_result,
+        dataset_sources=dataset_sources_from_search(search_result),
+    )
 
 
 def aligned_subset_plan(project, search_result, inputs):
@@ -137,3 +143,15 @@ def aligned_original_file_urls(search_result, inputs):
         required_files[ds_id] = alignment.aligned_files[:]
 
     return required_files
+
+
+def dataset_sources_from_search(search_result):
+    """Return file mappers for catalog-resolved operation inputs."""
+    dataset_sources = []
+
+    for ds_id, file_uris in search_result.files().items():
+        file_mapper = FileMapper(file_uris)
+        file_mapper.dataset_id = ds_id
+        dataset_sources.append(file_mapper)
+
+    return tuple(dataset_sources)
