@@ -13,10 +13,10 @@ from rook.utils.input_utils import (
     parse_custom_grid,
     resolve_to_file_paths,
 )
-from rook.utils.ops.average import average_over_dims, average_shape, average_time
-from rook.utils.ops.concat import concat
-from rook.utils.ops.regrid import regrid
-from rook.utils.ops.subset import subset
+from rook.operations.average import average_over_dims, average_shape, average_time
+from rook.operations.concat import concat
+from rook.operations.regrid import regrid
+from rook.operations.subset import subset
 from rook.utils.weighted_average_utils import run_weighted_average
 
 
