@@ -130,15 +130,13 @@ becomes only a thin wrapper after extraction, remove it.
 
 ### Note for Future Us
 
-After the first `planning.py` extraction, the split between `Director` and
-request planning is intentionally intermediate. It is better than the previous
-all-in-one director, but it is not the final design.
+The `Director` class has been removed. Request planning now lives in
+`planning.py`, request execution lives in `execution.py`, and request plans carry
+prepared dataset sources.
 
-When returning to this area, first ask whether `Director` still adds value or
-has become a thin compatibility wrapper. Also revisit whether request plans
-should carry prepared dataset sources directly, and whether WPS
-exception/response adaptation can be separated cleanly from operation
-execution.
+The remaining question is whether WPS exception/response adaptation can be
+separated cleanly from operation execution, and whether the `wrap_director`
+compatibility name should be renamed once process imports are updated.
 
 ## 5. Remove Dead and Misleading Code
 

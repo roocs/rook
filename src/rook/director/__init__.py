@@ -1,1 +1,1 @@
-from .director import Director as Director, wrap_director as wrap_director
+from .director import wrap_director as wrap_director

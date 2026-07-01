@@ -2,7 +2,7 @@ import pytest
 from clisops.exceptions import InvalidCollection
 
 import rook.director.planning as planning_mod
-from rook.director import Director
+from rook.director import wrap_director
 
 
 class FakeSearchResult:
@@ -68,8 +68,8 @@ class TestDirectorCMIP6:
             "get_project_config",
             lambda _project: {"use_catalog": False},
         )
-        d = Director(self.collection, inputs)
-        assert d.project == "c3s-cmip6"
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.project == "c3s-cmip6"
 
     def test_original_files(self, catalog_director):
         # original files
@@ -86,9 +86,9 @@ class TestDirectorCMIP6:
                 download_records={self.collection[0]: [url]},
             )
         )
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is True
-        assert list(d.original_file_urls.items())[0][1] == [url]
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.returns_original_files is True
+        assert list(plan.original_file_urls.items())[0][1] == [url]
 
     def test_area_or_level(self, tmp_path, catalog_director):
         # WPS output
@@ -96,16 +96,16 @@ class TestDirectorCMIP6:
         source = tmp_path / "input.nc"
         source.touch()
         catalog_director(FakeSearchResult({self.collection[0]: [source.as_posix()]}))
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is False
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.returns_original_files is False
 
     @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_time_subset_aligned(self):
         # original files
         inputs = {"time": "2015-01-01/2100-12-31"}
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is True
-        assert list(d.original_file_urls.items())[0][1] == [
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.returns_original_files is True
+        assert list(plan.original_file_urls.items())[0][1] == [
             "https://data.mips.climate.copernicus.eu/thredds/fileServer"
             "/esg_c3s-cmip6"
             "/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619"
@@ -115,14 +115,14 @@ class TestDirectorCMIP6:
     @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_only_time_no_match(self):
         inputs = {"time": "2015-01-01/2100-11-30"}
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is False
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.returns_original_files is False
 
     def test_invalid_collection(self, catalog_director):
         inputs = {"time": "2015-01-01/2100-11-30"}
         catalog_director(FakeSearchResult({}))
         with pytest.raises(InvalidCollection):
-            Director(
+            planning_mod.plan_request(
                 [
                     "c3s-cmip6.ScenarioMIP.INM.INVALID.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
                 ],
@@ -140,10 +140,9 @@ class TestDirector:
     def test_no_inventory(self):
         # use_inventory for CMIP6 is set to False
         inputs = {"time": "1850-01-01/2014-12-01"}
-        d = Director(self.collection, inputs)
-        assert d.use_original_files is False
-        assert d.original_file_urls is None
-        assert d.output_uris is None
+        plan = planning_mod.plan_request(self.collection, inputs)
+        assert plan.returns_original_files is False
+        assert plan.original_file_urls is None
 
 
 def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director):
@@ -155,23 +154,21 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     inputs = {"area": "0,0,10,10", "pre_checked": False, "original_files": False}
     captured = {}
 
-    director = Director(collection, inputs)
-
     def runner(runner_inputs):
         captured["inputs"] = runner_inputs
         return ["processed.nc"]
 
-    director.process(runner)
+    result = wrap_director(collection, inputs, runner)
 
     assert catalog.search_kwargs == {
         "collection": collection,
         "time": None,
         "time_components": None,
     }
-    assert director.use_original_files is False
-    assert len(director.plan.dataset_sources) == 1
-    assert director.plan.dataset_sources[0].dataset_id == collection[0]
-    assert director.output_uris == ["processed.nc"]
+    assert result.use_original_files is False
+    assert len(result.plan.dataset_sources) == 1
+    assert result.plan.dataset_sources[0].dataset_id == collection[0]
+    assert result.output_uris == ["processed.nc"]
     assert inputs == {
         "area": "0,0,10,10",
         "pre_checked": False,
@@ -183,6 +180,19 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     assert captured["inputs"]["collection"][0].dataset_id == collection[0]
 
 
+def test_wrap_director_returns_request_result(tmp_path, catalog_director):
+    collection = ["c3s-cmip6.example.dataset"]
+    source = tmp_path / "input.nc"
+    source.touch()
+    catalog_director(FakeSearchResult({collection[0]: [source.as_posix()]}))
+
+    result = wrap_director(collection, {"area": "0,0,10,10"}, lambda _inputs: ["out.nc"])
+
+    assert result.output_uris == ["out.nc"]
+    assert result.use_original_files is False
+    assert result.dataset_sources[0].dataset_id == collection[0]
+
+
 def test_catalog_original_files_are_returned_when_requested(catalog_director):
     collection = ["c3s-cmip6.example.dataset"]
     download_url = "https://example.test/data/input.nc"
@@ -192,11 +202,14 @@ def test_catalog_original_files_are_returned_when_requested(catalog_director):
     )
     catalog_director(result)
 
-    director = Director(collection, {"original_files": True})
-    director.process(lambda _inputs: pytest.fail("runner should not be called"))
+    result = wrap_director(
+        collection,
+        {"original_files": True},
+        lambda _inputs: pytest.fail("runner should not be called"),
+    )
 
-    assert director.use_original_files is True
-    assert director.output_uris == [download_url]
+    assert result.use_original_files is True
+    assert result.output_uris == [download_url]
 
 
 def test_catalog_aligned_subset_returns_matching_original_files(
@@ -220,11 +233,14 @@ def test_catalog_aligned_subset_returns_matching_original_files(
 
     monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
 
-    director = Director(collection, {"time": "2001-01-01/2001-12-31"})
-    director.process(lambda _inputs: pytest.fail("runner should not be called"))
+    result = wrap_director(
+        collection,
+        {"time": "2001-01-01/2001-12-31"},
+        lambda _inputs: pytest.fail("runner should not be called"),
+    )
 
-    assert director.use_original_files is True
-    assert director.output_uris == aligned_urls
+    assert result.use_original_files is True
+    assert result.output_uris == aligned_urls
 
 
 def test_catalog_non_aligned_subset_is_processed(
@@ -245,11 +261,12 @@ def test_catalog_non_aligned_subset_is_processed(
 
     monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", NotAlignedFakeAlignment)
 
-    director = Director(collection, {"time": "2001-02-01/2001-02-28"})
-    director.process(lambda _inputs: ["subset.nc"])
+    result = wrap_director(
+        collection, {"time": "2001-02-01/2001-02-28"}, lambda _inputs: ["subset.nc"]
+    )
 
-    assert director.use_original_files is False
-    assert director.output_uris == ["subset.nc"]
+    assert result.use_original_files is False
+    assert result.output_uris == ["subset.nc"]
 
 
 @pytest.mark.parametrize(
@@ -272,10 +289,10 @@ def test_catalog_operations_that_change_data_are_always_processed(
         lambda _urls, _inputs: pytest.fail("alignment should not be checked"),
     )
 
-    director = Director(collection, operation_input)
+    plan = planning_mod.plan_request(collection, operation_input)
 
-    assert director.use_original_files is False
-    assert director.original_file_urls is None
+    assert plan.returns_original_files is False
+    assert plan.original_file_urls is None
 
 
 def test_catalog_unknown_collection_raises_invalid_collection(catalog_director):
@@ -283,4 +300,4 @@ def test_catalog_unknown_collection_raises_invalid_collection(catalog_director):
     catalog_director(FakeSearchResult({}))
 
     with pytest.raises(InvalidCollection):
-        Director(collection, {})
+        planning_mod.plan_request(collection, {})
