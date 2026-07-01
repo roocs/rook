@@ -1,6 +1,6 @@
 import xarray as xr
 
-from rook.utils.ops.subset import subset
+from rook.operations.subset import subset
 
 
 def test_subset_local_zarr_store(tmp_path):

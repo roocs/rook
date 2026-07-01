@@ -1,6 +1,6 @@
 from clisops.utils.file_utils import FileMapper
 
-import rook.utils.ops.consolidate as consolidate
+import rook.operations.consolidate as consolidate
 from rook import config
 from rook.catalog.base import Result
 from rook.io.datasets import DatasetSource
