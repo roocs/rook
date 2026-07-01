@@ -1,16 +1,9 @@
-from collections import OrderedDict
-
 from pywps.app.exceptions import ProcessError
-from clisops.project_utils import get_project_name
 from clisops.utils.file_utils import FileMapper
 
-from rook import config
-from clisops.exceptions import InvalidCollection
-from rook.catalog import get_catalog
-
 from ..utils.input_utils import clean_inputs
-from .alignment import SubsetAlignmentChecker
 from .compat import ResultSet
+from .planning import plan_request
 
 
 def wrap_director(collection, inputs, runner):
@@ -24,124 +17,66 @@ def wrap_director(collection, inputs, runner):
 
 
 class Director:
-    def __init__(self, coll, inputs):
-        self.coll = coll
+    def __init__(self, collection, inputs):
+        self.collection = collection
         self.inputs = inputs
 
-        self.project = get_project_name(coll[0])
-
-        self.use_original_files = False
-        self.original_file_urls = None
+        self.plan = plan_request(collection, inputs)
         self.output_uris = None
-        self.search_result = None
 
-        if config.get_project_config(self.project).get("use_catalog"):
-            try:
-                self.catalog = get_catalog(self.project)
-            except Exception:
-                raise InvalidCollection()
+    @property
+    def project(self):
+        """Return the project resolved for the request."""
+        return self.plan.project
 
-            self._resolve()
+    @property
+    def use_original_files(self):
+        """Return whether processing should be skipped."""
+        return self.plan.returns_original_files
 
-    def _resolve(self):
-        """
-        Resolve how the WPS will handle this request.
+    @property
+    def original_file_urls(self):
+        """Return original files selected by the request plan."""
+        return self.plan.original_file_urls
 
-        Steps through the following:
-        - Are all datasets in the inventory?
-            If NO: raise Exception
-        - Does the user want to access original files only?
-            If YES: return (and use original files)
-        - Does the requested temporal subset align with files in all datasets in this collection?
-            If YES: return (and use original files)
-            If NO: return (and use WPS)
-
-        Raises
-        ------
-            ProcessError: [description]
-            ProcessError: [description]
-        """
-        # search
-        self.search_result = self.catalog.search(
-            collection=self.coll,
-            time=self.inputs.get("time"),
-            time_components=self.inputs.get("time_components"),
-        )
-        # Raise exception if any of the dataset ids is not in the inventory
-        if len(self.search_result) != len(self.coll):
-            raise InvalidCollection()
-
-        # If original files are requested then go straight there
-        if (
-            self.inputs.get("original_files")
-            or self.project == "c3s-ipcc-atlas"
-            # or self.project == "c3s-cica-atlas"
-        ):
-            self.original_file_urls = self.search_result.download_urls()
-            self.use_original_files = True
-            return
-
-        # TODO: quick fix for average, regrid and concat. Don't use original files for these operators.
-        if "dims" in self.inputs or "freq" in self.inputs or "grid" in self.inputs:
-            return
-
-        # Finally, check if the subset requirements can align with whole datasets
-        if self.request_aligns_with_files():
-            # This call sets values for self.original_file_urls AND self.use_original_files
-            pass
-
-        # If we got here: then WPS will be used, because `self.use_original_files == False`
-
-    def request_aligns_with_files(self):
-        """Return whether collection files already align with the requested subset."""
-        required_files = OrderedDict()
-
-        for ds_id, urls in self.search_result.download_urls().items():
-            sac = SubsetAlignmentChecker(urls, self.inputs)
-
-            # TODO: don't use original files for atlas data ... need to apply a fix
-            # if not sac.is_aligned or "c3s-cica-atlas" in ds_id:
-            if not sac.is_aligned:
-                self.use_original_files = False
-                self.original_file_urls = None
-                return False
-
-            required_files[ds_id] = sac.aligned_files[:]
-
-        # If we got here, then we have full alignment so set the properties and return True
-        self.use_original_files = True
-        self.original_file_urls = required_files
-
-        return True
+    @property
+    def search_result(self):
+        """Return the catalog search result, when catalog lookup was used."""
+        return self.plan.search_result
 
     def process(self, runner):
-        # Either packages up original files (URLs) or
-        # runs the process to generate the outputs
-        # If original files should be returned, then add the files
         if self.use_original_files:
-            result = ResultSet()
-
-            for ds_id, file_urls in self.original_file_urls.items():
-                result.add(ds_id, file_urls)
-
-            file_uris = result.file_uris
-
-        # else: generate the new subset of files
+            file_uris = self._collect_original_file_uris()
         else:
-            clean_inputs(self.inputs)
-            # use search result if available
-            if self.search_result:
-                self.inputs["collection"] = []
-                for ds_id, file_uris in self.search_result.files().items():
-                    file_mapper = FileMapper(file_uris)
-                    file_mapper.dataset_id = ds_id
-                    self.inputs["collection"].append(file_mapper)
-            try:
-                file_uris = runner(self.inputs)
-            except Exception as e:
-                raise ProcessError(f"{e}")
-
-        # print("orig files", self.use_original_files)
-        # print("uris", file_uris)
+            file_uris = self._run_operation(runner)
 
         self.output_uris = file_uris
+
+    def _collect_original_file_uris(self):
+        result = ResultSet()
+
+        for ds_id, file_urls in self.original_file_urls.items():
+            result.add(ds_id, file_urls)
+
+        return result.file_uris
+
+    def _run_operation(self, runner):
+        operation_inputs = self._operation_inputs()
+
+        try:
+            return runner(operation_inputs)
+        except Exception as e:
+            raise ProcessError(f"{e}")
+
+    def _operation_inputs(self):
+        operation_inputs = dict(self.inputs)
+        clean_inputs(operation_inputs)
+
+        if self.search_result:
+            operation_inputs["collection"] = []
+            for ds_id, file_uris in self.search_result.files().items():
+                file_mapper = FileMapper(file_uris)
+                file_mapper.dataset_id = ds_id
+                operation_inputs["collection"].append(file_mapper)
+
+        return operation_inputs
