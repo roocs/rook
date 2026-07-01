@@ -90,10 +90,12 @@ class TestDirectorCMIP6:
         assert d.use_original_files is True
         assert list(d.original_file_urls.items())[0][1] == [url]
 
-    def test_area_or_level(self, catalog_director):
+    def test_area_or_level(self, tmp_path, catalog_director):
         # WPS output
         inputs = {"area": "0.,49.,10.,65"}
-        catalog_director(FakeSearchResult({self.collection[0]: ["/data/input.nc"]}))
+        source = tmp_path / "input.nc"
+        source.touch()
+        catalog_director(FakeSearchResult({self.collection[0]: [source.as_posix()]}))
         d = Director(self.collection, inputs)
         assert d.use_original_files is False
 
@@ -167,6 +169,8 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
         "time_components": None,
     }
     assert director.use_original_files is False
+    assert len(director.plan.dataset_sources) == 1
+    assert director.plan.dataset_sources[0].dataset_id == collection[0]
     assert director.output_uris == ["processed.nc"]
     assert inputs == {
         "area": "0,0,10,10",
@@ -252,11 +256,13 @@ def test_catalog_non_aligned_subset_is_processed(
     "operation_input", [{"dims": "time"}, {"freq": "year"}, {"grid": "1x1"}]
 )
 def test_catalog_operations_that_change_data_are_always_processed(
-    catalog_director, monkeypatch, operation_input
+    tmp_path, catalog_director, monkeypatch, operation_input
 ):
     collection = ["c3s-cmip6.example.dataset"]
+    source = tmp_path / "input.nc"
+    source.touch()
     result = FakeSearchResult(
-        {collection[0]: ["/data/input.nc"]},
+        {collection[0]: [source.as_posix()]},
         download_records={collection[0]: ["https://example.test/data/input.nc"]},
     )
     catalog_director(result)

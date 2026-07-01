@@ -1,5 +1,4 @@
 from pywps.app.exceptions import ProcessError
-from clisops.utils.file_utils import FileMapper
 
 from ..utils.input_utils import clean_inputs
 from .compat import ResultSet
@@ -44,6 +43,11 @@ class Director:
         """Return the catalog search result, when catalog lookup was used."""
         return self.plan.search_result
 
+    @property
+    def dataset_sources(self):
+        """Return the dataset sources prepared for operation execution."""
+        return self.plan.dataset_sources
+
     def process(self, runner):
         if self.use_original_files:
             file_uris = self._collect_original_file_uris()
@@ -72,11 +76,7 @@ class Director:
         operation_inputs = dict(self.inputs)
         clean_inputs(operation_inputs)
 
-        if self.search_result:
-            operation_inputs["collection"] = []
-            for ds_id, file_uris in self.search_result.files().items():
-                file_mapper = FileMapper(file_uris)
-                file_mapper.dataset_id = ds_id
-                operation_inputs["collection"].append(file_mapper)
+        if self.dataset_sources:
+            operation_inputs["collection"] = list(self.dataset_sources)
 
         return operation_inputs
