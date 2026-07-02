@@ -1,213 +1,275 @@
 # Rook Cleanup TODO
 
-This document describes the cleanup phase following the initial Kerchunk, S3,
-and Zarr support released in Rook 1.2.0. The aim is to make the existing code
-smaller, clearer, and easier to change without adding new storage features.
+This document tracks the next cleanup phase after the `v1.2.1` release. The
+previous phase removed compatibility shims, moved operations into
+`rook.operations`, reduced the old director, cleaned dead code, and added the
+dataset-processing decision diagram.
+
+The next phase should make the decision model itself simpler. The current
+diagram is useful because it shows the truth, but the truth is still too hard
+to read.
+
+Some decision rules are unavoidably hard-coded for now. The goal of this phase
+is not to pretend they can all disappear; it is to make each rule named,
+localized, tested, and documented so the surrounding flow stays human-readable.
 
 Keep the work in small, reviewable pull requests. Preserve WPS behavior unless
-a change is explicitly documented and tested.
+a change is explicit, documented, and covered by tests.
 
 ## Goals
 
-- remove dead code, obsolete branches, and misleading options;
-- give operators a clear namespace and a small, useful shared abstraction;
-- remove duplicated execution paths and unnecessary wrappers;
-- separate request planning from operation execution;
-- simplify or replace the director;
-- document the final dataset-processing flow once it has settled.
+- reimplement the "director" as a readable request planner;
+- make workflow inputs an explicit case, not a hidden bypass;
+- represent request outcomes as clear values: processed files, original files,
+  or failure;
+- keep dataset fixes as an internal data-opening/preparation policy;
+- simplify operation execution around clisops now that daops is integrated;
+- make the workflow code easier to read and less coupled to WPS details;
+- update docs and diagrams so they explain the model, not the mess.
 
-## 1. Characterize the Current Execution Paths
+## Current Logic Quirks to Untangle
 
-Before changing structure, add or improve tests around the decisions that are
-currently spread across the WPS processes, `rook.operator`, `rook.director`, and
-`rook.utils.ops`.
+These are the places that make the current decision tree hard to understand.
+Use this list to guide small PRs and to avoid accidentally preserving accidental
+structure.
+
+- Workflow outputs are detected in `Operator.call()` with `is_file_list()`,
+  while catalog planning happens in `rook.director`. That means the "director"
+  does not really own the whole request decision.
+- The code decides that an operation must process data by checking parameter
+  names such as `dims`, `freq`, and `grid`. This hides operation intent in
+  request-shape details.
+- Returning original files mixes several policies: explicit `original_files`,
+  subset-to-file alignment, and special project behavior such as
+  `c3s-ipcc-atlas`.
+- The result shape is implicit. Internally we return operation output files,
+  original file URLs, or failures, but this is not modeled as a small set of
+  named outcomes.
+- `FileMapper` instances are used as prepared dataset sources and receive
+  `dataset_id` dynamically. That makes catalog-resolved inputs harder to see
+  and type.
+- Dataset fixes are mostly internal now, but the policy is still scattered:
+  generic dataset opening applies catalog-specific fixes, concat has decadal
+  fix handling, and the director still carries an atlas-related TODO.
+- Broad exception translation happens at multiple boundaries. It is not always
+  obvious where domain errors end and WPS adaptation begins.
+- Mutable input dictionaries still carry too much meaning. Cleaning,
+  normalizing, and replacing `collection` should happen at explicit boundaries.
+- WPS process adapters, workflow execution, request planning, operation running,
+  and response adaptation still know too much about each other.
+- Hard-coded project, parameter, and operation checks are mixed into the control
+  flow. Even when a rule must stay, it should live behind a named predicate or
+  policy object that says why the decision exists.
+
+## 1. Characterize the Request Decision Model
+
+Before reimplementation, write or tighten tests that describe behavior in terms
+of request outcomes rather than current modules.
 
 Cover at least:
 
-- a catalog collection resolved to files and processed by an operator;
-- a direct filesystem collection processed without catalog lookup;
-- returning original catalog file URLs when a subset aligns with whole files;
-- generating a subset when the request does not align with whole files;
-- operators that must always process data rather than return original files;
-- a later workflow step receiving files produced by an earlier step;
-- errors for unknown collections.
+- catalog collection resolved to processing files;
+- direct local NetCDF input processed without catalog lookup;
+- direct URL, S3, Zarr, and Kerchunk inputs that bypass catalog lookup;
+- workflow step receiving files produced by an earlier step;
+- explicit `original_files=True`;
+- subset request aligned with whole files and returned as original URLs;
+- subset request not aligned with whole files and processed;
+- operations that must always write new data;
+- unknown catalog collection failures;
+- catalog-backed datasets receiving fixes through dataset IDs;
+- direct paths not receiving project-specific fixes.
 
-Tests should describe observable behavior, not preserve incidental class or
-module structure. They will provide room to simplify the implementation.
+Use the existing diagram in `docs/source/dataset_processing_flow.rst` as the
+test matrix, but let the tests name the behavior we want, not the functions we
+currently have.
 
-## 2. Deprecate the `apply_fixes` WPS Parameter
+## 2. Define Explicit Request Outcomes
 
-Rook already decides internally whether a dataset fix is required. Callers
-should not control that decision.
-
-- keep `apply_fixes` in the WPS process inputs for compatibility;
-- mark it as deprecated in each WPS parameter description and user-facing
-  documentation;
-- continue accepting both true and false values, but do not use the supplied
-  value to select internal behavior;
-- make fix application an internal dataset-opening or preparation decision;
-- remove `apply_fixes` plumbing from workflows, operators, utility functions,
-  provenance filtering, and internal APIs where it no longer has meaning;
-- remove disabled fix-selection branches in the director after their behavior
-  has been replaced;
-- add tests proving that the deprecated input is accepted and does not alter
-  results.
-
-Use one internal policy for fixes. Catalog-backed datasets may carry the
-dataset ID needed to select a fix; direct paths should not accidentally receive
-project-specific fixes.
-
-## 3. Clean Up the Operator Layer
-
-There are currently overlapping operator concepts in `rook.operator` and
-`rook.utils.ops`, with operation-specific runners elsewhere in `rook.utils`.
-Give this code one obvious home and one vocabulary.
-
-A likely target namespace is `rook.operations`, containing:
-
-```text
-rook/operations/
-    base.py
-    subset.py
-    average.py
-    concat.py
-    regrid.py
-    execution.py
-```
-
-The exact layout should follow the responsibilities discovered during the
-cleanup; do not preserve a package structure merely for symmetry.
-
-- inventory the public and internal imports before moving modules;
-- decide whether `Operator` and `Operation` represent genuinely different
-  concepts; merge or rename them if they do not;
-- define a small base class only for behavior shared by every operation;
-- prefer explicit functions and composition for optional behavior;
-- replace `_get_runner()` subclasses that only return a function with a simpler
-  registration or direct callable when appropriate;
-- centralize output-directory creation and result handling;
-- remove pass-through wrappers and duplicated parameter normalization;
-- keep clisops calls visible and easy to trace;
-- use names that distinguish WPS process adapters from data operations.
-
-Avoid designing a large framework. The base classes should remove repetition,
-not hide control flow.
-
-## 4. Reconsider the Director
-
-The director currently performs several jobs at once:
-
-- catalog lookup and validation;
-- deciding whether original files can be returned;
-- checking subset-to-file alignment;
-- rewriting collections for processing;
-- invoking an operation runner;
-- translating exceptions and packaging results.
-
-First make these decisions explicit, then decide whether the `Director` class
-still earns its place. A useful intermediate design may be a small request plan
-with an explicit outcome, for example:
+Create a small vocabulary for the request planner. A useful shape may be:
 
 ```python
-plan = plan_request(collection, parameters)
-
-if plan.returns_original_files:
-    return plan.original_file_urls
-
-return run_operation(plan.dataset_sources, parameters)
+RequestDecision = (
+    InvalidRequest
+    | ReturnOriginalFiles
+    | RunOperation
+)
 ```
 
-Possible focused components are:
+`RunOperation` can then carry either the original request collection or prepared
+dataset sources. Avoid making "catalog-backed" and "workflow-backed" hidden
+side effects.
 
-- catalog collection resolution;
-- original-file eligibility and subset alignment;
-- operation execution;
-- WPS exception and response adaptation.
+The public result should also be boring and explicit:
 
-The result should avoid mutable input dictionaries as hidden communication.
-Decision results should be explicit values with clear types. If the director
-becomes only a thin wrapper after extraction, remove it.
+- processed files;
+- original files;
+- failure.
 
-### Note for Future Us
+Keep WPS response objects out of the planner. The planner should decide what
+should happen; the adapter should decide how to express that decision as a WPS
+response or error.
 
-The `Director` class has been removed. Request planning now lives in
-`planning.py`, request execution lives in `execution.py`, and request plans carry
-prepared dataset sources.
+## 3. Make Workflow Inputs Explicit
 
-The remaining question is whether WPS exception/response adaptation can be
-separated cleanly from operation execution, and whether the `wrap_director`
-compatibility name should be renamed once process imports are updated.
+Workflow handling currently enters through the same operation adapter as WPS
+requests, then bypasses the director when the collection is already a file
+list. Make that an explicit request source.
 
-## 5. Remove Dead and Misleading Code
+Possible request sources:
 
-Do this continuously, but keep behavior changes separate from mechanical moves.
+- `CatalogCollection`;
+- `DirectDataset`;
+- `WorkflowFiles`.
 
-- remove unreachable code after unconditional returns;
-- remove commented-out implementations and stale TODO comments;
-- find parameters, attributes, helpers, compatibility modules, and imports with
-  no callers;
-- remove old module names once all internal imports have moved;
-- replace broad exception handling where a narrower boundary is known;
-- remove mutation and defensive copying that no longer serve a purpose;
-- simplify boolean branches and duplicated conditionals;
-- update tests that only exercise deleted implementation details.
+The important point is that workflow files should not look like a surprising
+special case inside `Operator.call()`. They should be planned or adapted through
+a named path, with tests proving multi-step workflows still consume previous
+step outputs.
 
-For each candidate, use repository-wide searches and test coverage before
-removal. Code that supports a real WPS input or response remains public even if
-Rook's Python modules have no external users.
+## 4. Reimplement the Director as a Planner
 
-## 6. Document the Dataset-Processing Flow
+The new director should be small enough to read without the diagram.
 
-Add the architecture documentation only after the operator and director cleanup
-has stabilized, so the diagram describes the code rather than an aspiration.
+Candidate responsibilities:
 
-The current request decision tree is documented in
-`docs/source/dataset_processing_flow.rst`.
+- classify the request source;
+- resolve project/catalog metadata only when needed;
+- validate catalog matches;
+- decide original-file eligibility;
+- decide whether processing is required;
+- prepare operation sources when processing catalog data;
+- return a typed decision.
 
-The documentation should include a Mermaid flowchart showing:
+Hard-coded rules may remain where they describe current behavior, but they
+should be isolated behind readable names such as
+`requires_processing(operation, inputs)`,
+`may_return_original_files(project, operation, inputs)`, or
+`requires_catalog_fix(source)`. Avoid letting low-level checks such as
+parameter names or project IDs dominate the main planning flow.
 
-- entry through a WPS process;
-- catalog dataset IDs versus direct filesystem, URL, S3, Zarr, and Kerchunk
-  inputs;
-- catalog lookup and file resolution;
-- the decision to return original files or perform processing;
-- construction of `DatasetSource` values;
-- format detection and transport configuration;
-- internal dataset fixes where applicable;
-- subset or other operator execution;
-- output file and original-file responses.
+Non-responsibilities:
 
-Keep the diagram at the architectural level. Link important nodes to short
-sections explaining ownership and decision rules rather than embedding every
-special case in the chart.
+- running clisops operations;
+- creating output directories;
+- mutating WPS input dictionaries;
+- formatting WPS responses;
+- applying dataset fixes directly.
+
+When the new planner exists, remove old compatibility names such as
+`wrap_director` if process imports can be updated clearly.
+
+## 5. Keep Fixes Internal and Central
+
+Use one explicit policy for dataset fixes:
+
+- catalog-backed sources may carry a dataset ID and receive fixes;
+- direct sources without a dataset ID should not receive project-specific fixes;
+- workflow outputs should not accidentally inherit catalog fixes unless they
+  carry an explicit source identity;
+- operation-specific fixes, especially decadal concat handling, should be
+  reviewed and either moved into the same preparation layer or documented as a
+  deliberate operation rule.
+
+Remove stale atlas/director TODO branches once the policy is expressed in code
+and covered by tests.
+
+## 6. Revisit Operators from a Clean clisops Baseline
+
+Daops is now integrated, so the next operator cleanup can start from what Rook
+actually needs on top of clisops.
+
+Questions to answer:
+
+- Which operation wrappers are still necessary?
+- Which parameter normalization belongs in WPS adapters, and which belongs in
+  operation code?
+- Can output-directory creation and output naming be made shared but visible?
+- Can the `Operator` subclasses that only return a runner disappear?
+- Can weighted average and concat use the same operation vocabulary as subset,
+  average, and regrid?
+- Can operations accept prepared dataset sources directly, without `FileMapper`
+  as hidden communication?
+
+Prefer plain functions and small data values over another framework. Keep
+clisops calls visible.
+
+## 7. Review Workflow Execution
+
+After the request planner and operation vocabulary are clearer, revisit
+`rook.workflow`.
+
+Focus on:
+
+- parsing workflow documents into explicit steps;
+- passing previous step outputs as `WorkflowFiles`;
+- avoiding duplicated per-operation branches;
+- keeping provenance updates close to step execution but out of request
+  planning;
+- preserving current WPS orchestrate behavior.
+
+## 8. Update the Documentation
+
+The current Mermaid diagram is a map of the old world. As the code gets simpler,
+revise it until it can explain the new model without causing pain.
+
+Docs should include:
+
+- request source types;
+- planner outcomes;
+- original-file versus processed-file responses;
+- where fixes are applied;
+- how workflow steps pass data;
+- which layer owns WPS adaptation.
 
 ## Suggested Pull Request Order
 
-1. Characterization tests and an inventory of operator/director responsibilities.
-2. Deprecate the WPS `apply_fixes` input and remove its internal control flow.
-3. Introduce the operator namespace and consolidate common execution behavior.
-4. Migrate individual operators in small groups, removing old wrappers as they
-   become unused.
-5. Extract catalog resolution and original-file planning from the director.
-6. Remove or reduce the director and clean up the resulting dead code.
-7. Add the Mermaid architecture documentation and a final terminology pass.
+1. Add characterization tests for request outcomes and workflow file inputs.
+2. Introduce request source and decision types without changing behavior.
+3. Move workflow file handling out of the hidden `Operator.call()` branch.
+4. Reimplement catalog/original-file planning using the new decision model.
+5. Replace `wrap_director` process usage with the new planner/adapter names.
+6. Centralize and document dataset-fix policy.
+7. Simplify operation adapters around clisops and remove runner-only classes.
+8. Clean up `rook.workflow` after the operation path is simpler.
+9. Refresh the Mermaid diagram and architecture docs.
+
+## Phase Checklist
+
+Use this as the running progress log for the phase. Tick a box only after the
+corresponding PR has landed.
+
+- [ ] Request outcome characterization tests are in place.
+- [ ] Workflow file inputs are covered by tests and named explicitly.
+- [ ] Request source types are introduced.
+- [ ] Planner decision types are introduced.
+- [ ] Hard-coded decision rules are isolated behind named predicates or
+  policies.
+- [ ] Catalog and original-file planning use the new decision model.
+- [ ] `wrap_director` has been replaced or intentionally kept with a documented
+  reason.
+- [ ] Dataset-fix policy is centralized, tested, and documented.
+- [ ] Operation adapters have been simplified around clisops.
+- [ ] Runner-only `Operator` classes are removed or justified.
+- [ ] `rook.workflow` uses the clearer operation/request vocabulary.
+- [ ] Mermaid architecture docs describe the new model.
 
 ## Guardrails
 
-Every cleanup pull request should demonstrate that:
+Every pull request should demonstrate that:
 
-- the WPS process interface remains compatible, including deprecated inputs;
-- ordinary local and catalog-resolved NetCDF processing is unchanged;
-- Kerchunk, Zarr, and S3 inputs continue through the common dataset-opening API;
-- direct paths do not require catalog configuration;
-- original-file responses still contain public download URLs, not internal
-  processing paths;
-- multi-step workflows can consume files created by earlier steps;
+- the WPS process interface remains compatible;
+- deprecated inputs such as `apply_fixes` are still accepted;
+- direct local, URL, S3, Zarr, and Kerchunk inputs still work;
+- catalog-backed NetCDF processing is unchanged;
+- original-file responses still contain public download URLs;
+- workflow outputs can feed later workflow steps;
+- dataset fixes are applied only when the source identity supports them;
 - output naming, splitting, provenance, and error responses remain stable unless
   a deliberate change is documented.
 
-Run the focused tests while iterating, followed by the full test suite and all
-repository hooks before each pull request.
+Run focused tests while iterating, followed by lint, docs, and the default
+non-smoke test suite before each pull request.
 
 ## Deferred Features
 
@@ -217,5 +279,4 @@ These remain outside this cleanup phase:
 - writing operation output directly to S3 or Zarr;
 - combining multiple Zarr stores or selecting Zarr groups through WPS inputs;
 - supporting additional object-store protocols;
-- replacing established clisops dataset-opening behavior;
 - redesigning all Rook configuration at once.
