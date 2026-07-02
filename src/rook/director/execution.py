@@ -1,7 +1,6 @@
 """Execute request plans and adapt their outputs."""
 
 import pathlib
-from collections import OrderedDict
 from dataclasses import dataclass
 
 from pywps.app.exceptions import ProcessError
@@ -44,24 +43,6 @@ class RequestResult:
         return self.plan.dataset_sources
 
 
-class OriginalFileResult:
-    """Collect original-file outputs as file URI values."""
-
-    def __init__(self):
-        self._results = OrderedDict()
-        self.file_uris = []
-
-    def add(self, dataset_id, file_urls):
-        """Add original URLs for a dataset."""
-        self._results[dataset_id] = file_urls
-
-        for item in file_urls:
-            if isinstance(item, str) and (
-                pathlib.Path(item).is_file() or item.startswith("https")
-            ):
-                self.file_uris.append(item)
-
-
 def execute_request(collection, inputs, runner):
     """Plan and execute a request."""
     plan = plan_request(collection, inputs)
@@ -79,12 +60,19 @@ def execute_plan(plan, inputs, runner):
 
 def collect_original_file_uris(original_file_urls):
     """Return original file URIs in the same shape as operation outputs."""
-    result = OriginalFileResult()
+    file_uris = []
 
-    for ds_id, file_urls in original_file_urls.items():
-        result.add(ds_id, file_urls)
+    for file_urls in original_file_urls.values():
+        file_uris.extend(
+            item
+            for item in file_urls
+            if isinstance(item, str)
+            and (
+                pathlib.Path(item).is_file() or item.startswith("https")
+            )
+        )
 
-    return result.file_uris
+    return file_uris
 
 
 def run_operation(plan, inputs, runner):

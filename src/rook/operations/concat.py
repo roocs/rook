@@ -115,21 +115,6 @@ class Concat(Operation):
         return rs
 
 
-def _concat(
-    collection,
-    time=None,
-    time_components=None,
-    dims=None,
-    ignore_undetected_dims=False,
-    output_dir=None,
-    output_type="netcdf",
-    split_method="time:auto",
-    file_namer="standard",
-    apply_average=False,
-):
-    return Concat(**locals())._calculate()
-
-
 def concat(
     collection,
     time=None,
@@ -142,7 +127,7 @@ def concat(
     file_namer="standard",
     apply_average=False,
 ):
-    args = dict(
+    return Concat(
         collection=collection,
         time=time,
         time_components=time_components,
@@ -153,5 +138,4 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
-    )
-    return _concat(**args)
+    )._calculate()
