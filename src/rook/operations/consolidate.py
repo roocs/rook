@@ -18,8 +18,6 @@ from rook.io.datasets import (
     detect_transport,
 )
 
-from .helpers import wrap_sequence
-
 
 def _bypasses_catalog(value):
     """Return whether a direct source should skip project resolution."""
@@ -132,7 +130,10 @@ def get_files_matching_time_range(time_param, file_paths):
 
 def consolidate(collection, **kwargs):
     """Find file paths relating to each input dataset."""
-    collection = wrap_sequence(collection.value)
+    collection = collection.value
+    if isinstance(collection, str):
+        collection = [collection]
+
     sources = []
     time_param = kwargs.get("time")
     catalogs = {}

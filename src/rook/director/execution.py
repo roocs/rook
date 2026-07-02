@@ -1,12 +1,12 @@
 """Execute request plans and adapt their outputs."""
 
+import pathlib
 from dataclasses import dataclass
 
 from pywps.app.exceptions import ProcessError
 
 from rook.utils.input_utils import clean_inputs
 
-from .compat import ResultSet
 from .planning import plan_request
 
 
@@ -60,12 +60,19 @@ def execute_plan(plan, inputs, runner):
 
 def collect_original_file_uris(original_file_urls):
     """Return original file URIs in the same shape as operation outputs."""
-    result = ResultSet()
+    file_uris = []
 
-    for ds_id, file_urls in original_file_urls.items():
-        result.add(ds_id, file_urls)
+    for file_urls in original_file_urls.values():
+        file_uris.extend(
+            item
+            for item in file_urls
+            if isinstance(item, str)
+            and (
+                pathlib.Path(item).is_file() or item.startswith("https")
+            )
+        )
 
-    return result.file_uris
+    return file_uris
 
 
 def run_operation(plan, inputs, runner):
