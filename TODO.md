@@ -161,6 +161,9 @@ Rook's Python modules have no external users.
 Add the architecture documentation only after the operator and director cleanup
 has stabilized, so the diagram describes the code rather than an aspiration.
 
+The current request decision tree is documented in
+`docs/source/dataset_processing_flow.rst`.
+
 The documentation should include a Mermaid flowchart showing:
 
 - entry through a WPS process;

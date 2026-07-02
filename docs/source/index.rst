@@ -8,6 +8,7 @@
    configuration
    notebooks
    prov
+   dataset_processing_flow
    dev_guide
    processes
    apidoc/modules
