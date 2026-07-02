@@ -7,52 +7,53 @@ This page documents the request decision tree that remains after the director
 cleanup. There is no longer a ``Director`` class; the name now refers to the
 small wrapper around request planning and execution used by WPS processes.
 
+The diagram is written as a blueprint for a future reimplementation: first
+decide what kind of input was received, then decide whether catalog metadata is
+needed, then choose between returning existing files and running an operation.
+
 Director Decision Tree
 ----------------------
 
 .. mermaid::
 
    flowchart TD
-       Entry["WPS process or workflow stage"] --> Operator["Operator.call(args)"]
-       Operator --> DirectFiles{"collection is a file list?"}
+       Start(["Request arrives from a WPS process<br/>or workflow stage"])
 
-       DirectFiles -- yes --> DirectMapper["Resolve paths and build FileMapper"]
-       DirectMapper --> DirectRunner["Run operation runner directly"]
+       subgraph Input["1. Understand the input"]
+           Start --> HasFiles{"Do we already have concrete files<br/>from an earlier workflow step?"}
+           HasFiles -- yes --> DirectFiles["Normalize those files<br/>and run the requested operation"]
+           HasFiles -- no --> Project["Read the project from<br/>the requested collection id"]
+       end
 
-       DirectFiles -- no --> Wrap["wrap_director(collection, inputs, runner)"]
-       Wrap --> Plan["plan_request(collection, inputs)"]
-       Plan --> Project["resolve_project(collection[0])"]
-       Project --> CatalogEnabled{"project uses catalog?"}
+       subgraph Catalog["2. Resolve catalog data when needed"]
+           Project --> UsesCatalog{"Does this project use<br/>a Rook catalog?"}
+           UsesCatalog -- no --> PlainOperation["Keep the original collection<br/>and run the operation"]
+           UsesCatalog -- yes --> Search["Search the catalog<br/>for collection and time"]
+           Search --> Found{"Did the catalog find<br/>every requested collection?"}
+           Found -- no --> Reject["Reject the request<br/>as an invalid collection"]
+       end
 
-       CatalogEnabled -- no --> NoCatalogPlan["RequestPlan(project only)"]
-       NoCatalogPlan --> ExecuteOperation
+       subgraph Choice["3. Choose response type"]
+           Found -- yes --> WantsOriginal{"Can the request return<br/>existing catalog files?"}
+           WantsOriginal -- "yes: original_files<br/>or atlas shortcut" --> CatalogOriginal["Return catalog download URLs"]
+           WantsOriginal -- no --> ChangesData{"Does the operation need<br/>new data to be written?"}
+           ChangesData -- "yes: average, regrid,<br/>or dimension change" --> CatalogOperation["Resolve catalog files<br/>for processing"]
+           ChangesData -- no --> Aligned{"Does the subset match<br/>whole source files?"}
+           Aligned -- yes --> AlignedOriginal["Return only the matching<br/>download URLs"]
+           Aligned -- no --> CatalogOperation
+       end
 
-       CatalogEnabled -- yes --> CatalogSearch["get_catalog(project)\ncatalog.search(collection, time, time_components)"]
-       CatalogSearch --> ValidSearch{"all requested collections found?"}
-       ValidSearch -- no --> InvalidCollection["InvalidCollection -> ProcessError"]
-       ValidSearch -- yes --> OriginalRequested{"original_files requested\nor project is c3s-ipcc-atlas?"}
-
-       OriginalRequested -- yes --> OriginalPlan["original_files_plan\nuse catalog download URLs"]
-       OriginalRequested -- no --> MustProcess{"operation must process?\ndims, freq, or grid present"}
-
-       MustProcess -- yes --> OperationPlan["operation_plan\nbuild FileMapper dataset sources"]
-       MustProcess -- no --> Aligned{"subset aligns with whole files?"}
-       Aligned -- yes --> AlignedOriginalPlan["original_files_plan\nuse aligned download URLs"]
-       Aligned -- no --> OperationPlan
-
-       OriginalPlan --> CollectOriginal["collect original file URIs"]
-       AlignedOriginalPlan --> CollectOriginal
-       CollectOriginal --> Result["RequestResult.output_uris"]
-
-       OperationPlan --> ExecuteOperation["prepare_operation_inputs\nclean inputs and replace collection when planned"]
-       ExecuteOperation --> Runner["Run operation runner"]
-       DirectRunner --> Consolidate["Operation consolidates collection"]
-       Runner --> Consolidate
-       Consolidate --> Sources["DatasetSource values"]
-       Sources --> Open["Detect format and transport\nNetCDF, Zarr, Kerchunk\nfilesystem, HTTP, S3, reference"]
-       Open --> Fixes["Apply catalog-specific dataset fixes\nwhen a dataset_id is present"]
-       Fixes --> Process["subset, average, regrid, concat, or weighted average"]
-       Process --> Result
+       subgraph Run["4. Execute or adapt the result"]
+           DirectFiles --> BuildSources["Build dataset sources"]
+           PlainOperation --> BuildSources
+           CatalogOperation --> BuildSources
+           BuildSources --> Open["Detect data format and transport<br/>NetCDF, Zarr, Kerchunk, file, HTTP, S3"]
+           Open --> Fixes["Apply internal dataset fixes<br/>when a dataset id is known"]
+           Fixes --> Operation["Run subset, average,<br/>regrid, concat, or weighted average"]
+           CatalogOriginal --> OriginalResponse["Return original-file response"]
+           AlignedOriginal --> OriginalResponse
+           Operation --> OutputResponse["Return operation output files"]
+       end
 
 Decision Ownership
 ------------------
@@ -77,3 +78,41 @@ dataset IDs where they are needed for dataset fixes.
 ``rook.io.datasets`` owns format and transport detection, storage options, and
 dataset opening. Catalog-specific fixes are applied only when a ``DatasetSource``
 has a dataset ID.
+
+Blueprint for Reimplementation
+------------------------------
+
+The future director should be a planner, not an operation runner. It should
+return one explicit decision value that describes what the caller must do next:
+
+* reject the request with a known error;
+* return original files;
+* run an operation with the original collection;
+* run an operation with catalog-resolved dataset sources.
+
+The planner should keep these responsibilities separate:
+
+* input classification: workflow files versus collection IDs;
+* project and catalog resolution;
+* original-file eligibility;
+* subset-to-file alignment;
+* construction of operation sources;
+* WPS response and exception adaptation.
+
+The execution side should be boring on purpose. Given a plan, it should either
+collect original-file URLs or prepare operation inputs and call the supplied
+runner. It should not repeat catalog decisions.
+
+A future type model could make the decision tree easier to read in code:
+
+.. code-block:: python
+
+   RequestDecision = (
+       InvalidRequest
+       | ReturnOriginalFiles
+       | RunWithOriginalCollection
+       | RunWithResolvedSources
+   )
+
+The important boundary is that catalog planning decides *what should happen*,
+while operation execution decides *how to run the selected operation*.
