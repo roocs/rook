@@ -46,6 +46,7 @@ extensions = [
     "pywps.ext_autodoc",
     'sphinx_codeautolink',
     'sphinx_copybutton',
+    "sphinxcontrib.mermaid",
 ]
 
 autosectionlabel_prefix_document = True
