@@ -3,6 +3,7 @@
 import pathlib
 import tempfile
 from copy import deepcopy
+from dataclasses import dataclass
 
 from clisops.utils.file_utils import FileMapper, is_file_list
 
@@ -21,35 +22,48 @@ from rook.operations.subset import subset
 from rook.utils.weighted_average_utils import run_weighted_average
 
 
+@dataclass(frozen=True)
+class WorkflowOperation:
+    """Configuration for a workflow operation adapter."""
+
+    prefix: str
+    runner: object
+
+
+def collect_file_uris(operation, args):
+    """Run an operation function and return its file URIs."""
+    return operation(**args).file_uris
+
+
 def run_subset(args):
     args = fix_parameters(args)
 
-    return subset(**args).file_uris
+    return collect_file_uris(subset, args)
 
 
 def run_average_by_time(args):
-    return average_time(**args).file_uris
+    return collect_file_uris(average_time, args)
 
 
 def run_average_by_dim(args):
-    return average_over_dims(**args).file_uris
+    return collect_file_uris(average_over_dims, args)
 
 
 def run_average_by_shape(args):
-    return average_shape(**args).file_uris
+    return collect_file_uris(average_shape, args)
 
 
 def run_concat(args):
     args = fix_parameters(args)
 
-    return concat(**args).file_uris
+    return collect_file_uris(concat, args)
 
 
 def run_regrid(args):
     if args.get("grid") == "custom" and "custom_grid" in args:
         args["grid"] = parse_custom_grid(args.pop("custom_grid"))
 
-    return regrid(**args).file_uris
+    return collect_file_uris(regrid, args)
 
 
 def prepare_workflow_file_inputs(args, source):
@@ -68,14 +82,15 @@ def run_workflow_files(args, runner):
 
 
 class Operator:
-    # Sub-classes require "prefix" property
-    prefix = NotImplemented
+    """Workflow operation adapter."""
 
-    def __init__(self, output_dir):
+    def __init__(self, output_dir, prefix, runner):
         if isinstance(output_dir, pathlib.Path):
             output_dir_ = output_dir.as_posix()
         else:
             output_dir_ = output_dir
+        self.prefix = prefix
+        self.runner = runner
         self.config = {
             "output_dir": output_dir_,
             # 'original_files': original_files
@@ -88,67 +103,73 @@ class Operator:
         args["output_dir"] = self._get_output_dir()
         collection = args["collection"]  # collection is a list
 
-        runner = self._get_runner()
-
         if is_file_list(collection):
-            output_uris = run_workflow_files(args, runner)
+            output_uris = run_workflow_files(args, self.runner)
         else:
-            request_result = execute_planned_request(collection, args, runner)
+            request_result = execute_planned_request(collection, args, self.runner)
             output_uris = request_result.output_uris
 
         return output_uris
-
-    def _get_runner(self):
-        return NotImplementedError
 
     def _get_output_dir(self):
         return tempfile.mkdtemp(dir=self.config["output_dir"], prefix=f"{self.prefix}_")
 
 
-class Subset(Operator):
-    prefix = "subset"
-
-    def _get_runner(self):
-        return run_subset
-
-
-class AverageByTime(Operator):
-    prefix = "average_time"
-
-    def _get_runner(self):
-        return run_average_by_time
-
-
-class AverageByDimension(Operator):
-    prefix = "average"
-
-    def _get_runner(self):
-        return run_average_by_dim
+WORKFLOW_OPERATIONS = {
+    "subset": WorkflowOperation(prefix="subset", runner=run_subset),
+    "average_time": WorkflowOperation(
+        prefix="average_time", runner=run_average_by_time
+    ),
+    "average": WorkflowOperation(prefix="average", runner=run_average_by_dim),
+    "average_shape": WorkflowOperation(
+        prefix="average_shape", runner=run_average_by_shape
+    ),
+    "weighted_average": WorkflowOperation(
+        prefix="weighted_average", runner=run_weighted_average
+    ),
+    "regrid": WorkflowOperation(prefix="regrid", runner=run_regrid),
+    "concat": WorkflowOperation(prefix="concat", runner=run_concat),
+}
 
 
-class AverageByShape(Operator):
-    prefix = "average_shape"
-
-    def _get_runner(self):
-        return run_average_by_shape
-
-
-class WeightedAverage(Operator):
-    prefix = "weighted_average"
-
-    def _get_runner(self):
-        return run_weighted_average
+def make_workflow_operator(name, output_dir):
+    """Return the configured workflow operation adapter."""
+    operation = WORKFLOW_OPERATIONS[name]
+    return Operator(output_dir, prefix=operation.prefix, runner=operation.runner)
 
 
-class Regrid(Operator):
-    prefix = "regrid"
-
-    def _get_runner(self):
-        return run_regrid
+def subset_operator(output_dir):
+    return make_workflow_operator("subset", output_dir)
 
 
-class Concat(Operator):
-    prefix = "concat"
+def average_time_operator(output_dir):
+    return make_workflow_operator("average_time", output_dir)
 
-    def _get_runner(self):
-        return run_concat
+
+def average_dimension_operator(output_dir):
+    return make_workflow_operator("average", output_dir)
+
+
+def average_shape_operator(output_dir):
+    return make_workflow_operator("average_shape", output_dir)
+
+
+def weighted_average_operator(output_dir):
+    return make_workflow_operator("weighted_average", output_dir)
+
+
+def regrid_operator(output_dir):
+    return make_workflow_operator("regrid", output_dir)
+
+
+def concat_operator(output_dir):
+    return make_workflow_operator("concat", output_dir)
+
+
+Subset = subset_operator
+AverageByTime = average_time_operator
+AverageByDimension = average_dimension_operator
+AverageByShape = average_shape_operator
+WeightedAverage = weighted_average_operator
+Regrid = regrid_operator
+Concat = concat_operator
