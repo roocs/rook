@@ -6,11 +6,12 @@ import requests
 import shutil
 
 import pytest
+from filelock import FileLock
 from clisops.utils.testing import (
     ESGF_TEST_DATA_CACHE_DIR,
     ESGF_TEST_DATA_REPO_URL,
     ESGF_TEST_DATA_VERSION,
-    gather_testing_data,
+    load_registry,
 )
 from clisops.utils.testing import stratus as _stratus
 from jinja2 import Template
@@ -25,6 +26,40 @@ xpath_ns = get_xpath_ns(VERSION)
 TESTS_HOME = Path(__file__).parent.absolute()
 ROOCS_CFG = TESTS_HOME.joinpath(".roocs.ini")
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
+
+TEST_DATA_FILE_PATTERNS = (
+    "badc/cmip5/data/cmip5/output1/ICHEC/EC-EARTH/historical/mon/atmos/Amon/r1i1p1/latest/tas/",
+    "badc/cmip5/data/cmip5/output1/MOHC/HadGEM2-ES/historical/mon/atmos/Amon/r1i1p1/latest/tas/",
+    "badc/cmip6/data/CMIP6/CMIP/IPSL/IPSL-CM6A-LR/historical/r1i1p1f1/Amon/rlds/gr/v20180803/",
+    "badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/Amon/tasmin/gn/v20190710/",
+    "badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/SImon/siconc/gn/",
+    "badc/cmip6/data/CMIP6/DCPP/MOHC/HadGEM3-GC31-MM/",
+    "badc/cmip6/data/CMIP6/ScenarioMIP/INM/INM-CM5-0/ssp245/r1i1p1f1/Amon/rlds/gr1/v20190619/",
+    "badc/cmip6/data/CMIP6/ScenarioMIP/NCC/NorESM2-MM/",
+    "gws/nopw/j04/cp4cds1_vol1/data/c3s-cmip5/output1/ICHEC/EC-EARTH/historical/day/atmos/day/r1i1p1/tas/v20131231/",
+    "pool/data/c3s-cica-atlas/",
+)
+
+
+def required_test_data_files():
+    registry = load_registry(
+        branch=ESGF_TEST_DATA_VERSION,
+        repo=ESGF_TEST_DATA_REPO_URL,
+    )
+    files = {
+        filename
+        for filename in registry
+        if filename.startswith(TEST_DATA_FILE_PATTERNS)
+    }
+    return sorted(files)
+
+
+def missing_test_data_files(base_dir):
+    return [
+        filename
+        for filename in required_test_data_files()
+        if not base_dir.joinpath(filename).exists()
+    ]
 
 
 @pytest.fixture(scope="session")
@@ -151,17 +186,33 @@ def get_output():
 @pytest.fixture(scope="session", autouse=True)
 def load_test_data(stratus, write_roocs_cfg):
     """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
-    repositories = {
-        "stratus": {
-            "worker_cache_dir": stratus.path,
-            "repo": ESGF_TEST_DATA_REPO_URL,
-            "branch": ESGF_TEST_DATA_VERSION,
-            "cache_dir": ESGF_TEST_DATA_CACHE_DIR,
-        },
-    }
+    cache_dir = Path(ESGF_TEST_DATA_CACHE_DIR)
+    marker = cache_dir.joinpath(ESGF_TEST_DATA_VERSION, ".rook_data_ready")
+    lock = FileLock(cache_dir.joinpath(".rook_data.lock"))
+    required_files = required_test_data_files()
 
-    for repo in repositories.values():
-        gather_testing_data(worker_id="master", **repo)
+    cache_dir.mkdir(exist_ok=True, parents=True)
+    with lock:
+        if marker.exists() and not missing_test_data_files(stratus.path):
+            return
+
+        failed_files = []
+        for filename in required_files:
+            try:
+                stratus.fetch(filename)
+            except requests.exceptions.HTTPError:
+                failed_files.append(filename)
+
+        missing_files = missing_test_data_files(stratus.path)
+        if failed_files or missing_files:
+            problem_files = sorted(set(failed_files + missing_files))
+            raise RuntimeError(
+                "Could not prepare required mini ESGF test data: "
+                f"{problem_files}"
+            )
+
+        marker.parent.mkdir(exist_ok=True, parents=True)
+        marker.touch()
 
 
 def download_file(url, tmp_path):

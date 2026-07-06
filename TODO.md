@@ -234,6 +234,14 @@ Docs should include:
 8. Clean up `rook.workflow` after the operation path is simpler.
 9. Refresh the Mermaid diagram and architecture docs.
 
+## Follow-Up Notes
+
+- Keep the immediate mini ESGF test-data fix inside Rook and leave clisops
+  untouched. The current fixture should use the existing clisops/Pooch `stratus`
+  helper, but the Rook-side selection of required files should be made a little
+  nicer: easier to read, named by test-data purpose, and documented as a
+  temporary bridge until mini-esgf-data is replaced in a later phase.
+
 ## Phase Checklist
 
 Use this as the running progress log for the phase. Tick a box only after the
