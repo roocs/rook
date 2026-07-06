@@ -10,7 +10,7 @@ import xarray as xr
 from clisops.utils.dataset_utils import open_xr_dataset
 
 from rook import config
-from rook.utils.apply_fixes import apply_fixes as apply_dataset_fixes
+from rook.utils.apply_fixes import apply_fixes as apply_known_dataset_fixes
 
 KERCHUNK_EXTS = (".json", ".zst", ".zstd", ".parquet")
 ZARR_EXT = ".zarr"
@@ -128,10 +128,22 @@ def open_dataset(source: DatasetSource):
     opener = _OPENERS[detect_format(source)]
     ds = opener(source, get_storage_options(source))
 
-    if source.dataset_id:
-        ds = apply_dataset_fixes(source.dataset_id, ds)
+    ds = apply_dataset_fix_policy(source, ds)
 
     return ds
+
+
+def should_apply_dataset_fixes(source: DatasetSource) -> bool:
+    """Return whether source identity is strong enough for project-specific fixes."""
+    return source.dataset_id is not None
+
+
+def apply_dataset_fix_policy(source: DatasetSource, ds):
+    """Apply project-specific dataset fixes only when the source has catalog identity."""
+    if not should_apply_dataset_fixes(source):
+        return ds
+
+    return apply_known_dataset_fixes(source.dataset_id, ds)
 
 
 def is_kerchunk_file(dset):

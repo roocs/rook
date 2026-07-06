@@ -79,6 +79,26 @@ dataset IDs where they are needed for dataset fixes.
 dataset opening. Catalog-specific fixes are applied only when a ``DatasetSource``
 has a dataset ID.
 
+Dataset Fix Policy
+------------------
+
+Dataset fixes are an internal opening policy, not a WPS input switch. Deprecated
+``apply_fixes`` inputs are still accepted for compatibility, but they no longer
+decide whether fixes run.
+
+The rule is intentionally small:
+
+* catalog-resolved sources carry a dataset ID and may receive project-specific
+  fixes while they are opened;
+* direct local, URL, S3, Zarr, and Kerchunk sources without a dataset ID are
+  opened as-is;
+* workflow outputs are treated like direct files unless a future workflow model
+  gives them an explicit source identity.
+
+Decadal concat fixes remain an operation-specific rule for now. They are applied
+inside concat because they prepare multiple forecast files for concatenation, not
+because the generic dataset opener can infer the whole operation context.
+
 Blueprint for Reimplementation
 ------------------------------
 
