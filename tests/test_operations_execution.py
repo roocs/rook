@@ -20,8 +20,8 @@ class RecordingOperator(Operator):
         return runner
 
 
-def fail_director(*_args, **_kwargs):
-    raise AssertionError("director should not be called")
+def fail_planned_request_executor(*_args, **_kwargs):
+    raise AssertionError("planned request executor should not be called")
 
 
 def test_run_regrid_normalizes_custom_grid(monkeypatch):
@@ -49,7 +49,9 @@ def test_direct_file_collection_is_processed_without_director(tmp_path, monkeypa
     source = tmp_path / "source.nc"
     source.touch()
     operator = RecordingOperator(tmp_path)
-    monkeypatch.setattr(execution_mod, "wrap_director", fail_director)
+    monkeypatch.setattr(
+        execution_mod, "execute_planned_request", fail_planned_request_executor
+    )
 
     output_uris = operator.call(
         {
@@ -74,7 +76,9 @@ def test_later_workflow_step_receives_previous_step_files(tmp_path, monkeypatch)
     first.touch()
     second.touch()
     operator = RecordingOperator(tmp_path)
-    monkeypatch.setattr(execution_mod, "wrap_director", fail_director)
+    monkeypatch.setattr(
+        execution_mod, "execute_planned_request", fail_planned_request_executor
+    )
 
     output_uris = operator.call({"collection": [first.as_posix(), second.as_posix()]})
 

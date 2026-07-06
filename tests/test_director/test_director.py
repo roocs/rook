@@ -2,7 +2,7 @@ import pytest
 from clisops.exceptions import InvalidCollection
 
 import rook.director.planning as planning_mod
-from rook.director import wrap_director
+from rook.director import execute_planned_request, wrap_director
 
 
 class FakeSearchResult:
@@ -160,7 +160,7 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
         captured["inputs"] = runner_inputs
         return ["processed.nc"]
 
-    result = wrap_director(collection, inputs, runner)
+    result = execute_planned_request(collection, inputs, runner)
 
     assert catalog.search_kwargs == {
         "collection": collection,
@@ -212,7 +212,22 @@ def test_non_catalog_collection_source_is_direct(monkeypatch):
     assert plan.dataset_sources == ()
 
 
-def test_wrap_director_returns_request_result(tmp_path, catalog_director):
+def test_execute_planned_request_returns_request_result(tmp_path, catalog_director):
+    collection = ["c3s-cmip6.example.dataset"]
+    source = tmp_path / "input.nc"
+    source.touch()
+    catalog_director(FakeSearchResult({collection[0]: [source.as_posix()]}))
+
+    result = execute_planned_request(
+        collection, {"area": "0,0,10,10"}, lambda _inputs: ["out.nc"]
+    )
+
+    assert result.output_uris == ["out.nc"]
+    assert result.use_original_files is False
+    assert result.dataset_sources[0].dataset_id == collection[0]
+
+
+def test_wrap_director_alias_returns_request_result(tmp_path, catalog_director):
     collection = ["c3s-cmip6.example.dataset"]
     source = tmp_path / "input.nc"
     source.touch()
@@ -221,8 +236,6 @@ def test_wrap_director_returns_request_result(tmp_path, catalog_director):
     result = wrap_director(collection, {"area": "0,0,10,10"}, lambda _inputs: ["out.nc"])
 
     assert result.output_uris == ["out.nc"]
-    assert result.use_original_files is False
-    assert result.dataset_sources[0].dataset_id == collection[0]
 
 
 def test_catalog_original_files_are_returned_when_requested(catalog_director):
@@ -234,7 +247,7 @@ def test_catalog_original_files_are_returned_when_requested(catalog_director):
     )
     catalog_director(result)
 
-    result = wrap_director(
+    result = execute_planned_request(
         collection,
         {"original_files": True},
         lambda _inputs: pytest.fail("runner should not be called"),
@@ -265,7 +278,7 @@ def test_catalog_aligned_subset_returns_matching_original_files(
 
     monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
 
-    result = wrap_director(
+    result = execute_planned_request(
         collection,
         {"time": "2001-01-01/2001-12-31"},
         lambda _inputs: pytest.fail("runner should not be called"),
@@ -293,7 +306,7 @@ def test_catalog_non_aligned_subset_is_processed(
 
     monkeypatch.setattr(planning_mod, "SubsetAlignmentChecker", NotAlignedFakeAlignment)
 
-    result = wrap_director(
+    result = execute_planned_request(
         collection, {"time": "2001-02-01/2001-02-28"}, lambda _inputs: ["subset.nc"]
     )
 
