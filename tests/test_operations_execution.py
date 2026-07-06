@@ -3,8 +3,11 @@ from clisops.utils.file_utils import FileMapper
 from rook.director.planning import WorkflowFiles
 from rook.io.datasets import DatasetSource
 import rook.operations.execution as execution_mod
+from rook.operations.average import Average, AverageShape, AverageTime
 from rook.operations import Operator
 from rook.operations.base import Operation, is_prepared_dataset_collection
+from rook.operations.regrid import Regrid
+from rook.operations.subset import Subset
 
 
 class RecordingOperator(Operator):
@@ -131,3 +134,25 @@ def test_operation_accepts_prepared_dataset_sources(monkeypatch):
     operation = RecordingOperation(collection=[prepared])
 
     assert operation.collection == (prepared,)
+
+
+def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
+    prepared = DatasetSource(
+        dataset_id="c3s-cmip6.example.dataset",
+        paths="/data/c3s-cmip6.example.dataset.nc",
+    )
+    monkeypatch.setattr(
+        "rook.operations.base.consolidate.consolidate",
+        lambda collection, **_kwargs: collection.value,
+    )
+
+    operations = [
+        Subset(collection=[prepared], time="2015-01-01/2015-12-30"),
+        Average(collection=[prepared], dims=["time"]),
+        AverageShape(collection=[prepared], shape="shape.geojson"),
+        AverageTime(collection=[prepared], freq="year"),
+        Regrid(collection=[prepared], grid="1deg"),
+    ]
+
+    for operation in operations:
+        assert operation.collection == (prepared,)

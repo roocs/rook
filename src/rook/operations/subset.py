@@ -1,9 +1,14 @@
 """Subset operation."""
 
 from clisops.ops.subset import subset as clisops_subset
-from clisops.parameter import parameterise
+from clisops.parameter import (
+    area_parameter,
+    level_parameter,
+    time_components_parameter,
+    time_parameter,
+)
 
-from .base import Operation
+from .base import Operation, resolve_collection
 from . import normalise
 
 __all__ = ["Subset", "subset"]
@@ -11,16 +16,15 @@ __all__ = ["Subset", "subset"]
 
 class Subset(Operation):
     def _resolve_params(self, collection, **params):
-        parameters = parameterise(
-            collection=collection,
-            time=params.get("time"),
-            area=params.get("area"),
-            level=params.get("level"),
-            time_components=params.get("time_components"),
-        )
-
-        self.collection = parameters.pop("collection")
-        self.params = parameters
+        self.collection = resolve_collection(collection)
+        self.params = {
+            "area": area_parameter.AreaParameter(params.get("area")),
+            "level": level_parameter.LevelParameter(params.get("level")),
+            "time": time_parameter.TimeParameter(params.get("time")),
+            "time_components": time_components_parameter.TimeComponentsParameter(
+                params.get("time_components")
+            ),
+        }
 
     def calculate(self):
         config = {

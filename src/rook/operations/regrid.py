@@ -1,18 +1,15 @@
 """Regrid operation."""
 
 from clisops.ops.regrid import regrid as clisops_regrid
-from clisops.parameter import collection_parameter
 
-from .base import Operation
+from .base import Operation, resolve_collection
 
 __all__ = ["Regrid", "regrid"]
 
 
 class Regrid(Operation):
     def _resolve_params(self, collection, **params):
-        collection = collection_parameter.CollectionParameter(collection)
-
-        self.collection = collection
+        self.collection = resolve_collection(collection)
         self.params = {
             "method": params.get("method"),
             "adaptive_masking_threshold": params.get("adaptive_masking_threshold"),

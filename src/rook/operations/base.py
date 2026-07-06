@@ -37,10 +37,7 @@ class Operation:
         self._consolidate_collection()
 
     def _resolve_params(self, collection, **params):
-        if is_prepared_dataset_collection(collection):
-            self.collection = PreparedCollection(value=tuple(collection))
-        else:
-            self.collection = collection_parameter.CollectionParameter(collection)
+        self.collection = resolve_collection(collection)
         self.params = params
 
     def _consolidate_collection(self):
@@ -82,3 +79,10 @@ def is_prepared_dataset_collection(collection):
     return bool(collection) and isinstance(collection, (list, tuple)) and all(
         isinstance(item, DatasetSource) for item in collection
     )
+
+
+def resolve_collection(collection):
+    """Return a collection value suitable for operation consolidation."""
+    if is_prepared_dataset_collection(collection):
+        return PreparedCollection(value=tuple(collection))
+    return collection_parameter.CollectionParameter(collection)
