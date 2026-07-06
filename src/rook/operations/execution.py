@@ -7,6 +7,7 @@ from copy import deepcopy
 from clisops.utils.file_utils import FileMapper, is_file_list
 
 from rook.director import wrap_director
+from rook.director.planning import WorkflowFiles
 from rook.utils.input_utils import (
     clean_inputs,
     fix_parameters,
@@ -51,6 +52,21 @@ def run_regrid(args):
     return regrid(**args).file_uris
 
 
+def prepare_workflow_file_inputs(args, source):
+    """Return operation inputs for files produced by a previous workflow step."""
+    kwargs = deepcopy(args)
+    clean_inputs(kwargs)
+    file_paths = resolve_to_file_paths(source.files)
+    kwargs["collection"] = FileMapper(file_paths)
+    return kwargs
+
+
+def run_workflow_files(args, runner):
+    """Run an operation using previous workflow step output files."""
+    source = WorkflowFiles(files=args["collection"])
+    return runner(prepare_workflow_file_inputs(args, source))
+
+
 class Operator:
     # Sub-classes require "prefix" property
     prefix = NotImplemented
@@ -75,13 +91,7 @@ class Operator:
         runner = self._get_runner()
 
         if is_file_list(collection):
-            # This block is called if this is NOT the first stage of a workflow, and
-            # the collection will be a file list (one or more files)
-            kwargs = deepcopy(args)
-            clean_inputs(kwargs)
-            file_paths = resolve_to_file_paths(args.get("collection"))
-            kwargs["collection"] = FileMapper(file_paths)
-            output_uris = runner(kwargs)  # this needs to be in a list
+            output_uris = run_workflow_files(args, runner)
         else:
             # This block is called when this is the first stage of a workflow
             director = wrap_director(collection, args, runner)

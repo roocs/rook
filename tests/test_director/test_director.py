@@ -70,6 +70,7 @@ class TestDirectorCMIP6:
         )
         plan = planning_mod.plan_request(self.collection, inputs)
         assert plan.project == "c3s-cmip6"
+        assert isinstance(plan, planning_mod.RunOperation)
 
     def test_original_files(self, catalog_director):
         # original files
@@ -88,6 +89,7 @@ class TestDirectorCMIP6:
         )
         plan = planning_mod.plan_request(self.collection, inputs)
         assert plan.returns_original_files is True
+        assert isinstance(plan, planning_mod.ReturnOriginalFiles)
         assert list(plan.original_file_urls.items())[0][1] == [url]
 
     def test_area_or_level(self, tmp_path, catalog_director):
@@ -178,6 +180,36 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     assert "original_files" not in captured["inputs"]
     assert len(captured["inputs"]["collection"]) == 1
     assert captured["inputs"]["collection"][0].dataset_id == collection[0]
+
+
+def test_catalog_collection_source_is_named(catalog_director):
+    collection = ["c3s-cmip6.example.dataset"]
+    catalog_director(FakeSearchResult({collection[0]: ["/data/input.nc"]}))
+
+    source = planning_mod.classify_request_source(collection)
+
+    assert isinstance(source, planning_mod.CatalogCollection)
+    assert source.collection == collection
+    assert source.project == "c3s-cmip6"
+
+
+def test_non_catalog_collection_source_is_direct(monkeypatch):
+    collection = ["CMIP6.CMIP.NCAR.CESM2.amip.r3i1p1f1.Amon.cl.gn.v20190319"]
+    monkeypatch.setattr(
+        planning_mod.config,
+        "get_project_config",
+        lambda _project: {"use_catalog": False},
+    )
+
+    source = planning_mod.classify_request_source(collection)
+    plan = planning_mod.plan_request(collection, {})
+
+    assert isinstance(source, planning_mod.DirectDataset)
+    assert source.collection == collection
+    assert source.project == "cmip6"
+    assert isinstance(plan, planning_mod.RunOperation)
+    assert plan.search_result is None
+    assert plan.dataset_sources == ()
 
 
 def test_wrap_director_returns_request_result(tmp_path, catalog_director):

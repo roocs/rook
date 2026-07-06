@@ -1,4 +1,4 @@
-"""Plan catalog-backed requests before operation execution."""
+"""Plan requests before operation execution."""
 
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -14,26 +14,101 @@ from .alignment import SubsetAlignmentChecker
 
 
 @dataclass(frozen=True)
-class RequestPlan:
-    """Decision values produced before running an operation."""
+class CatalogCollection:
+    """A request source that should be resolved through a project catalog."""
+
+    collection: list[str]
+    project: str
+
+
+@dataclass(frozen=True)
+class DirectDataset:
+    """A request source that should be processed directly without catalog lookup."""
+
+    collection: list[str]
+    project: str
+
+
+@dataclass(frozen=True)
+class WorkflowFiles:
+    """Files produced by an earlier workflow step."""
+
+    files: list[str]
+
+
+@dataclass(frozen=True)
+class ReturnOriginalFiles:
+    """Decision to return catalog file URLs without running an operation."""
 
     project: str
     search_result: object | None = None
-    dataset_sources: tuple[FileMapper, ...] = ()
     original_file_urls: OrderedDict | None = None
 
     @property
     def returns_original_files(self):
         """Return whether this request should bypass processing."""
-        return self.original_file_urls is not None
+        return True
+
+    @property
+    def dataset_sources(self):
+        """Return no prepared operation sources for original-file responses."""
+        return ()
+
+
+@dataclass(frozen=True)
+class RunOperation:
+    """Decision to run an operation on the requested or prepared sources."""
+
+    project: str
+    search_result: object | None = None
+    dataset_sources: tuple[FileMapper, ...] = ()
+
+    @property
+    def returns_original_files(self):
+        """Return whether this request should bypass processing."""
+        return False
+
+    @property
+    def original_file_urls(self):
+        """Return no original file URLs for operation responses."""
+        return None
+
+
+@dataclass(frozen=True)
+class InvalidRequest:
+    """Decision value reserved for explicit invalid-request outcomes."""
+
+    message: str
+
+
+RequestDecision = InvalidRequest | ReturnOriginalFiles | RunOperation
+RequestPlan = RequestDecision
 
 
 def plan_request(collection, inputs):
-    """Return the catalog resolution and original-file plan for a request."""
+    """Return the decision for a request."""
+    source = classify_request_source(collection)
+
+    if isinstance(source, DirectDataset):
+        return RunOperation(project=source.project)
+
+    return plan_catalog_collection(source, inputs)
+
+
+def classify_request_source(collection):
+    """Return the request source represented by a collection argument."""
     project = resolve_project(collection)
 
     if not uses_catalog(project):
-        return RequestPlan(project=project)
+        return DirectDataset(collection=collection, project=project)
+
+    return CatalogCollection(collection=collection, project=project)
+
+
+def plan_catalog_collection(source, inputs):
+    """Return the decision for a catalog collection request."""
+    project = source.project
+    collection = source.collection
 
     search_result = resolve_catalog_search(project, collection, inputs)
 
@@ -92,7 +167,7 @@ def original_files_plan(project, search_result, original_file_urls=None):
     if original_file_urls is None:
         original_file_urls = search_result.download_urls()
 
-    return RequestPlan(
+    return ReturnOriginalFiles(
         project=project,
         search_result=search_result,
         original_file_urls=original_file_urls,
@@ -101,7 +176,7 @@ def original_files_plan(project, search_result, original_file_urls=None):
 
 def operation_plan(project, search_result):
     """Return a plan that runs operation execution."""
-    return RequestPlan(
+    return RunOperation(
         project=project,
         search_result=search_result,
         dataset_sources=dataset_sources_from_search(search_result),

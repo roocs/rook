@@ -1,5 +1,6 @@
 from clisops.utils.file_utils import FileMapper
 
+from rook.director.planning import WorkflowFiles
 import rook.operations.execution as execution_mod
 from rook.operations import Operator
 
@@ -79,3 +80,25 @@ def test_later_workflow_step_receives_previous_step_files(tmp_path, monkeypatch)
 
     assert output_uris == ["processed.nc"]
     assert isinstance(operator.runner_inputs["collection"], FileMapper)
+
+
+def test_workflow_file_inputs_are_prepared_explicitly(tmp_path):
+    first = tmp_path / "first.nc"
+    second = tmp_path / "second.nc"
+    first.touch()
+    second.touch()
+    args = {
+        "collection": [first.as_posix(), second.as_posix()],
+        "apply_fixes": True,
+        "original_files": True,
+        "pre_checked": True,
+    }
+    source = WorkflowFiles(files=args["collection"])
+
+    runner_inputs = execution_mod.prepare_workflow_file_inputs(args, source)
+
+    assert isinstance(runner_inputs["collection"], FileMapper)
+    assert "apply_fixes" not in runner_inputs
+    assert "original_files" not in runner_inputs
+    assert "pre_checked" not in runner_inputs
+    assert args["collection"] == [first.as_posix(), second.as_posix()]
