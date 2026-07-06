@@ -1,9 +1,20 @@
 """Base class for operation execution."""
 
+from dataclasses import dataclass
+
 from clisops.parameter import collection_parameter
+
+from rook.io.datasets import DatasetSource
 
 from . import consolidate, normalise
 from .processor import process
+
+
+@dataclass(frozen=True)
+class PreparedCollection:
+    """Collection wrapper for already-resolved dataset sources."""
+
+    value: tuple[DatasetSource, ...]
 
 
 class Operation:
@@ -26,7 +37,10 @@ class Operation:
         self._consolidate_collection()
 
     def _resolve_params(self, collection, **params):
-        self.collection = collection_parameter.CollectionParameter(collection)
+        if is_prepared_dataset_collection(collection):
+            self.collection = PreparedCollection(value=tuple(collection))
+        else:
+            self.collection = collection_parameter.CollectionParameter(collection)
         self.params = params
 
     def _consolidate_collection(self):
@@ -61,3 +75,10 @@ class Operation:
             )
 
         return rs
+
+
+def is_prepared_dataset_collection(collection):
+    """Return whether a collection contains normalized dataset sources."""
+    return bool(collection) and isinstance(collection, (list, tuple)) and all(
+        isinstance(item, DatasetSource) for item in collection
+    )

@@ -243,7 +243,7 @@ corresponding PR has landed.
 - [x] Workflow file inputs are covered by tests and named explicitly.
 - [x] Request source types are introduced.
 - [x] Planner decision types are introduced.
-- [ ] Hard-coded decision rules are isolated behind named predicates or
+- [x] Hard-coded decision rules are isolated behind named predicates or
   policies.
 - [x] Catalog and original-file planning use the new decision model.
 - [x] `wrap_director` has been replaced or intentionally kept with a documented

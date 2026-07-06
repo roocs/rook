@@ -139,6 +139,10 @@ def consolidate(collection, **kwargs):
     catalogs = {}
 
     for dset in collection:
+        if isinstance(dset, DatasetSource):
+            sources.append(dset)
+            continue
+
         if not isinstance(dset, FileMapper) and _bypasses_catalog(dset):
             sources.append(DatasetSource(dataset_id=None, paths=dset))
             continue

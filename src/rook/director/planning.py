@@ -5,10 +5,10 @@ from dataclasses import dataclass
 
 from clisops.exceptions import InvalidCollection
 from clisops.project_utils import get_project_name
-from clisops.utils.file_utils import FileMapper
 
 from rook import config
 from rook.catalog import get_catalog
+from rook.io.datasets import DatasetSource
 
 from .alignment import SubsetAlignmentChecker
 
@@ -65,7 +65,7 @@ class RunOperation:
 
     project: str
     search_result: object | None = None
-    dataset_sources: tuple[FileMapper, ...] = ()
+    dataset_sources: tuple[DatasetSource, ...] = ()
 
     @property
     def returns_original_files(self):
@@ -239,12 +239,8 @@ def aligned_original_file_urls(search_result, inputs):
 
 
 def dataset_sources_from_search(search_result):
-    """Return file mappers for catalog-resolved operation inputs."""
-    dataset_sources = []
-
-    for ds_id, file_uris in search_result.files().items():
-        file_mapper = FileMapper(file_uris)
-        file_mapper.dataset_id = ds_id
-        dataset_sources.append(file_mapper)
-
-    return tuple(dataset_sources)
+    """Return normalized sources for catalog-resolved operation inputs."""
+    return tuple(
+        DatasetSource(dataset_id=ds_id, paths=file_uris)
+        for ds_id, file_uris in search_result.files().items()
+    )

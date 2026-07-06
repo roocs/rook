@@ -3,6 +3,7 @@ from clisops.exceptions import InvalidCollection
 
 import rook.director.planning as planning_mod
 from rook.director import execute_planned_request, wrap_director
+from rook.io.datasets import DatasetSource
 
 
 class FakeSearchResult:
@@ -169,6 +170,7 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     }
     assert result.use_original_files is False
     assert len(result.plan.dataset_sources) == 1
+    assert isinstance(result.plan.dataset_sources[0], DatasetSource)
     assert result.plan.dataset_sources[0].dataset_id == collection[0]
     assert result.output_uris == ["processed.nc"]
     assert inputs == {
@@ -179,6 +181,7 @@ def test_catalog_collection_is_resolved_and_processed(tmp_path, catalog_director
     assert "pre_checked" not in captured["inputs"]
     assert "original_files" not in captured["inputs"]
     assert len(captured["inputs"]["collection"]) == 1
+    assert isinstance(captured["inputs"]["collection"][0], DatasetSource)
     assert captured["inputs"]["collection"][0].dataset_id == collection[0]
 
 
