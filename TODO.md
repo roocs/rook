@@ -246,7 +246,7 @@ corresponding PR has landed.
 - [ ] Hard-coded decision rules are isolated behind named predicates or
   policies.
 - [x] Catalog and original-file planning use the new decision model.
-- [ ] `wrap_director` has been replaced or intentionally kept with a documented
+- [x] `wrap_director` has been replaced or intentionally kept with a documented
   reason.
 - [ ] Dataset-fix policy is centralized, tested, and documented.
 - [ ] Operation adapters have been simplified around clisops.

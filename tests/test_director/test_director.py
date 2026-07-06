@@ -257,6 +257,25 @@ def test_catalog_original_files_are_returned_when_requested(catalog_director):
     assert result.output_uris == [download_url]
 
 
+def test_catalog_original_files_are_returned_for_project_policy(catalog_director):
+    collection = ["c3s-ipcc-atlas.example.dataset"]
+    download_url = "https://example.test/data/atlas-input.nc"
+    result = FakeSearchResult(
+        {collection[0]: ["/data/atlas-input.nc"]},
+        download_records={collection[0]: [download_url]},
+    )
+    catalog_director(result)
+
+    result = execute_planned_request(
+        collection,
+        {},
+        lambda _inputs: pytest.fail("runner should not be called"),
+    )
+
+    assert result.use_original_files is True
+    assert result.output_uris == [download_url]
+
+
 def test_catalog_aligned_subset_returns_matching_original_files(
     catalog_director, monkeypatch
 ):
@@ -338,6 +357,14 @@ def test_catalog_operations_that_change_data_are_always_processed(
 
     assert plan.returns_original_files is False
     assert plan.original_file_urls is None
+
+
+def test_processing_required_inputs_are_named_policy():
+    assert planning_mod.PROCESSING_REQUIRED_INPUTS == frozenset(
+        {"dims", "freq", "grid"}
+    )
+    assert planning_mod.requires_processing({"dims": "time"}) is True
+    assert planning_mod.requires_processing({"area": "0,0,10,10"}) is False
 
 
 def test_catalog_unknown_collection_raises_invalid_collection(catalog_director):

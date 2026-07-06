@@ -13,6 +13,10 @@ from rook.catalog import get_catalog
 from .alignment import SubsetAlignmentChecker
 
 
+ORIGINAL_FILE_PROJECTS = frozenset({"c3s-ipcc-atlas"})
+PROCESSING_REQUIRED_INPUTS = frozenset({"dims", "freq", "grid"})
+
+
 @dataclass(frozen=True)
 class CatalogCollection:
     """A request source that should be resolved through a project catalog."""
@@ -112,10 +116,10 @@ def plan_catalog_collection(source, inputs):
 
     search_result = resolve_catalog_search(project, collection, inputs)
 
-    if returns_original_catalog_files(project, inputs):
+    if may_return_original_files(project, inputs):
         return original_files_plan(project, search_result)
 
-    if operation_requires_processing(inputs):
+    if requires_processing(inputs):
         return operation_plan(project, search_result)
 
     return aligned_subset_plan(project, search_result, inputs)
@@ -157,9 +161,9 @@ def validate_search_result(search_result, collection):
         raise InvalidCollection()
 
 
-def returns_original_catalog_files(project, inputs):
-    """Return whether original catalog files should be returned immediately."""
-    return requests_original_files(inputs) or project == "c3s-ipcc-atlas"
+def may_return_original_files(project, inputs):
+    """Return whether catalog data may be returned without processing."""
+    return requests_original_files(inputs) or project_returns_original_files(project)
 
 
 def original_files_plan(project, search_result, original_file_urls=None):
@@ -198,9 +202,23 @@ def requests_original_files(inputs):
     return bool(inputs.get("original_files"))
 
 
-def operation_requires_processing(inputs):
-    """Return whether the operation changes data and must run."""
-    return "dims" in inputs or "freq" in inputs or "grid" in inputs
+def project_returns_original_files(project):
+    """Return whether a project currently bypasses processing by policy."""
+    return project in ORIGINAL_FILE_PROJECTS
+
+
+def requires_processing(inputs):
+    """Return whether the requested operation changes data and must run."""
+    return has_processing_required_input(inputs)
+
+
+def has_processing_required_input(inputs):
+    """Return whether current request parameters imply changed output data.
+
+    This preserves the existing operation detection rule while keeping the
+    hard-coded parameter names out of the main planning flow.
+    """
+    return bool(PROCESSING_REQUIRED_INPUTS.intersection(inputs))
 
 
 def aligned_original_file_urls(search_result, inputs):
