@@ -84,6 +84,22 @@ def test_consolidate_preserves_dataset_id_from_file_mapper(tmp_path):
     )
 
 
+def test_consolidate_preserves_prepared_dataset_source(monkeypatch):
+    def fail_lookup(*_args, **_kwargs):
+        raise AssertionError("Prepared dataset sources should not be resolved again")
+
+    monkeypatch.setattr(consolidate, "get_project_name", fail_lookup)
+    monkeypatch.setattr(consolidate, "get_catalog", fail_lookup)
+    monkeypatch.setattr(consolidate, "dset_to_filepaths", fail_lookup)
+
+    prepared = DatasetSource(
+        dataset_id="c3s-cmip6.example.dataset",
+        paths="/data/c3s-cmip6.example.dataset.nc",
+    )
+
+    assert consolidate.consolidate(DummyCollection([prepared])) == (prepared,)
+
+
 def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     class DummyCatalog:
         def search(self, collection, time):

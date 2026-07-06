@@ -3,9 +3,9 @@
 from clisops.ops.average import average_over_dims as clisops_average_over_dims
 from clisops.ops.average import average_shape as clisops_average_shape
 from clisops.ops.average import average_time as clisops_average_time
-from clisops.parameter import collection_parameter, dimension_parameter
+from clisops.parameter import dimension_parameter
 
-from .base import Operation
+from .base import Operation, resolve_collection
 
 __all__ = ["Average", "average_over_dims", "average_shape", "average_time"]
 
@@ -13,9 +13,8 @@ __all__ = ["Average", "average_over_dims", "average_shape", "average_time"]
 class Average(Operation):
     def _resolve_params(self, collection, **params):
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
-        collection = collection_parameter.CollectionParameter(collection)
 
-        self.collection = collection
+        self.collection = resolve_collection(collection)
         self.params = {
             "dims": dims,
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
@@ -40,9 +39,8 @@ def average_over_dims(
 class AverageShape(Operation):
     def _resolve_params(self, collection, **params):
         shape = params.get("shape")
-        collection = collection_parameter.CollectionParameter(collection)
 
-        self.collection = collection
+        self.collection = resolve_collection(collection)
         self.params = {
             "shape": shape,
             "variable": params.get("variable"),
@@ -67,9 +65,8 @@ def average_shape(
 class AverageTime(Operation):
     def _resolve_params(self, collection, **params):
         freq = params.get("freq")
-        collection = collection_parameter.CollectionParameter(collection)
 
-        self.collection = collection
+        self.collection = resolve_collection(collection)
         self.params = {
             "freq": freq,
         }
