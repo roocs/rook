@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from clisops.utils.file_utils import FileMapper, is_file_list
 
-from rook.director import wrap_director
+from rook.director import execute_planned_request
 from rook.director.planning import WorkflowFiles
 from rook.utils.input_utils import (
     clean_inputs,
@@ -93,9 +93,8 @@ class Operator:
         if is_file_list(collection):
             output_uris = run_workflow_files(args, runner)
         else:
-            # This block is called when this is the first stage of a workflow
-            director = wrap_director(collection, args, runner)
-            output_uris = director.output_uris
+            request_result = execute_planned_request(collection, args, runner)
+            output_uris = request_result.output_uris
 
         return output_uris
 

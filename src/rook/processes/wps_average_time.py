@@ -4,7 +4,7 @@ import os
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import wrap_director
+from ..director import execute_planned_request
 from ..operations import run_average_by_time
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
@@ -109,14 +109,14 @@ class AverageByTime(Process):
             "freq": parse_wps_input(request.inputs, "freq", default=None),
         }
 
-        # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_average_by_time)
+        # Plan the request before processing or returning original files
+        request_result = execute_planned_request(collection, inputs, run_average_by_time)
 
         ml4 = build_metalink(
             "average-time-result",
             "Averaging by time result as NetCDF files.",
             self.workdir,
-            director.output_uris,
+            request_result.output_uris,
         )
 
         populate_response(

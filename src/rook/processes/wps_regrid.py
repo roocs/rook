@@ -3,7 +3,7 @@ import logging
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import wrap_director
+from ..director import execute_planned_request
 from ..operations import run_regrid
 from ..utils.input_utils import parse_wps_input, get_grid_param
 from ..utils.metalink_utils import build_metalink
@@ -132,14 +132,14 @@ class Regrid(Process):
         }
         # print(inputs)
 
-        # Let the director manage the processing or redirection to original files
-        director = wrap_director(collection, inputs, run_regrid)
+        # Plan the request before processing or returning original files
+        request_result = execute_planned_request(collection, inputs, run_regrid)
 
         ml4 = build_metalink(
             "regrid-result",
             "regrid result as NetCDF files.",
             self.workdir,
-            director.output_uris,
+            request_result.output_uris,
         )
 
         populate_response(response, "regrid", self.workdir, inputs, collection, ml4)

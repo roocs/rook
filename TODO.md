@@ -239,13 +239,13 @@ Docs should include:
 Use this as the running progress log for the phase. Tick a box only after the
 corresponding PR has landed.
 
-- [ ] Request outcome characterization tests are in place.
-- [ ] Workflow file inputs are covered by tests and named explicitly.
-- [ ] Request source types are introduced.
-- [ ] Planner decision types are introduced.
+- [x] Request outcome characterization tests are in place.
+- [x] Workflow file inputs are covered by tests and named explicitly.
+- [x] Request source types are introduced.
+- [x] Planner decision types are introduced.
 - [ ] Hard-coded decision rules are isolated behind named predicates or
   policies.
-- [ ] Catalog and original-file planning use the new decision model.
+- [x] Catalog and original-file planning use the new decision model.
 - [ ] `wrap_director` has been replaced or intentionally kept with a documented
   reason.
 - [ ] Dataset-fix policy is centralized, tested, and documented.
