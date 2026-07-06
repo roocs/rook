@@ -241,6 +241,9 @@ Docs should include:
   helper, but the Rook-side selection of required files should be made a little
   nicer: easier to read, named by test-data purpose, and documented as a
   temporary bridge until mini-esgf-data is replaced in a later phase.
+- In the next cleanup phase, delegate dataset/project fixes to the Woodpecker
+  library. This phase should only keep the current Rook policy explicit enough
+  to make that future handoff straightforward.
 
 ## Phase Checklist
 
@@ -256,7 +259,7 @@ corresponding PR has landed.
 - [x] Catalog and original-file planning use the new decision model.
 - [x] `wrap_director` has been replaced or intentionally kept with a documented
   reason.
-- [ ] Dataset-fix policy is centralized, tested, and documented.
+- [x] Dataset-fix policy is centralized, tested, and documented.
 - [ ] Operation adapters have been simplified around clisops.
 - [ ] Runner-only `Operator` classes are removed or justified.
 - [ ] `rook.workflow` uses the clearer operation/request vocabulary.
