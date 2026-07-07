@@ -27,6 +27,42 @@ class TestWorkflowTree:
         ]
 
 
+def test_run_step_dispatches_registered_workflow_operation(tmp_path):
+    calls = {}
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeOperation:
+        def call(self, inputs):
+            calls["operation_inputs"] = inputs
+            return ["result.nc"]
+
+    class FakeProvenance:
+        def add_operator(self, step_id, inputs, collection, result):
+            calls["provenance"] = (step_id, inputs, collection, result)
+
+    wf.operations = {"subset": FakeOperation()}
+    wf.prov = FakeProvenance()
+    step = {
+        "run": "subset",
+        "in": {"collection": ["initial.nc"], "time": "2000/2001"},
+    }
+
+    result = wf._run_step("subset_step", step, {"collection": ["previous.nc"]})
+
+    assert result == ["result.nc"]
+    assert calls["operation_inputs"] == {
+        "collection": ["previous.nc"],
+        "time": "2000/2001",
+    }
+    assert step["in"]["collection"] == ["initial.nc"]
+    assert calls["provenance"] == (
+        "subset_step",
+        calls["operation_inputs"],
+        ["previous.nc"],
+        ["result.nc"],
+    )
+
+
 def test_run_wf_cmip6_subset_average(tmp_path, resource_file):
     wfdoc = resource_file("wf_cmip6_subset_average.json")
     wf = workflow.WorkflowRunner(output_dir=tmp_path)

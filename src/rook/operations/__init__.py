@@ -10,7 +10,9 @@ from .execution import (
     Operator,
     Regrid,
     Subset,
+    WORKFLOW_OPERATIONS,
     WeightedAverage,
+    make_workflow_operator,
     run_average_by_dim,
     run_average_by_shape,
     run_average_by_time,
@@ -24,6 +26,7 @@ from .regrid import Regrid as RegridOperation
 from .subset import Subset as SubsetOperation
 
 __all__ = [
+    "WORKFLOW_OPERATIONS",
     "Average",
     "AverageByDimension",
     "AverageByShape",
@@ -39,6 +42,7 @@ __all__ = [
     "Subset",
     "SubsetOperation",
     "WeightedAverage",
+    "make_workflow_operator",
     "run_average_by_dim",
     "run_average_by_shape",
     "run_average_by_time",
