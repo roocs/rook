@@ -71,6 +71,38 @@ The docs should mirror this split with two diagrams:
 - a high-level diagram that shows the main processing phases;
 - a detailed diagram that shows the decision rules and branch points.
 
+The high-level diagram can use this shape as a guide:
+
+```mermaid
+flowchart TD
+    Start(["WPS request or workflow step"])
+
+    Start --> Normalize["Receive and normalize inputs"]
+    Normalize --> Source["Identify request source"]
+    Source --> Context["Resolve request context"]
+    Context --> Decide["Choose response path"]
+
+    Decide --> Original["Return original files"]
+    Decide --> Prepare["Prepare operation inputs"]
+    Decide --> Invalid["Reject invalid request"]
+
+    Prepare --> FixPolicy["Apply dataset fix policy"]
+    FixPolicy --> RunOps["Run operation"]
+    RunOps --> AdaptOperation["Adapt operation result"]
+    Original --> AdaptOriginal["Adapt original-file result"]
+    Invalid --> AdaptError["Adapt error"]
+
+    AdaptOperation --> End(["WPS/workflow response"])
+    AdaptOriginal --> End
+    AdaptError --> End
+
+    Source -.-> SourceNotes["Catalog collection<br/>Direct dataset<br/>Workflow files"]
+    Context -.-> ContextNotes["Project config<br/>Catalog lookup<br/>Dataset source identity"]
+    Decide -.-> DecisionNotes["Original files<br/>Operation processing<br/>Invalid request"]
+    FixPolicy -.-> FixNotes["Catalog-backed sources may receive fixes<br/>Direct sources open as-is<br/>Workflow outputs stay direct unless identified"]
+    RunOps -.-> OperationNotes["subset<br/>average<br/>regrid<br/>concat<br/>weighted average"]
+```
+
 ## Guiding Module Layout
 
 Use `rook.pflow` for the processing-flow layer. The package name is short, but
@@ -164,6 +196,8 @@ corresponding PR has landed.
 
 Every pull request should demonstrate that:
 
+- code stays nice and simple, with abstractions added only when they make the
+  processing flow easier to read;
 - the WPS process interface remains compatible;
 - direct local, URL, S3, Zarr, and Kerchunk inputs still work;
 - catalog-backed NetCDF processing is unchanged;
