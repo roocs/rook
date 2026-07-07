@@ -5,7 +5,6 @@ import xarray as xr
 
 from clisops.core.average import average_over_dims as average
 from clisops.ops import subset
-from clisops.parameter import collection_parameter
 from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
@@ -15,7 +14,7 @@ from clisops.utils.dataset_utils import open_xr_dataset
 from rook.utils.decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 
 from . import normalise
-from .base import Operation
+from .base import Operation, resolve_collection
 
 coord_by_standard_name = {
     "realization": "realization",
@@ -48,7 +47,7 @@ class Concat(Operation):
             params.get("time_components")
         )
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
-        collection = collection_parameter.CollectionParameter(collection)
+        collection = resolve_collection(collection)
 
         self.collection = collection
         self.params = {

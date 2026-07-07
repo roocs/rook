@@ -19,7 +19,7 @@ def is_file(data):
     try:
         ok = Path(data).is_file()
     except OSError as e:
-        LOGGER.warning(f"is_file check failed. reason={e}")
+        LOGGER.debug(f"is_file check failed. reason={e}")
         ok = False
     return ok
 

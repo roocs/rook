@@ -6,6 +6,7 @@ import rook.operations.execution as execution_mod
 from rook.operations.average import Average, AverageShape, AverageTime
 from rook.operations import Operator
 from rook.operations.base import Operation, is_prepared_dataset_collection
+from rook.operations.concat import Concat
 from rook.operations.regrid import Regrid
 from rook.operations.subset import Subset
 
@@ -157,6 +158,7 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
         Average(collection=[prepared], dims=["time"]),
         AverageShape(collection=[prepared], shape="shape.geojson"),
         AverageTime(collection=[prepared], freq="year"),
+        Concat(collection=[prepared], dims="realization"),
         Regrid(collection=[prepared], grid="1deg"),
     ]
 
