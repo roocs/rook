@@ -1,3 +1,5 @@
+import logging
+
 from rook import workflow
 
 
@@ -61,6 +63,16 @@ def test_run_step_dispatches_registered_workflow_operation(tmp_path):
         ["previous.nc"],
         ["result.nc"],
     )
+
+
+def test_load_wfdoc_inline_document_does_not_warn_about_file_check(caplog):
+    data = '{"doc": "' + ("x" * 300) + '", "steps": {}}'
+
+    caplog.set_level(logging.WARNING)
+    wfdoc = workflow.load_wfdoc(data)
+
+    assert wfdoc["doc"] == "x" * 300
+    assert "is_file check failed" not in caplog.text
 
 
 def test_run_wf_cmip6_subset_average(tmp_path, resource_file):
