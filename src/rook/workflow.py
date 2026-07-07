@@ -7,12 +7,8 @@ import yaml
 
 from .exceptions import WorkflowValidationError
 from .operations import (
-    AverageByDimension,
-    AverageByTime,
-    Concat,
-    Regrid,
-    Subset,
-    WeightedAverage,
+    WORKFLOW_OPERATIONS,
+    make_workflow_operator,
 )
 from .provenance import Provenance
 
@@ -82,12 +78,10 @@ class WorkflowRunner:
 
 class BaseWorkflow:
     def __init__(self, output_dir):
-        self.concat_op = Concat(output_dir)
-        self.subset_op = Subset(output_dir)
-        self.average_time_op = AverageByTime(output_dir)
-        self.average_dim_op = AverageByDimension(output_dir)
-        self.weighted_average_op = WeightedAverage(output_dir)
-        self.regrid_op = Regrid(output_dir)
+        self.operations = {
+            name: make_workflow_operator(name, output_dir)
+            for name in WORKFLOW_OPERATIONS
+        }
         self.prov = Provenance(output_dir)
 
     def validate(self, wfdoc):
@@ -139,33 +133,17 @@ class Workflow(BaseWorkflow):
 
     def _run_step(self, step_id, step, inputs=None):
         LOGGER.debug(f"run step={step}, inputs={inputs}")
+        operation_inputs = deepcopy(step["in"])
         if inputs:
-            step["in"].update(inputs)
-        if "subset" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.subset_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "average_time" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.average_time_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "average" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.average_dim_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "weighted_average" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.weighted_average_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "regrid" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.regrid_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        elif "concat" == step["run"]:
-            collection = step["in"]["collection"]
-            result = self.concat_op.call(step["in"])
-            self.prov.add_operator(step_id, step["in"], collection, result)
-        else:
+            operation_inputs.update(inputs)
+
+        operation = self.operations.get(step["run"])
+        if operation is None:
             result = None
+        else:
+            collection = operation_inputs["collection"]
+            result = operation.call(operation_inputs)
+            self.prov.add_operator(step_id, operation_inputs, collection, result)
+
         LOGGER.debug(f"run result={result}")
         return result

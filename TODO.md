@@ -260,8 +260,8 @@ corresponding PR has landed.
 - [x] `wrap_director` has been replaced or intentionally kept with a documented
   reason.
 - [x] Dataset-fix policy is centralized, tested, and documented.
-- [ ] Operation adapters have been simplified around clisops.
-- [ ] Runner-only `Operator` classes are removed or justified.
+- [x] Operation adapters have been simplified around clisops.
+- [x] Runner-only `Operator` classes are removed or justified.
 - [ ] `rook.workflow` uses the clearer operation/request vocabulary.
 - [ ] Mermaid architecture docs describe the new model.
 
