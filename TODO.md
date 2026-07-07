@@ -210,8 +210,10 @@ Focus on:
 
 ## 8. Update the Documentation
 
-The current Mermaid diagram is a map of the old world. As the code gets simpler,
-revise it until it can explain the new model without causing pain.
+Keep the Mermaid diagram and architecture notes aligned with the cleaner model.
+They should describe the current request source, planner decision, workflow
+operation, and dataset-opening boundaries without requiring the reader to know
+the old director implementation.
 
 Docs should include:
 
@@ -262,7 +264,7 @@ corresponding PR has landed.
 - [x] Dataset-fix policy is centralized, tested, and documented.
 - [x] Operation adapters have been simplified around clisops.
 - [x] Runner-only `Operator` classes are removed or justified.
-- [ ] `rook.workflow` uses the clearer operation/request vocabulary.
+- [x] `rook.workflow` uses the clearer operation/request vocabulary.
 - [ ] Mermaid architecture docs describe the new model.
 
 ## Guardrails
