@@ -71,14 +71,62 @@ The docs should mirror this split with two diagrams:
 - a high-level diagram that shows the main processing phases;
 - a detailed diagram that shows the decision rules and branch points.
 
+## Guiding Module Layout
+
+Use `rook.pflow` for the processing-flow layer. The package name is short, but
+the package documentation should spell it out once: `pflow` means processing
+flow.
+
+The first target shape can look like this:
+
+```text
+rook/
+  pflow/
+    __init__.py
+    base.py
+    sources.py
+    decisions.py
+    resolver.py
+    execution.py
+    policies.py
+    catalog.py
+    alignment.py
+    results.py
+```
+
+`base.py` should collect the abstract shape of the layer:
+
+- `RequestSource`: normalized source for a request;
+- `RequestDecision`: one decision about how a request should be handled;
+- `RequestResolver`: turns raw request inputs into one request decision;
+- `DecisionExecutor`: executes one request decision;
+- `RequestPolicy`: optional base for small context-specific policies.
+
+Keep inheritance shallow. The abstract classes should make the main processing
+flow visible; concrete modules should keep branch-specific behavior explicit.
+
+Concrete modules can then own the current behavior:
+
+- `sources.py`: `CatalogCollection`, `DirectDataset`, `WorkflowFiles`,
+  source classification;
+- `decisions.py`: `ReturnOriginalFiles`, `RunOperation`, `InvalidRequest`;
+- `resolver.py`: high-level request decision flow;
+- `execution.py`: original-file collection, operation-input preparation, and
+  operation runner calls;
+- `policies.py`: original-file policy, processing-required policy, dataset-fix
+  policy hooks;
+- `catalog.py`: catalog lookup, validation, and dataset-source preparation;
+- `alignment.py`: subset-to-file alignment checks;
+- `results.py`: `RequestResult` and response-facing result values.
+
 ## Suggested Pull Request Order
 
 1. Choose the replacement vocabulary and document it in this TODO and the
    processing diagram notes.
 2. Sketch the desired code shape for the main processing phases before moving
    files.
-3. Rename the `rook.director` namespace to the chosen request-decision module
-   name without changing behavior.
+3. Rename the `rook.director` namespace to `rook.pflow` without changing
+   behavior.
 4. Update imports in WPS processes, operation execution, workflow code, tests,
    and docs.
 5. Rename public/internal classes and functions that still use director-era
@@ -95,6 +143,7 @@ Use this as the running progress log for the phase. Tick a box only after the
 corresponding PR has landed.
 
 - [ ] Replacement vocabulary is agreed and written down.
+- [ ] `rook.pflow` module layout is introduced with `base.py` abstractions.
 - [ ] Misleading "plan" terminology is replaced with decision/resolution
   terminology.
 - [ ] Main processing phases are recognizable in code.
