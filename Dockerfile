@@ -3,7 +3,7 @@ FROM continuumio/miniconda3
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
 LABEL org.opencontainers.image.authors=https://github.com/roocs/rook
-LABEL Description="rook WPS" Vendor="Birdhouse" Version="1.2.1"
+LABEL Description="rook WPS" Vendor="Birdhouse" Version="1.2.2"
 
 # Set the working directory to /code
 WORKDIR /code

@@ -4,22 +4,36 @@ Changes
 Unreleased
 ==========
 
-1.2.1 (2026-07-02)
+1.2.2 (2026-07-07)
 ==================
 
-* Added characterization coverage around director and operation execution paths.
+* Refactored the old director flow into smaller planning and execution modules
+  with explicit request sources, dataset sources, and original-file response
+  plans.
+* Moved operation implementations into the ``rook.operations`` namespace,
+  simplified the operation adapters, and removed obsolete compatibility shims
+  and dead helper code.
+* Added characterization coverage around director, workflow, and operation
+  execution paths.
 * Deprecated the internal use of the ``apply_fixes`` WPS input while keeping the
   public process interface compatible.
-* Moved operation implementations into the ``rook.operations`` namespace and
-  removed obsolete compatibility shims and dead helper code.
-* Split director behavior into explicit request planning and execution modules,
-  including catalog-resolved dataset sources and original-file response plans.
 * Removed the old ``Director`` class and director compatibility module after the
   remaining processes were migrated to the request result wrapper.
 * Fixed catalog-resolved dataset ID handling for operation inputs.
-* Added Mermaid-enabled documentation for the current dataset-processing and
-  director decision tree as a blueprint for the next cleanup phase.
+* Fixed prepared dataset-source handling in the concat operation so
+  orchestrated c3s-cmip6-decadal workflows can consume catalog-resolved inputs.
+* Reduced noisy workflow file-probe logging for inline workflow documents.
+* Added Mermaid-enabled documentation for the dataset processing flow and the
+  cleaner director decision model.
 * Updated development and GitHub Actions maintenance dependencies.
+
+1.2.1 (2026-07-02)
+==================
+
+* Added ``make conda-lock`` and ``make conda-spec`` targets to automate release
+  conda artifact refreshes.
+* Added a concise patch-release quickstart to the README.
+* Fixed post-merge CI publishing and branch-protection behavior.
 
 1.2.0 (2026-06-18)
 ==================

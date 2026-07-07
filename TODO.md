@@ -265,7 +265,7 @@ corresponding PR has landed.
 - [x] Operation adapters have been simplified around clisops.
 - [x] Runner-only `Operator` classes are removed or justified.
 - [x] `rook.workflow` uses the clearer operation/request vocabulary.
-- [ ] Mermaid architecture docs describe the new model.
+- [x] Mermaid architecture docs describe the new model.
 
 ## Guardrails
 
