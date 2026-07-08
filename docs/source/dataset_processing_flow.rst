@@ -3,9 +3,10 @@
 Dataset Processing Flow
 =======================
 
-This page documents the request planning and operation execution flow. The old
-``Director`` class is gone; the remaining ``rook.director`` package is a small
-planning and execution adapter used by WPS processes and workflow operations.
+This page documents the request-resolution and operation-execution flow.
+``rook.pflow`` is the processing-flow layer: it classifies request sources,
+resolves one request decision, and executes that decision. The old
+``rook.director`` namespace is kept only as a compatibility wrapper.
 
 The current model is split into three questions:
 
@@ -13,8 +14,8 @@ The current model is split into three questions:
 * should the request return existing files or run an operation?
 * how should the chosen operation open and process its inputs?
 
-Request Planning and Execution
-------------------------------
+Request Resolution and Execution
+--------------------------------
 
 .. mermaid::
 
@@ -69,7 +70,7 @@ Decision Ownership
 ------------------
 
 WPS process adapters parse WPS inputs, choose the operation runner, and pass the
-request to ``execute_planned_request``. They do not decide catalog behavior
+request to ``execute_resolved_request``. They do not decide catalog behavior
 themselves.
 
 ``rook.workflow`` parses workflow documents, resolves dependencies between
@@ -77,14 +78,14 @@ steps, and looks up each step's ``run`` value in ``WORKFLOW_OPERATIONS``. Output
 from previous steps enter the operation adapter as ``WorkflowFiles`` and are
 prepared as a ``FileMapper`` before running the next operation.
 
-``rook.director.planning.plan_request`` handles catalog-backed requests. It
-classifies inputs as ``CatalogCollection`` or ``DirectDataset``, validates
-catalog search results, and chooses a ``ReturnOriginalFiles`` or ``RunOperation``
-decision.
+``rook.pflow.resolver.resolve_request_decision`` handles catalog-backed
+requests. It classifies inputs as ``CatalogCollection`` or ``DirectDataset``,
+validates catalog search results, and chooses a ``ReturnOriginalFiles`` or
+``RunOperation`` decision.
 
-``rook.director.execution.execute_plan`` adapts the plan into output URIs. It
-collects original file URLs when processing is skipped, otherwise it prepares
-operation inputs and calls the operation runner.
+``rook.pflow.execution.execute_decision`` adapts the decision into output URIs.
+It collects original file URLs when processing is skipped, otherwise it
+prepares operation inputs and calls the operation runner.
 
 ``rook.operations.consolidate`` converts operation collections into
 ``DatasetSource`` values. It keeps direct Zarr, Kerchunk, and S3 inputs out of
@@ -118,7 +119,7 @@ because the generic dataset opener can infer the whole operation context.
 Current Decision Values
 -----------------------
 
-The planner returns one explicit decision value that describes what the caller
+The resolver returns one explicit decision value that describes what the caller
 must do next:
 
 * reject the request with a known error;
@@ -126,7 +127,7 @@ must do next:
 * ``RunOperation`` with the original collection;
 * ``RunOperation`` with catalog-resolved ``DatasetSource`` values.
 
-The planner should keep these responsibilities separate:
+The resolver should keep these responsibilities separate:
 
 * input classification: catalog collection versus direct dataset;
 * project and catalog resolution;
@@ -135,9 +136,9 @@ The planner should keep these responsibilities separate:
 * construction of operation sources;
 * WPS response and exception adaptation.
 
-The execution side should be boring on purpose. Given a plan, it should either
-collect original-file URLs or prepare operation inputs and call the supplied
-runner. It should not repeat catalog decisions.
+The execution side should be boring on purpose. Given a decision, it should
+either collect original-file URLs or prepare operation inputs and call the
+supplied runner. It should not repeat catalog decisions.
 
 The type vocabulary is intentionally small:
 
@@ -149,5 +150,5 @@ The type vocabulary is intentionally small:
        | RunOperation
    )
 
-The important boundary is that catalog planning decides *what should happen*,
+The important boundary is that request resolution decides *what should happen*,
 while operation execution decides *how to run the selected operation*.

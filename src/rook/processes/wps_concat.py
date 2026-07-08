@@ -3,7 +3,7 @@ import logging
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import execute_planned_request
+from ..pflow import execute_resolved_request
 from ..operations import run_concat
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
@@ -150,7 +150,7 @@ class Concat(Process):
         }
 
         # Plan the request before processing or returning original files
-        request_result = execute_planned_request(collection, inputs, run_concat)
+        request_result = execute_resolved_request(collection, inputs, run_concat)
 
         ml4 = build_metalink(
             "concat-result",

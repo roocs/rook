@@ -1,96 +1,23 @@
-"""Execute request plans and adapt their outputs."""
+"""Compatibility wrapper for request-decision execution."""
 
-import pathlib
-from dataclasses import dataclass
-
-from pywps.app.exceptions import ProcessError
-
-from rook.utils.input_utils import clean_inputs
-
-from .planning import plan_request
-
-
-@dataclass(frozen=True)
-class RequestResult:
-    """Result values produced by planning and executing a request."""
-
-    plan: object
-    output_uris: list[str]
-
-    @property
-    def project(self):
-        """Return the project resolved for the request."""
-        return self.plan.project
-
-    @property
-    def use_original_files(self):
-        """Return whether processing was skipped."""
-        return self.plan.returns_original_files
-
-    @property
-    def original_file_urls(self):
-        """Return original files selected by the request plan."""
-        return self.plan.original_file_urls
-
-    @property
-    def search_result(self):
-        """Return the catalog search result, when catalog lookup was used."""
-        return self.plan.search_result
-
-    @property
-    def dataset_sources(self):
-        """Return the dataset sources prepared for operation execution."""
-        return self.plan.dataset_sources
+from rook.pflow.execution import (
+    collect_original_file_uris,
+    execute_decision,
+    execute_request,
+    prepare_operation_inputs,
+    run_operation,
+)
+from rook.pflow.results import RequestResult
 
 
-def execute_request(collection, inputs, runner):
-    """Plan and execute a request."""
-    plan = plan_request(collection, inputs)
-    output_uris = execute_plan(plan, inputs, runner)
-    return RequestResult(plan=plan, output_uris=output_uris)
+execute_plan = execute_decision
 
-
-def execute_plan(plan, inputs, runner):
-    """Return output URIs for a planned request."""
-    if plan.returns_original_files:
-        return collect_original_file_uris(plan.original_file_urls)
-
-    return run_operation(plan, inputs, runner)
-
-
-def collect_original_file_uris(original_file_urls):
-    """Return original file URIs in the same shape as operation outputs."""
-    file_uris = []
-
-    for file_urls in original_file_urls.values():
-        file_uris.extend(
-            item
-            for item in file_urls
-            if isinstance(item, str)
-            and (
-                pathlib.Path(item).is_file() or item.startswith("https")
-            )
-        )
-
-    return file_uris
-
-
-def run_operation(plan, inputs, runner):
-    """Run an operation with inputs prepared from a request plan."""
-    operation_inputs = prepare_operation_inputs(plan, inputs)
-
-    try:
-        return runner(operation_inputs)
-    except Exception as e:
-        raise ProcessError(f"{e}")
-
-
-def prepare_operation_inputs(plan, inputs):
-    """Return cleaned operation inputs without mutating caller inputs."""
-    operation_inputs = dict(inputs)
-    clean_inputs(operation_inputs)
-
-    if plan.dataset_sources:
-        operation_inputs["collection"] = list(plan.dataset_sources)
-
-    return operation_inputs
+__all__ = [
+    "RequestResult",
+    "collect_original_file_uris",
+    "execute_decision",
+    "execute_plan",
+    "execute_request",
+    "prepare_operation_inputs",
+    "run_operation",
+]
