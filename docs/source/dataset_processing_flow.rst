@@ -13,6 +13,25 @@ The current model is split into three questions:
 * should the request return existing files or run an operation?
 * how should the chosen operation open and process its inputs?
 
+At A Glance
+-----------
+
+.. mermaid::
+
+   flowchart LR
+       Request["Request"] --> Source["Source"]
+       Source --> Decision["Decision"]
+       Decision --> Execution["Execution"]
+       Execution --> Response["Response"]
+
+       Request -.-> RequestHint["WPS call<br/>Workflow step"]
+       Source -.-> SourceHint["Collection<br/>Direct dataset<br/>Workflow files"]
+       Decision -.-> DecisionHint["Return files<br/>Run operation<br/>Reject request"]
+       Execution -.-> ExecutionHint["subset<br/>average<br/>regrid<br/>concat"]
+
+       class RequestHint,SourceHint,DecisionHint,ExecutionHint note
+       classDef note fill:#fff7d6,stroke:#c58a00,stroke-dasharray: 4 3,color:#3b2a00
+
 Processing Phases
 -----------------
 
