@@ -13,8 +13,71 @@ The current model is split into three questions:
 * should the request return existing files or run an operation?
 * how should the chosen operation open and process its inputs?
 
-Request Resolution and Execution
---------------------------------
+At A Glance
+-----------
+
+.. mermaid::
+
+   flowchart LR
+       Request["Request"] --> Source["Source"]
+       Source --> Decision["Decision"]
+       Decision --> Execution["Execution"]
+       Execution --> Response["Response"]
+
+       Request -.-> RequestHint["WPS call<br/>Workflow step"]
+       Source -.-> SourceHint["Collection<br/>Direct dataset<br/>Workflow files"]
+       Decision -.-> DecisionHint["Return files<br/>Run operation<br/>Reject request"]
+       Execution -.-> ExecutionHint["subset<br/>average<br/>regrid<br/>concat"]
+
+       class RequestHint,SourceHint,DecisionHint,ExecutionHint note
+       classDef note fill:#fff7d6,stroke:#c58a00,stroke-dasharray: 4 3,color:#3b2a00
+
+Processing Phases
+-----------------
+
+The high-level flow is deliberately small. It shows the stable phases that WPS
+requests and workflow steps pass through before a response is built.
+
+.. mermaid::
+
+   flowchart TD
+       Start(["WPS request or workflow step"])
+
+       Start --> Normalize["Receive and normalize inputs"]
+       Normalize --> Source["Identify request source"]
+       Source --> Context["Resolve request context"]
+       Context --> Decide["Choose response path"]
+
+       Decide --> Original["Return original files"]
+       Decide --> Prepare["Prepare operation inputs"]
+       Decide --> Invalid["Reject invalid request"]
+
+       Prepare --> FixPolicy["Apply dataset fix policy"]
+       FixPolicy --> RunOps["Run operation"]
+       RunOps --> AdaptOperation["Adapt operation result"]
+       Original --> AdaptOriginal["Adapt original-file result"]
+       Invalid --> AdaptError["Adapt error"]
+
+       AdaptOperation --> End(["WPS/workflow response"])
+       AdaptOriginal --> End
+       AdaptError --> End
+
+       Source -.-> SourceNotes["Catalog collection<br/>Direct dataset<br/>Workflow files"]
+       Context -.-> ContextNotes["Project config<br/>Catalog lookup<br/>Dataset source identity"]
+       Decide -.-> DecisionNotes["Original files<br/>Operation processing<br/>Invalid request"]
+       FixPolicy -.-> FixNotes["Catalog-backed sources may receive fixes<br/>Direct sources open as-is<br/>Workflow outputs stay direct unless identified"]
+       RunOps -.-> OperationNotes["subset<br/>average<br/>regrid<br/>concat<br/>weighted average"]
+
+       class SourceNotes,ContextNotes,DecisionNotes,FixNotes,OperationNotes note
+       classDef note fill:#fff7d6,stroke:#c58a00,stroke-dasharray: 4 3,color:#3b2a00
+
+Detailed Decision Rules
+-----------------------
+
+The detailed flow names the current request sources, decision values, and
+operation execution paths. It is more specific than the phase diagram, but it
+should still keep branch rules visible rather than hiding them in broad
+orchestration terms.
 
 .. mermaid::
 
@@ -30,7 +93,7 @@ Request Resolution and Execution
            PreviousFiles -- no --> WorkflowCollection["Collection input"]
        end
 
-       subgraph Planning["Request source and decision"]
+       subgraph Resolution["Request source and decision"]
            WPS --> Collection["Collection input"]
            WorkflowCollection --> Collection
            Collection --> Project["Resolve project"]

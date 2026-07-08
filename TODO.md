@@ -174,17 +174,17 @@ Concrete modules can then own the current behavior:
 Use this as the running progress log for the phase. Tick a box only after the
 corresponding PR has landed.
 
-- [ ] Replacement vocabulary is agreed and written down.
-- [ ] `rook.pflow` module layout is introduced with `base.py` abstractions.
-- [ ] Misleading "plan" terminology is replaced with decision/resolution
+- [x] Replacement vocabulary is agreed and written down.
+- [x] `rook.pflow` module layout is introduced with `base.py` abstractions.
+- [x] Misleading "plan" terminology is replaced with decision/resolution
   terminology.
-- [ ] Main processing phases are recognizable in code.
-- [ ] `rook.director` namespace is renamed.
-- [ ] WPS process imports use the new request-decision vocabulary.
-- [ ] Operation execution imports use the new request-decision vocabulary.
-- [ ] Workflow execution imports use the new request-decision vocabulary.
-- [ ] Tests no longer use director-era names.
-- [ ] Remaining compatibility shims are removed or explicitly justified.
+- [x] Main processing phases are recognizable in code.
+- [x] `rook.director` namespace is renamed.
+- [x] WPS process imports use the new request-decision vocabulary.
+- [x] Operation execution imports use the new request-decision vocabulary.
+- [x] Workflow execution imports use the new request-decision vocabulary.
+- [x] Tests no longer use director-era names.
+- [x] Remaining compatibility shims are removed or explicitly justified.
 - [ ] Processing diagrams and architecture docs use the new names.
 - [ ] Documentation has a high-level processing phase diagram.
 - [ ] Documentation has a detailed decision-rule diagram.
