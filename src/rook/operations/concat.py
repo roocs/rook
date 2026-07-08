@@ -10,7 +10,11 @@ from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
-from rook.utils.decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
+from rook.utils.decadal_fixes import (
+    apply_decadal_fixes,
+    apply_decadal_fixes_with_woodpecker,
+    decadal_fix_calendar,
+)
 
 from . import normalise
 from .base import Operation, resolve_collection
@@ -42,12 +46,27 @@ def apply_concat_calendar_fix(ds):
     return decadal_fix_calendar(None, ds)
 
 
-def apply_concat_dataset_fixes(collection, output_dir):
+DECADAL_FIX_BACKENDS = ("legacy", "woodpecker")
+
+
+def get_decadal_fix_backend(fix_backend):
+    if fix_backend == "legacy":
+        return apply_decadal_fixes
+    if fix_backend == "woodpecker":
+        return apply_decadal_fixes_with_woodpecker
+    allowed = ", ".join(DECADAL_FIX_BACKENDS)
+    raise ValueError(
+        f"Unsupported decadal fix backend: {fix_backend!r}. Use one of: {allowed}"
+    )
+
+
+def apply_concat_dataset_fixes(collection, output_dir, fix_backend="legacy"):
     """Apply concat-specific decadal fixes to each opened dataset."""
+    apply_fixes = get_decadal_fix_backend(fix_backend)
     datasets = []
 
     for ds_id, ds in collection.items():
-        datasets.append(apply_decadal_fixes(ds_id, ds, output_dir=output_dir))
+        datasets.append(apply_fixes(ds_id, ds, output_dir=output_dir))
 
     return datasets
 
@@ -82,7 +101,9 @@ def finalise_concat_output(ds, params, dim):
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         time = time_parameter.TimeParameter(params.get("time"))
-        time_components = time_components_parameter.TimeComponentsParameter(params.get("time_components"))
+        time_components = time_components_parameter.TimeComponentsParameter(
+            params.get("time_components")
+        )
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = resolve_collection(collection)
 

@@ -7,6 +7,8 @@ from rook.utils.data_utils.attr_utils import (
 from rook.utils.data_utils.coord_utils import add_coord, add_scalar_coord
 from rook.utils.data_utils.var_utils import add_data_var
 
+WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
+
 model_specific_global_attrs = {
     "CMCC-CM2-SR5": {
         "forcing_description": "f1, CMIP6 historical forcings",
@@ -52,6 +54,16 @@ def apply_decadal_fixes(ds_id, ds, output_dir=None):
     ds_mod = decadal_fix_4(ds_id, ds_mod)
     ds_mod = decadal_fix_5(ds_id, ds_mod)
     return ds_mod
+
+
+def apply_decadal_fixes_with_woodpecker(ds_id, ds, output_dir=None):
+    """Apply the Woodpecker CMIP6-decadal recipe to a dataset."""
+    import woodpecker
+
+    recipe = woodpecker.recipe.get(WOODPECKER_CMIP6_DECADAL_RECIPE_ID)
+    if woodpecker.recipe.check(ds, recipe):
+        woodpecker.recipe.fix(ds, recipe, dry_run=False)
+    return ds
 
 
 def decadal_fix_1(ds_id, ds):

@@ -57,6 +57,26 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
     assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
 
 
+def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_path):
+    calls = []
+    source = xr.Dataset(attrs={"source": "first"})
+
+    def fake_apply(ds_id, ds, output_dir=None):
+        calls.append((ds_id, ds.attrs["source"], output_dir))
+        return ds.assign_attrs(fixed_with="woodpecker")
+
+    monkeypatch.setattr(concat_mod, "apply_decadal_fixes_with_woodpecker", fake_apply)
+
+    datasets = concat_mod.apply_concat_dataset_fixes(
+        {"first.id": source},
+        output_dir=tmp_path.as_posix(),
+        fix_backend="woodpecker",
+    )
+
+    assert calls == [("first.id", "first", tmp_path.as_posix())]
+    assert datasets[0].attrs["fixed_with"] == "woodpecker"
+
+
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():
     datasets = [
         xr.Dataset(
