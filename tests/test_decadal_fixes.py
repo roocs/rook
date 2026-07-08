@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import builtins
+
 from rook.utils.decadal_fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     apply_decadal_fixes,
@@ -100,6 +102,22 @@ def assert_identical_with_report(left, right):
 
 def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
     assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "cmip6_decadal.full"
+
+
+def test_woodpecker_decadal_fixes_raise_clear_error_when_woodpecker_missing(
+    monkeypatch,
+):
+    real_import = builtins.__import__
+
+    def block_woodpecker_import(name, *args, **kwargs):
+        if name == "woodpecker":
+            raise ImportError("blocked woodpecker import")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", block_woodpecker_import)
+
+    with pytest.raises(ImportError, match="Woodpecker is required"):
+        apply_decadal_fixes_with_woodpecker(DECADAL_DS_ID, xr.Dataset())
 
 
 def test_woodpecker_decadal_fixes_match_legacy_rook_output(tmp_path):

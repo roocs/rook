@@ -58,7 +58,14 @@ def apply_decadal_fixes(ds_id, ds, output_dir=None):
 
 def apply_decadal_fixes_with_woodpecker(ds_id, ds, output_dir=None):
     """Apply the Woodpecker CMIP6-decadal recipe to a dataset."""
-    import woodpecker
+    try:
+        import woodpecker
+    except ImportError as exc:
+        raise ImportError(
+            "Woodpecker is required to apply CMIP6-decadal fixes with the "
+            "woodpecker backend. Install woodpecker and the "
+            "woodpecker-cmip6-decadal plugin, or use the legacy backend."
+        ) from exc
 
     recipe = woodpecker.recipe.get(WOODPECKER_CMIP6_DECADAL_RECIPE_ID)
     if woodpecker.recipe.check(ds, recipe):
