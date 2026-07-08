@@ -196,8 +196,9 @@ corresponding PR has landed.
 
 Every pull request should demonstrate that:
 
-- code stays nice and simple, with abstractions added only when they make the
-  processing flow easier to read;
+- code and documentation stay clean, simple, and direct;
+- abstractions are added only when they make the processing flow easier to
+  read;
 - the WPS process interface remains compatible;
 - direct local, URL, S3, Zarr, and Kerchunk inputs still work;
 - catalog-backed NetCDF processing is unchanged;
@@ -206,6 +207,9 @@ Every pull request should demonstrate that:
 - dataset fixes are applied only when the source identity supports them;
 - output naming, splitting, provenance, and error responses remain stable unless
   a deliberate change is documented.
+
+For this phase and future cleanup tasks, always run project commands through the
+`rook` conda environment, for example `conda run -n rook pytest ...`.
 
 Run focused tests while iterating, followed by lint, docs, and the default
 non-smoke test suite before each pull request.
