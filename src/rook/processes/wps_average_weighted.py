@@ -3,7 +3,7 @@ import logging
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import execute_planned_request
+from ..pflow import execute_resolved_request
 from ..operations import run_weighted_average
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
@@ -79,7 +79,7 @@ class WeightedAverage(Process):
         }
 
         # Plan the request before processing or returning original files
-        request_result = execute_planned_request(collection, inputs, run_weighted_average)
+        request_result = execute_resolved_request(collection, inputs, run_weighted_average)
 
         ml4 = build_metalink(
             "weighted-average-result",

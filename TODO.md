@@ -183,8 +183,7 @@ corresponding PR has landed.
 - [ ] WPS process imports use the new request-decision vocabulary.
 - [ ] Operation execution imports use the new request-decision vocabulary.
 - [ ] Workflow execution imports use the new request-decision vocabulary.
-- [ ] Tests no longer use director-era names except when checking deprecated
-  compatibility.
+- [ ] Tests no longer use director-era names.
 - [ ] Remaining compatibility shims are removed or explicitly justified.
 - [ ] Processing diagrams and architecture docs use the new names.
 - [ ] Documentation has a high-level processing phase diagram.
@@ -196,9 +195,12 @@ corresponding PR has landed.
 
 Every pull request should demonstrate that:
 
-- code stays nice and simple, with abstractions added only when they make the
-  processing flow easier to read;
-- the WPS process interface remains compatible;
+- code and documentation stay clean, simple, and direct;
+- abstractions are added only when they make the processing flow easier to
+  read;
+- the WPS process interface remains compatible, including existing inputs used
+  by CDS calls; avoid changing public WPS inputs unless there is an explicit
+  migration plan because CDS API changes have a longer adaptation cycle;
 - direct local, URL, S3, Zarr, and Kerchunk inputs still work;
 - catalog-backed NetCDF processing is unchanged;
 - original-file responses still contain public download URLs;
@@ -206,6 +208,9 @@ Every pull request should demonstrate that:
 - dataset fixes are applied only when the source identity supports them;
 - output naming, splitting, provenance, and error responses remain stable unless
   a deliberate change is documented.
+
+For this phase and future cleanup tasks, always run project commands through the
+`rook` conda environment, for example `conda run -n rook pytest ...`.
 
 Run focused tests while iterating, followed by lint, docs, and the default
 non-smoke test suite before each pull request.
@@ -217,6 +222,9 @@ non-smoke test suite before each pull request.
   helper, but the Rook-side selection of required files should be made a little
   nicer: easier to read, named by test-data purpose, and documented as a
   temporary bridge until mini-esgf-data is replaced in a later phase.
+- Review the operation adapters in this phase if possible, especially `concat`.
+  Keep concat-specific fix behavior clear before the next phase integrates the
+  Woodpecker fixes library.
 - In a later cleanup phase, delegate dataset/project fixes to the Woodpecker
   library. This phase should only keep the current Rook policy explicit enough
   to make that future handoff straightforward.

@@ -1,8 +1,10 @@
+"""Subset-to-file alignment checks."""
+
 from pathlib import Path
 
 from clisops.parameter import time_parameter
-from clisops.utils.time_utils import to_isoformat
 from clisops.project_utils import url_to_file_path
+from clisops.utils.time_utils import to_isoformat
 
 import xarray as xr
 
@@ -17,12 +19,7 @@ class SubsetAlignmentChecker:
 
     def _deduce_alignment(self, inputs):
         # At present, we reject alignment if any "time_components", "area", "shape" or "level" subset is requested
-        if (
-            inputs.get("time_components", None)
-            or inputs.get("area", None)
-            or inputs.get("level", None)
-            or inputs.get("shape", None)
-        ):
+        if inputs.get("time_components", None) or inputs.get("area", None) or inputs.get("level", None) or inputs.get("shape", None):
             return
 
         time = inputs.get("time", None)
@@ -89,7 +86,6 @@ class SubsetAlignmentChecker:
 
         # Now go through files to check alignment
         for fpath in self.input_files:
-
             fstart, fend = self._get_file_times(fpath)
 
             # Break out if start of file is beyond end of requested range

@@ -1,6 +1,6 @@
 from clisops.utils.file_utils import FileMapper
 
-from rook.director.planning import WorkflowFiles
+from rook.pflow.sources import WorkflowFiles
 from rook.io.datasets import DatasetSource
 import rook.operations.execution as execution_mod
 from rook.operations.average import Average, AverageShape, AverageTime
@@ -28,8 +28,8 @@ class RecordingOperation(Operation):
         raise NotImplementedError
 
 
-def fail_planned_request_executor(*_args, **_kwargs):
-    raise AssertionError("planned request executor should not be called")
+def fail_request_decision_executor(*_args, **_kwargs):
+    raise AssertionError("request decision executor should not be called")
 
 
 def test_workflow_operator_factory_keeps_prefix_and_runner(tmp_path):
@@ -52,22 +52,18 @@ def test_run_regrid_normalizes_custom_grid(monkeypatch):
 
     monkeypatch.setattr(execution_mod, "regrid", fake_regrid)
 
-    result = execution_mod.run_regrid(
-        {"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"}
-    )
+    result = execution_mod.run_regrid({"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"})
 
     assert result == ["regridded.nc"]
     assert calls["kwargs"]["grid"] == (0.5, 0.25)
     assert "custom_grid" not in calls["kwargs"]
 
 
-def test_direct_file_collection_is_processed_without_director(tmp_path, monkeypatch):
+def test_direct_file_collection_is_processed_without_request_resolution(tmp_path, monkeypatch):
     source = tmp_path / "source.nc"
     source.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(
-        execution_mod, "execute_planned_request", fail_planned_request_executor
-    )
+    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
 
     output_uris = operator.call(
         {
@@ -93,9 +89,7 @@ def test_later_workflow_step_receives_previous_step_files(tmp_path, monkeypatch)
     first.touch()
     second.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(
-        execution_mod, "execute_planned_request", fail_planned_request_executor
-    )
+    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
 
     output_uris = operator.call({"collection": [first.as_posix(), second.as_posix()]})
 

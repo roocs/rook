@@ -4,7 +4,7 @@ import os
 from pywps import FORMATS, ComplexInput, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import execute_planned_request
+from ..pflow import execute_resolved_request
 from ..operations import run_average_by_shape
 from ..utils.input_utils import parse_wps_input
 from ..utils.metalink_utils import build_metalink
@@ -115,7 +115,7 @@ class AverageByShape(Process):
         }
 
         # Plan the request before processing or returning original files
-        request_result = execute_planned_request(collection, inputs, run_average_by_shape)
+        request_result = execute_resolved_request(collection, inputs, run_average_by_shape)
 
         ml4 = build_metalink(
             "average-shape-result",

@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 from clisops.utils.file_utils import FileMapper, is_file_list
 
-from rook.director import execute_planned_request
-from rook.director.planning import WorkflowFiles
+from rook.pflow import execute_resolved_request
+from rook.pflow.sources import WorkflowFiles
 from rook.utils.input_utils import (
     clean_inputs,
     fix_parameters,
@@ -106,7 +106,7 @@ class Operator:
         if is_file_list(collection):
             output_uris = run_workflow_files(args, self.runner)
         else:
-            request_result = execute_planned_request(collection, args, self.runner)
+            request_result = execute_resolved_request(collection, args, self.runner)
             output_uris = request_result.output_uris
 
         return output_uris
@@ -117,16 +117,10 @@ class Operator:
 
 WORKFLOW_OPERATIONS = {
     "subset": WorkflowOperation(prefix="subset", runner=run_subset),
-    "average_time": WorkflowOperation(
-        prefix="average_time", runner=run_average_by_time
-    ),
+    "average_time": WorkflowOperation(prefix="average_time", runner=run_average_by_time),
     "average": WorkflowOperation(prefix="average", runner=run_average_by_dim),
-    "average_shape": WorkflowOperation(
-        prefix="average_shape", runner=run_average_by_shape
-    ),
-    "weighted_average": WorkflowOperation(
-        prefix="weighted_average", runner=run_weighted_average
-    ),
+    "average_shape": WorkflowOperation(prefix="average_shape", runner=run_average_by_shape),
+    "weighted_average": WorkflowOperation(prefix="weighted_average", runner=run_weighted_average),
     "regrid": WorkflowOperation(prefix="regrid", runner=run_regrid),
     "concat": WorkflowOperation(prefix="concat", runner=run_concat),
 }

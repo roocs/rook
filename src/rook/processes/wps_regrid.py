@@ -3,7 +3,7 @@ import logging
 from pywps import FORMATS, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from ..director import execute_planned_request
+from ..pflow import execute_resolved_request
 from ..operations import run_regrid
 from ..utils.input_utils import parse_wps_input, get_grid_param
 from ..utils.metalink_utils import build_metalink
@@ -133,7 +133,7 @@ class Regrid(Process):
         # print(inputs)
 
         # Plan the request before processing or returning original files
-        request_result = execute_planned_request(collection, inputs, run_regrid)
+        request_result = execute_resolved_request(collection, inputs, run_regrid)
 
         ml4 = build_metalink(
             "regrid-result",
