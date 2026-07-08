@@ -11,11 +11,6 @@ class RequestResult:
     output_uris: list[str]
 
     @property
-    def plan(self):
-        """Compatibility alias for callers not yet moved to decision naming."""
-        return self.decision
-
-    @property
     def project(self):
         """Return the project resolved for the request."""
         return self.decision.project

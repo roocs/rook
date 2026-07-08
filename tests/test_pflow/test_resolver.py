@@ -224,17 +224,6 @@ def test_execute_resolved_request_returns_request_result(tmp_path, catalog_resol
     assert result.dataset_sources[0].dataset_id == collection[0]
 
 
-def test_execute_resolved_request_returns_request_result_alias(tmp_path, catalog_resolver):
-    collection = ["c3s-cmip6.example.dataset"]
-    source = tmp_path / "input.nc"
-    source.touch()
-    catalog_resolver(FakeSearchResult({collection[0]: [source.as_posix()]}))
-
-    result = execute_resolved_request(collection, {"area": "0,0,10,10"}, lambda _inputs: ["out.nc"])
-
-    assert result.output_uris == ["out.nc"]
-
-
 def test_catalog_original_files_are_returned_when_requested(catalog_resolver):
     collection = ["c3s-cmip6.example.dataset"]
     download_url = "https://example.test/data/input.nc"
