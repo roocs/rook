@@ -51,16 +51,18 @@ class Operation:
     def get_operation_callable(self):
         raise NotImplementedError
 
-    def calculate(self):
+    def _add_output_config(self):
         config = {
             "output_type": self._output_type,
             "output_dir": self._output_dir,
             "split_method": self._split_method,
             "file_namer": self._file_namer,
         }
-
         self.params.update(config)
+        return config
 
+    def calculate(self):
+        self._add_output_config()
         norm_collection = normalise.normalise(self.collection)
 
         rs = normalise.ResultSet(vars())

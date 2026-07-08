@@ -37,12 +37,12 @@ def dataset_paths_by_id(sources):
     return collection
 
 
-def prepare_concat_input(ds):
+def apply_concat_calendar_fix(ds):
     """Apply concat-specific preparation before grouped files are combined."""
     return decadal_fix_calendar(None, ds)
 
 
-def apply_concat_decadal_fixes(collection, output_dir):
+def apply_concat_dataset_fixes(collection, output_dir):
     """Apply concat-specific decadal fixes to each opened dataset."""
     datasets = []
 
@@ -96,25 +96,20 @@ class Concat(Operation):
         }
 
     def calculate(self):
-        config = {
-            "output_type": self._output_type,
-            "output_dir": self._output_dir,
-            "split_method": self._split_method,
-            "file_namer": self._file_namer,
-        }
-
-        self.params.update(config)
-
+        self._add_output_config()
         collection = dataset_paths_by_id(self.collection)
         norm_collection = normalise.normalise_file_groups(
             collection,
-            prepare_dataset=prepare_concat_input,
+            prepare_dataset=apply_concat_calendar_fix,
         )
 
         rs = normalise.ResultSet(vars())
 
-        datasets = apply_concat_decadal_fixes(norm_collection, output_dir=self.params.get("output_dir", "."))
-        dims = dimension_parameter.DimensionParameter(self.params.get("dims", None)).value
+        datasets = apply_concat_dataset_fixes(
+            norm_collection,
+            output_dir=self.params.get("output_dir", "."),
+        )
+        dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
         processed_ds = combine_concat_datasets(datasets, dim, standard_name)
         outputs = finalise_concat_output(processed_ds, self.params, dim)
