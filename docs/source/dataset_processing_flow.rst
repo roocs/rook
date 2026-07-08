@@ -5,8 +5,7 @@ Dataset Processing Flow
 
 This page documents the request-resolution and operation-execution flow.
 ``rook.pflow`` is the processing-flow layer: it classifies request sources,
-resolves one request decision, and executes that decision. The old
-``rook.director`` namespace is kept only as a compatibility wrapper.
+resolves one request decision, and executes that decision.
 
 The current model is split into three questions:
 
