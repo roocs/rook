@@ -1,10 +1,7 @@
 name: Docker-based Testing Suite
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 concurrency:
   # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on main.

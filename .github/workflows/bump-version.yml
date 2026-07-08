@@ -1,40 +1,21 @@
 name: Conditional Bump Version
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - .*
-      - .github/**.md
-      - .github/**.yml
-      - AUTHORS.rst
-      - CHANGELOG.rst
-      - CI/**.in
-      - CI/**.txt
-      - CODE_OF_CONDUCT.rst
-      - CONTRIBUTING.rst
-      - Dockerfile
-      - Makefile
-      - README.rst
-      - docker-compose.yml
-      - docs/**.ipynb
-      - docs/**.py
-      - docs/**.rst
-      - docs/Makefile
-      - docs/_static/*
-      - environment-dev.yml
-      - environment-docs.yml
-      - environment.yml
-      - pyproject.toml
-      - test/**.py
-      - tox.toml
-      - src/$rook/__version__.py
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  skip_without_bot_secrets:
+    name: Skip version bump
+    if: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID == '' || secrets.BIRDHOUSE_HELPER_BOT_KEY == '' || secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY == '' || secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD == '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skipped bump
+        run: |
+          echo "Version bump skipped because one or more Birdhouse helper bot secrets are not configured."
+
   bump_patch_version:
     name: Bump build/patch version
     if: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID != '' && secrets.BIRDHOUSE_HELPER_BOT_KEY != '' && secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY != '' && secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD != '' }}

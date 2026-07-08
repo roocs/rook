@@ -185,11 +185,11 @@ corresponding PR has landed.
 - [x] Workflow execution imports use the new request-decision vocabulary.
 - [x] Tests no longer use director-era names.
 - [x] Remaining compatibility shims are removed or explicitly justified.
-- [ ] Processing diagrams and architecture docs use the new names.
-- [ ] Documentation has a high-level processing phase diagram.
-- [ ] Documentation has a detailed decision-rule diagram.
-- [ ] Changelog records the vocabulary cleanup.
-- [ ] Smoke tests pass after the rename.
+- [x] Processing diagrams and architecture docs use the new names.
+- [x] Documentation has a high-level processing phase diagram.
+- [x] Documentation has a detailed decision-rule diagram.
+- [x] Changelog records the vocabulary cleanup.
+- [x] Smoke tests pass after the rename.
 
 ## Guardrails
 
@@ -223,8 +223,8 @@ non-smoke test suite before each pull request.
   nicer: easier to read, named by test-data purpose, and documented as a
   temporary bridge until mini-esgf-data is replaced in a later phase.
 - Review the operation adapters in this phase if possible, especially `concat`.
-  Keep concat-specific fix behavior clear before the next phase integrates the
-  Woodpecker fixes library.
+  Concat-specific fix behavior has been clarified for the next phase, where the
+  Woodpecker fixes library can take over dataset/project fixes.
 - In a later cleanup phase, delegate dataset/project fixes to the Woodpecker
   library. This phase should only keep the current Rook policy explicit enough
   to make that future handoff straightforward.

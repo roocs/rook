@@ -4,6 +4,18 @@ Changes
 Unreleased
 ==========
 
+* Renamed the internal request-processing layer from ``rook.director`` to
+  ``rook.pflow`` and aligned the code, tests, and documentation around request
+  sources, request decisions, operation execution, and response adaptation.
+* Removed remaining director-era compatibility code while keeping the public WPS
+  process interface compatible.
+* Added clearer dataset-processing flow documentation, including high-level and
+  detailed Mermaid diagrams.
+* Clarified concat operation fix stages so the current CMIP6 decadal behavior is
+  easier to preserve before moving dataset fixes to Woodpecker.
+* Disabled overdesigned template GitHub Actions workflows by making version
+  bumping and Docker testing manual-only for now.
+
 1.2.2 (2026-07-07)
 ==================
 

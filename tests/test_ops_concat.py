@@ -18,7 +18,7 @@ def test_concat_dataset_paths_are_keyed_by_catalog_id(monkeypatch):
     assert collection["derived.dataset"] == ("direct.nc",)
 
 
-def test_prepare_concat_input_applies_decadal_calendar_fix(monkeypatch):
+def test_apply_concat_calendar_fix_applies_decadal_calendar_fix(monkeypatch):
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
 
@@ -28,13 +28,13 @@ def test_prepare_concat_input_applies_decadal_calendar_fix(monkeypatch):
 
     monkeypatch.setattr(concat_mod, "decadal_fix_calendar", fake_calendar)
 
-    result = concat_mod.prepare_concat_input(source)
+    result = concat_mod.apply_concat_calendar_fix(source)
 
     assert result is source
     assert calls == [(None, "input")]
 
 
-def test_apply_concat_decadal_fixes_preserves_dataset_identity(monkeypatch, tmp_path):
+def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_path):
     calls = []
     first = xr.Dataset(attrs={"source": "first"})
     second = xr.Dataset(attrs={"source": "second"})
@@ -45,7 +45,7 @@ def test_apply_concat_decadal_fixes_preserves_dataset_identity(monkeypatch, tmp_
 
     monkeypatch.setattr(concat_mod, "apply_decadal_fixes", fake_apply)
 
-    datasets = concat_mod.apply_concat_decadal_fixes(
+    datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": first, "second.id": second},
         output_dir=tmp_path.as_posix(),
     )
