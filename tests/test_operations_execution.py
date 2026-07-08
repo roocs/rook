@@ -158,3 +158,7 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
     for operation in operations:
         assert operation.collection == (prepared,)
+
+
+def test_subset_uses_base_operation_calculate():
+    assert Subset.calculate is Operation.calculate
