@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+1.2.3 (2026-07-08)
+==================
+
 * Renamed the internal request-processing layer from ``rook.director`` to
   ``rook.pflow`` and aligned the code, tests, and documentation around request
   sources, request decisions, operation execution, and response adaptation.
