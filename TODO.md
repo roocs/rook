@@ -81,6 +81,8 @@ corresponding PR has landed.
 - [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
 - [ ] Workflow-file inputs still feed later workflow steps.
 - [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
+- [ ] Remove the temporary `fix_backend` parameter after Woodpecker-backed
+  decadal fixes are trusted and the legacy path is removed.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.

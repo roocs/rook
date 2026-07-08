@@ -113,6 +113,7 @@ class Concat(Operation):
             "time_components": time_components,
             "dims": dims,
             "apply_average": params.get("apply_average", False),
+            "fix_backend": params.get("fix_backend", "legacy"),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
@@ -129,6 +130,7 @@ class Concat(Operation):
         datasets = apply_concat_dataset_fixes(
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
+            fix_backend=self.params.get("fix_backend", "legacy"),
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
@@ -150,6 +152,7 @@ def concat(
     split_method="time:auto",
     file_namer="standard",
     apply_average=False,
+    fix_backend="legacy",
 ):
     return Concat(
         collection=collection,
@@ -162,4 +165,5 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
+        fix_backend=fix_backend,
     ).calculate()
