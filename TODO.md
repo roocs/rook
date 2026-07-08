@@ -174,22 +174,22 @@ Concrete modules can then own the current behavior:
 Use this as the running progress log for the phase. Tick a box only after the
 corresponding PR has landed.
 
-- [ ] Replacement vocabulary is agreed and written down.
-- [ ] `rook.pflow` module layout is introduced with `base.py` abstractions.
-- [ ] Misleading "plan" terminology is replaced with decision/resolution
+- [x] Replacement vocabulary is agreed and written down.
+- [x] `rook.pflow` module layout is introduced with `base.py` abstractions.
+- [x] Misleading "plan" terminology is replaced with decision/resolution
   terminology.
-- [ ] Main processing phases are recognizable in code.
-- [ ] `rook.director` namespace is renamed.
-- [ ] WPS process imports use the new request-decision vocabulary.
-- [ ] Operation execution imports use the new request-decision vocabulary.
-- [ ] Workflow execution imports use the new request-decision vocabulary.
-- [ ] Tests no longer use director-era names.
-- [ ] Remaining compatibility shims are removed or explicitly justified.
-- [ ] Processing diagrams and architecture docs use the new names.
-- [ ] Documentation has a high-level processing phase diagram.
-- [ ] Documentation has a detailed decision-rule diagram.
-- [ ] Changelog records the vocabulary cleanup.
-- [ ] Smoke tests pass after the rename.
+- [x] Main processing phases are recognizable in code.
+- [x] `rook.director` namespace is renamed.
+- [x] WPS process imports use the new request-decision vocabulary.
+- [x] Operation execution imports use the new request-decision vocabulary.
+- [x] Workflow execution imports use the new request-decision vocabulary.
+- [x] Tests no longer use director-era names.
+- [x] Remaining compatibility shims are removed or explicitly justified.
+- [x] Processing diagrams and architecture docs use the new names.
+- [x] Documentation has a high-level processing phase diagram.
+- [x] Documentation has a detailed decision-rule diagram.
+- [x] Changelog records the vocabulary cleanup.
+- [x] Smoke tests pass after the rename.
 
 ## Guardrails
 
@@ -223,8 +223,8 @@ non-smoke test suite before each pull request.
   nicer: easier to read, named by test-data purpose, and documented as a
   temporary bridge until mini-esgf-data is replaced in a later phase.
 - Review the operation adapters in this phase if possible, especially `concat`.
-  Keep concat-specific fix behavior clear before the next phase integrates the
-  Woodpecker fixes library.
+  Concat-specific fix behavior has been clarified for the next phase, where the
+  Woodpecker fixes library can take over dataset/project fixes.
 - In a later cleanup phase, delegate dataset/project fixes to the Woodpecker
   library. This phase should only keep the current Rook policy explicit enough
   to make that future handoff straightforward.
