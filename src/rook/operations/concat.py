@@ -9,7 +9,6 @@ from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
-from clisops.utils.dataset_utils import open_xr_dataset
 
 from rook.utils.decadal_fixes import apply_decadal_fixes, decadal_fix_calendar
 
@@ -27,25 +26,63 @@ def drop_time_bnds(ds: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def patched_normalise(collection):
-    norm_collection = collections.OrderedDict()
+def dataset_paths_by_id(sources):
+    """Return concat input paths keyed by dataset id."""
+    collection = collections.OrderedDict()
 
-    for dset, file_paths in collection.items():
-        fixed_datasets = [
-            decadal_fix_calendar(None, open_xr_dataset(file)) for file in file_paths
-        ]
-        ds = xr.concat(fixed_datasets, dim="time")
-        norm_collection[dset] = ds
+    for source in sources:
+        ds_id = source.dataset_id or derive_ds_id(source.paths[0])
+        collection[ds_id] = source.paths
 
-    return norm_collection
+    return collection
+
+
+def prepare_concat_input(ds):
+    """Apply concat-specific preparation before grouped files are combined."""
+    return decadal_fix_calendar(None, ds)
+
+
+def apply_concat_decadal_fixes(collection, output_dir):
+    """Apply concat-specific decadal fixes to each opened dataset."""
+    datasets = []
+
+    for ds_id, ds in collection.items():
+        datasets.append(apply_decadal_fixes(ds_id, ds, output_dir=output_dir))
+
+    return datasets
+
+
+def concat_dimension(dims):
+    """Return the dimension name and standard name used for concat."""
+    standard_name = dims[0]
+    return coord_by_standard_name.get(standard_name, None), standard_name
+
+
+def combine_concat_datasets(datasets, dim, standard_name):
+    """Concatenate datasets and restore concat coordinate metadata."""
+    ds = xr.concat(datasets, dim)
+    ds = ds.assign_coords({dim: (dim, np.array(ds[dim].values, dtype="int32"))})
+    ds.coords[dim].attrs = {"standard_name": standard_name}
+    return drop_time_bnds(ds)
+
+
+def finalise_concat_output(ds, params, dim):
+    """Apply optional average and time selection to concat output."""
+    if params.get("apply_average", False):
+        ds = average(ds, dims=[dim])
+
+    return subset(
+        ds,
+        time=params.get("time", None),
+        time_components=params.get("time_components", None),
+        output_type="nc",
+    )
 
 
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         time = time_parameter.TimeParameter(params.get("time"))
-        time_components = time_components_parameter.TimeComponentsParameter(
-            params.get("time_components")
-        )
+        time_components = time_components_parameter.TimeComponentsParameter(params.get("time_components"))
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = resolve_collection(collection)
 
@@ -58,7 +95,7 @@ class Concat(Operation):
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
-    def _calculate(self):
+    def calculate(self):
         config = {
             "output_type": self._output_type,
             "output_dir": self._output_dir,
@@ -68,47 +105,19 @@ class Concat(Operation):
 
         self.params.update(config)
 
-        new_collection = collections.OrderedDict()
-
-        for source in self.collection:
-            ds_id = source.dataset_id or derive_ds_id(source.paths[0])
-            new_collection[ds_id] = source.paths
-
-        norm_collection = patched_normalise(new_collection)
+        collection = dataset_paths_by_id(self.collection)
+        norm_collection = normalise.normalise_file_groups(
+            collection,
+            prepare_dataset=prepare_concat_input,
+        )
 
         rs = normalise.ResultSet(vars())
 
-        datasets = []
-        for ds_id in norm_collection.keys():
-            ds = norm_collection[ds_id]
-            ds_mod = apply_decadal_fixes(
-                ds_id, ds, output_dir=self.params.get("output_dir", ".")
-            )
-            datasets.append(ds_mod)
-
-        dims = dimension_parameter.DimensionParameter(
-            self.params.get("dims", None)
-        ).value
-        standard_name = dims[0]
-        dim = coord_by_standard_name.get(standard_name, None)
-
-        processed_ds = xr.concat(
-            datasets,
-            dim,
-        )
-        processed_ds = processed_ds.assign_coords(
-            {dim: (dim, np.array(processed_ds[dim].values, dtype="int32"))}
-        )
-        processed_ds.coords[dim].attrs = {"standard_name": standard_name}
-        processed_ds = drop_time_bnds(processed_ds)
-        if self.params.get("apply_average", False):
-            processed_ds = average(processed_ds, dims=[dim])
-        outputs = subset(
-            processed_ds,
-            time=self.params.get("time", None),
-            time_components=self.params.get("time_components", None),
-            output_type="nc",
-        )
+        datasets = apply_concat_decadal_fixes(norm_collection, output_dir=self.params.get("output_dir", "."))
+        dims = dimension_parameter.DimensionParameter(self.params.get("dims", None)).value
+        dim, standard_name = concat_dimension(dims)
+        processed_ds = combine_concat_datasets(datasets, dim, standard_name)
+        outputs = finalise_concat_output(processed_ds, self.params, dim)
         rs.add("output", outputs)
 
         return rs
@@ -137,4 +146,4 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
-    )._calculate()
+    ).calculate()
