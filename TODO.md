@@ -222,6 +222,9 @@ non-smoke test suite before each pull request.
   helper, but the Rook-side selection of required files should be made a little
   nicer: easier to read, named by test-data purpose, and documented as a
   temporary bridge until mini-esgf-data is replaced in a later phase.
+- Review the operation adapters in this phase if possible, especially `concat`.
+  Keep concat-specific fix behavior clear before the next phase integrates the
+  Woodpecker fixes library.
 - In a later cleanup phase, delegate dataset/project fixes to the Woodpecker
   library. This phase should only keep the current Rook policy explicit enough
   to make that future handoff straightforward.
