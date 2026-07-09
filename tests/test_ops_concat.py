@@ -39,11 +39,14 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
     first = xr.Dataset(attrs={"source": "first"})
     second = xr.Dataset(attrs={"source": "second"})
 
-    def fake_apply(ds_id, ds, output_dir=None):
-        calls.append((ds_id, ds.attrs["source"], output_dir))
-        return ds.assign_attrs(fixed=ds_id)
+    class FakeProvider:
+        def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
+            calls.append((ds_id, ds.attrs["source"], output_dir))
+            return ds.assign_attrs(fixed=ds_id)
 
-    monkeypatch.setattr(concat_mod, "apply_decadal_fixes", fake_apply)
+    monkeypatch.setattr(
+        concat_mod, "get_dataset_fix_provider", lambda fix_backend: FakeProvider()
+    )
 
     datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": first, "second.id": second},
@@ -61,11 +64,16 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
     calls = []
     source = xr.Dataset(attrs={"source": "first"})
 
-    def fake_apply(ds_id, ds, output_dir=None):
-        calls.append((ds_id, ds.attrs["source"], output_dir))
-        return ds.assign_attrs(fixed_with="woodpecker")
+    class FakeProvider:
+        def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
+            calls.append((ds_id, ds.attrs["source"], output_dir))
+            return ds.assign_attrs(fixed_with="woodpecker")
 
-    monkeypatch.setattr(concat_mod, "apply_decadal_fixes_with_woodpecker", fake_apply)
+    monkeypatch.setattr(
+        concat_mod,
+        "get_dataset_fix_provider",
+        lambda fix_backend: calls.append(("provider", fix_backend)) or FakeProvider(),
+    )
 
     datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": source},
@@ -73,7 +81,10 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
         fix_backend="woodpecker",
     )
 
-    assert calls == [("first.id", "first", tmp_path.as_posix())]
+    assert calls == [
+        ("provider", "woodpecker"),
+        ("first.id", "first", tmp_path.as_posix()),
+    ]
     assert datasets[0].attrs["fixed_with"] == "woodpecker"
 
 
