@@ -10,7 +10,11 @@ from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
-from rook.fixes import get_dataset_fix_provider
+from rook.fixes import (
+    WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+    FixContext,
+    get_dataset_fix_provider,
+)
 
 from . import normalise
 from .base import Operation, resolve_collection
@@ -41,7 +45,12 @@ def apply_concat_calendar_fix(ds, fix_provider=None):
     """Apply concat-specific preparation before grouped files are combined."""
     if fix_provider is None:
         fix_provider = get_dataset_fix_provider()
-    return fix_provider.prepare_decadal_concat_dataset(ds)
+    context = FixContext(
+        operation="concat",
+        phase="prepare",
+        recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+    )
+    return fix_provider.prepare(ds, context=context)
 
 
 def apply_concat_dataset_fixes(
@@ -53,9 +62,14 @@ def apply_concat_dataset_fixes(
     datasets = []
 
     for ds_id, ds in collection.items():
-        datasets.append(
-            fix_provider.apply_decadal_fixes(ds_id, ds, output_dir=output_dir)
+        context = FixContext(
+            dataset_id=ds_id,
+            operation="concat",
+            phase="apply",
+            output_dir=output_dir,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
         )
+        datasets.append(fix_provider.apply(ds, context=context))
 
     return datasets
 

@@ -23,14 +23,14 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix(monkeypatch):
     source = xr.Dataset(attrs={"source": "input"})
 
     class FakeProvider:
-        def prepare_decadal_concat_dataset(self, ds):
-            calls.append(ds.attrs["source"])
+        def prepare(self, ds, *, context=None):
+            calls.append((ds.attrs["source"], context.operation, context.phase))
             return ds
 
     result = concat_mod.apply_concat_calendar_fix(source, FakeProvider())
 
     assert result is source
-    assert calls == ["input"]
+    assert calls == [("input", "concat", "prepare")]
 
 
 def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_path):
@@ -39,9 +39,9 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
     second = xr.Dataset(attrs={"source": "second"})
 
     class FakeProvider:
-        def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
-            calls.append((ds_id, ds.attrs["source"], output_dir))
-            return ds.assign_attrs(fixed=ds_id)
+        def apply(self, ds, *, context=None):
+            calls.append((context.dataset_id, ds.attrs["source"], context.output_dir))
+            return ds.assign_attrs(fixed=context.dataset_id)
 
     monkeypatch.setattr(
         concat_mod, "get_dataset_fix_provider", lambda fix_backend: FakeProvider()
@@ -64,8 +64,15 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
     source = xr.Dataset(attrs={"source": "first"})
 
     class FakeProvider:
-        def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
-            calls.append((ds_id, ds.attrs["source"], output_dir))
+        def apply(self, ds, *, context=None):
+            calls.append(
+                (
+                    context.dataset_id,
+                    ds.attrs["source"],
+                    context.output_dir,
+                    context.recipe_id,
+                )
+            )
             return ds.assign_attrs(fixed_with="woodpecker")
 
     monkeypatch.setattr(
@@ -82,7 +89,12 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
 
     assert calls == [
         ("provider", "woodpecker"),
-        ("first.id", "first", tmp_path.as_posix()),
+        (
+            "first.id",
+            "first",
+            tmp_path.as_posix(),
+            concat_mod.WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+        ),
     ]
     assert datasets[0].attrs["fixed_with"] == "woodpecker"
 
@@ -94,8 +106,8 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
     final = ["https://example.com/fixed.nc"]
 
     class FakeProvider:
-        def prepare_decadal_concat_dataset(self, ds):
-            calls.append(("prepare", ds))
+        def prepare(self, ds, *, context=None):
+            calls.append(("prepare", ds, context.operation, context.phase))
             return ds
 
     fake_provider = FakeProvider()
@@ -142,7 +154,7 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
         ("provider", "woodpecker"),
-        ("prepare", source),
+        ("prepare", source, "concat", "prepare"),
         (
             {"dataset.id": source},
             tmp_path.as_posix(),

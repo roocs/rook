@@ -77,14 +77,19 @@ corresponding PR has landed.
 - [ ] Woodpecker integration boundary is written down.
 - [ ] Woodpecker dependency is added.
 - [ ] Rook has a small Woodpecker adapter or provider.
+  Note: keep the provider interface generic. The main provider method should be
+  `apply(ds, context=...)`, with optional `prepare(...)` and `finalise(...)`
+  hooks for operation lifecycle needs. Avoid adding new provider methods named
+  after specific projects, activities, or fixes unless there is no generic
+  lifecycle boundary for the behavior.
 - [ ] Catalog-backed dataset fixes use Woodpecker.
 - [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
 - [ ] Workflow-file inputs still feed later workflow steps.
 - [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
   Note: concat still has a special CMIP6-decadal pre-concat calendar
   preparation step for proleptic Gregorian inputs. It is now hidden behind the
-  fix provider adapter, but both legacy and Woodpecker providers still delegate
-  that step to the old Rook helper. Decide whether this belongs in a
+  generic `prepare(...)` hook, but both legacy and Woodpecker providers still
+  delegate that step to the old Rook helper. Decide whether this belongs in a
   Woodpecker recipe/fix or remains an operation-specific Rook preparation hook.
 - [ ] Remove the temporary `fix_backend` parameter after Woodpecker-backed
   decadal fixes are trusted and the legacy path is removed.

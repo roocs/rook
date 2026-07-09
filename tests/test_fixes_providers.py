@@ -2,6 +2,8 @@ import pytest
 import xarray as xr
 
 from rook.fixes.providers import (
+    FixContext,
+    FixProvider,
     LegacyDatasetFixProvider,
     WoodpeckerDatasetFixProvider,
     get_dataset_fix_provider,
@@ -13,6 +15,18 @@ def test_get_dataset_fix_provider_returns_legacy_provider_by_default():
 
     assert isinstance(provider, LegacyDatasetFixProvider)
     assert provider.name == "legacy"
+
+
+def test_fix_provider_finalise_is_noop():
+    class TestProvider(FixProvider):
+        def apply(self, ds, *, context=None):
+            return ds
+
+    source = xr.Dataset(attrs={"source": "input"})
+
+    result = TestProvider().finalise(source, context=FixContext(operation="concat"))
+
+    assert result is source
 
 
 def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
@@ -27,7 +41,10 @@ def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
 
     monkeypatch.setattr(decadal_fixes, "decadal_fix_calendar", fake_calendar)
 
-    result = LegacyDatasetFixProvider().prepare_decadal_concat_dataset(source)
+    result = LegacyDatasetFixProvider().prepare(
+        source,
+        context=FixContext(operation="concat", phase="prepare"),
+    )
 
     assert result is source
     assert calls == [(None, "input")]
@@ -52,7 +69,10 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
 
     monkeypatch.setattr(decadal_fixes, "decadal_fix_calendar", fake_calendar)
 
-    result = WoodpeckerDatasetFixProvider().prepare_decadal_concat_dataset(source)
+    result = WoodpeckerDatasetFixProvider().prepare(
+        source,
+        context=FixContext(operation="concat", phase="prepare"),
+    )
 
     assert result is source
     assert calls == [(None, "input")]

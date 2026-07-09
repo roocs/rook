@@ -5,6 +5,7 @@ import xarray as xr
 import builtins
 
 from rook.fixes.providers import (
+    FixContext,
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
 )
@@ -119,16 +120,25 @@ def test_woodpecker_decadal_fixes_raise_clear_error_when_woodpecker_missing(
     monkeypatch.setattr(builtins, "__import__", block_woodpecker_import)
 
     with pytest.raises(ImportError, match="Woodpecker is required"):
-        WoodpeckerDatasetFixProvider().apply_decadal_fixes(DECADAL_DS_ID, xr.Dataset())
+        WoodpeckerDatasetFixProvider().apply(
+            xr.Dataset(),
+            context=FixContext(
+                dataset_id=DECADAL_DS_ID,
+                recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+            ),
+        )
 
 
 def test_woodpecker_decadal_fixes_match_legacy_rook_output(tmp_path):
     dataset = make_representative_decadal_sample()
 
     legacy = apply_decadal_fixes(DECADAL_DS_ID, dataset.copy(deep=True))
-    woodpecker = WoodpeckerDatasetFixProvider().apply_decadal_fixes(
-        DECADAL_DS_ID,
+    woodpecker = WoodpeckerDatasetFixProvider().apply(
         dataset.copy(deep=True),
+        context=FixContext(
+            dataset_id=DECADAL_DS_ID,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+        ),
     )
 
     legacy_output = roundtrip_dataset(legacy, tmp_path / "legacy.nc")
