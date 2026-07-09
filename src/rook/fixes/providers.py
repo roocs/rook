@@ -10,6 +10,10 @@ class DatasetFixProvider(ABC):
 
     name = "base"
 
+    def prepare_decadal_concat_dataset(self, ds):
+        """Prepare an opened CMIP6-decadal file before concat."""
+        return ds
+
     @abstractmethod
     def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
         """Apply CMIP6-decadal fixes and return the dataset."""
@@ -19,6 +23,11 @@ class LegacyDatasetFixProvider(DatasetFixProvider):
     """Rook's legacy CMIP6-decadal fix provider."""
 
     name = "legacy"
+
+    def prepare_decadal_concat_dataset(self, ds):
+        from rook.utils.decadal_fixes import decadal_fix_calendar
+
+        return decadal_fix_calendar(None, ds)
 
     def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
         from rook.utils.decadal_fixes import apply_decadal_fixes
@@ -30,6 +39,11 @@ class WoodpeckerDatasetFixProvider(DatasetFixProvider):
     """Woodpecker-backed CMIP6-decadal fix provider."""
 
     name = "woodpecker"
+
+    def prepare_decadal_concat_dataset(self, ds):
+        from rook.utils.decadal_fixes import decadal_fix_calendar
+
+        return decadal_fix_calendar(None, ds)
 
     def apply_decadal_fixes(self, ds_id, ds, *, output_dir=None):
         try:

@@ -81,6 +81,11 @@ corresponding PR has landed.
 - [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
 - [ ] Workflow-file inputs still feed later workflow steps.
 - [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
+  Note: concat still has a special CMIP6-decadal pre-concat calendar
+  preparation step for proleptic Gregorian inputs. It is now hidden behind the
+  fix provider adapter, but both legacy and Woodpecker providers still delegate
+  that step to the old Rook helper. Decide whether this belongs in a
+  Woodpecker recipe/fix or remains an operation-specific Rook preparation hook.
 - [ ] Remove the temporary `fix_backend` parameter after Woodpecker-backed
   decadal fixes are trusted and the legacy path is removed.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.

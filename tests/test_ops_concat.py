@@ -22,16 +22,15 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix(monkeypatch):
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
 
-    def fake_calendar(ds_id, ds):
-        calls.append((ds_id, ds.attrs["source"]))
-        return ds
+    class FakeProvider:
+        def prepare_decadal_concat_dataset(self, ds):
+            calls.append(ds.attrs["source"])
+            return ds
 
-    monkeypatch.setattr(concat_mod, "decadal_fix_calendar", fake_calendar)
-
-    result = concat_mod.apply_concat_calendar_fix(source)
+    result = concat_mod.apply_concat_calendar_fix(source, FakeProvider())
 
     assert result is source
-    assert calls == [(None, "input")]
+    assert calls == ["input"]
 
 
 def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_path):
@@ -94,19 +93,31 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
     combined = xr.Dataset({"tas": ("realization", [1.0])})
     final = ["https://example.com/fixed.nc"]
 
+    class FakeProvider:
+        def prepare_decadal_concat_dataset(self, ds):
+            calls.append(("prepare", ds))
+            return ds
+
+    fake_provider = FakeProvider()
+
     monkeypatch.setattr(
         concat_mod, "dataset_paths_by_id", lambda collection: collection
     )
     monkeypatch.setattr(
+        concat_mod,
+        "get_dataset_fix_provider",
+        lambda fix_backend: calls.append(("provider", fix_backend)) or fake_provider,
+    )
+    monkeypatch.setattr(
         concat_mod.normalise,
         "normalise_file_groups",
-        lambda collection, prepare_dataset: {"dataset.id": source},
+        lambda collection, prepare_dataset: {"dataset.id": prepare_dataset(source)},
     )
     monkeypatch.setattr(
         concat_mod,
         "apply_concat_dataset_fixes",
-        lambda collection, output_dir, fix_backend="legacy": calls.append(
-            (collection, output_dir, fix_backend)
+        lambda collection, output_dir, fix_backend="legacy", fix_provider=None: calls.append(
+            (collection, output_dir, fix_backend, fix_provider)
         )
         or [combined],
     )
@@ -130,11 +141,14 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
 
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
+        ("provider", "woodpecker"),
+        ("prepare", source),
         (
             {"dataset.id": source},
             tmp_path.as_posix(),
             "woodpecker",
-        )
+            fake_provider,
+        ),
     ]
 
 

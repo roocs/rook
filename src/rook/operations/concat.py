@@ -11,7 +11,6 @@ from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
 from rook.fixes import get_dataset_fix_provider
-from rook.utils.decadal_fixes import decadal_fix_calendar
 
 from . import normalise
 from .base import Operation, resolve_collection
@@ -38,14 +37,19 @@ def dataset_paths_by_id(sources):
     return collection
 
 
-def apply_concat_calendar_fix(ds):
+def apply_concat_calendar_fix(ds, fix_provider=None):
     """Apply concat-specific preparation before grouped files are combined."""
-    return decadal_fix_calendar(None, ds)
+    if fix_provider is None:
+        fix_provider = get_dataset_fix_provider()
+    return fix_provider.prepare_decadal_concat_dataset(ds)
 
 
-def apply_concat_dataset_fixes(collection, output_dir, fix_backend="legacy"):
+def apply_concat_dataset_fixes(
+    collection, output_dir, fix_backend="legacy", fix_provider=None
+):
     """Apply concat-specific decadal fixes to each opened dataset."""
-    fix_provider = get_dataset_fix_provider(fix_backend)
+    if fix_provider is None:
+        fix_provider = get_dataset_fix_provider(fix_backend)
     datasets = []
 
     for ds_id, ds in collection.items():
@@ -104,10 +108,13 @@ class Concat(Operation):
 
     def calculate(self):
         self._add_output_config()
+        fix_provider = get_dataset_fix_provider(
+            self.params.get("fix_backend", "legacy")
+        )
         collection = dataset_paths_by_id(self.collection)
         norm_collection = normalise.normalise_file_groups(
             collection,
-            prepare_dataset=apply_concat_calendar_fix,
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, fix_provider),
         )
 
         rs = normalise.ResultSet(vars())
@@ -116,6 +123,7 @@ class Concat(Operation):
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
             fix_backend=self.params.get("fix_backend", "legacy"),
+            fix_provider=fix_provider,
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
