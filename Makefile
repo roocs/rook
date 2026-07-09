@@ -155,7 +155,7 @@ coverage: ## check code coverage quickly with the default Python
 ## Sphinx targets:
 
 autodoc: install-docs clean-docs ## create sphinx-apidoc files:
-	@bash -c 'sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook'
+	@bash -c 'sphinx-apidoc --force -o docs/source/apidoc --private --module-first src/rook'
 
 build-docs: autodoc ## generate Sphinx HTML documentation, including API docs
 	@echo "Generating docs with Sphinx ..."
