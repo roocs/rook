@@ -30,7 +30,7 @@ def test_fix_provider_finalise_is_noop():
 
 
 def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
-    from rook.utils import decadal_fixes
+    from rook.fixes import legacy_decadal
 
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
@@ -39,7 +39,7 @@ def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
         calls.append((ds_id, ds.attrs["source"]))
         return ds
 
-    monkeypatch.setattr(decadal_fixes, "decadal_fix_calendar", fake_calendar)
+    monkeypatch.setattr(legacy_decadal, "decadal_fix_calendar", fake_calendar)
 
     result = LegacyDatasetFixProvider().prepare(
         source,
@@ -58,7 +58,7 @@ def test_get_dataset_fix_provider_returns_woodpecker_provider():
 
 
 def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
-    from rook.utils import decadal_fixes
+    from rook.fixes import legacy_decadal
 
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
@@ -67,7 +67,7 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
         calls.append((ds_id, ds.attrs["source"]))
         return ds
 
-    monkeypatch.setattr(decadal_fixes, "decadal_fix_calendar", fake_calendar)
+    monkeypatch.setattr(legacy_decadal, "decadal_fix_calendar", fake_calendar)
 
     result = WoodpeckerDatasetFixProvider().prepare(
         source,
