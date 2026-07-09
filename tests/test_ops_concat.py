@@ -57,6 +57,76 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
     assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
 
 
+def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_path):
+    calls = []
+    source = xr.Dataset(attrs={"source": "first"})
+
+    def fake_apply(ds_id, ds, output_dir=None):
+        calls.append((ds_id, ds.attrs["source"], output_dir))
+        return ds.assign_attrs(fixed_with="woodpecker")
+
+    monkeypatch.setattr(concat_mod, "apply_decadal_fixes_with_woodpecker", fake_apply)
+
+    datasets = concat_mod.apply_concat_dataset_fixes(
+        {"first.id": source},
+        output_dir=tmp_path.as_posix(),
+        fix_backend="woodpecker",
+    )
+
+    assert calls == [("first.id", "first", tmp_path.as_posix())]
+    assert datasets[0].attrs["fixed_with"] == "woodpecker"
+
+
+def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
+    calls = []
+    source = DatasetSource("dataset.id", ["input.nc"])
+    combined = xr.Dataset({"tas": ("realization", [1.0])})
+    final = ["https://example.com/fixed.nc"]
+
+    monkeypatch.setattr(
+        concat_mod, "dataset_paths_by_id", lambda collection: collection
+    )
+    monkeypatch.setattr(
+        concat_mod.normalise,
+        "normalise_file_groups",
+        lambda collection, prepare_dataset: {"dataset.id": source},
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "apply_concat_dataset_fixes",
+        lambda collection, output_dir, fix_backend="legacy": calls.append(
+            (collection, output_dir, fix_backend)
+        )
+        or [combined],
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "combine_concat_datasets",
+        lambda datasets, dim, standard_name: combined,
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "finalise_concat_output",
+        lambda ds, params, dim: final,
+    )
+
+    result = concat_mod.concat(
+        collection=[source],
+        dims=["realization"],
+        output_dir=tmp_path.as_posix(),
+        fix_backend="woodpecker",
+    )
+
+    assert result.file_uris == ["https://example.com/fixed.nc"]
+    assert calls == [
+        (
+            {"dataset.id": source},
+            tmp_path.as_posix(),
+            "woodpecker",
+        )
+    ]
+
+
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():
     datasets = [
         xr.Dataset(

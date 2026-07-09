@@ -54,7 +54,9 @@ dependencies = [
   "aiohttp",
   "bokeh >=3.7.0",
   "humanize",
-  "beautifulsoup4 >4.12.3"
+  "beautifulsoup4 >4.12.3",
+  "woodpecker @ git+https://github.com/roocs/woodpecker.git@main",
+  "woodpecker-cmip6-decadal-plugin @ git+https://github.com/roocs/woodpecker.git@main#subdirectory=plugins/woodpecker-cmip6-decadal-plugin"
 ]
 
 [project.optional-dependencies]
