@@ -2,12 +2,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import builtins
-
-from rook.utils.decadal_fixes import (
+from rook.fixes.providers import (
+    FixContext,
+    WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+    WoodpeckerDatasetFixProvider,
+)
+from rook.fixes.legacy_decadal import (
     apply_decadal_fixes,
-    apply_decadal_fixes_with_woodpecker,
 )
 
 cftime = pytest.importorskip("cftime")
@@ -44,6 +46,22 @@ def make_representative_decadal_sample():
     )
     dataset["time"].attrs["long_name"] = "time"
     dataset["time"].encoding["calendar"] = "standard"
+    return dataset
+
+
+def make_proleptic_gregorian_decadal_sample():
+    dataset = make_representative_decadal_sample()
+    dataset = dataset.assign_coords(
+        time=np.array(
+            [
+                cftime.DatetimeProlepticGregorian(1960, 11, 16),
+                cftime.DatetimeProlepticGregorian(1960, 12, 16),
+            ],
+            dtype=object,
+        )
+    )
+    dataset["time"].attrs["calendar"] = "proleptic_gregorian"
+    dataset["time"].encoding["calendar"] = "proleptic_gregorian"
     return dataset
 
 
@@ -104,29 +122,40 @@ def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
     assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "cmip6_decadal.full"
 
 
-def test_woodpecker_decadal_fixes_raise_clear_error_when_woodpecker_missing(
-    monkeypatch,
-):
-    real_import = builtins.__import__
+def test_woodpecker_decadal_calendar_fix_id_is_calendar_normalization():
+    assert (
+        WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID
+        == "cmip6_decadal.calendar_normalization"
+    )
 
-    def block_woodpecker_import(name, *args, **kwargs):
-        if name == "woodpecker":
-            raise ImportError("blocked woodpecker import")
-        return real_import(name, *args, **kwargs)
 
-    monkeypatch.setattr(builtins, "__import__", block_woodpecker_import)
+def test_woodpecker_prepare_applies_decadal_calendar_fix():
+    dataset = make_proleptic_gregorian_decadal_sample()
 
-    with pytest.raises(ImportError, match="Woodpecker is required"):
-        apply_decadal_fixes_with_woodpecker(DECADAL_DS_ID, xr.Dataset())
+    result = WoodpeckerDatasetFixProvider().prepare(
+        dataset,
+        context=FixContext(
+            dataset_id=DECADAL_DS_ID,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
+        ),
+    )
+
+    assert result is dataset
+    assert isinstance(result.time.values[0], cftime.DatetimeGregorian)
+    assert result.time.attrs.get("calendar") == "standard"
+    assert result.time.encoding.get("calendar") == "standard"
 
 
 def test_woodpecker_decadal_fixes_match_legacy_rook_output(tmp_path):
     dataset = make_representative_decadal_sample()
 
     legacy = apply_decadal_fixes(DECADAL_DS_ID, dataset.copy(deep=True))
-    woodpecker = apply_decadal_fixes_with_woodpecker(
-        DECADAL_DS_ID,
+    woodpecker = WoodpeckerDatasetFixProvider().apply(
         dataset.copy(deep=True),
+        context=FixContext(
+            dataset_id=DECADAL_DS_ID,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+        ),
     )
 
     legacy_output = roundtrip_dataset(legacy, tmp_path / "legacy.nc")

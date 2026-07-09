@@ -10,10 +10,10 @@ from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
-from rook.utils.decadal_fixes import (
-    apply_decadal_fixes,
-    apply_decadal_fixes_with_woodpecker,
-    decadal_fix_calendar,
+from rook.fixes import (
+    WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+    FixContext,
+    get_dataset_fix_provider,
 )
 
 from . import normalise
@@ -41,32 +41,35 @@ def dataset_paths_by_id(sources):
     return collection
 
 
-def apply_concat_calendar_fix(ds):
+def apply_concat_calendar_fix(ds, fix_provider=None):
     """Apply concat-specific preparation before grouped files are combined."""
-    return decadal_fix_calendar(None, ds)
-
-
-DECADAL_FIX_BACKENDS = ("legacy", "woodpecker")
-
-
-def get_decadal_fix_backend(fix_backend):
-    if fix_backend == "legacy":
-        return apply_decadal_fixes
-    if fix_backend == "woodpecker":
-        return apply_decadal_fixes_with_woodpecker
-    allowed = ", ".join(DECADAL_FIX_BACKENDS)
-    raise ValueError(
-        f"Unsupported decadal fix backend: {fix_backend!r}. Use one of: {allowed}"
+    if fix_provider is None:
+        fix_provider = get_dataset_fix_provider()
+    context = FixContext(
+        operation="concat",
+        phase="prepare",
+        recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     )
+    return fix_provider.prepare(ds, context=context)
 
 
-def apply_concat_dataset_fixes(collection, output_dir, fix_backend="legacy"):
+def apply_concat_dataset_fixes(
+    collection, output_dir, fix_backend="legacy", fix_provider=None
+):
     """Apply concat-specific decadal fixes to each opened dataset."""
-    apply_fixes = get_decadal_fix_backend(fix_backend)
+    if fix_provider is None:
+        fix_provider = get_dataset_fix_provider(fix_backend)
     datasets = []
 
     for ds_id, ds in collection.items():
-        datasets.append(apply_fixes(ds_id, ds, output_dir=output_dir))
+        context = FixContext(
+            dataset_id=ds_id,
+            operation="concat",
+            phase="apply",
+            output_dir=output_dir,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+        )
+        datasets.append(fix_provider.apply(ds, context=context))
 
     return datasets
 
@@ -119,10 +122,13 @@ class Concat(Operation):
 
     def calculate(self):
         self._add_output_config()
+        fix_provider = get_dataset_fix_provider(
+            self.params.get("fix_backend", "legacy")
+        )
         collection = dataset_paths_by_id(self.collection)
         norm_collection = normalise.normalise_file_groups(
             collection,
-            prepare_dataset=apply_concat_calendar_fix,
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, fix_provider),
         )
 
         rs = normalise.ResultSet(vars())
@@ -131,6 +137,7 @@ class Concat(Operation):
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
             fix_backend=self.params.get("fix_backend", "legacy"),
+            fix_provider=fix_provider,
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)

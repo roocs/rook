@@ -7,33 +7,31 @@ from rook.utils.data_utils.attr_utils import (
 from rook.utils.data_utils.coord_utils import add_coord, add_scalar_coord
 from rook.utils.data_utils.var_utils import add_data_var
 
-WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
-
 model_specific_global_attrs = {
     "CMCC-CM2-SR5": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
     },
     "EC-Earth3": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
-        "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # noqa
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # noqa: E501
     },
     "HadGEM3-GC31-MM": {
         "forcing_description": "f2, CMIP6 v6.2.0 forcings; no ozone remapping",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
     },
     "MPI-ESM1-2-HR": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
     },
     "MPI-ESM1-2-LR": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
     },
 }
 
@@ -56,23 +54,6 @@ def apply_decadal_fixes(ds_id, ds, output_dir=None):
     return ds_mod
 
 
-def apply_decadal_fixes_with_woodpecker(ds_id, ds, output_dir=None):
-    """Apply the Woodpecker CMIP6-decadal recipe to a dataset."""
-    try:
-        import woodpecker
-    except ImportError as exc:
-        raise ImportError(
-            "Woodpecker is required to apply CMIP6-decadal fixes with the "
-            "woodpecker backend. Install woodpecker and the "
-            "woodpecker-cmip6-decadal plugin, or use the legacy backend."
-        ) from exc
-
-    recipe = woodpecker.recipe.get(WOODPECKER_CMIP6_DECADAL_RECIPE_ID)
-    if woodpecker.recipe.check(ds, recipe):
-        woodpecker.recipe.fix(ds, recipe, dry_run=False)
-    return ds
-
-
 def decadal_fix_1(ds_id, ds):
     operands = {"var_id": "time", "attrs": {"long_name": "valid_time"}}
     ds_mod = edit_var_attrs(ds_id, ds, **operands)
@@ -84,13 +65,13 @@ def decadal_fix_2(ds_id, ds):
         "attrs": {
             "forcing_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "forcing_description"
-            ),  # noqa
+            ),  # noqa: E501
             "physics_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "physics_description"
-            ),  # noqa
+            ),  # noqa: E501
             "initialization_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "initialization_description"
-            ),  # noqa
+            ),  # noqa: E501
             "startdate": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
             "sub_experiment_id": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
         }
@@ -145,7 +126,7 @@ def decadal_fix_5(ds_id, ds):
         "dtype": "int32",
         "attrs": {
             "long_name": "realization",
-            "comment": "For more information on the ripf, refer to the variant_label, initialization_description, physics_description and forcing_description global attributes",  # noqa
+            "comment": "For more information on the ripf, refer to the variant_label, initialization_description, physics_description and forcing_description global attributes",  # noqa: E501
         },
     }
 

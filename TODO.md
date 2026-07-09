@@ -77,12 +77,28 @@ corresponding PR has landed.
 - [ ] Woodpecker integration boundary is written down.
 - [ ] Woodpecker dependency is added.
 - [ ] Rook has a small Woodpecker adapter or provider.
+  Note: keep the provider interface generic. The main provider method should be
+  `apply(ds, context=...)`, with optional `prepare(...)` and `finalise(...)`
+  hooks for operation lifecycle needs. Avoid adding new provider methods named
+  after specific projects, activities, or fixes unless there is no generic
+  lifecycle boundary for the behavior.
 - [ ] Catalog-backed dataset fixes use Woodpecker.
 - [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
 - [ ] Workflow-file inputs still feed later workflow steps.
 - [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
-- [ ] Remove the temporary `fix_backend` parameter after Woodpecker-backed
-  decadal fixes are trusted and the legacy path is removed.
+  Note: concat still has a special CMIP6-decadal pre-concat calendar
+  preparation step for proleptic Gregorian inputs. It is now hidden behind the
+  generic `prepare(...)` hook. The Woodpecker provider uses the direct
+  `cmip6_decadal.calendar_normalization` fix for this step; the legacy provider
+  still delegates to the old Rook helper. Decide whether this remains an
+  operation-specific Rook preparation hook or becomes a more explicit
+  Woodpecker recipe/phase.
+- [ ] Move fix provider selection out of WPS operator parameters and into
+  internal configuration. Prefer a `roocs.ini` setting for the default provider,
+  keep Rook responsible for choosing the provider internally, and add a pytest
+  switch or override so smoke/parity tests can exercise legacy and Woodpecker
+  backends deliberately. After this is in place, deprecate or remove the
+  temporary `fix_backend` parameter from the WPS/operator surface.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
