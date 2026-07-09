@@ -6,6 +6,7 @@ import importlib
 import importlib.util
 
 WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
+WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID = "cmip6_decadal.calendar_normalization"
 
 
 @dataclass(frozen=True)
@@ -86,11 +87,17 @@ class WoodpeckerDatasetFixProvider(FixProvider):
     )
 
     def prepare(self, ds, *, context=None):
-        from rook.fixes.legacy_decadal import decadal_fix_calendar
-
         # TODO: decide whether this special CMIP6-decadal pre-concat calendar
-        # preparation belongs in Woodpecker or remains a Rook operation hook.
-        return decadal_fix_calendar(None, ds)
+        # preparation remains an operation hook or should be represented by a
+        # dedicated recipe/phase in Woodpecker.
+        self.require_available()
+        woodpecker = importlib.import_module("woodpecker")
+        woodpecker.fix(
+            ds,
+            fixes=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
+            dry_run=False,
+        )
+        return ds
 
     def apply(self, ds, *, context=None):
         self.require_available()

@@ -5,6 +5,7 @@ from rook.fixes.providers import (
     FixContext,
     FixProvider,
     LegacyDatasetFixProvider,
+    WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
     WoodpeckerDatasetFixProvider,
     get_dataset_fix_provider,
 )
@@ -87,16 +88,18 @@ def test_get_dataset_fix_provider_returns_woodpecker_provider():
 
 
 def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
-    from rook.fixes import legacy_decadal
-
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
 
-    def fake_calendar(ds_id, ds):
-        calls.append((ds_id, ds.attrs["source"]))
-        return ds
+    class FakeWoodpecker:
+        @staticmethod
+        def fix(ds, *, fixes=None, dry_run=True):
+            calls.append(("fix", ds.attrs["source"], fixes, dry_run))
 
-    monkeypatch.setattr(legacy_decadal, "decadal_fix_calendar", fake_calendar)
+    monkeypatch.setattr(
+        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
+    )
+    monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
 
     result = WoodpeckerDatasetFixProvider().prepare(
         source,
@@ -104,7 +107,9 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
     )
 
     assert result is source
-    assert calls == [(None, "input")]
+    assert calls == [
+        ("fix", "input", WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID, False),
+    ]
 
 
 def test_get_dataset_fix_provider_rejects_unknown_provider():

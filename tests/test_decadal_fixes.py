@@ -4,6 +4,7 @@ import xarray as xr
 
 from rook.fixes.providers import (
     FixContext,
+    WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
 )
@@ -45,6 +46,22 @@ def make_representative_decadal_sample():
     )
     dataset["time"].attrs["long_name"] = "time"
     dataset["time"].encoding["calendar"] = "standard"
+    return dataset
+
+
+def make_proleptic_gregorian_decadal_sample():
+    dataset = make_representative_decadal_sample()
+    dataset = dataset.assign_coords(
+        time=np.array(
+            [
+                cftime.DatetimeProlepticGregorian(1960, 11, 16),
+                cftime.DatetimeProlepticGregorian(1960, 12, 16),
+            ],
+            dtype=object,
+        )
+    )
+    dataset["time"].attrs["calendar"] = "proleptic_gregorian"
+    dataset["time"].encoding["calendar"] = "proleptic_gregorian"
     return dataset
 
 
@@ -103,6 +120,30 @@ def assert_identical_with_report(left, right):
 
 def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
     assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "cmip6_decadal.full"
+
+
+def test_woodpecker_decadal_calendar_fix_id_is_calendar_normalization():
+    assert (
+        WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID
+        == "cmip6_decadal.calendar_normalization"
+    )
+
+
+def test_woodpecker_prepare_applies_decadal_calendar_fix():
+    dataset = make_proleptic_gregorian_decadal_sample()
+
+    result = WoodpeckerDatasetFixProvider().prepare(
+        dataset,
+        context=FixContext(
+            dataset_id=DECADAL_DS_ID,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
+        ),
+    )
+
+    assert result is dataset
+    assert isinstance(result.time.values[0], cftime.DatetimeGregorian)
+    assert result.time.attrs.get("calendar") == "standard"
+    assert result.time.encoding.get("calendar") == "standard"
 
 
 def test_woodpecker_decadal_fixes_match_legacy_rook_output(tmp_path):

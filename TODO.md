@@ -88,9 +88,11 @@ corresponding PR has landed.
 - [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
   Note: concat still has a special CMIP6-decadal pre-concat calendar
   preparation step for proleptic Gregorian inputs. It is now hidden behind the
-  generic `prepare(...)` hook, but both legacy and Woodpecker providers still
-  delegate that step to the old Rook helper. Decide whether this belongs in a
-  Woodpecker recipe/fix or remains an operation-specific Rook preparation hook.
+  generic `prepare(...)` hook. The Woodpecker provider uses the direct
+  `cmip6_decadal.calendar_normalization` fix for this step; the legacy provider
+  still delegates to the old Rook helper. Decide whether this remains an
+  operation-specific Rook preparation hook or becomes a more explicit
+  Woodpecker recipe/phase.
 - [ ] Remove the temporary `fix_backend` parameter after Woodpecker-backed
   decadal fixes are trusted and the legacy path is removed.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
