@@ -86,13 +86,17 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         "the legacy backend."
     )
 
+    @property
+    def woodpecker(self):
+        """Return the Woodpecker module after checking provider dependencies."""
+        self.require_available()
+        return importlib.import_module("woodpecker")
+
     def prepare(self, ds, *, context=None):
         # TODO: decide whether this special CMIP6-decadal pre-concat calendar
         # preparation remains an operation hook or should be represented by a
         # dedicated recipe/phase in Woodpecker.
-        self.require_available()
-        woodpecker = importlib.import_module("woodpecker")
-        woodpecker.fix(
+        self.woodpecker.fix(
             ds,
             fixes=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
             dry_run=False,
@@ -100,10 +104,8 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         return ds
 
     def apply(self, ds, *, context=None):
-        self.require_available()
-        woodpecker = importlib.import_module("woodpecker")
-
         context = context or FixContext()
+        woodpecker = self.woodpecker
         recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
         recipe = woodpecker.recipe.get(recipe_id)
         if woodpecker.recipe.check(ds, recipe):
