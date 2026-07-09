@@ -115,7 +115,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "get_dataset_fix_provider",
-        lambda: calls.append(("provider",)) or fake_provider,
+        lambda name=None: calls.append(("provider", name)) or fake_provider,
     )
     monkeypatch.setattr(
         concat_mod.normalise,
@@ -149,7 +149,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
 
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
-        ("provider",),
+        ("provider", None),
         ("prepare", source, "concat", "prepare"),
         (
             {"dataset.id": source},
@@ -157,6 +157,58 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
             fake_provider,
         ),
     ]
+
+
+def test_concat_can_override_configured_fix_provider(monkeypatch, tmp_path):
+    calls = []
+    source = DatasetSource("dataset.id", ["input.nc"])
+    combined = xr.Dataset({"tas": ("realization", [1.0])})
+    final = ["https://example.com/fixed.nc"]
+
+    class FakeProvider:
+        def prepare(self, ds, *, context=None):
+            return ds
+
+    fake_provider = FakeProvider()
+
+    monkeypatch.setattr(
+        concat_mod, "dataset_paths_by_id", lambda collection: collection
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "get_dataset_fix_provider",
+        lambda name=None: calls.append(("provider", name)) or fake_provider,
+    )
+    monkeypatch.setattr(
+        concat_mod.normalise,
+        "normalise_file_groups",
+        lambda collection, prepare_dataset: {"dataset.id": prepare_dataset(source)},
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "apply_concat_dataset_fixes",
+        lambda collection, output_dir, fix_provider=None: [combined],
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "combine_concat_datasets",
+        lambda datasets, dim, standard_name: combined,
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "finalise_concat_output",
+        lambda ds, params, dim: final,
+    )
+
+    result = concat_mod.concat(
+        collection=[source],
+        dims=["realization"],
+        output_dir=tmp_path.as_posix(),
+        fix_provider="woodpecker",
+    )
+
+    assert result.file_uris == ["https://example.com/fixed.nc"]
+    assert calls == [("provider", "woodpecker")]
 
 
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():

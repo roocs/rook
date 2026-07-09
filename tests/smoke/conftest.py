@@ -13,28 +13,6 @@ TESTS_HOME = Path(__file__).parent.parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--fix-provider",
-        choices=("legacy", "woodpecker"),
-        default="legacy",
-        help=("Configured fix provider of the WPS instance under smoke test."),
-    )
-
-
-@pytest.fixture(params=("legacy", "woodpecker"))
-def fix_provider(request, pytestconfig):
-    """Return the selected smoke-test fix provider, skipping other providers."""
-    selected_provider = pytestconfig.getoption("--fix-provider")
-    provider = request.param
-    if provider != selected_provider:
-        pytest.skip(
-            f"smoke test configured for {selected_provider!r} fix provider; "
-            f"skipping {provider!r}"
-        )
-    return provider
-
-
 def server_url():
     cfgfile = os.getenv("PYWPS_CFG", PYWPS_CFG.as_posix())
     config.load_configuration(cfgfiles=cfgfile)

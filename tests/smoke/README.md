@@ -56,6 +56,10 @@ OR
 make smoke
 ```
 
+The CMIP6 decadal smoke tests call the `concat` process with the temporary
+`fix_provider` input for both `legacy` and `woodpecker`. This overrides the
+`roocs.ini` default only for those smoke requests.
+
 ## Run smoke tests on a deployed pywps server
 
 The ansible playbook for rook prepares a script to run a smoke test:

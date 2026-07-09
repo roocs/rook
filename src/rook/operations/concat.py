@@ -114,12 +114,13 @@ class Concat(Operation):
             "time_components": time_components,
             "dims": dims,
             "apply_average": params.get("apply_average", False),
+            "fix_provider": params.get("fix_provider"),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
     def calculate(self):
         self._add_output_config()
-        fix_provider = get_dataset_fix_provider()
+        fix_provider = get_dataset_fix_provider(self.params.get("fix_provider"))
         collection = dataset_paths_by_id(self.collection)
         norm_collection = normalise.normalise_file_groups(
             collection,
@@ -153,6 +154,7 @@ def concat(
     split_method="time:auto",
     file_namer="standard",
     apply_average=False,
+    fix_provider=None,
 ):
     return Concat(
         collection=collection,
@@ -165,4 +167,5 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
+        fix_provider=fix_provider,
     ).calculate()

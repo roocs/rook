@@ -50,6 +50,32 @@ C3S_CICA_ATLAS_CORDEX_COLLECTION = "c3s-cica-atlas.cdd.CORDEX-CORE.historical.yr
 
 C3S_CICA_ATLAS_CMIP6_COLLECTION = "c3s-cica-atlas.cd.CMIP6.historical.yr.v25"
 
+C3S_CMIP6_DECADAL_COLLECTIONS = (
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r1i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r2i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r3i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r4i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r5i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r6i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r7i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r8i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r9i1p1f2.Amon.tas.gn.v20200417",
+    "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r10i1p1f2.Amon.tas.gn.v20200417",
+)
+
+C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS = (
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r10i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r1i1p1f1.Amon.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r2i1p1f1.Amon.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r3i1p1f1.Amon.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r4i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r5i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r6i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
+)
+
 WF_C3S_CMIP5 = json.dumps(
     {
         "doc": "subset+average on cmip5",
@@ -194,20 +220,7 @@ WF_C3S_CORDEX = json.dumps(
 WF_C3S_CMIP6_DECADAL = json.dumps(
     {
         "doc": "subset on c3s-cmip6-decadal",
-        "inputs": {
-            "ds": [
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r1i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r2i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r3i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r4i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r5i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r6i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r7i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r8i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r9i1p1f2.Amon.tas.gn.v20200417",
-                "c3s-cmip6-decadal.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s1995-r10i1p1f2.Amon.tas.gn.v20200417",
-            ]
-        },
+        "inputs": {"ds": C3S_CMIP6_DECADAL_COLLECTIONS},
         "outputs": {"output": "subset/output"},
         "steps": {
             "concat": {
@@ -236,20 +249,7 @@ WF_C3S_CMIP6_DECADAL = json.dumps(
 WF_C3S_CMIP6_DECADAL_2 = json.dumps(
     {
         "doc": "subset on c3s-cmip6-decadal with proleptic gregorian calendar",
-        "inputs": {
-            "ds": [
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r10i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r1i1p1f1.Amon.psl.gr.v20201215",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r2i1p1f1.Amon.psl.gr.v20201215",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r3i1p1f1.Amon.psl.gr.v20201215",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r4i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r5i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r6i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",  # noqa
-                "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
-            ]
-        },
+        "inputs": {"ds": C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS},
         "outputs": {"output": "subset/output"},
         "steps": {
             "concat": {
@@ -270,6 +270,19 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
         },
     }
 )
+
+
+def concat_inputs(collections, fix_provider, time=None):
+    inputs = [("collection", collection) for collection in collections]
+    inputs.extend(
+        [
+            ("dims", "realization"),
+            ("fix_provider", fix_provider),
+        ]
+    )
+    if time is not None:
+        inputs.append(("time", time))
+    return inputs
 
 
 def test_smoke_get_capabilities(wps):
@@ -730,23 +743,27 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
-@pytest.mark.usefixtures("fix_provider")
-def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
-    inputs = [
-        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
-    ]
-    urls = wps.execute("orchestrate", inputs)
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_cmip6_decadal_concat(wps, fix_provider):
+    inputs = concat_inputs(
+        C3S_CMIP6_DECADAL_COLLECTIONS,
+        fix_provider,
+        time="1995/1995",
+    )
+    urls = wps.execute("concat", inputs)
     assert len(urls) == 1
     assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
     assert "19951116-19951216.nc" in urls[0]
 
 
-@pytest.mark.usefixtures("fix_provider")
-def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
-    inputs = [
-        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_2)),
-    ]
-    urls = wps.execute("orchestrate", inputs)
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps, fix_provider):
+    inputs = concat_inputs(
+        C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS,
+        fix_provider,
+        time="1985-01-01/1985-12-31",
+    )
+    urls = wps.execute("concat", inputs)
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
     assert "19850116-19851216.nc" in urls[0]

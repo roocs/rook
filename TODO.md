@@ -95,9 +95,10 @@ corresponding PR has landed.
   Woodpecker recipe/phase.
 - [ ] Keep refining config-driven fix provider selection. Rook now chooses the
   default provider internally from `roocs.ini` (`[fixes] backend = ...`) and
-  smoke tests can select backend-specific checks with a pytest option. The next
-  cleanup step is deciding when the legacy backend and any remaining
-  compatibility handling can be removed.
+  CMIP6-decadal smoke/parity tests can temporarily override that default through
+  the `fix_provider` WPS input on the `concat` process. The next cleanup step is
+  deciding when the legacy backend, the temporary WPS override, and any
+  remaining compatibility handling can be removed.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
@@ -136,6 +137,9 @@ should stay visible:
 - do another iteration on operators after the fix boundary is clearer;
 - do another iteration on `rook.pflow` after Woodpecker integration settles;
 - review and clean up the `workflow.py` component;
+- clean up smoke tests so workflows and process inputs are built with small
+  Python helpers instead of large hard-coded JSON documents, making provider
+  and parameter variants easier to tweak;
 - refactor the dashboard process;
 - refactor the usage process;
 - add a new process for health checks;
