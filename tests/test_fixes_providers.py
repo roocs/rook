@@ -29,6 +29,35 @@ def test_fix_provider_finalise_is_noop():
     assert result is source
 
 
+def test_fix_provider_without_dependencies_is_available():
+    class TestProvider(FixProvider):
+        def apply(self, ds, *, context=None):
+            return ds
+
+    assert TestProvider().available()
+
+
+def test_fix_provider_requires_declared_dependencies(monkeypatch):
+    class TestProvider(FixProvider):
+        dependency_names = ("available_dependency", "missing_dependency")
+        unavailable_message = "test provider is unavailable"
+
+        def apply(self, ds, *, context=None):
+            return ds
+
+    def fake_find_spec(name):
+        if name == "available_dependency":
+            return object()
+        return None
+
+    provider = TestProvider()
+    monkeypatch.setattr("importlib.util.find_spec", fake_find_spec)
+
+    assert not provider.available()
+    with pytest.raises(ImportError, match="test provider is unavailable"):
+        provider.require_available()
+
+
 def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
     from rook.fixes import legacy_decadal
 

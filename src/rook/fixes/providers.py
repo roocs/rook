@@ -2,6 +2,8 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import importlib
+import importlib.util
 
 WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
 
@@ -21,6 +23,20 @@ class FixProvider(ABC):
     """Base class for dataset fix providers."""
 
     name = "base"
+    dependency_names = ()
+    unavailable_message = "The selected fix provider has missing dependencies."
+
+    def available(self):
+        """Return whether the provider dependencies are importable."""
+        return all(
+            importlib.util.find_spec(dependency_name) is not None
+            for dependency_name in self.dependency_names
+        )
+
+    def require_available(self):
+        """Raise a clear error when provider dependencies are missing."""
+        if not self.available():
+            raise ImportError(self.unavailable_message)
 
     def prepare(self, ds, *, context=None):
         """Prepare a dataset before the main fix step."""
@@ -62,6 +78,12 @@ class WoodpeckerDatasetFixProvider(FixProvider):
     """Woodpecker-backed CMIP6-decadal fix provider."""
 
     name = "woodpecker"
+    dependency_names = ("woodpecker", "woodpecker_cmip6_decadal_plugin")
+    unavailable_message = (
+        "Woodpecker is required to apply fixes with the woodpecker backend. "
+        "Install woodpecker and the woodpecker-cmip6-decadal plugin, or use "
+        "the legacy backend."
+    )
 
     def prepare(self, ds, *, context=None):
         from rook.fixes.legacy_decadal import decadal_fix_calendar
@@ -71,14 +93,8 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         return decadal_fix_calendar(None, ds)
 
     def apply(self, ds, *, context=None):
-        try:
-            import woodpecker
-        except ImportError as exc:
-            raise ImportError(
-                "Woodpecker is required to apply CMIP6-decadal fixes with the "
-                "woodpecker backend. Install woodpecker and the "
-                "woodpecker-cmip6-decadal plugin, or use the legacy backend."
-            ) from exc
+        self.require_available()
+        woodpecker = importlib.import_module("woodpecker")
 
         context = context or FixContext()
         recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
