@@ -53,12 +53,10 @@ def apply_concat_calendar_fix(ds, fix_provider=None):
     return fix_provider.prepare(ds, context=context)
 
 
-def apply_concat_dataset_fixes(
-    collection, output_dir, fix_backend="legacy", fix_provider=None
-):
+def apply_concat_dataset_fixes(collection, output_dir, fix_provider=None):
     """Apply concat-specific decadal fixes to each opened dataset."""
     if fix_provider is None:
-        fix_provider = get_dataset_fix_provider(fix_backend)
+        fix_provider = get_dataset_fix_provider()
     datasets = []
 
     for ds_id, ds in collection.items():
@@ -116,15 +114,12 @@ class Concat(Operation):
             "time_components": time_components,
             "dims": dims,
             "apply_average": params.get("apply_average", False),
-            "fix_backend": params.get("fix_backend", "legacy"),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
     def calculate(self):
         self._add_output_config()
-        fix_provider = get_dataset_fix_provider(
-            self.params.get("fix_backend", "legacy")
-        )
+        fix_provider = get_dataset_fix_provider()
         collection = dataset_paths_by_id(self.collection)
         norm_collection = normalise.normalise_file_groups(
             collection,
@@ -136,7 +131,6 @@ class Concat(Operation):
         datasets = apply_concat_dataset_fixes(
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
-            fix_backend=self.params.get("fix_backend", "legacy"),
             fix_provider=fix_provider,
         )
         dims = self.params["dims"].value
@@ -159,7 +153,6 @@ def concat(
     split_method="time:auto",
     file_namer="standard",
     apply_average=False,
-    fix_backend="legacy",
 ):
     return Concat(
         collection=collection,
@@ -172,5 +165,4 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
-        fix_backend=fix_backend,
     ).calculate()

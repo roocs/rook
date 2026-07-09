@@ -93,12 +93,11 @@ corresponding PR has landed.
   still delegates to the old Rook helper. Decide whether this remains an
   operation-specific Rook preparation hook or becomes a more explicit
   Woodpecker recipe/phase.
-- [ ] Move fix provider selection out of WPS operator parameters and into
-  internal configuration. Prefer a `roocs.ini` setting for the default provider,
-  keep Rook responsible for choosing the provider internally, and add a pytest
-  switch or override so smoke/parity tests can exercise legacy and Woodpecker
-  backends deliberately. After this is in place, deprecate or remove the
-  temporary `fix_backend` parameter from the WPS/operator surface.
+- [ ] Keep refining config-driven fix provider selection. Rook now chooses the
+  default provider internally from `roocs.ini` (`[fixes] backend = ...`) and
+  smoke tests can select backend-specific checks with a pytest option. The next
+  cleanup step is deciding when the legacy backend and any remaining
+  compatibility handling can be removed.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.

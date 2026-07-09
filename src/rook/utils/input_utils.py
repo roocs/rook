@@ -24,9 +24,7 @@ def parse_custom_grid(grid_str: str):
 def get_grid_param(grid: str, custom_grid: str | None):
     if grid == "custom":
         if not custom_grid:
-            raise ProcessError(
-                "Parameter 'custom_grid' is required when grid='custom'"
-            )
+            raise ProcessError("Parameter 'custom_grid' is required when grid='custom'")
         grid_param = parse_custom_grid(custom_grid)
     else:
         grid_param = grid
@@ -78,7 +76,7 @@ def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=No
 
 def clean_inputs(inputs):
     """Remove common arguments not required in processing calls."""
-    to_remove = ("pre_checked", "original_files", "apply_fixes")
+    to_remove = ("pre_checked", "original_files", "apply_fixes", "fix_backend")
 
     for key in to_remove:
         if key in inputs:

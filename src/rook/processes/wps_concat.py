@@ -84,19 +84,6 @@ class Concat(Process):
                 min_occurs=1,
                 max_occurs=1,
             ),
-            LiteralInput(
-                "fix_backend",
-                "Fix Backend",
-                abstract="Dataset fix backend to use for concat-specific decadal fixes.",
-                allowed_values=[
-                    "legacy",
-                    "woodpecker",
-                ],
-                default="legacy",
-                data_type="string",
-                min_occurs=0,
-                max_occurs=1,
-            ),
         ]
         outputs = [
             ComplexOutput(
@@ -159,9 +146,6 @@ class Concat(Process):
             ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
-            ),
-            "fix_backend": parse_wps_input(
-                request.inputs, "fix_backend", default="legacy"
             ),
         }
 

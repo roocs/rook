@@ -233,14 +233,6 @@ WF_C3S_CMIP6_DECADAL = json.dumps(
 )
 
 
-_wf_c3s_cmip6_decadal_woodpecker = json.loads(WF_C3S_CMIP6_DECADAL)
-_wf_c3s_cmip6_decadal_woodpecker["doc"] = (
-    "subset on c3s-cmip6-decadal with woodpecker fixes"
-)
-_wf_c3s_cmip6_decadal_woodpecker["steps"]["concat"]["in"]["fix_backend"] = "woodpecker"
-WF_C3S_CMIP6_DECADAL_WOODPECKER = json.dumps(_wf_c3s_cmip6_decadal_woodpecker)
-
-
 WF_C3S_CMIP6_DECADAL_2 = json.dumps(
     {
         "doc": "subset on c3s-cmip6-decadal with proleptic gregorian calendar",
@@ -278,16 +270,6 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
         },
     }
 )
-
-
-_wf_c3s_cmip6_decadal_2_woodpecker = json.loads(WF_C3S_CMIP6_DECADAL_2)
-_wf_c3s_cmip6_decadal_2_woodpecker["doc"] = (
-    "subset on c3s-cmip6-decadal with proleptic gregorian calendar and woodpecker fixes"
-)
-_wf_c3s_cmip6_decadal_2_woodpecker["steps"]["concat"]["in"][
-    "fix_backend"
-] = "woodpecker"
-WF_C3S_CMIP6_DECADAL_2_WOODPECKER = json.dumps(_wf_c3s_cmip6_decadal_2_woodpecker)
 
 
 def test_smoke_get_capabilities(wps):
@@ -748,6 +730,7 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
+@pytest.mark.usefixtures("fix_backend")
 def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
@@ -758,29 +741,10 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     assert "19951116-19951216.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_decadal_woodpecker_orchestrate(wps):
-    inputs = [
-        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_WOODPECKER)),
-    ]
-    urls = wps.execute("orchestrate", inputs)
-    assert len(urls) == 1
-    assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
-    assert "19951116-19951216.nc" in urls[0]
-
-
+@pytest.mark.usefixtures("fix_backend")
 def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_2)),
-    ]
-    urls = wps.execute("orchestrate", inputs)
-    assert len(urls) == 1
-    assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
-    assert "19850116-19851216.nc" in urls[0]
-
-
-def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_woodpecker_orchestrate(wps):
-    inputs = [
-        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_2_WOODPECKER)),
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1

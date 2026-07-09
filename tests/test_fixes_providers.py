@@ -18,6 +18,15 @@ def test_get_dataset_fix_provider_returns_legacy_provider_by_default():
     assert provider.name == "legacy"
 
 
+def test_get_dataset_fix_provider_uses_configured_default(monkeypatch):
+    monkeypatch.setattr("rook.fixes.providers.get_fix_backend", lambda: "woodpecker")
+
+    provider = get_dataset_fix_provider()
+
+    assert isinstance(provider, WoodpeckerDatasetFixProvider)
+    assert provider.name == "woodpecker"
+
+
 def test_fix_provider_finalise_is_noop():
     class TestProvider(FixProvider):
         def apply(self, ds, *, context=None):

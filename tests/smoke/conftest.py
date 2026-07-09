@@ -13,6 +13,28 @@ TESTS_HOME = Path(__file__).parent.parent.absolute()
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--rook-fix-backend",
+        choices=("legacy", "woodpecker"),
+        default="legacy",
+        help=("Configured fix backend of the WPS instance under smoke test."),
+    )
+
+
+@pytest.fixture(params=("legacy", "woodpecker"))
+def fix_backend(request, pytestconfig):
+    """Return the selected smoke-test fix backend, skipping other backends."""
+    selected_backend = pytestconfig.getoption("--rook-fix-backend")
+    backend = request.param
+    if backend != selected_backend:
+        pytest.skip(
+            f"smoke test configured for {selected_backend!r} fix backend; "
+            f"skipping {backend!r}"
+        )
+    return backend
+
+
 def server_url():
     cfgfile = os.getenv("PYWPS_CFG", PYWPS_CFG.as_posix())
     config.load_configuration(cfgfiles=cfgfile)
