@@ -730,7 +730,7 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
-@pytest.mark.usefixtures("fix_backend")
+@pytest.mark.usefixtures("fix_provider")
 def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL)),
@@ -741,7 +741,7 @@ def test_smoke_execute_c3s_cmip6_decadal_orchestrate(wps):
     assert "19951116-19951216.nc" in urls[0]
 
 
-@pytest.mark.usefixtures("fix_backend")
+@pytest.mark.usefixtures("fix_provider")
 def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_orchestrate(wps):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_2)),
