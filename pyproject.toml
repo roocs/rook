@@ -55,9 +55,9 @@ dependencies = [
   "bokeh >=3.7.0",
   "humanize",
   "beautifulsoup4 >4.12.3",
-  "woodpecker @ git+https://github.com/roocs/woodpecker.git@main",
-  "woodpecker-atlas-plugin @ git+https://github.com/roocs/woodpecker.git@main#subdirectory=plugins/woodpecker-atlas-plugin",
-  "woodpecker-cmip6-decadal-plugin @ git+https://github.com/roocs/woodpecker.git@main#subdirectory=plugins/woodpecker-cmip6-decadal-plugin"
+  "woodpecker @ git+https://github.com/roocs/woodpecker.git@v0.7.0",
+  "woodpecker-atlas-plugin @ git+https://github.com/roocs/woodpecker.git@v0.7.0#subdirectory=plugins/woodpecker-atlas-plugin",
+  "woodpecker-cmip6-decadal-plugin @ git+https://github.com/roocs/woodpecker.git@v0.7.0#subdirectory=plugins/woodpecker-cmip6-decadal-plugin"
 ]
 
 [project.optional-dependencies]
