@@ -4,9 +4,9 @@ import importlib
 
 from rook.fixes.providers.base import FixContext, FixProvider
 
-WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
+WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "c3s.cmip6_decadal"
 WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID = "cmip6_decadal.calendar_normalization"
-WOODPECKER_ATLAS_RECIPE_ID = "atlas.basic"
+WOODPECKER_ATLAS_RECIPE_ID = "c3s.atlas"
 
 
 class WoodpeckerDatasetFixProvider(FixProvider):

@@ -119,7 +119,7 @@ def assert_identical_with_report(left, right):
 
 
 def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
-    assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "cmip6_decadal.full"
+    assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "c3s.cmip6_decadal"
 
 
 def test_woodpecker_decadal_calendar_fix_id_is_calendar_normalization():
