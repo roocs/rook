@@ -4,7 +4,7 @@ from rook.fixes.base import FixContext, FixProvider
 
 
 class LegacyDatasetFixProvider(FixProvider):
-    """Rook's legacy CMIP6-decadal fix provider."""
+    """Rook's legacy dataset fix provider."""
 
     name = "legacy"
 
@@ -16,11 +16,21 @@ class LegacyDatasetFixProvider(FixProvider):
         return decadal_fix_calendar(None, ds)
 
     def apply(self, ds, *, context=None):
-        from rook.fixes.legacy_decadal import apply_decadal_fixes
-
         context = context or FixContext()
-        return apply_decadal_fixes(
-            context.dataset_id,
-            ds,
-            output_dir=context.output_dir,
-        )
+        dataset_id = context.dataset_id or ""
+
+        if dataset_id.startswith(("c3s-ipcc-atlas", "c3s-cica-atlas")):
+            from rook.fixes.legacy_atlas import apply_atlas_fixes
+
+            return apply_atlas_fixes(dataset_id, ds)
+
+        if dataset_id.startswith("c3s-cmip6-decadal"):
+            from rook.fixes.legacy_decadal import apply_decadal_fixes
+
+            return apply_decadal_fixes(
+                dataset_id,
+                ds,
+                output_dir=context.output_dir,
+            )
+
+        return ds

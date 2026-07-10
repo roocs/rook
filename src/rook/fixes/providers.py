@@ -12,6 +12,9 @@ from rook.fixes.woodpecker import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID as WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
 )
 from rook.fixes.woodpecker import (
+    WOODPECKER_ATLAS_RECIPE_ID as WOODPECKER_ATLAS_RECIPE_ID,
+)
+from rook.fixes.woodpecker import (
     WoodpeckerDatasetFixProvider as WoodpeckerDatasetFixProvider,
 )
 

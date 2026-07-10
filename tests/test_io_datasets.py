@@ -11,6 +11,16 @@ def source(dataset_id, paths):
     return helpers.DatasetSource(dataset_id=dataset_id, paths=paths)
 
 
+class FakeProvider:
+    def __init__(self, calls=None, result="FIXED"):
+        self.calls = calls if calls is not None else []
+        self.result = result
+
+    def apply(self, ds, *, context=None):
+        self.calls.append((context.dataset_id, ds))
+        return self.result
+
+
 def test_dataset_source_normalizes_scalar_and_list_paths():
     assert source(None, "one.nc").paths == ("one.nc",)
     assert source("project.dataset", ["one.nc", "two.nc"]).paths == (
@@ -36,47 +46,49 @@ def test_dataset_source_rejects_multiple_zarr_or_kerchunk_paths():
 
 def test_open_dataset_applies_fixes(monkeypatch):
     calls = {"open": 0, "fix": 0}
+    provider_calls = []
 
     def fake_open(file_paths):
         calls["open"] += 1
         assert file_paths == ["a.nc"]
         return "DATASET"
 
-    def fake_apply(ds_id, ds):
-        calls["fix"] += 1
-        assert ds_id == "project.dataset"
-        assert ds == "DATASET"
-        return "FIXED"
-
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fake_apply)
+    monkeypatch.setattr(
+        helpers,
+        "get_dataset_fix_provider",
+        lambda: FakeProvider(provider_calls),
+    )
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
     result = helpers.open_dataset(source("project.dataset", ["a.nc"]))
 
     assert result == "FIXED"
-    assert calls == {"open": 1, "fix": 1}
+    assert calls == {"open": 1, "fix": 0}
+    assert provider_calls == [("project.dataset", "DATASET")]
 
 
 def test_open_dataset_applies_catalog_fixes_without_external_switch(monkeypatch):
     calls = {"open": 0, "fix": 0}
+    provider_calls = []
 
     def fake_open(file_paths):
         calls["open"] += 1
         return "DATASET"
 
-    def fake_apply(ds_id, ds):
-        calls["fix"] += 1
-        return "FIXED"
-
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fake_apply)
+    monkeypatch.setattr(
+        helpers,
+        "get_dataset_fix_provider",
+        lambda: FakeProvider(provider_calls),
+    )
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
     result = helpers.open_dataset(source("project.dataset", ["a.nc"]))
 
     assert result == "FIXED"
-    assert calls == {"open": 1, "fix": 1}
+    assert calls == {"open": 1, "fix": 0}
+    assert provider_calls == [("project.dataset", "DATASET")]
 
 
 def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
@@ -86,12 +98,8 @@ def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
         calls["open"] += 1
         return "DATASET"
 
-    def fake_apply(ds_id, ds):
-        calls["fix"] += 1
-        return "FIXED"
-
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fake_apply)
+    monkeypatch.setattr(helpers, "get_dataset_fix_provider", lambda: pytest.fail())
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: True)
 
     result = helpers.open_dataset(source(None, ["kerchunk.json"]))
@@ -103,10 +111,7 @@ def test_open_dataset_skips_fixes_for_kerchunk(monkeypatch):
 def test_open_dataset_skips_fixes_without_catalog_dataset_id(monkeypatch):
     monkeypatch.setattr(helpers, "open_xr_dataset", lambda _paths: "DATASET")
 
-    def fail_apply_fixes(_ds_id, _ds):
-        raise AssertionError("Direct paths must not trigger project fixes")
-
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fail_apply_fixes)
+    monkeypatch.setattr(helpers, "get_dataset_fix_provider", lambda: pytest.fail())
 
     result = helpers.open_dataset(source(None, "direct.nc"))
 
@@ -115,30 +120,27 @@ def test_open_dataset_skips_fixes_without_catalog_dataset_id(monkeypatch):
 
 def test_dataset_fix_policy_requires_catalog_identity():
     assert helpers.should_apply_dataset_fixes(source("project.dataset", "a.nc")) is True
-    assert helpers.should_apply_dataset_fixes(source(None, "workflow-output.nc")) is False
+    assert (
+        helpers.should_apply_dataset_fixes(source(None, "workflow-output.nc")) is False
+    )
 
 
 def test_apply_dataset_fix_policy_uses_dataset_id(monkeypatch):
-    calls = {}
-
-    def fake_apply(ds_id, ds):
-        calls["ds_id"] = ds_id
-        calls["ds"] = ds
-        return "FIXED"
-
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fake_apply)
+    calls = []
+    monkeypatch.setattr(
+        helpers,
+        "get_dataset_fix_provider",
+        lambda: FakeProvider(calls),
+    )
 
     result = helpers.apply_dataset_fix_policy(source("project.dataset", "a.nc"), "DS")
 
     assert result == "FIXED"
-    assert calls == {"ds_id": "project.dataset", "ds": "DS"}
+    assert calls == [("project.dataset", "DS")]
 
 
 def test_apply_dataset_fix_policy_leaves_direct_sources_unchanged(monkeypatch):
-    def fail_apply_fixes(_ds_id, _ds):
-        raise AssertionError("Direct sources must not trigger project fixes")
-
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fail_apply_fixes)
+    monkeypatch.setattr(helpers, "get_dataset_fix_provider", lambda: pytest.fail())
 
     result = helpers.apply_dataset_fix_policy(source(None, "direct.nc"), "DS")
 
@@ -167,7 +169,9 @@ def test_is_kerchunk_file_non_kerchunk_path():
 
 
 def test_detect_format_netcdf():
-    assert helpers.detect_format(source(None, "file.nc")) is helpers.DatasetFormat.NETCDF
+    assert (
+        helpers.detect_format(source(None, "file.nc")) is helpers.DatasetFormat.NETCDF
+    )
 
 
 def test_detect_format_kerchunk_url_with_query():
@@ -189,9 +193,10 @@ def test_is_zarr_store_netcdf_path():
 
 
 def test_detect_format_zarr_from_catalog_paths():
-    assert helpers.detect_format(
-        source("project.dataset", ["s3://bucket/example.zarr"])
-    ) is helpers.DatasetFormat.ZARR
+    assert (
+        helpers.detect_format(source("project.dataset", ["s3://bucket/example.zarr"]))
+        is helpers.DatasetFormat.ZARR
+    )
 
 
 def test_detect_transport_is_independent_of_format():
@@ -235,7 +240,11 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
 
     monkeypatch.setattr(helpers.xr, "open_zarr", fail_open_zarr)
 
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", lambda _ds_id, ds: ds)
+    monkeypatch.setattr(
+        helpers,
+        "get_dataset_fix_provider",
+        lambda: FakeProvider(result=expected),
+    )
 
     result = helpers.open_dataset(source("project.dataset", [str(path)]))
 
@@ -275,10 +284,7 @@ def test_open_dataset_passes_s3_options_to_zarr(monkeypatch):
 def test_open_dataset_skips_fixes_for_direct_zarr(monkeypatch):
     monkeypatch.setattr(helpers.xr, "open_zarr", lambda _store, **_kwargs: "DATASET")
 
-    def fail_apply_fixes(_ds_id, _ds):
-        raise AssertionError("Fix lookup should not be called for direct Zarr input")
-
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", fail_apply_fixes)
+    monkeypatch.setattr(helpers, "get_dataset_fix_provider", lambda: pytest.fail())
 
     result = helpers.open_dataset(source(None, "/data/example.zarr"))
 
@@ -355,7 +361,7 @@ def test_open_dataset_passes_s3_backend_kwargs(monkeypatch):
 
     monkeypatch.setattr(helpers, "open_xr_dataset", fake_open)
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
-    monkeypatch.setattr(helpers, "apply_known_dataset_fixes", lambda _ds_id, ds: ds)
+    monkeypatch.setattr(helpers, "get_dataset_fix_provider", lambda: pytest.fail())
     monkeypatch.setattr(
         config,
         "_CONFIG",

@@ -1,9 +1,11 @@
+"""Legacy Rook ATLAS dataset fixes."""
+
 import xarray as xr
 
 
 def apply_atlas_fixes(ds_id, ds):
     ds_mod = fix_deflation(ds)
-    ds_mod = add_project_id(ds_id, ds)
+    ds_mod = add_project_id(ds_id, ds_mod)
     return ds_mod
 
 
@@ -21,13 +23,10 @@ def fix_deflation(ds: xr.Dataset | xr.DataArray):
         var_list = list(ds.coords)
     else:
         raise ValueError("Input must be an xarray Dataset or DataArray")
-    # DEBUG
-    for var in var_list:
-        print("debug var", var, ds[var].encoding)
-    # DEBUG END
+
     for var in var_list:
         ds[var].encoding["_FillValue"] = None
-    # Remove string deflation options if applicable
+
     for cvar in [
         "member_id",
         "gcm_variant",
@@ -42,7 +41,7 @@ def fix_deflation(ds: xr.Dataset | xr.DataArray):
                 del ds[cvar].encoding[en]
             except KeyError:
                 pass
-    # use compression level 1
+
     for var in ds.data_vars:
         complevel = ds[var].encoding.get("complevel", 0)
         if complevel > 1:
