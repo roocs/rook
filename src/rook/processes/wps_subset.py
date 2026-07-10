@@ -86,6 +86,18 @@ class Subset(Process):
                 max_occurs=1,
             ),
             LiteralInput(
+                "fix_provider",
+                "Fix Provider",
+                abstract="Temporary fix provider override for integration smoke and parity tests.",
+                allowed_values=[
+                    "legacy",
+                    "woodpecker",
+                ],
+                data_type="string",
+                min_occurs=0,
+                max_occurs=1,
+            ),
+            LiteralInput(
                 "original_files",
                 "Original Files",
                 data_type="boolean",
@@ -153,6 +165,9 @@ class Subset(Process):
             ),
             "level": parse_wps_input(request.inputs, "level", default=None),
             "area": parse_wps_input(request.inputs, "area", default=None),
+            "fix_provider": parse_wps_input(
+                request.inputs, "fix_provider", default=None
+            ),
         }
 
         # Plan the request before processing or returning original files

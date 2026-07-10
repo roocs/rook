@@ -123,12 +123,12 @@ _OPENERS = {
 }
 
 
-def open_dataset(source: DatasetSource):
+def open_dataset(source: DatasetSource, fix_provider=None):
     """Open an xarray Dataset and apply catalog-specific fixes when available."""
     opener = _OPENERS[detect_format(source)]
     ds = opener(source, get_storage_options(source))
 
-    ds = apply_dataset_fix_policy(source, ds)
+    ds = apply_dataset_fix_policy(source, ds, fix_provider=fix_provider)
 
     return ds
 
@@ -138,12 +138,12 @@ def should_apply_dataset_fixes(source: DatasetSource) -> bool:
     return source.dataset_id is not None
 
 
-def apply_dataset_fix_policy(source: DatasetSource, ds):
+def apply_dataset_fix_policy(source: DatasetSource, ds, fix_provider=None):
     """Apply project-specific dataset fixes only when the source has catalog identity."""
     if not should_apply_dataset_fixes(source):
         return ds
 
-    provider = get_dataset_fix_provider()
+    provider = get_dataset_fix_provider(fix_provider)
     return provider.apply(ds, context=FixContext(dataset_id=source.dataset_id))
 
 

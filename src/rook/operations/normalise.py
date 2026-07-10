@@ -10,13 +10,13 @@ import xarray as xr
 from rook.io.datasets import open_dataset
 
 
-def normalise(collection):
+def normalise(collection, *, fix_provider=None):
     """Open input collections."""
     logger.info(f"Working on datasets: {collection}")
     norm_collection = OrderedDict()
 
     for source in collection:
-        ds = open_dataset(source)
+        ds = open_dataset(source, fix_provider=fix_provider)
         norm_collection[source.key] = ds
 
     return norm_collection
@@ -60,5 +60,7 @@ class ResultSet:
         self._results[dset] = result
 
         for item in result:
-            if isinstance(item, str) and (pathlib.Path(item).is_file() or item.startswith("https")):
+            if isinstance(item, str) and (
+                pathlib.Path(item).is_file() or item.startswith("https")
+            ):
                 self.file_uris.append(item)

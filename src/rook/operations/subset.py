@@ -20,7 +20,10 @@ class Subset(Operation):
             "area": area_parameter.AreaParameter(params.get("area")),
             "level": level_parameter.LevelParameter(params.get("level")),
             "time": time_parameter.TimeParameter(params.get("time")),
-            "time_components": time_components_parameter.TimeComponentsParameter(params.get("time_components")),
+            "time_components": time_components_parameter.TimeComponentsParameter(
+                params.get("time_components")
+            ),
+            "fix_provider": params.get("fix_provider"),
         }
 
     def get_operation_callable(self):
@@ -33,6 +36,7 @@ def subset(
     area=None,
     level=None,
     time_components=None,
+    fix_provider=None,
     output_dir=None,
     output_type="netcdf",
     split_method="time:auto",

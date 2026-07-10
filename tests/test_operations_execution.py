@@ -6,6 +6,7 @@ import rook.operations.execution as execution_mod
 from rook.operations.average import Average, AverageShape, AverageTime
 from rook.operations import Operator
 from rook.operations.base import Operation, is_prepared_dataset_collection
+import rook.operations.base as operation_base
 from rook.operations.concat import Concat
 from rook.operations.regrid import Regrid
 from rook.operations.subset import Subset
@@ -52,18 +53,24 @@ def test_run_regrid_normalizes_custom_grid(monkeypatch):
 
     monkeypatch.setattr(execution_mod, "regrid", fake_regrid)
 
-    result = execution_mod.run_regrid({"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"})
+    result = execution_mod.run_regrid(
+        {"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"}
+    )
 
     assert result == ["regridded.nc"]
     assert calls["kwargs"]["grid"] == (0.5, 0.25)
     assert "custom_grid" not in calls["kwargs"]
 
 
-def test_direct_file_collection_is_processed_without_request_resolution(tmp_path, monkeypatch):
+def test_direct_file_collection_is_processed_without_request_resolution(
+    tmp_path, monkeypatch
+):
     source = tmp_path / "source.nc"
     source.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
+    monkeypatch.setattr(
+        execution_mod, "execute_resolved_request", fail_request_decision_executor
+    )
 
     output_uris = operator.call(
         {
@@ -89,7 +96,9 @@ def test_later_workflow_step_receives_previous_step_files(tmp_path, monkeypatch)
     first.touch()
     second.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
+    monkeypatch.setattr(
+        execution_mod, "execute_resolved_request", fail_request_decision_executor
+    )
 
     output_uris = operator.call({"collection": [first.as_posix(), second.as_posix()]})
 
@@ -162,3 +171,41 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
 def test_subset_uses_base_operation_calculate():
     assert Subset.calculate is Operation.calculate
+
+
+def test_base_operation_uses_fix_provider_only_for_dataset_opening(monkeypatch):
+    calls = []
+    operation_dataset = object()
+
+    monkeypatch.setattr(
+        "rook.operations.base.consolidate.consolidate",
+        lambda collection, **_kwargs: collection.value,
+    )
+    monkeypatch.setattr(
+        operation_base.normalise,
+        "normalise",
+        lambda collection, fix_provider=None: calls.append(
+            ("normalise", collection, fix_provider)
+        )
+        or {"dataset": operation_dataset},
+    )
+    monkeypatch.setattr(
+        operation_base,
+        "process",
+        lambda func, collection, **params: calls.append(("process", collection, params))
+        or ["result.nc"],
+    )
+
+    source = DatasetSource("dataset.id", "input.nc")
+
+    result = Subset(collection=[source], fix_provider="woodpecker").calculate()
+
+    assert result.file_uris == []
+    assert calls[0] == ("normalise", (source,), "woodpecker")
+    assert calls[1][0] == "process"
+    assert calls[1][1] is operation_dataset
+    assert "fix_provider" not in calls[1][2]
+    assert calls[1][2]["output_type"] == "netcdf"
+    assert calls[1][2]["output_dir"] is None
+    assert calls[1][2]["split_method"] == "time:auto"
+    assert calls[1][2]["file_namer"] == "standard"

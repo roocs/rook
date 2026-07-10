@@ -285,6 +285,15 @@ def concat_inputs(collections, fix_provider, time=None):
     return inputs
 
 
+def subset_inputs(collection, fix_provider, **params):
+    inputs = [
+        ("collection", collection),
+        ("fix_provider", fix_provider),
+    ]
+    inputs.extend((name, value) for name, value in params.items() if value is not None)
+    return inputs
+
+
 def test_smoke_get_capabilities(wps):
     caps = wps.getcapabilities()
     assert caps.identification.type == "WPS"
@@ -769,10 +778,9 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps, fix_provider):
     assert "19850116-19851216.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
-    inputs = [
-        ("collection", C3S_IPCC_ATLAS_CMIP5_COLLECTION),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps, fix_provider):
+    inputs = subset_inputs(C3S_IPCC_ATLAS_CMIP5_COLLECTION, fix_provider)
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" in urls[0]
@@ -780,10 +788,9 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):
     assert "tnn_CMIP5_rcp45_mon_200601-210012.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
-    inputs = [
-        ("collection", C3S_IPCC_ATLAS_CMIP6_COLLECTION),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps, fix_provider):
+    inputs = subset_inputs(C3S_IPCC_ATLAS_CMIP6_COLLECTION, fix_provider)
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" in urls[0]
@@ -791,10 +798,9 @@ def test_smoke_execute_c3s_ipcc_atlas_cmip6_subset(wps):
     assert "tnn_CMIP6_historical_mon_185001-201412.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
-    inputs = [
-        ("collection", C3S_IPCC_ATLAS_CORDEX_COLLECTION),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps, fix_provider):
+    inputs = subset_inputs(C3S_IPCC_ATLAS_CORDEX_COLLECTION, fix_provider)
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" in urls[0]
@@ -802,11 +808,13 @@ def test_smoke_execute_c3s_ipcc_atlas_cordex_subset(wps):
     assert "tnn_CORDEX-AFR_historical_mon_197001-200512.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
-    inputs = [
-        ("collection", C3S_CICA_ATLAS_CMIP6_COLLECTION),
-        ("time", "2000/2000"),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps, fix_provider):
+    inputs = subset_inputs(
+        C3S_CICA_ATLAS_CMIP6_COLLECTION,
+        fix_provider,
+        time="2000/2000",
+    )
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" not in urls[0]
@@ -814,11 +822,13 @@ def test_smoke_execute_c3s_cica_atlas_cmip6_subset(wps):
     assert "cd_CMIP6_historical_yr_20000101-20000101.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
-    inputs = [
-        ("collection", C3S_CICA_ATLAS_CORDEX_COLLECTION),
-        ("time", "2000/2000"),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps, fix_provider):
+    inputs = subset_inputs(
+        C3S_CICA_ATLAS_CORDEX_COLLECTION,
+        fix_provider,
+        time="2000/2000",
+    )
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" not in urls[0]
@@ -826,10 +836,9 @@ def test_smoke_execute_c3s_cica_atlas_cordex_subset(wps):
     assert "cdd_CORDEX-CORE_historical_yr_20000101-20000101.nc" in urls[0]
 
 
-def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
-    inputs = [
-        ("collection", C3S_CICA_ATLAS_ERA5_COLLECTION),
-    ]
+@pytest.mark.parametrize("fix_provider", ("legacy", "woodpecker"))
+def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps, fix_provider):
+    inputs = subset_inputs(C3S_CICA_ATLAS_ERA5_COLLECTION, fix_provider)
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
     assert "data.mips.climate.copernicus.eu" in urls[0]
