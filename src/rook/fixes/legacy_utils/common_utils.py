@@ -1,4 +1,4 @@
-"""Common utility functions for data operations."""
+"""Common utility functions for legacy data operations."""
 
 from pydoc import locate
 
@@ -11,7 +11,5 @@ def handle_derive_str(value, ds_id, ds):
         if len(components) > 2:
             arg = value.split(":")[-1].strip()
             return func(ds_id, ds, arg)
-        else:
-            return func(ds_id, ds)
-    else:
-        return value
+        return func(ds_id, ds)
+    return value

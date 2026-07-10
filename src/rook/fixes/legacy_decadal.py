@@ -1,11 +1,11 @@
-from rook.utils.fixes_utils import convert_calendar_to_gregorian
+from rook.fixes.legacy_utils.fixes_utils import convert_calendar_to_gregorian
 
-from rook.utils.data_utils.attr_utils import (
+from rook.fixes.legacy_utils.attr_utils import (
     edit_global_attrs,
     edit_var_attrs,
 )
-from rook.utils.data_utils.coord_utils import add_coord, add_scalar_coord
-from rook.utils.data_utils.var_utils import add_data_var
+from rook.fixes.legacy_utils.coord_utils import add_coord, add_scalar_coord
+from rook.fixes.legacy_utils.var_utils import add_data_var
 
 model_specific_global_attrs = {
     "CMCC-CM2-SR5": {
@@ -72,8 +72,8 @@ def decadal_fix_2(ds_id, ds):
             "initialization_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "initialization_description"
             ),  # noqa: E501
-            "startdate": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
-            "sub_experiment_id": "derive: rook.utils.decadal_utils.get_sub_experiment_id",
+            "startdate": "derive: rook.fixes.legacy_utils.decadal_utils.get_sub_experiment_id",
+            "sub_experiment_id": "derive: rook.fixes.legacy_utils.decadal_utils.get_sub_experiment_id",
         }
     }
 
@@ -84,7 +84,7 @@ def decadal_fix_2(ds_id, ds):
 def decadal_fix_3(ds_id, ds):
     operands = {
         "var_id": "reftime",
-        "value": "derive: rook.utils.decadal_utils.get_reftime",
+        "value": "derive: rook.fixes.legacy_utils.decadal_utils.get_reftime",
         "dtype": "datetime64[ns]",
         "attrs": {
             "long_name": "Start date of the forecast",
@@ -93,7 +93,7 @@ def decadal_fix_3(ds_id, ds):
         "encoding": {
             "dtype": "int32",
             "units": "days since 1850-01-01",
-            "calendar": "derive: rook.utils.decadal_utils.get_time_calendar",
+            "calendar": "derive: rook.fixes.legacy_utils.decadal_utils.get_time_calendar",
         },
     }
 
@@ -104,7 +104,7 @@ def decadal_fix_3(ds_id, ds):
 def decadal_fix_4(ds_id, ds):
     operands = {
         "var_id": "leadtime",
-        "value": "derive: rook.utils.decadal_utils.get_lead_times",
+        "value": "derive: rook.fixes.legacy_utils.decadal_utils.get_lead_times",
         "dim": ["time"],
         "dtype": "float64",
         "attrs": {
