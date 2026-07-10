@@ -3,7 +3,7 @@
 import numpy as np
 from clisops.utils import dataset_utils as xu
 
-from rook.fixes.legacy_utils.common_utils import handle_derive_str
+from rook.fixes.legacy.utils.common_utils import handle_derive_str
 
 
 def squeeze_dims(ds_id, ds, **operands):

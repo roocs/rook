@@ -2,7 +2,7 @@
 
 import importlib
 
-from rook.fixes.base import FixContext, FixProvider
+from rook.fixes.providers.base import FixContext, FixProvider
 
 WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
 WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID = "cmip6_decadal.calendar_normalization"

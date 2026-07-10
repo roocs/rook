@@ -1,7 +1,7 @@
 import pytest
 import xarray as xr
 
-from rook.fixes.legacy_atlas import apply_atlas_fixes
+from rook.fixes.legacy.atlas import apply_atlas_fixes
 from rook.fixes.providers import (
     FixContext,
     WOODPECKER_ATLAS_RECIPE_ID,

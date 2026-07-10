@@ -70,7 +70,7 @@ def test_fix_provider_requires_declared_dependencies(monkeypatch):
 
 
 def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
-    from rook.fixes import legacy_decadal
+    from rook.fixes.legacy import decadal as legacy_decadal
 
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
@@ -91,7 +91,7 @@ def test_legacy_provider_prepares_decadal_concat_dataset(monkeypatch):
 
 
 def test_legacy_provider_applies_atlas_fixes(monkeypatch):
-    from rook.fixes import legacy_atlas
+    from rook.fixes.legacy import atlas as legacy_atlas
 
     calls = []
     source = xr.Dataset(attrs={"source": "input"})

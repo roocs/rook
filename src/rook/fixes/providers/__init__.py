@@ -1,20 +1,22 @@
 """Dataset fix provider registry."""
 
 from rook.config import get_fix_backend
-from rook.fixes.base import DatasetFixProvider as DatasetFixProvider
-from rook.fixes.base import FixContext as FixContext
-from rook.fixes.base import FixProvider as FixProvider
-from rook.fixes.legacy import LegacyDatasetFixProvider as LegacyDatasetFixProvider
-from rook.fixes.woodpecker import (
+from rook.fixes.providers.base import DatasetFixProvider as DatasetFixProvider
+from rook.fixes.providers.base import FixContext as FixContext
+from rook.fixes.providers.base import FixProvider as FixProvider
+from rook.fixes.providers.legacy import (
+    LegacyDatasetFixProvider as LegacyDatasetFixProvider,
+)
+from rook.fixes.providers.woodpecker import (
     WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID as WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
 )
-from rook.fixes.woodpecker import (
+from rook.fixes.providers.woodpecker import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID as WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
 )
-from rook.fixes.woodpecker import (
+from rook.fixes.providers.woodpecker import (
     WOODPECKER_ATLAS_RECIPE_ID as WOODPECKER_ATLAS_RECIPE_ID,
 )
-from rook.fixes.woodpecker import (
+from rook.fixes.providers.woodpecker import (
     WoodpeckerDatasetFixProvider as WoodpeckerDatasetFixProvider,
 )
 

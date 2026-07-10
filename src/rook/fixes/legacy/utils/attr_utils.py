@@ -1,6 +1,6 @@
 """Module for editing dataset and variable attributes."""
 
-from rook.fixes.legacy_utils.common_utils import handle_derive_str
+from rook.fixes.legacy.utils.common_utils import handle_derive_str
 
 
 def edit_var_attrs(ds_id, ds, **operands):
