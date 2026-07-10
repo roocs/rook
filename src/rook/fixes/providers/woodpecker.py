@@ -2,11 +2,12 @@
 
 import importlib
 
+from woodpecker.recipe import APPLY_PHASE, PREPARE_PHASE
+
 from rook.fixes.providers.base import FixContext, FixProvider
 
-WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "cmip6_decadal.full"
-WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID = "cmip6_decadal.calendar_normalization"
-WOODPECKER_ATLAS_RECIPE_ID = "atlas.basic"
+WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "c3s.cmip6_decadal"
+WOODPECKER_ATLAS_RECIPE_ID = "c3s.atlas"
 
 
 class WoodpeckerDatasetFixProvider(FixProvider):
@@ -31,15 +32,13 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         return importlib.import_module("woodpecker")
 
     def prepare(self, ds, *, context=None):
-        # TODO: decide whether this special CMIP6-decadal pre-concat calendar
-        # preparation remains an operation hook or should be represented by a
-        # dedicated recipe/phase in Woodpecker.
-        self.woodpecker.fix(
+        context = context or FixContext()
+        recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
+        return self._apply_recipe(
             ds,
-            fixes=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
-            dry_run=False,
+            recipe_id=recipe_id,
+            phase=context.phase or PREPARE_PHASE,
         )
-        return ds
 
     def apply(self, ds, *, context=None):
         context = context or FixContext()
@@ -54,9 +53,12 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
         woodpecker = self.woodpecker
         recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
-        recipe = woodpecker.recipe.get(recipe_id)
-        woodpecker.recipe.fix(ds, recipe, dry_run=False)
-        return ds
+        return self._apply_recipe(
+            ds,
+            recipe_id=recipe_id,
+            phase=context.phase or APPLY_PHASE,
+            woodpecker=woodpecker,
+        )
 
     def _apply_atlas_recipe(self, ds, dataset_id, recipe_id):
         woodpecker = self.woodpecker
@@ -66,8 +68,12 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         ds.attrs["source_name"] = f"{dataset_id}.nc"
 
         try:
-            recipe = woodpecker.recipe.get(recipe_id)
-            woodpecker.recipe.fix(ds, recipe, dry_run=False)
+            self._apply_recipe(
+                ds,
+                recipe_id=recipe_id,
+                phase=APPLY_PHASE,
+                woodpecker=woodpecker,
+            )
         finally:
             if previous_dataset_id is None:
                 ds.attrs.pop("dataset_id", None)
@@ -79,4 +85,11 @@ class WoodpeckerDatasetFixProvider(FixProvider):
             else:
                 ds.attrs["source_name"] = previous_source_name
 
+        return ds
+
+    def _apply_recipe(self, ds, *, recipe_id, phase=None, woodpecker=None):
+        if woodpecker is None:
+            woodpecker = self.woodpecker
+        recipe = woodpecker.recipe.get(recipe_id)
+        woodpecker.recipe.apply(ds, recipe, phase=phase, dry_run=False)
         return ds

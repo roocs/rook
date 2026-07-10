@@ -4,7 +4,6 @@ import xarray as xr
 
 from rook.fixes.providers import (
     FixContext,
-    WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
 )
@@ -119,24 +118,18 @@ def assert_identical_with_report(left, right):
 
 
 def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
-    assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "cmip6_decadal.full"
+    assert WOODPECKER_CMIP6_DECADAL_RECIPE_ID == "c3s.cmip6_decadal"
 
 
-def test_woodpecker_decadal_calendar_fix_id_is_calendar_normalization():
-    assert (
-        WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID
-        == "cmip6_decadal.calendar_normalization"
-    )
-
-
-def test_woodpecker_prepare_applies_decadal_calendar_fix():
+def test_woodpecker_prepare_applies_decadal_prepare_phase():
     dataset = make_proleptic_gregorian_decadal_sample()
 
     result = WoodpeckerDatasetFixProvider().prepare(
         dataset,
         context=FixContext(
             dataset_id=DECADAL_DS_ID,
-            recipe_id=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
+            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+            phase="prepare",
         ),
     )
 

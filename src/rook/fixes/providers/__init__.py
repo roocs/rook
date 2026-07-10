@@ -8,9 +8,6 @@ from rook.fixes.providers.legacy import (
     LegacyDatasetFixProvider as LegacyDatasetFixProvider,
 )
 from rook.fixes.providers.woodpecker import (
-    WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID as WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
-)
-from rook.fixes.providers.woodpecker import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID as WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
 )
 from rook.fixes.providers.woodpecker import (

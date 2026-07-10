@@ -51,7 +51,7 @@ def assert_same_dataset_and_encoding(left, right):
 
 
 def test_woodpecker_atlas_recipe_id_is_atlas_basic():
-    assert WOODPECKER_ATLAS_RECIPE_ID == "atlas.basic"
+    assert WOODPECKER_ATLAS_RECIPE_ID == "c3s.atlas"
 
 
 def test_woodpecker_atlas_fixes_match_legacy_rook_output():
