@@ -45,6 +45,25 @@ def test_get_storage_base_falls_back_to_local_project_root(monkeypatch):
     assert config.get_storage_base("demo") == "/data/demo"
 
 
+def test_get_fix_backend_defaults_to_legacy(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_fix_backend() == "legacy"
+
+
+def test_get_fix_backend_uses_fixes_config(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {"fixes": {"backend": "woodpecker"}})
+
+    assert config.get_fix_backend() == "woodpecker"
+
+
+def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {"fixes": {"backend": "unknown"}})
+
+    with pytest.raises(config.ConfigurationError, match=r"fixes\.backend"):
+        config.get_fix_backend()
+
+
 def test_s3_options_reject_malformed_optional_json_without_exposing_value(monkeypatch):
     malformed_value = "not-json-private-value"
     monkeypatch.setattr(

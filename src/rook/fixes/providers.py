@@ -1,5 +1,6 @@
 """Dataset fix provider registry."""
 
+from rook.config import get_fix_backend
 from rook.fixes.base import DatasetFixProvider as DatasetFixProvider
 from rook.fixes.base import FixContext as FixContext
 from rook.fixes.base import FixProvider as FixProvider
@@ -20,8 +21,11 @@ DATASET_FIX_PROVIDERS = {
 }
 
 
-def get_dataset_fix_provider(name="legacy"):
+def get_dataset_fix_provider(name=None):
     """Return a configured dataset fix provider."""
+    if name is None:
+        name = get_fix_backend()
+
     provider = DATASET_FIX_PROVIDERS.get(name)
     if provider is None:
         allowed = ", ".join(sorted(DATASET_FIX_PROVIDERS))

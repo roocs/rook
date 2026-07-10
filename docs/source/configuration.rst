@@ -50,4 +50,20 @@ Start the service with your custom configuration:
    $ rook start -c etc/custom.cfg
 
 
+Fix provider backend
+--------------------
+
+Rook chooses the dataset fix provider internally from the ``roocs.ini``
+configuration. The default backend is ``legacy``.
+
+To use Woodpecker-backed fixes, set:
+
+.. code-block:: ini
+
+   [fixes]
+   backend = woodpecker
+
+Supported values are ``legacy`` and ``woodpecker``.
+
+
 .. _PyWPS: https://pywps.org/

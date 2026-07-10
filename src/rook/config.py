@@ -7,7 +7,6 @@ from typing import Any
 from clisops.config import get_config as _get_clisops_config
 from clisops.config import reload_config as _reload_clisops_config
 
-
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
@@ -82,6 +81,19 @@ def get_storage_base(project: str) -> str | None:
     )
 
 
+def get_fix_backend() -> str:
+    """Return the configured dataset fix provider backend."""
+    config = _get_section("fixes")
+    backend = config.get("backend", "legacy")
+    allowed = {"legacy", "woodpecker"}
+    if backend not in allowed:
+        allowed_values = ", ".join(sorted(allowed))
+        raise ConfigurationError(
+            f"Configuration option 'fixes.backend' must be one of: {allowed_values}."
+        )
+    return backend
+
+
 def _get_section(name: str) -> dict[str, Any]:
     section = get_config().get(name, {})
     if not isinstance(section, dict):
@@ -100,7 +112,9 @@ def _parse_json_dict(value: Any, option: str) -> dict[str, Any]:
     try:
         parsed = json.loads(value)
     except (TypeError, json.JSONDecodeError):
-        raise ConfigurationError(f"S3 option '{option}' must be a valid JSON object.") from None
+        raise ConfigurationError(
+            f"S3 option '{option}' must be a valid JSON object."
+        ) from None
     if not isinstance(parsed, dict):
         raise ConfigurationError(f"S3 option '{option}' must be a JSON object.")
     return parsed

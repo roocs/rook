@@ -43,9 +43,7 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
             calls.append((context.dataset_id, ds.attrs["source"], context.output_dir))
             return ds.assign_attrs(fixed=context.dataset_id)
 
-    monkeypatch.setattr(
-        concat_mod, "get_dataset_fix_provider", lambda fix_backend: FakeProvider()
-    )
+    monkeypatch.setattr(concat_mod, "get_dataset_fix_provider", lambda: FakeProvider())
 
     datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": first, "second.id": second},
@@ -59,7 +57,7 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
     assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
 
 
-def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_path):
+def test_apply_concat_dataset_fixes_uses_configured_provider(monkeypatch, tmp_path):
     calls = []
     source = xr.Dataset(attrs={"source": "first"})
 
@@ -78,17 +76,16 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
     monkeypatch.setattr(
         concat_mod,
         "get_dataset_fix_provider",
-        lambda fix_backend: calls.append(("provider", fix_backend)) or FakeProvider(),
+        lambda: calls.append(("provider",)) or FakeProvider(),
     )
 
     datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": source},
         output_dir=tmp_path.as_posix(),
-        fix_backend="woodpecker",
     )
 
     assert calls == [
-        ("provider", "woodpecker"),
+        ("provider",),
         (
             "first.id",
             "first",
@@ -99,7 +96,7 @@ def test_apply_concat_dataset_fixes_can_use_woodpecker_backend(monkeypatch, tmp_
     assert datasets[0].attrs["fixed_with"] == "woodpecker"
 
 
-def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
+def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     calls = []
     source = DatasetSource("dataset.id", ["input.nc"])
     combined = xr.Dataset({"tas": ("realization", [1.0])})
@@ -118,7 +115,7 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "get_dataset_fix_provider",
-        lambda fix_backend: calls.append(("provider", fix_backend)) or fake_provider,
+        lambda name=None: calls.append(("provider", name)) or fake_provider,
     )
     monkeypatch.setattr(
         concat_mod.normalise,
@@ -128,8 +125,8 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "apply_concat_dataset_fixes",
-        lambda collection, output_dir, fix_backend="legacy", fix_provider=None: calls.append(
-            (collection, output_dir, fix_backend, fix_provider)
+        lambda collection, output_dir, fix_provider=None: calls.append(
+            (collection, output_dir, fix_provider)
         )
         or [combined],
     )
@@ -148,20 +145,70 @@ def test_concat_passes_fix_backend_to_dataset_fixes(monkeypatch, tmp_path):
         collection=[source],
         dims=["realization"],
         output_dir=tmp_path.as_posix(),
-        fix_backend="woodpecker",
     )
 
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
-        ("provider", "woodpecker"),
+        ("provider", None),
         ("prepare", source, "concat", "prepare"),
         (
             {"dataset.id": source},
             tmp_path.as_posix(),
-            "woodpecker",
             fake_provider,
         ),
     ]
+
+
+def test_concat_can_override_configured_fix_provider(monkeypatch, tmp_path):
+    calls = []
+    source = DatasetSource("dataset.id", ["input.nc"])
+    combined = xr.Dataset({"tas": ("realization", [1.0])})
+    final = ["https://example.com/fixed.nc"]
+
+    class FakeProvider:
+        def prepare(self, ds, *, context=None):
+            return ds
+
+    fake_provider = FakeProvider()
+
+    monkeypatch.setattr(
+        concat_mod, "dataset_paths_by_id", lambda collection: collection
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "get_dataset_fix_provider",
+        lambda name=None: calls.append(("provider", name)) or fake_provider,
+    )
+    monkeypatch.setattr(
+        concat_mod.normalise,
+        "normalise_file_groups",
+        lambda collection, prepare_dataset: {"dataset.id": prepare_dataset(source)},
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "apply_concat_dataset_fixes",
+        lambda collection, output_dir, fix_provider=None: [combined],
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "combine_concat_datasets",
+        lambda datasets, dim, standard_name: combined,
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "finalise_concat_output",
+        lambda ds, params, dim: final,
+    )
+
+    result = concat_mod.concat(
+        collection=[source],
+        dims=["realization"],
+        output_dir=tmp_path.as_posix(),
+        fix_provider="woodpecker",
+    )
+
+    assert result.file_uris == ["https://example.com/fixed.nc"]
+    assert calls == [("provider", "woodpecker")]
 
 
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():

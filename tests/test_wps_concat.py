@@ -5,6 +5,14 @@ from pywps.tests import assert_response_success, client_for
 from rook.processes.wps_concat import Concat
 
 
+def test_wps_concat_exposes_fix_provider_override_not_fix_backend():
+    process = Concat()
+    inputs = [inp.identifier for inp in process.inputs]
+
+    assert "fix_provider" in inputs
+    assert "fix_backend" not in inputs
+
+
 @pytest.mark.xfail(reason="c3s-cmip6 decdal not in catalog")
 def test_wps_concat_ec_earth(get_output, pywps_cfg):
     client = client_for(Service(processes=[Concat()], cfgfiles=[pywps_cfg]))

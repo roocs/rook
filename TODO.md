@@ -93,12 +93,15 @@ corresponding PR has landed.
   still delegates to the old Rook helper. Decide whether this remains an
   operation-specific Rook preparation hook or becomes a more explicit
   Woodpecker recipe/phase.
-- [ ] Move fix provider selection out of WPS operator parameters and into
-  internal configuration. Prefer a `roocs.ini` setting for the default provider,
-  keep Rook responsible for choosing the provider internally, and add a pytest
-  switch or override so smoke/parity tests can exercise legacy and Woodpecker
-  backends deliberately. After this is in place, deprecate or remove the
-  temporary `fix_backend` parameter from the WPS/operator surface.
+- [ ] Keep refining config-driven fix provider selection. Rook now chooses the
+  default provider internally from `roocs.ini` (`[fixes] backend = ...`) and
+  CMIP6-decadal smoke/parity tests can temporarily override that default through
+  the `fix_provider` WPS input on the `concat` process. The next cleanup step is
+  deciding when the legacy backend, the temporary WPS override, and any
+  remaining compatibility handling can be removed.
+- [ ] Clean up the parity-test setup. The current checks are useful while
+  validating the Woodpecker integration, but the setup should become simpler
+  and more direct so we do not keep complicated integration scaffolding around.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
@@ -137,6 +140,9 @@ should stay visible:
 - do another iteration on operators after the fix boundary is clearer;
 - do another iteration on `rook.pflow` after Woodpecker integration settles;
 - review and clean up the `workflow.py` component;
+- clean up smoke tests so workflows and process inputs are built with small
+  Python helpers instead of large hard-coded JSON documents, making provider
+  and parameter variants easier to tweak;
 - refactor the dashboard process;
 - refactor the usage process;
 - add a new process for health checks;

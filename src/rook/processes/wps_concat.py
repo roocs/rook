@@ -85,14 +85,13 @@ class Concat(Process):
                 max_occurs=1,
             ),
             LiteralInput(
-                "fix_backend",
-                "Fix Backend",
-                abstract="Dataset fix backend to use for concat-specific decadal fixes.",
+                "fix_provider",
+                "Fix Provider",
+                abstract="Temporary fix provider override for integration smoke and parity tests.",
                 allowed_values=[
                     "legacy",
                     "woodpecker",
                 ],
-                default="legacy",
                 data_type="string",
                 min_occurs=0,
                 max_occurs=1,
@@ -160,8 +159,8 @@ class Concat(Process):
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
             ),
-            "fix_backend": parse_wps_input(
-                request.inputs, "fix_backend", default="legacy"
+            "fix_provider": parse_wps_input(
+                request.inputs, "fix_provider", default=None
             ),
         }
 
