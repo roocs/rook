@@ -7,6 +7,7 @@ from rook.fixes.providers import (
     LegacyDatasetFixProvider,
     WOODPECKER_ATLAS_RECIPE_ID,
     WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
+    WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
     get_dataset_fix_provider,
 )
@@ -65,7 +66,11 @@ def test_fix_provider_requires_declared_dependencies(monkeypatch):
     monkeypatch.setattr("importlib.util.find_spec", fake_find_spec)
 
     assert not provider.available()
-    with pytest.raises(ImportError, match="test provider is unavailable"):
+    assert provider.missing_dependencies() == ["missing_dependency"]
+    with pytest.raises(
+        ImportError,
+        match=r"test provider is unavailable Missing: missing_dependency\.",
+    ):
         provider.require_available()
 
 
@@ -151,6 +156,44 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
     assert result is source
     assert calls == [
         ("fix", "input", WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID, False),
+    ]
+
+
+def test_woodpecker_provider_applies_decadal_recipe_without_check(monkeypatch):
+    calls = []
+    source = xr.Dataset(attrs={"source": "input"})
+
+    class FakeRecipe:
+        @staticmethod
+        def get(recipe_id):
+            calls.append(("get", recipe_id))
+            return {"id": recipe_id}
+
+        @staticmethod
+        def check(ds, recipe):
+            raise AssertionError("Rook should call Woodpecker fix directly")
+
+        @staticmethod
+        def fix(ds, recipe, dry_run=True):
+            calls.append(("fix", recipe["id"], ds.attrs["source"], dry_run))
+
+    class FakeWoodpecker:
+        recipe = FakeRecipe
+
+    monkeypatch.setattr(
+        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
+    )
+    monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
+
+    result = WoodpeckerDatasetFixProvider().apply(
+        source,
+        context=FixContext(dataset_id="c3s-cmip6-decadal.example.dataset"),
+    )
+
+    assert result is source
+    assert calls == [
+        ("get", WOODPECKER_CMIP6_DECADAL_RECIPE_ID),
+        ("fix", WOODPECKER_CMIP6_DECADAL_RECIPE_ID, "input", False),
     ]
 
 

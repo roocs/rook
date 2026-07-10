@@ -55,8 +55,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         woodpecker = self.woodpecker
         recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
         recipe = woodpecker.recipe.get(recipe_id)
-        if woodpecker.recipe.check(ds, recipe):
-            woodpecker.recipe.fix(ds, recipe, dry_run=False)
+        woodpecker.recipe.fix(ds, recipe, dry_run=False)
         return ds
 
     def _apply_atlas_recipe(self, ds, dataset_id, recipe_id):

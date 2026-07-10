@@ -36,7 +36,7 @@ class RookWPS:
         execution = self.wps.execute(identifier, inputs, output=outputs)
         monitorExecution(execution)
         print(execution.errors)
-        assert execution.isSucceded() is True
+        assert execution.isSucceded() is True, execution.errors
         assert len(execution.processOutputs) > 0
         ml_url = execution.processOutputs[0].reference
         xml = requests.get(ml_url, timeout=30).text

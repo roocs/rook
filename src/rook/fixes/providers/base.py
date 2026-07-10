@@ -23,17 +23,24 @@ class FixProvider(ABC):
     dependency_names = ()
     unavailable_message = "The selected fix provider has missing dependencies."
 
+    def missing_dependencies(self):
+        """Return provider dependencies that are not importable."""
+        return [
+            dependency_name
+            for dependency_name in self.dependency_names
+            if importlib.util.find_spec(dependency_name) is None
+        ]
+
     def available(self):
         """Return whether the provider dependencies are importable."""
-        return all(
-            importlib.util.find_spec(dependency_name) is not None
-            for dependency_name in self.dependency_names
-        )
+        return not self.missing_dependencies()
 
     def require_available(self):
         """Raise a clear error when provider dependencies are missing."""
-        if not self.available():
-            raise ImportError(self.unavailable_message)
+        missing = self.missing_dependencies()
+        if missing:
+            missing_names = ", ".join(missing)
+            raise ImportError(f"{self.unavailable_message} Missing: {missing_names}.")
 
     def prepare(self, ds, *, context=None):
         """Prepare a dataset before the main fix step."""
