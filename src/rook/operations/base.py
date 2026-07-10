@@ -63,14 +63,20 @@ class Operation:
 
     def calculate(self):
         self._add_output_config()
-        norm_collection = normalise.normalise(self.collection)
+        fix_provider = self.params.get("fix_provider")
+        operation_params = dict(self.params)
+        operation_params.pop("fix_provider", None)
+        norm_collection = normalise.normalise(
+            self.collection,
+            fix_provider=fix_provider,
+        )
 
         rs = normalise.ResultSet(vars())
 
         for dset, collection in norm_collection.items():
             rs.add(
                 dset,
-                process(self.get_operation_callable(), collection, **self.params),
+                process(self.get_operation_callable(), collection, **operation_params),
             )
 
         return rs
@@ -78,8 +84,10 @@ class Operation:
 
 def is_prepared_dataset_collection(collection):
     """Return whether a collection contains normalized dataset sources."""
-    return bool(collection) and isinstance(collection, (list, tuple)) and all(
-        isinstance(item, DatasetSource) for item in collection
+    return (
+        bool(collection)
+        and isinstance(collection, (list, tuple))
+        and all(isinstance(item, DatasetSource) for item in collection)
     )
 
 

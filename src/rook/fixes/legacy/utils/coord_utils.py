@@ -1,9 +1,9 @@
-"""Coordinate operations."""
+"""Coordinate operations used by legacy fixes."""
 
 import numpy as np
 from clisops.utils import dataset_utils as xu
 
-from .common_utils import handle_derive_str
+from rook.fixes.legacy.utils.common_utils import handle_derive_str
 
 
 def squeeze_dims(ds_id, ds, **operands):

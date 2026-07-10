@@ -9,7 +9,6 @@ from pywps.tests import assert_process_exception, assert_response_success, clien
 from rook.processes.wps_subset import Subset
 from rook.utils.metalink_utils import parse_metalink
 
-
 C3S_CMIP6_MON_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 )
@@ -23,6 +22,14 @@ C3S_ATLAS_V25_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v25"
 C3S_ATLAS_V25_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v25"
 
 C3S_ATLAS_V25_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v25"
+
+
+def test_wps_subset_exposes_fix_provider_override():
+    process = Subset()
+    inputs = [inp.identifier for inp in process.inputs]
+
+    assert "fix_provider" in inputs
+    assert "fix_backend" not in inputs
 
 
 def test_wps_subset_cmip6_no_inv(pywps_cfg):

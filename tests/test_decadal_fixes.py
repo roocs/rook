@@ -8,7 +8,7 @@ from rook.fixes.providers import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
 )
-from rook.fixes.legacy_decadal import (
+from rook.fixes.legacy.decadal import (
     apply_decadal_fixes,
 )
 

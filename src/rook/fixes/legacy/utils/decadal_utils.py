@@ -1,4 +1,4 @@
-"""Utility functions for fixing decadal datasets."""
+"""Utility functions for legacy decadal fixes."""
 
 import re
 from datetime import datetime
