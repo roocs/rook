@@ -140,8 +140,8 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
 
     class FakeWoodpecker:
         @staticmethod
-        def fix(ds, *, fixes=None, dry_run=True):
-            calls.append(("fix", ds.attrs["source"], fixes, dry_run))
+        def apply(ds, *, fixes=None, dry_run=True):
+            calls.append(("apply", ds.attrs["source"], fixes, dry_run))
 
     monkeypatch.setattr(
         WoodpeckerDatasetFixProvider, "require_available", lambda self: None
@@ -155,7 +155,7 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
 
     assert result is source
     assert calls == [
-        ("fix", "input", WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID, False),
+        ("apply", "input", WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID, False),
     ]
 
 
@@ -171,11 +171,11 @@ def test_woodpecker_provider_applies_decadal_recipe_without_check(monkeypatch):
 
         @staticmethod
         def check(ds, recipe):
-            raise AssertionError("Rook should call Woodpecker fix directly")
+            raise AssertionError("Rook should call Woodpecker apply directly")
 
         @staticmethod
-        def fix(ds, recipe, dry_run=True):
-            calls.append(("fix", recipe["id"], ds.attrs["source"], dry_run))
+        def apply(ds, recipe, dry_run=True):
+            calls.append(("apply", recipe["id"], ds.attrs["source"], dry_run))
 
     class FakeWoodpecker:
         recipe = FakeRecipe
@@ -193,7 +193,7 @@ def test_woodpecker_provider_applies_decadal_recipe_without_check(monkeypatch):
     assert result is source
     assert calls == [
         ("get", WOODPECKER_CMIP6_DECADAL_RECIPE_ID),
-        ("fix", WOODPECKER_CMIP6_DECADAL_RECIPE_ID, "input", False),
+        ("apply", WOODPECKER_CMIP6_DECADAL_RECIPE_ID, "input", False),
     ]
 
 
@@ -208,10 +208,10 @@ def test_woodpecker_provider_applies_atlas_recipe(monkeypatch):
             return {"id": recipe_id}
 
         @staticmethod
-        def fix(ds, recipe, dry_run=True):
+        def apply(ds, recipe, dry_run=True):
             calls.append(
                 (
-                    "fix",
+                    "apply",
                     recipe["id"],
                     ds.attrs["dataset_id"],
                     ds.attrs["source_name"],
@@ -238,7 +238,7 @@ def test_woodpecker_provider_applies_atlas_recipe(monkeypatch):
     assert calls == [
         ("get", WOODPECKER_ATLAS_RECIPE_ID),
         (
-            "fix",
+            "apply",
             WOODPECKER_ATLAS_RECIPE_ID,
             "c3s-ipcc-atlas.tnn.CMIP6.historical.mon",
             "c3s-ipcc-atlas.tnn.CMIP6.historical.mon.nc",

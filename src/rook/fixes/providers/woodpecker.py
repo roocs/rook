@@ -34,7 +34,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         # TODO: decide whether this special CMIP6-decadal pre-concat calendar
         # preparation remains an operation hook or should be represented by a
         # dedicated recipe/phase in Woodpecker.
-        self.woodpecker.fix(
+        self.woodpecker.apply(
             ds,
             fixes=WOODPECKER_CMIP6_DECADAL_CALENDAR_FIX_ID,
             dry_run=False,
@@ -55,7 +55,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         woodpecker = self.woodpecker
         recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
         recipe = woodpecker.recipe.get(recipe_id)
-        woodpecker.recipe.fix(ds, recipe, dry_run=False)
+        woodpecker.recipe.apply(ds, recipe, dry_run=False)
         return ds
 
     def _apply_atlas_recipe(self, ds, dataset_id, recipe_id):
@@ -67,7 +67,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
         try:
             recipe = woodpecker.recipe.get(recipe_id)
-            woodpecker.recipe.fix(ds, recipe, dry_run=False)
+            woodpecker.recipe.apply(ds, recipe, dry_run=False)
         finally:
             if previous_dataset_id is None:
                 ds.attrs.pop("dataset_id", None)
