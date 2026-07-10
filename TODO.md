@@ -99,6 +99,9 @@ corresponding PR has landed.
   the `fix_provider` WPS input on the `concat` process. The next cleanup step is
   deciding when the legacy backend, the temporary WPS override, and any
   remaining compatibility handling can be removed.
+- [ ] Clean up the parity-test setup. The current checks are useful while
+  validating the Woodpecker integration, but the setup should become simpler
+  and more direct so we do not keep complicated integration scaffolding around.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
