@@ -1,4 +1,8 @@
+import pytest
+
 from rook.catalog import DBCatalog
+
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
 C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"

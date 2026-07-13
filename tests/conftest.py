@@ -19,6 +19,8 @@ from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
 
+from common import make_synthetic_cmip6_decadal_source
+
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
@@ -62,6 +64,11 @@ def missing_test_data_files(base_dir):
     ]
 
 
+@pytest.fixture()
+def synthetic_cmip6_decadal_source(tmp_path):
+    return make_synthetic_cmip6_decadal_source(tmp_path)
+
+
 @pytest.fixture(scope="session")
 def stratus():
     return _stratus(
@@ -71,7 +78,7 @@ def stratus():
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def write_roocs_cfg(stratus):
     cfg_templ = """
     [clisops:write]
@@ -183,7 +190,7 @@ def get_output():
     return _get_output
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def load_test_data(stratus, write_roocs_cfg):
     """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
     cache_dir = Path(ESGF_TEST_DATA_CACHE_DIR)

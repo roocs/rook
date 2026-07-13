@@ -13,6 +13,8 @@ def test_wps_concat_exposes_fix_provider_override_not_fix_backend():
     assert "fix_backend" not in inputs
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.xfail(reason="c3s-cmip6 decdal not in catalog")
 def test_wps_concat_ec_earth(get_output, pywps_cfg):
     client = client_for(Service(processes=[Concat()], cfgfiles=[pywps_cfg]))

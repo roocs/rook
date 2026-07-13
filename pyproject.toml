@@ -253,6 +253,7 @@ addopts = [
 ]
 python_files = ["test_*.py"]
 markers = [
+  "mini_esgf_data: mark test to require the mini-ESGF test data cache",
   "online: mark test to need internet connection",
   "smoke: mark test as a smoke/sanity test"
 ]

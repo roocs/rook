@@ -32,6 +32,8 @@ def test_wps_subset_exposes_fix_provider_override():
     assert "fix_backend" not in inputs
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_cmip6_no_inv(pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
@@ -45,6 +47,8 @@ def test_wps_subset_cmip6_no_inv(pywps_cfg):
     )
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_c3s_cmip6(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
@@ -56,6 +60,8 @@ def test_wps_subset_c3s_cmip6(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_subset_c3s_cmip6_time_series(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
@@ -68,6 +74,8 @@ def test_wps_subset_c3s_cmip6_time_series(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_c3s_cmip6_time_components(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
@@ -82,6 +90,8 @@ def test_wps_subset_c3s_cmip6_time_components(get_output, pywps_cfg):
     assert b"year:2015,2016|month:01,02,03" in resp.data
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
 def test_wps_subset_c3s_cmip6_metadata(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
@@ -114,6 +124,8 @@ def test_wps_subset_c3s_cmip6_metadata(get_output, pywps_cfg):
     assert "coordinates" not in ds.time_bnds.encoding
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
@@ -132,6 +144,8 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     )
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_cmip6_multiple_files_prov(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
@@ -149,6 +163,8 @@ def test_wps_subset_cmip6_multiple_files_prov(get_output, pywps_cfg):
     )
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_cmip6_original_files(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
@@ -160,6 +176,8 @@ def test_wps_subset_cmip6_original_files(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_wps_subset_c3s_cmip6_collection_only(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
@@ -179,6 +197,8 @@ def test_wps_subset_missing_collection(pywps_cfg):
     assert_process_exception(resp, code="MissingParameterValue")
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.skip(reason="need a new test dataset")
 def test_wps_subset_time_invariant_dataset(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
@@ -191,6 +211,8 @@ def test_wps_subset_time_invariant_dataset(get_output, pywps_cfg):
     assert "meta4" in get_output(resp.xml)["output"]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.xfail(reason="no atlas v2.5 data in /pool/data")
 def test_wps_subset_c3s_atlas_v25_cmip5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
@@ -208,6 +230,8 @@ def test_wps_subset_c3s_atlas_v25_cmip5(get_output, pywps_cfg):
     assert "roocs:pr_CMIP5_rcp26_mon_20200101-20200301.nc" in doc.get_provn()
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 @pytest.mark.xfail(reason="no atlas v2.5 data in /pool/data")
 def test_wps_subset_c3s_atlas_v25_era5(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))

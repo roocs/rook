@@ -8,6 +8,8 @@ from pywps.tests import assert_response_success, client_for
 from rook.processes.wps_regrid import Regrid
 from rook.utils.metalink_utils import extract_paths_from_metalink
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 
 ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
 

@@ -1,3 +1,4 @@
+import pytest
 import types
 
 from rook.catalog.intake import IntakeCatalog
@@ -13,6 +14,8 @@ C3S_CMIP6_FX_COLLECTION = (
 )
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_intake_catalog_c3s_cmip6_mon(stratus):
     cat = IntakeCatalog(project="c3s-cmip6")
     result = cat.search(collection=C3S_CMIP6_MON_COLLECTION)
@@ -34,6 +37,8 @@ def test_intake_catalog_c3s_cmip6_mon(stratus):
     assert expected_url == urls[0]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_intake_catalog_c3s_cmip6_day():
     cat = IntakeCatalog(project="c3s-cmip6")
     # all files
@@ -53,6 +58,8 @@ def test_intake_catalog_c3s_cmip6_day():
     assert "pr_day_SAM0-UNICON_historical_r1i1p1f1_gn_19000101-19001231.nc" in files[0]
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_intake_catalog_c3s_cmip6_fx():
     cat = IntakeCatalog(project="c3s-cmip6")
     result = cat.search(collection=C3S_CMIP6_FX_COLLECTION)
@@ -72,6 +79,8 @@ def test_intake_catalog_c3s_cmip6_fx():
     assert len(files) == 1
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_intake_catalog_c3s_cmip6_multiple():
     cat = IntakeCatalog(project="c3s-cmip6")
     result = cat.search(collection=[C3S_CMIP6_MON_COLLECTION, C3S_CMIP6_FX_COLLECTION])

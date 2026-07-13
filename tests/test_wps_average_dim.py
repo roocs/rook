@@ -1,7 +1,10 @@
+import pytest
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
 from rook.processes.wps_average_dim import AverageByDimension
+
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
 
 def test_wps_average_time_cmip5(get_output, pywps_cfg):
