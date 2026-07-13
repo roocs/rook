@@ -1,6 +1,11 @@
 """Legacy Rook dataset fix provider."""
 
-from rook.fixes.providers.base import FixContext, FixProvider
+from rook.fixes.providers.base import (
+    ATLAS_DATASET_PREFIXES,
+    CMIP6_DECADAL_DATASET_PREFIX,
+    FixContext,
+    FixProvider,
+)
 
 
 class LegacyDatasetFixProvider(FixProvider):
@@ -19,12 +24,12 @@ class LegacyDatasetFixProvider(FixProvider):
         context = context or FixContext()
         dataset_id = context.dataset_id or ""
 
-        if dataset_id.startswith(("c3s-ipcc-atlas", "c3s-cica-atlas")):
+        if dataset_id.startswith(ATLAS_DATASET_PREFIXES):
             from rook.fixes.legacy.atlas import apply_atlas_fixes
 
             return apply_atlas_fixes(dataset_id, ds)
 
-        if dataset_id.startswith("c3s-cmip6-decadal"):
+        if dataset_id.startswith(CMIP6_DECADAL_DATASET_PREFIX):
             from rook.fixes.legacy.decadal import apply_decadal_fixes
 
             return apply_decadal_fixes(

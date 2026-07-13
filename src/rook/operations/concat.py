@@ -122,6 +122,11 @@ class Concat(Operation):
         self._add_output_config()
         fix_provider = get_dataset_fix_provider(self.params.get("fix_provider"))
         collection = dataset_paths_by_id(self.collection)
+
+        # Concat intentionally does not use the base operation flow:
+        # - keep paths grouped by dataset id;
+        # - prepare each opened file by fixing its calendar before time concat;
+        # - apply dataset-id-aware fixes after each group has been opened.
         norm_collection = normalise.normalise_file_groups(
             collection,
             prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, fix_provider),

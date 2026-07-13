@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import importlib.util
 
+ATLAS_DATASET_PREFIXES = ("c3s-ipcc-atlas", "c3s-cica-atlas")
+CMIP6_DECADAL_DATASET_PREFIX = "c3s-cmip6-decadal"
+
 
 @dataclass(frozen=True)
 class FixContext:

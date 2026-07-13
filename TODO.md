@@ -127,7 +127,9 @@ Every pull request should demonstrate that:
   a deliberate change is documented.
 
 For this phase and future cleanup tasks, always run project commands through the
-`rook` conda environment, for example `conda run -n rook pytest ...`.
+`rook` conda environment. Do not rely on the active shell environment; use an
+explicit command such as `conda run -n rook pytest ...` so verification uses the
+same dependencies as the project setup.
 
 Run focused tests while iterating, followed by lint, docs, and the default
 non-smoke test suite before each pull request.
