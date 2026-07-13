@@ -8,9 +8,9 @@ from rook.utils.input_utils import (
 )
 from rook.utils.metalink_utils import build_metalink
 
-pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
-
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_build_metalink(tmpdir, stratus):
     cmip6_nc = stratus.path.joinpath(
         "badc/cmip6/data/CMIP6/CMIP/MPI-M/MPI-ESM1-2-HR/historical/r1i1p1f1/SImon/siconc"
@@ -63,6 +63,8 @@ def test_resolve_to_file_paths_mixed():
         )
 
 
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
 def test_resolve_to_file_paths_urls(stratus):
     coll = [
         "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6/CMIP/E3SM-Project/E3SM-1-1"
