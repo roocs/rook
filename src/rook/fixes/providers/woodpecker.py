@@ -1,13 +1,17 @@
 """Woodpecker-backed dataset fix provider."""
 
 import importlib
-
-from woodpecker.recipe import APPLY_PHASE, PREPARE_PHASE
+from functools import cached_property
 
 from rook.fixes.providers.base import FixContext, FixProvider
 
 WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "c3s.cmip6_decadal"
 WOODPECKER_ATLAS_RECIPE_ID = "c3s.atlas"
+WOODPECKER_PREPARE_PHASE = "prepare"
+WOODPECKER_APPLY_PHASE = "apply"
+
+ATLAS_DATASET_PREFIXES = ("c3s-ipcc-atlas", "c3s-cica-atlas")
+CMIP6_DECADAL_DATASET_PREFIX = "c3s-cmip6-decadal"
 
 
 class WoodpeckerDatasetFixProvider(FixProvider):
@@ -25,7 +29,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
         "woodpecker-cmip6-decadal plugin, or use the legacy backend."
     )
 
-    @property
+    @cached_property
     def woodpecker(self):
         """Return the Woodpecker module after checking provider dependencies."""
         self.require_available()
@@ -33,37 +37,37 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
     def prepare(self, ds, *, context=None):
         context = context or FixContext()
-        recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
         return self._apply_recipe(
             ds,
-            recipe_id=recipe_id,
-            phase=context.phase or PREPARE_PHASE,
+            recipe_id=context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+            phase=context.phase or WOODPECKER_PREPARE_PHASE,
         )
 
     def apply(self, ds, *, context=None):
         context = context or FixContext()
         dataset_id = context.dataset_id or ""
 
-        if dataset_id.startswith(("c3s-ipcc-atlas", "c3s-cica-atlas")):
-            recipe_id = context.recipe_id or WOODPECKER_ATLAS_RECIPE_ID
-            return self._apply_atlas_recipe(ds, dataset_id, recipe_id)
+        if dataset_id.startswith(ATLAS_DATASET_PREFIXES):
+            return self._apply_atlas_recipe(
+                ds,
+                dataset_id=dataset_id,
+                recipe_id=context.recipe_id or WOODPECKER_ATLAS_RECIPE_ID,
+            )
 
-        if not dataset_id.startswith("c3s-cmip6-decadal"):
-            return ds
+        if dataset_id.startswith(CMIP6_DECADAL_DATASET_PREFIX):
+            return self._apply_recipe(
+                ds,
+                recipe_id=context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+                phase=context.phase or WOODPECKER_APPLY_PHASE,
+            )
 
-        woodpecker = self.woodpecker
-        recipe_id = context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID
-        return self._apply_recipe(
-            ds,
-            recipe_id=recipe_id,
-            phase=context.phase or APPLY_PHASE,
-            woodpecker=woodpecker,
-        )
+        return ds
 
-    def _apply_atlas_recipe(self, ds, dataset_id, recipe_id):
-        woodpecker = self.woodpecker
+    def _apply_atlas_recipe(self, ds, *, dataset_id, recipe_id):
         previous_dataset_id = ds.attrs.get("dataset_id")
         previous_source_name = ds.attrs.get("source_name")
+        # TODO: clean up this temporary attribute workaround when revisiting
+        # c3s-atlas fix handling in Woodpecker.
         ds.attrs["dataset_id"] = dataset_id
         ds.attrs["source_name"] = f"{dataset_id}.nc"
 
@@ -71,8 +75,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
             self._apply_recipe(
                 ds,
                 recipe_id=recipe_id,
-                phase=APPLY_PHASE,
-                woodpecker=woodpecker,
+                phase=WOODPECKER_APPLY_PHASE,
             )
         finally:
             if previous_dataset_id is None:
@@ -87,9 +90,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
         return ds
 
-    def _apply_recipe(self, ds, *, recipe_id, phase=None, woodpecker=None):
-        if woodpecker is None:
-            woodpecker = self.woodpecker
-        recipe = woodpecker.recipe.get(recipe_id)
-        woodpecker.recipe.apply(ds, recipe, phase=phase, dry_run=False)
+    def _apply_recipe(self, ds, *, recipe_id, phase=None):
+        recipe = self.woodpecker.recipe.get(recipe_id)
+        self.woodpecker.recipe.apply(ds, recipe, phase=phase, dry_run=False)
         return ds
