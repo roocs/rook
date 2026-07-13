@@ -10,6 +10,8 @@ import pytest
 
 from rook.processes.wps_average_shape import AverageByShape
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 
 ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
 

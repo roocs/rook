@@ -8,6 +8,8 @@ from rook.utils.input_utils import (
 )
 from rook.utils.metalink_utils import build_metalink
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 
 def test_build_metalink(tmpdir, stratus):
     cmip6_nc = stratus.path.joinpath(

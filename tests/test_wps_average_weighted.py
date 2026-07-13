@@ -1,9 +1,12 @@
+import pytest
 import xarray as xr
 from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_average_weighted import WeightedAverage
 from rook.utils.metalink_utils import extract_paths_from_metalink
+
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
 
 def assert_weighted_average(path):

@@ -2,6 +2,8 @@ import pytest
 
 from rook.pflow.alignment import SubsetAlignmentChecker
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 
 class TestYearMonth:
     """Tests with year and month only, not day."""

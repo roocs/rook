@@ -4,6 +4,8 @@ from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_concat import Concat
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 
 def test_wps_concat_exposes_fix_provider_override_not_fix_backend():
     process = Concat()

@@ -9,6 +9,8 @@ from pywps.tests import assert_process_exception, assert_response_success, clien
 from rook.processes.wps_subset import Subset
 from rook.utils.metalink_utils import parse_metalink
 
+pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
+
 C3S_CMIP6_MON_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 )

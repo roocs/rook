@@ -183,7 +183,7 @@ def get_output():
     return _get_output
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def load_test_data(stratus, write_roocs_cfg):
     """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
     cache_dir = Path(ESGF_TEST_DATA_CACHE_DIR)
