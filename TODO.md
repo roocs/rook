@@ -171,17 +171,17 @@ public URL behavior, WPS catalog configuration, or path-resolution behavior.
 
 Work in small steps:
 
-1. Make mini-esgf-data opt-in for tests that actually need it. The current
-   session-autouse `load_test_data` fixture means synthetic-only tests still
-   touch the mini-ESGF cache, which makes focused provider tests heavier and
-   harder to run in restricted environments.
-2. Keep mini-esgf-data coverage for WPS, catalog lookup, path resolution,
+1. [x] Make mini-esgf-data opt-in for tests that actually need it.
+   `load_test_data` and the mini-ESGF roocs config fixture are no longer
+   session-autouse; tests that need them use the `mini_esgf_data` marker and
+   `load_test_data` fixture explicitly.
+2. [x] Keep mini-esgf-data coverage for WPS, catalog lookup, path resolution,
    metalink/public URL behavior, and other integration checks that need the
-   realistic file layout.
-3. Add or migrate focused fix tests to synthetic Woodpecker data, especially
+   realistic file layout. These tests are marked with `mini_esgf_data`.
+3. [ ] Add or migrate focused fix tests to synthetic Woodpecker data, especially
    decadal calendar preparation, decadal apply behavior, atlas fixes, and
    provider routing.
-4. Add synthetic concat coverage using temporary NetCDF files so the
+4. [ ] Add synthetic concat coverage using temporary NetCDF files so the
    per-file `prepare` step, grouped time concat, and dataset-id-aware `apply`
    step are tested without depending on mini-esgf-data.
 

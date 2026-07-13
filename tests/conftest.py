@@ -71,7 +71,7 @@ def stratus():
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def write_roocs_cfg(stratus):
     cfg_templ = """
     [clisops:write]
