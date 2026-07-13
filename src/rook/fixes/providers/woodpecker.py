@@ -3,15 +3,17 @@
 import importlib
 from functools import cached_property
 
-from rook.fixes.providers.base import FixContext, FixProvider
+from rook.fixes.providers.base import (
+    ATLAS_DATASET_PREFIXES,
+    CMIP6_DECADAL_DATASET_PREFIX,
+    FixContext,
+    FixProvider,
+)
 
 WOODPECKER_CMIP6_DECADAL_RECIPE_ID = "c3s.cmip6_decadal"
 WOODPECKER_ATLAS_RECIPE_ID = "c3s.atlas"
 WOODPECKER_PREPARE_PHASE = "prepare"
 WOODPECKER_APPLY_PHASE = "apply"
-
-ATLAS_DATASET_PREFIXES = ("c3s-ipcc-atlas", "c3s-cica-atlas")
-CMIP6_DECADAL_DATASET_PREFIX = "c3s-cmip6-decadal"
 
 
 class WoodpeckerDatasetFixProvider(FixProvider):
