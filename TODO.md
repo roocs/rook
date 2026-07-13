@@ -27,6 +27,8 @@ starts.
   receives;
 - map Rook's dataset/project fix behavior to Woodpecker concepts;
 - keep the pflow dataset-fix policy explicit while delegating the actual fixes;
+- make dataset fixes part of the normal data/processing flow instead of
+  operation-specific hooks added only where they are needed;
 - preserve concat-specific CMIP6 decadal behavior until it can be represented
   cleanly through Woodpecker;
 - keep direct local, URL, S3, Zarr, Kerchunk, catalog-backed, and workflow-file
@@ -81,7 +83,10 @@ corresponding PR has landed.
   `apply(ds, context=...)`, with optional `prepare(...)` and `finalise(...)`
   hooks for operation lifecycle needs. Avoid adding new provider methods named
   after specific projects, activities, or fixes unless there is no generic
-  lifecycle boundary for the behavior.
+  lifecycle boundary for the behavior. The usefulness of the lifecycle phases
+  should be revisited after decadal data providers have gained practical
+  experience with Woodpecker. Do not remove or rename the phases only from an
+  interface-design concern while that feedback is still being collected.
 - [ ] Catalog-backed dataset fixes use Woodpecker.
 - [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
 - [ ] Workflow-file inputs still feed later workflow steps.
@@ -141,6 +146,12 @@ should stay visible:
 
 - do another iteration on operators after the fix boundary is clearer;
 - do another iteration on `rook.pflow` after Woodpecker integration settles;
+- revisit the processing flow once Woodpecker users, especially decadal data
+  providers, have practical experience with the current provider interface.
+  The target shape is an explicit flow with source resolution, source identity,
+  opening, preparation, dataset/project fixes, operation execution, and output
+  finalization as named stages, rather than fixes being squeezed into
+  individual operators;
 - review and clean up the `workflow.py` component;
 - clean up smoke tests so workflows and process inputs are built with small
   Python helpers instead of large hard-coded JSON documents, making provider
