@@ -1,3 +1,4 @@
+import numpy as np
 import xarray as xr
 
 import rook.operations.concat as concat_mod
@@ -230,6 +231,32 @@ def test_concat_uses_synthetic_decadal_files_with_woodpecker_provider(
         assert dataset.realization.attrs == {"standard_name": "realization"}
         assert dataset.attrs["project_id"] == "CMIP6"
         assert dataset.attrs["dataset_id"].startswith("CMIP6.DCPP.")
+
+
+def test_finalise_concat_output_writes_to_configured_output_dir(tmp_path):
+    dataset = xr.Dataset(
+        {"tas": (("realization", "time"), [[280.0, 281.0]])},
+        coords={
+            "realization": [0],
+            "time": np.array(["2000-01-01", "2000-02-01"], dtype="datetime64[ns]"),
+        },
+    )
+    dataset.realization.attrs = {"standard_name": "realization"}
+
+    outputs = concat_mod.finalise_concat_output(
+        dataset,
+        {
+            "output_dir": tmp_path.as_posix(),
+            "output_type": "netcdf",
+            "split_method": "time:auto",
+            "file_namer": "standard",
+        },
+        dim="realization",
+    )
+
+    assert len(outputs) == 1
+    assert outputs[0].startswith(tmp_path.as_posix())
+    assert (tmp_path / "output_001.nc").is_file()
 
 
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():
