@@ -161,6 +161,30 @@ should stay visible:
 - add a new process for health checks;
 - clean up all WPS process modules in general.
 
+## Synthetic Test Data
+
+Woodpecker already provides synthetic test data builders such as
+`woodpecker.testing.make_cmip6_decadal`, `make_atlas`, `make_cmip6`, `make_cmip7`,
+and `make_cordex`. Use these for focused fix/provider tests while keeping
+mini-esgf-data for integration coverage that needs realistic catalog paths,
+public URL behavior, WPS catalog configuration, or path-resolution behavior.
+
+Work in small steps:
+
+1. Make mini-esgf-data opt-in for tests that actually need it. The current
+   session-autouse `load_test_data` fixture means synthetic-only tests still
+   touch the mini-ESGF cache, which makes focused provider tests heavier and
+   harder to run in restricted environments.
+2. Keep mini-esgf-data coverage for WPS, catalog lookup, path resolution,
+   metalink/public URL behavior, and other integration checks that need the
+   realistic file layout.
+3. Add or migrate focused fix tests to synthetic Woodpecker data, especially
+   decadal calendar preparation, decadal apply behavior, atlas fixes, and
+   provider routing.
+4. Add synthetic concat coverage using temporary NetCDF files so the
+   per-file `prepare` step, grouped time concat, and dataset-id-aware `apply`
+   step are tested without depending on mini-esgf-data.
+
 ## Deferred Features
 
 These remain outside this cleanup phase:
