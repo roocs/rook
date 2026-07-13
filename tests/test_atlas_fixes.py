@@ -8,17 +8,21 @@ from rook.fixes.providers import (
     WoodpeckerDatasetFixProvider,
 )
 
-pytest.importorskip("woodpecker")
+woodpecker_testing = pytest.importorskip("woodpecker.testing")
 pytest.importorskip("woodpecker_atlas_plugin")
 
 ATLAS_DS_ID = "c3s-ipcc-atlas.tnn.CMIP6.historical.mon"
 
 
 def make_representative_atlas_sample():
-    dataset = xr.Dataset(
-        {"tas": ("time", [280.0, 281.0])},
-        coords={"time": [0, 1], "member_id": ("member_id", ["r1i1p1f1"])},
+    dataset = woodpecker_testing.make_atlas(variable="tas", seed=1).isel(
+        time=slice(0, 2),
+        lat=slice(0, 2),
+        lon=slice(0, 2),
     )
+    dataset.attrs.pop("project_id", None)
+    dataset = dataset.assign_coords(member_id=("member_id", ["r1i1p1f1"]))
+
     for var in list(dataset.coords) + list(dataset.data_vars):
         dataset[var].encoding["_FillValue"] = "missing"
     dataset["member_id"].encoding.update(

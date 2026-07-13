@@ -95,7 +95,10 @@ def finalise_concat_output(ds, params, dim):
         ds,
         time=params.get("time", None),
         time_components=params.get("time_components", None),
-        output_type="nc",
+        output_dir=params.get("output_dir"),
+        output_type=params.get("output_type", "netcdf"),
+        split_method=params.get("split_method", "time:auto"),
+        file_namer=params.get("file_namer", "standard"),
     )
 
 

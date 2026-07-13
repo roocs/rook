@@ -19,6 +19,8 @@ from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
 
+from rook.io.datasets import DatasetSource
+
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
@@ -26,6 +28,10 @@ xpath_ns = get_xpath_ns(VERSION)
 TESTS_HOME = Path(__file__).parent.absolute()
 ROOCS_CFG = TESTS_HOME.joinpath(".roocs.ini")
 PYWPS_CFG = TESTS_HOME.joinpath("pywps.cfg")
+SYNTHETIC_CMIP6_DECADAL_DATASET_ID = (
+    "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast."
+    "s1960-r1i1p1f1.Omon.tos.gn.v20200101"
+)
 
 TEST_DATA_FILE_PATTERNS = (
     "badc/cmip5/data/cmip5/output1/ICHEC/EC-EARTH/historical/mon/atmos/Amon/r1i1p1/latest/tas/",
@@ -60,6 +66,21 @@ def missing_test_data_files(base_dir):
         for filename in required_test_data_files()
         if not base_dir.joinpath(filename).exists()
     ]
+
+
+@pytest.fixture()
+def synthetic_cmip6_decadal_source(tmp_path):
+    woodpecker_testing = pytest.importorskip("woodpecker.testing")
+    pytest.importorskip("woodpecker_cmip6_decadal_plugin")
+    dataset = woodpecker_testing.make_cmip6_decadal(seed=1).isel(time=slice(0, 2))
+    paths = []
+
+    for index in range(2):
+        path = tmp_path / f"synthetic-decadal-{index}.nc"
+        dataset.isel(time=[index]).to_netcdf(path)
+        paths.append(path.as_posix())
+
+    return DatasetSource(SYNTHETIC_CMIP6_DECADAL_DATASET_ID, paths)
 
 
 @pytest.fixture(scope="session")

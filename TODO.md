@@ -178,10 +178,10 @@ Work in small steps:
 2. [x] Keep mini-esgf-data coverage for WPS, catalog lookup, path resolution,
    metalink/public URL behavior, and other integration checks that need the
    realistic file layout. These tests are marked with `mini_esgf_data`.
-3. [ ] Add or migrate focused fix tests to synthetic Woodpecker data, especially
+3. [x] Add or migrate focused fix tests to synthetic Woodpecker data, especially
    decadal calendar preparation, decadal apply behavior, atlas fixes, and
    provider routing.
-4. [ ] Add synthetic concat coverage using temporary NetCDF files so the
+4. [x] Add synthetic concat coverage using temporary NetCDF files so the
    per-file `prepare` step, grouped time concat, and dataset-id-aware `apply`
    step are tested without depending on mini-esgf-data.
 

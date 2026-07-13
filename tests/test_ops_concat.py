@@ -211,6 +211,27 @@ def test_concat_can_override_configured_fix_provider(monkeypatch, tmp_path):
     assert calls == [("provider", "woodpecker")]
 
 
+def test_concat_uses_synthetic_decadal_files_with_woodpecker_provider(
+    tmp_path, synthetic_cmip6_decadal_source
+):
+    result = concat_mod.concat(
+        collection=[synthetic_cmip6_decadal_source],
+        dims=["realization"],
+        output_dir=tmp_path.as_posix(),
+        fix_provider="woodpecker",
+    )
+
+    assert len(result.file_uris) == 1
+    assert result.file_uris[0].startswith(tmp_path.as_posix())
+
+    with xr.open_dataset(result.file_uris[0]) as dataset:
+        assert dataset.sizes["time"] == 2
+        assert dataset.sizes["realization"] == 1
+        assert dataset.realization.attrs == {"standard_name": "realization"}
+        assert dataset.attrs["project_id"] == "CMIP6"
+        assert dataset.attrs["dataset_id"].startswith("CMIP6.DCPP.")
+
+
 def test_combine_concat_datasets_sets_realization_coordinate_metadata():
     datasets = [
         xr.Dataset(
