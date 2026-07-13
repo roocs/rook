@@ -18,8 +18,8 @@ It is to move fix responsibility to Woodpecker while keeping Rook's source
 classification, request decisions, operation execution, and WPS response
 behavior stable.
 
-More implementation details will be added when the Woodpecker integration work
-starts.
+Implementation details are tracked below and should be pruned as the
+Woodpecker integration PRs land.
 
 ## Phase Goals
 
@@ -107,6 +107,10 @@ corresponding PR has landed.
 - [ ] Clean up the parity-test setup. The current checks are useful while
   validating the Woodpecker integration, but the setup should become simpler
   and more direct so we do not keep complicated integration scaffolding around.
+  Note: focused fix/provider tests now use Woodpecker synthetic data, and
+  mini-esgf-data is opt-in for tests that need realistic catalog/path behavior.
+  Keep looking for remaining parity scaffolding that can be retired once the
+  Woodpecker-backed path has settled.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
@@ -168,6 +172,11 @@ Woodpecker already provides synthetic test data builders such as
 and `make_cordex`. Use these for focused fix/provider tests while keeping
 mini-esgf-data for integration coverage that needs realistic catalog paths,
 public URL behavior, WPS catalog configuration, or path-resolution behavior.
+
+Status: the first synthetic-data cleanup PR is done. It made mini-esgf-data
+opt-in, added focused synthetic coverage for decadal and atlas fixes, added
+synthetic concat coverage with temporary NetCDF files, and added a regression
+check that concat finalization writes to the configured output directory.
 
 Work in small steps:
 
