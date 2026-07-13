@@ -1,4 +1,4 @@
-"""Synthetic datasets and sources for focused tests."""
+"""Common helpers for tests."""
 
 import pytest
 

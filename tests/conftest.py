@@ -19,7 +19,7 @@ from pywps import get_ElementMakerForVersion
 from pywps.app.basic import get_xpath_ns
 from pywps.tests import WpsClient, WpsTestResponse
 
-from synthetic import make_synthetic_cmip6_decadal_source
+from common import make_synthetic_cmip6_decadal_source
 
 VERSION = "1.0.0"
 WPS, OWS = get_ElementMakerForVersion(VERSION)
