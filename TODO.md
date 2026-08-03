@@ -174,9 +174,8 @@ they should stay visible:
   and parameter variants easier to tweak;
 - refactor the dashboard process;
 - refactor the usage process;
-- define and implement a health-check process after its operational contract,
-  checks, and response format have been agreed; this is not a blocker for the
-  immediate production release;
+- extend the lightweight `health` WPS process with deeper operational checks
+  after their contract and failure behavior have been agreed;
 - clean up all WPS process modules in general.
 
 ## Synthetic Test Data

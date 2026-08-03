@@ -7,6 +7,21 @@ Processes
     :local:
     :depth: 1
 
+Health
+------
+
+.. autoprocess:: rook.processes.wps_health.Health
+    :docstring:
+    :skiplines: 1
+    :noindex:
+
+The process has no inputs and returns the literal output ``status=ok`` when
+Rook can execute it. An HTTP health endpoint can delegate to:
+
+.. code-block:: text
+
+   /wps?service=WPS&version=1.0.0&request=Execute&identifier=health
+
 Subset
 ------
 
