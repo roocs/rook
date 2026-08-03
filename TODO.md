@@ -1,25 +1,33 @@
-# Rook Cleanup TODO
+# Rook Release and Cleanup TODO
 
-This document tracks the cleanup phase after the `v1.2.3` release.
+This document tracks the cleanup and release-preparation phase after the
+`v1.2.3` release.
 
-The previous phase renamed the internal request-processing layer from
-`rook.director` to `rook.pflow`, clarified the request-decision vocabulary, and
-documented the dataset-processing flow. The next phase should keep that shape
-stable while integrating the Woodpecker fixes library.
+The previous phases renamed the internal request-processing layer from
+`rook.director` to `rook.pflow` and integrated the Woodpecker fixes library.
+The next phase should keep that shape stable while preparing a production-ready
+release.
 
 Keep the work in small, reviewable pull requests. Preserve WPS behavior unless
 a change is explicit, documented, and covered by tests.
 
 ## Current Phase Goal
 
-Integrate the Woodpecker fixes library so dataset/project fixes are no longer
-owned by Rook-specific utility code. The goal is not a broad operator rewrite.
-It is to move fix responsibility to Woodpecker while keeping Rook's source
-classification, request decisions, operation execution, and WPS response
-behavior stable.
+Prepare a new Rook release that is suitable for production deployment. The
+Woodpecker integration is far enough along for this release; the remaining work
+should simplify provider selection, remove unnecessary parity-test complexity,
+complete release verification, and document the deployment-ready state.
 
-Implementation details are tracked below and should be pruned as the
-Woodpecker integration PRs land.
+Woodpecker should become the default fix provider. Keep the legacy provider as
+a configuration-selected fallback, including for targeted smoke-test runs, but
+do not run both providers in parallel through every smoke test. A smoke-test run
+should exercise the single provider selected by configuration. The temporary
+WPS-level provider override should be removed when the configuration-driven
+tests cover the required cases.
+
+Further mini-ESGF/mini-climate-data work is not a blocker for this release. The
+focused synthetic coverage already added is sufficient for the current phase;
+broader test-data improvements will continue later.
 
 ## Phase Goals
 
@@ -58,18 +66,22 @@ should own *how* those fixes are applied.
 
 ## Suggested Pull Request Order
 
-1. Document the intended Woodpecker integration boundary in this TODO and, if
-   useful, in the dataset-processing flow docs.
-2. Add Woodpecker as a dependency and introduce a tiny Rook adapter around it.
-3. Route catalog-backed dataset fixes through the adapter without changing WPS
-   inputs or response behavior.
-4. Add focused tests for catalog-backed NetCDF fixes, direct inputs without
-   fixes, workflow-file inputs, and concat decadal behavior.
-5. Remove obsolete Rook-side fix helpers once the Woodpecker-backed path is
-   covered.
-6. Refresh docs and changelog.
-7. Run focused pflow/operator tests, docs, the default non-smoke suite, and
-   smoke tests before release.
+1. Make Woodpecker the configured default fix provider while retaining the
+   legacy provider as an explicit configuration fallback.
+2. Simplify provider plumbing and tests so production and smoke tests use one
+   configuration-selected provider per run. Remove provider parametrization and
+   the temporary WPS override where they are no longer needed.
+3. Keep a small targeted legacy-provider test set and support an optional smoke
+   run with the legacy backend selected in configuration.
+4. Remove obsolete Rook fix helpers only where the Woodpecker-backed behavior
+   is already covered; explicitly retain any compatibility code still needed
+   for the legacy fallback.
+5. Refresh deployment configuration, documentation, and changelog for the new
+   default and fallback behavior.
+6. Run focused pflow/operator tests, lint, docs, the default non-smoke suite,
+   and one Woodpecker-configured smoke-test run. Run the legacy smoke path as a
+   separate compatibility check when required.
+7. Prepare and publish the release, then deploy it to production.
 
 ## Phase Checklist
 
@@ -98,23 +110,23 @@ corresponding PR has landed.
   still delegates to the old Rook helper. Decide whether this remains an
   operation-specific Rook preparation hook or becomes a more explicit
   Woodpecker recipe/phase.
-- [ ] Keep refining config-driven fix provider selection. Rook now chooses the
-  default provider internally from `roocs.ini` (`[fixes] backend = ...`) and
-  CMIP6-decadal smoke/parity tests can temporarily override that default through
-  the `fix_provider` WPS input on the `concat` process. The next cleanup step is
-  deciding when the legacy backend, the temporary WPS override, and any
-  remaining compatibility handling can be removed.
-- [ ] Clean up the parity-test setup. The current checks are useful while
-  validating the Woodpecker integration, but the setup should become simpler
-  and more direct so we do not keep complicated integration scaffolding around.
-  Note: focused fix/provider tests now use Woodpecker synthetic data, and
-  mini-esgf-data is opt-in for tests that need realistic catalog/path behavior.
-  Keep looking for remaining parity scaffolding that can be retired once the
-  Woodpecker-backed path has settled.
+- [ ] Make Woodpecker the default backend in `roocs.ini` and keep `legacy` as an
+  explicit configuration option.
+- [ ] Remove the temporary `fix_provider` WPS override once smoke and focused
+  tests can select the backend entirely through configuration.
+- [ ] Simplify the parity-test setup. Do not parametrize the smoke suite over
+  both providers. Run the suite once with its configured provider, using
+  Woodpecker for the release gate and a separate legacy-configured run only
+  when compatibility needs to be checked.
+- [ ] Keep a focused legacy-provider unit/integration test set without
+  duplicating the complete Woodpecker test suite.
 - [ ] Obsolete Rook fix helpers are removed or explicitly justified.
 - [ ] Focused pflow/operator tests cover the new fix boundary.
 - [ ] Documentation and changelog describe the Woodpecker handoff.
 - [ ] Smoke tests pass after the integration.
+- [ ] Production configuration uses Woodpecker and has a documented legacy
+  rollback switch.
+- [ ] The release is built, published, and ready for production deployment.
 
 ## Guardrails
 
@@ -145,8 +157,8 @@ non-smoke test suite before each pull request.
 
 ## Future Work
 
-These are intentionally outside the first Woodpecker integration step, but they
-should stay visible:
+These are intentionally outside the immediate production-release work, but
+they should stay visible:
 
 - do another iteration on operators after the fix boundary is clearer;
 - do another iteration on `rook.pflow` after Woodpecker integration settles;
@@ -162,7 +174,9 @@ should stay visible:
   and parameter variants easier to tweak;
 - refactor the dashboard process;
 - refactor the usage process;
-- add a new process for health checks;
+- define and implement a health-check process after its operational contract,
+  checks, and response format have been agreed; this is not a blocker for the
+  immediate production release;
 - clean up all WPS process modules in general.
 
 ## Synthetic Test Data
@@ -177,6 +191,11 @@ Status: the first synthetic-data cleanup PR is done. It made mini-esgf-data
 opt-in, added focused synthetic coverage for decadal and atlas fixes, added
 synthetic concat coverage with temporary NetCDF files, and added a regression
 check that concat finalization writes to the configured output directory.
+
+Pause further mini-ESGF/mini-climate-data cleanup until after the production
+release. Do not expand this into a release blocker unless a concrete regression
+cannot be covered with the existing focused synthetic data or required
+integration fixtures.
 
 Work in small steps:
 
