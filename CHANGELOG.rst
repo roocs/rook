@@ -7,7 +7,9 @@ Unreleased
 * Added the lightweight synchronous ``health`` WPS process for service health
   checks. Its raw output is ``ROOK_HEALTH_OK`` on success; failed checks return
   an OGC exception with an explanation and omit the success marker. Deeper
-  operational checks can be added later without changing this contract.
+  operational checks can be added later without changing this contract. Named
+  projects can be configured to verify read access to their
+  ``base_dir/.health-check.txt`` sentinel files.
 
 * Made Woodpecker the default dataset fix provider while retaining the legacy
   provider as a configuration-selected fallback.

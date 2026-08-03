@@ -1,3 +1,4 @@
+import pytest
 from pywps import Service
 from pywps.tests import client_for
 
@@ -34,3 +35,40 @@ def test_wps_health_explains_failed_check(monkeypatch):
     assert response.status_code == 400
     assert HEALTHY_RESPONSE.encode() not in response.data
     assert b"Health check failed: catalog database is unavailable" in response.data
+
+
+def test_health_checks_read_each_configured_file(monkeypatch, tmp_path):
+    cmip6 = tmp_path / "cmip6" / ".health-check.txt"
+    atlas = tmp_path / "atlas" / ".health-check.txt"
+    cmip6.parent.mkdir()
+    atlas.parent.mkdir()
+    cmip6.write_bytes(b"healthy")
+    atlas.write_bytes(b"healthy")
+    monkeypatch.setattr(
+        health_module,
+        "get_health_readable_files",
+        lambda: {"cmip6": str(cmip6), "atlas": str(atlas)},
+    )
+
+    health_module.run_health_checks()
+
+
+def test_health_checks_report_names_without_exposing_paths(monkeypatch, tmp_path):
+    missing_cmip6 = tmp_path / "private" / "cmip6.nc"
+    missing_atlas = tmp_path / "private" / "atlas.nc"
+    monkeypatch.setattr(
+        health_module,
+        "get_health_readable_files",
+        lambda: {
+            "cmip6": str(missing_cmip6),
+            "atlas": str(missing_atlas),
+        },
+    )
+
+    with pytest.raises(HealthCheckError) as exc_info:
+        health_module.run_health_checks()
+
+    message = str(exc_info.value)
+    assert "cmip6: No such file or directory" in message
+    assert "atlas: No such file or directory" in message
+    assert str(tmp_path) not in message

@@ -32,6 +32,20 @@ request:
 The monitoring layer should consider the response healthy only when its body
 matches ``ROOK_HEALTH_OK`` exactly.
 
+Filesystem availability can be checked by selecting projects in ``roocs.ini``:
+
+.. code-block:: ini
+
+   [health]
+   projects = c3s-cordex, c3s-cmip6, c3s-cica-atlas
+
+For each selected project, ``base_dir/.health-check.txt`` is opened and one byte
+is read. The ``base_dir`` comes from the existing ``[project:<name>]`` section,
+so filesystem paths are not repeated in the health configuration. All selected
+projects must be readable. Failure messages identify the project without
+exposing the filesystem path. If no projects are configured, only process
+execution is checked.
+
 Subset
 ------
 

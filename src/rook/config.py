@@ -81,6 +81,35 @@ def get_storage_base(project: str) -> str | None:
     )
 
 
+def get_health_readable_files() -> dict[str, str]:
+    """Return project sentinel files that the health process must read."""
+    config = _get_section("health")
+    raw_projects = config.get("projects")
+    if not raw_projects:
+        return {}
+
+    if not isinstance(raw_projects, str):
+        raise ConfigurationError(
+            "Configuration option 'health.projects' must be a comma-separated list."
+        )
+
+    projects = [project.strip() for project in raw_projects.split(",")]
+    if any(not project for project in projects):
+        raise ConfigurationError(
+            "Configuration option 'health.projects' contains an empty project name."
+        )
+
+    files = {}
+    for project in projects:
+        base_dir = get_project_config(project).get("base_dir")
+        if not isinstance(base_dir, str) or not base_dir.strip():
+            raise ConfigurationError(
+                f"Health project '{project}' must define a non-empty base_dir."
+            )
+        files[project] = str(Path(base_dir) / ".health-check.txt")
+    return files
+
+
 def get_fix_backend() -> str:
     """Return the configured dataset fix provider backend."""
     config = _get_section("fixes")
