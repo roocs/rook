@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from owslib.wps import ComplexDataInput, monitorExecution
+from owslib.wps import ComplexDataInput
 
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
@@ -298,8 +298,7 @@ def test_smoke_get_capabilities(wps):
 
 
 def test_smoke_execute_health(wps):
-    execution = wps.wps.execute("health", [])
-    monitorExecution(execution)
+    execution = wps.wps.execute("health", [], mode="sync")
 
     assert execution.isSucceded() is True, execution.errors
     assert execution.processOutputs[0].data == "ok"

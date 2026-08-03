@@ -16,7 +16,10 @@ Health
     :noindex:
 
 The process has no inputs and returns the literal output ``status=ok`` when
-Rook can execute it. An HTTP health endpoint can delegate to:
+Rook can execute it. It must be executed synchronously so the health request
+stays in the web service and responds immediately instead of being submitted to
+the batch system. An HTTP health endpoint can delegate to this synchronous
+request:
 
 .. code-block:: text
 
