@@ -3,7 +3,8 @@ from pywps import Service
 from pywps.tests import client_for
 
 import rook.processes.wps_health as health_module
-from rook.processes.wps_health import HEALTHY_RESPONSE, Health, HealthCheckError
+from rook.exceptions import HealthCheckError
+from rook.processes.wps_health import HEALTHY_RESPONSE, Health
 
 
 def execute_health(client):

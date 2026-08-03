@@ -7,12 +7,9 @@ from pywps.app.Common import Metadata
 from pywps.app.exceptions import ProcessError
 
 from rook.config import ConfigurationError, get_health_readable_files
+from rook.exceptions import HealthCheckError
 
 HEALTHY_RESPONSE = "ROOK_HEALTH_OK"
-
-
-class HealthCheckError(RuntimeError):
-    """Raised when an operational health check fails."""
 
 
 def run_health_checks():
