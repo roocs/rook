@@ -18,7 +18,7 @@ class RookUser(HttpUser):
         query = "/health"
 
         with self.client.get(query, catch_response=True, name="health") as response:
-            if ">ok</wps:LiteralData>" not in response.text:
+            if response.text != "ROOK_HEALTH_OK":
                 response.failure("Health response not as expected")
 
     @tag("meta")

@@ -4,9 +4,10 @@ Changes
 Unreleased
 ==========
 
-* Added the lightweight ``health`` WPS process for service health checks. It
-  currently verifies that Rook can execute a process and returns ``status=ok``;
-  deeper operational checks can be added later without changing its identifier.
+* Added the lightweight synchronous ``health`` WPS process for service health
+  checks. Its raw output is ``ROOK_HEALTH_OK`` on success; failed checks return
+  an OGC exception with an explanation and omit the success marker. Deeper
+  operational checks can be added later without changing this contract.
 
 * Made Woodpecker the default dataset fix provider while retaining the legacy
   provider as a configuration-selected fallback.

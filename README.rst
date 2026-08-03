@@ -54,6 +54,19 @@ http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities
 
 Use ``make stop`` to stop the local service.
 
+Health Check
+------------
+
+Rook provides a lightweight synchronous WPS process for health monitoring:
+
+.. code-block:: text
+
+        /wps?service=WPS&version=1.0.0&request=Execute&identifier=health&RawDataOutput=status
+
+A healthy response is plain text containing exactly ``ROOK_HEALTH_OK``. Failed
+checks omit that marker and return an OGC exception with a concise explanation.
+Monitoring should therefore require an exact match of the success marker.
+
 Documentation
 -------------
 

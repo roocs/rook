@@ -1,7 +1,10 @@
 import json
 
 import pytest
+import requests
 from owslib.wps import ComplexDataInput
+
+from rook.processes.wps_health import HEALTHY_RESPONSE
 
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
@@ -298,10 +301,20 @@ def test_smoke_get_capabilities(wps):
 
 
 def test_smoke_execute_health(wps):
-    execution = wps.wps.execute("health", [], mode="sync")
+    response = requests.get(
+        wps.wps.url,
+        params={
+            "service": "WPS",
+            "version": "1.0.0",
+            "request": "Execute",
+            "identifier": "health",
+            "RawDataOutput": "status",
+        },
+        timeout=30,
+    )
 
-    assert execution.isSucceded() is True, execution.errors
-    assert execution.processOutputs[0].data == "ok"
+    response.raise_for_status()
+    assert response.text == HEALTHY_RESPONSE
 
 
 def test_smoke_describe_process_subset(wps):
