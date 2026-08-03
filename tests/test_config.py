@@ -64,6 +64,55 @@ def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
         config.get_fix_backend()
 
 
+def test_health_readable_files_default_to_empty(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_health_readable_files() == {}
+
+
+def test_health_readable_files_use_project_base_dirs(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "health": {"projects": "c3s-cordex, c3s-cica-atlas"},
+            "project:c3s-cordex": {"base_dir": "/data/c3s-cordex"},
+            "project:c3s-cica-atlas": {"base_dir": "/data/c3s-cica-atlas"},
+        },
+    )
+
+    assert config.get_health_readable_files() == {
+        "c3s-cordex": "/data/c3s-cordex/.health-check.txt",
+        "c3s-cica-atlas": "/data/c3s-cica-atlas/.health-check.txt",
+    }
+
+
+@pytest.mark.parametrize(
+    "value",
+    [123, "c3s-cordex,", ",c3s-cordex"],
+)
+def test_health_readable_files_reject_invalid_config(monkeypatch, value):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"health": {"projects": value}},
+    )
+
+    with pytest.raises(config.ConfigurationError, match=r"health\.projects"):
+        config.get_health_readable_files()
+
+
+def test_health_readable_files_require_project_base_dir(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"health": {"projects": "c3s-cordex"}},
+    )
+
+    with pytest.raises(config.ConfigurationError, match=r"c3s-cordex.*base_dir"):
+        config.get_health_readable_files()
+
+
 def test_s3_options_reject_malformed_optional_json_without_exposing_value(monkeypatch):
     malformed_value = "not-json-private-value"
     monkeypatch.setattr(

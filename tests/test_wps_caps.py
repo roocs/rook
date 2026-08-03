@@ -15,6 +15,7 @@ def test_wps_caps(client_for):
         "average_time",
         "concat",
         "dashboard",
+        "health",
         "orchestrate",
         "regrid",
         "subset",

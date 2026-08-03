@@ -54,6 +54,35 @@ http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities
 
 Use ``make stop`` to stop the local service.
 
+Health Check
+------------
+
+Rook provides a lightweight synchronous WPS process for health monitoring:
+
+.. code-block:: text
+
+        /wps?service=WPS&version=1.0.0&request=Execute&identifier=health&RawDataOutput=status
+
+A healthy response is plain text containing exactly ``ROOK_HEALTH_OK``. Failed
+checks omit that marker and return an OGC exception with a concise explanation.
+Monitoring should therefore require an exact match of the success marker.
+
+Optional filesystem checks select projects configured in ``roocs.ini``:
+
+.. code-block:: ini
+
+        [health]
+        projects = c3s-cordex, c3s-cmip6, c3s-cica-atlas
+
+For each selected project, the health process takes its existing ``base_dir``
+and opens ``base_dir/.health-check.txt`` to read one byte. For example,
+``c3s-cordex`` checks the sentinel below ``[project:c3s-cordex]``. This tests
+actual read access to mounts such as Lustre without duplicating paths, loading
+a dataset, or searching large directory trees. All selected projects must be
+readable. Public failure messages use project names but do not expose
+filesystem paths. With no projects configured, the process only checks that
+Rook can execute it.
+
 Documentation
 -------------
 
