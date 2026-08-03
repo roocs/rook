@@ -57,7 +57,7 @@ def test_open_dataset_applies_fixes(monkeypatch):
     monkeypatch.setattr(
         helpers,
         "get_dataset_fix_provider",
-        lambda provider_name=None: FakeProvider(provider_calls),
+        lambda: FakeProvider(provider_calls),
     )
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
@@ -80,7 +80,7 @@ def test_open_dataset_applies_catalog_fixes_without_external_switch(monkeypatch)
     monkeypatch.setattr(
         helpers,
         "get_dataset_fix_provider",
-        lambda provider_name=None: FakeProvider(provider_calls),
+        lambda: FakeProvider(provider_calls),
     )
     monkeypatch.setattr(helpers, "is_kerchunk_file", lambda _: False)
 
@@ -130,32 +130,13 @@ def test_apply_dataset_fix_policy_uses_dataset_id(monkeypatch):
     monkeypatch.setattr(
         helpers,
         "get_dataset_fix_provider",
-        lambda provider_name=None: FakeProvider(calls),
+        lambda: FakeProvider(calls),
     )
 
     result = helpers.apply_dataset_fix_policy(source("project.dataset", "a.nc"), "DS")
 
     assert result == "FIXED"
     assert calls == [("project.dataset", "DS")]
-
-
-def test_apply_dataset_fix_policy_uses_requested_provider(monkeypatch):
-    calls = []
-
-    def fake_get_provider(provider_name=None):
-        calls.append(provider_name)
-        return FakeProvider()
-
-    monkeypatch.setattr(helpers, "get_dataset_fix_provider", fake_get_provider)
-
-    result = helpers.apply_dataset_fix_policy(
-        source("project.dataset", "a.nc"),
-        "DS",
-        fix_provider="woodpecker",
-    )
-
-    assert result == "FIXED"
-    assert calls == ["woodpecker"]
 
 
 def test_apply_dataset_fix_policy_leaves_direct_sources_unchanged(monkeypatch):
@@ -262,7 +243,7 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
     monkeypatch.setattr(
         helpers,
         "get_dataset_fix_provider",
-        lambda provider_name=None: FakeProvider(result=expected),
+        lambda: FakeProvider(result=expected),
     )
 
     result = helpers.open_dataset(source("project.dataset", [str(path)]))

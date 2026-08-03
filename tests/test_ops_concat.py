@@ -19,7 +19,7 @@ def test_concat_dataset_paths_are_keyed_by_catalog_id(monkeypatch):
     assert collection["derived.dataset"] == ("direct.nc",)
 
 
-def test_apply_concat_calendar_fix_applies_decadal_calendar_fix(monkeypatch):
+def test_apply_concat_calendar_fix_applies_decadal_calendar_fix():
     calls = []
     source = xr.Dataset(attrs={"source": "input"})
 
@@ -34,7 +34,7 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix(monkeypatch):
     assert calls == [("input", "concat", "prepare")]
 
 
-def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_path):
+def test_apply_concat_dataset_fixes_preserves_dataset_identity(tmp_path):
     calls = []
     first = xr.Dataset(attrs={"source": "first"})
     second = xr.Dataset(attrs={"source": "second"})
@@ -44,11 +44,10 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
             calls.append((context.dataset_id, ds.attrs["source"], context.output_dir))
             return ds.assign_attrs(fixed=context.dataset_id)
 
-    monkeypatch.setattr(concat_mod, "get_dataset_fix_provider", lambda: FakeProvider())
-
     datasets = concat_mod.apply_concat_dataset_fixes(
         {"first.id": first, "second.id": second},
         output_dir=tmp_path.as_posix(),
+        provider=FakeProvider(),
     )
 
     assert calls == [
@@ -56,45 +55,6 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(monkeypatch, tmp_
         ("second.id", "second", tmp_path.as_posix()),
     ]
     assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
-
-
-def test_apply_concat_dataset_fixes_uses_configured_provider(monkeypatch, tmp_path):
-    calls = []
-    source = xr.Dataset(attrs={"source": "first"})
-
-    class FakeProvider:
-        def apply(self, ds, *, context=None):
-            calls.append(
-                (
-                    context.dataset_id,
-                    ds.attrs["source"],
-                    context.output_dir,
-                    context.recipe_id,
-                )
-            )
-            return ds.assign_attrs(fixed_with="woodpecker")
-
-    monkeypatch.setattr(
-        concat_mod,
-        "get_dataset_fix_provider",
-        lambda: calls.append(("provider",)) or FakeProvider(),
-    )
-
-    datasets = concat_mod.apply_concat_dataset_fixes(
-        {"first.id": source},
-        output_dir=tmp_path.as_posix(),
-    )
-
-    assert calls == [
-        ("provider",),
-        (
-            "first.id",
-            "first",
-            tmp_path.as_posix(),
-            concat_mod.WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
-        ),
-    ]
-    assert datasets[0].attrs["fixed_with"] == "woodpecker"
 
 
 def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
@@ -116,7 +76,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "get_dataset_fix_provider",
-        lambda name=None: calls.append(("provider", name)) or fake_provider,
+        lambda: calls.append(("provider",)) or fake_provider,
     )
     monkeypatch.setattr(
         concat_mod.normalise,
@@ -126,8 +86,8 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "apply_concat_dataset_fixes",
-        lambda collection, output_dir, fix_provider=None: calls.append(
-            (collection, output_dir, fix_provider)
+        lambda collection, output_dir, provider: calls.append(
+            (collection, output_dir, provider)
         )
         or [combined],
     )
@@ -150,7 +110,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
 
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
-        ("provider", None),
+        ("provider",),
         ("prepare", source, "concat", "prepare"),
         (
             {"dataset.id": source},
@@ -160,66 +120,17 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     ]
 
 
-def test_concat_can_override_configured_fix_provider(monkeypatch, tmp_path):
-    calls = []
-    source = DatasetSource("dataset.id", ["input.nc"])
-    combined = xr.Dataset({"tas": ("realization", [1.0])})
-    final = ["https://example.com/fixed.nc"]
-
-    class FakeProvider:
-        def prepare(self, ds, *, context=None):
-            return ds
-
-    fake_provider = FakeProvider()
-
-    monkeypatch.setattr(
-        concat_mod, "dataset_paths_by_id", lambda collection: collection
-    )
-    monkeypatch.setattr(
-        concat_mod,
-        "get_dataset_fix_provider",
-        lambda name=None: calls.append(("provider", name)) or fake_provider,
-    )
-    monkeypatch.setattr(
-        concat_mod.normalise,
-        "normalise_file_groups",
-        lambda collection, prepare_dataset: {"dataset.id": prepare_dataset(source)},
-    )
-    monkeypatch.setattr(
-        concat_mod,
-        "apply_concat_dataset_fixes",
-        lambda collection, output_dir, fix_provider=None: [combined],
-    )
-    monkeypatch.setattr(
-        concat_mod,
-        "combine_concat_datasets",
-        lambda datasets, dim, standard_name: combined,
-    )
-    monkeypatch.setattr(
-        concat_mod,
-        "finalise_concat_output",
-        lambda ds, params, dim: final,
-    )
-
-    result = concat_mod.concat(
-        collection=[source],
-        dims=["realization"],
-        output_dir=tmp_path.as_posix(),
-        fix_provider="woodpecker",
-    )
-
-    assert result.file_uris == ["https://example.com/fixed.nc"]
-    assert calls == [("provider", "woodpecker")]
-
-
 def test_concat_uses_synthetic_decadal_files_with_woodpecker_provider(
-    tmp_path, synthetic_cmip6_decadal_source
+    monkeypatch, tmp_path, synthetic_cmip6_decadal_source
 ):
+    monkeypatch.setattr(
+        "rook.fixes.providers.get_fix_backend", lambda: "woodpecker"
+    )
+
     result = concat_mod.concat(
         collection=[synthetic_cmip6_decadal_source],
         dims=["realization"],
         output_dir=tmp_path.as_posix(),
-        fix_provider="woodpecker",
     )
 
     assert len(result.file_uris) == 1

@@ -45,10 +45,10 @@ def test_get_storage_base_falls_back_to_local_project_root(monkeypatch):
     assert config.get_storage_base("demo") == "/data/demo"
 
 
-def test_get_fix_backend_defaults_to_legacy(monkeypatch):
+def test_get_fix_backend_defaults_to_woodpecker(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 
-    assert config.get_fix_backend() == "legacy"
+    assert config.get_fix_backend() == "woodpecker"
 
 
 def test_get_fix_backend_uses_fixes_config(monkeypatch):

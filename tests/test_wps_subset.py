@@ -24,11 +24,11 @@ C3S_ATLAS_V25_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v25"
 C3S_ATLAS_V25_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v25"
 
 
-def test_wps_subset_exposes_fix_provider_override():
+def test_wps_subset_does_not_expose_fix_provider_configuration():
     process = Subset()
     inputs = [inp.identifier for inp in process.inputs]
 
-    assert "fix_provider" in inputs
+    assert "fix_provider" not in inputs
     assert "fix_backend" not in inputs
 
 

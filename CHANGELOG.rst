@@ -4,6 +4,12 @@ Changes
 Unreleased
 ==========
 
+* Made Woodpecker the default dataset fix provider while retaining the legacy
+  provider as a configuration-selected fallback.
+* Removed the temporary per-request fix-provider override. Smoke tests now use
+  the single provider selected in ``roocs.ini`` instead of running both
+  providers for every relevant case.
+
 1.2.3 (2026-07-08)
 ==================
 

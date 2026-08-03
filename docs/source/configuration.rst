@@ -54,14 +54,14 @@ Fix provider backend
 --------------------
 
 Rook chooses the dataset fix provider internally from the ``roocs.ini``
-configuration. The default backend is ``legacy``.
+configuration. The default backend is ``woodpecker``.
 
-To use Woodpecker-backed fixes, set:
+To use the legacy fixes, set:
 
 .. code-block:: ini
 
    [fixes]
-   backend = woodpecker
+   backend = legacy
 
 Supported values are ``legacy`` and ``woodpecker``.
 

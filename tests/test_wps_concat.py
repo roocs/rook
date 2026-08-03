@@ -5,11 +5,11 @@ from pywps.tests import assert_response_success, client_for
 from rook.processes.wps_concat import Concat
 
 
-def test_wps_concat_exposes_fix_provider_override_not_fix_backend():
+def test_wps_concat_does_not_expose_fix_provider_configuration():
     process = Concat()
     inputs = [inp.identifier for inp in process.inputs]
 
-    assert "fix_provider" in inputs
+    assert "fix_provider" not in inputs
     assert "fix_backend" not in inputs
 
 

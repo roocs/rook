@@ -10,13 +10,13 @@ import xarray as xr
 from rook.io.datasets import open_dataset
 
 
-def normalise(collection, *, fix_provider=None):
+def normalise(collection):
     """Open input collections."""
     logger.info(f"Working on datasets: {collection}")
     norm_collection = OrderedDict()
 
     for source in collection:
-        ds = open_dataset(source, fix_provider=fix_provider)
+        ds = open_dataset(source)
         norm_collection[source.key] = ds
 
     return norm_collection

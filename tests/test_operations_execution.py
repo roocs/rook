@@ -173,7 +173,9 @@ def test_subset_uses_base_operation_calculate():
     assert Subset.calculate is Operation.calculate
 
 
-def test_base_operation_uses_fix_provider_only_for_dataset_opening(monkeypatch):
+def test_base_operation_uses_configured_fix_provider_during_dataset_opening(
+    monkeypatch,
+):
     calls = []
     operation_dataset = object()
 
@@ -184,9 +186,7 @@ def test_base_operation_uses_fix_provider_only_for_dataset_opening(monkeypatch):
     monkeypatch.setattr(
         operation_base.normalise,
         "normalise",
-        lambda collection, fix_provider=None: calls.append(
-            ("normalise", collection, fix_provider)
-        )
+        lambda collection: calls.append(("normalise", collection))
         or {"dataset": operation_dataset},
     )
     monkeypatch.setattr(
@@ -198,13 +198,12 @@ def test_base_operation_uses_fix_provider_only_for_dataset_opening(monkeypatch):
 
     source = DatasetSource("dataset.id", "input.nc")
 
-    result = Subset(collection=[source], fix_provider="woodpecker").calculate()
+    result = Subset(collection=[source]).calculate()
 
     assert result.file_uris == []
-    assert calls[0] == ("normalise", (source,), "woodpecker")
+    assert calls[0] == ("normalise", (source,))
     assert calls[1][0] == "process"
     assert calls[1][1] is operation_dataset
-    assert "fix_provider" not in calls[1][2]
     assert calls[1][2]["output_type"] == "netcdf"
     assert calls[1][2]["output_dir"] is None
     assert calls[1][2]["split_method"] == "time:auto"
