@@ -243,7 +243,7 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
     monkeypatch.setattr(
         helpers,
         "get_dataset_fix_provider",
-        lambda provider_name=None: FakeProvider(result=expected),
+        lambda: FakeProvider(result=expected),
     )
 
     result = helpers.open_dataset(source("project.dataset", [str(path)]))
