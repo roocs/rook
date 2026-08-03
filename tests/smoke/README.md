@@ -56,9 +56,10 @@ OR
 make smoke
 ```
 
-The CMIP6 decadal and atlas smoke tests call the relevant process with the
-temporary `fix_provider` input for both `legacy` and `woodpecker`. This
-overrides the `roocs.ini` default only for those smoke requests.
+The smoke suite uses the single fix provider selected in `roocs.ini`. The
+default is `woodpecker`. To run the same suite as a legacy compatibility check,
+set `[fixes] backend = legacy` in the service configuration before starting the
+service.
 
 ## Run smoke tests on a deployed pywps server
 

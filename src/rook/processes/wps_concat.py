@@ -84,18 +84,6 @@ class Concat(Process):
                 min_occurs=1,
                 max_occurs=1,
             ),
-            LiteralInput(
-                "fix_provider",
-                "Fix Provider",
-                abstract="Temporary fix provider override for integration smoke and parity tests.",
-                allowed_values=[
-                    "legacy",
-                    "woodpecker",
-                ],
-                data_type="string",
-                min_occurs=0,
-                max_occurs=1,
-            ),
         ]
         outputs = [
             ComplexOutput(
@@ -158,9 +146,6 @@ class Concat(Process):
             ),
             "dims": parse_wps_input(
                 request.inputs, "dims", as_sequence=True, default=None
-            ),
-            "fix_provider": parse_wps_input(
-                request.inputs, "fix_provider", default=None
             ),
         }
 

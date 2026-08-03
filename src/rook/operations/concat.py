@@ -41,22 +41,18 @@ def dataset_paths_by_id(sources):
     return collection
 
 
-def apply_concat_calendar_fix(ds, fix_provider=None):
+def apply_concat_calendar_fix(ds, provider):
     """Apply concat-specific preparation before grouped files are combined."""
-    if fix_provider is None:
-        fix_provider = get_dataset_fix_provider()
     context = FixContext(
         operation="concat",
         phase="prepare",
         recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     )
-    return fix_provider.prepare(ds, context=context)
+    return provider.prepare(ds, context=context)
 
 
-def apply_concat_dataset_fixes(collection, output_dir, fix_provider=None):
+def apply_concat_dataset_fixes(collection, output_dir, provider):
     """Apply concat-specific decadal fixes to each opened dataset."""
-    if fix_provider is None:
-        fix_provider = get_dataset_fix_provider()
     datasets = []
 
     for ds_id, ds in collection.items():
@@ -67,7 +63,7 @@ def apply_concat_dataset_fixes(collection, output_dir, fix_provider=None):
             output_dir=output_dir,
             recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
         )
-        datasets.append(fix_provider.apply(ds, context=context))
+        datasets.append(provider.apply(ds, context=context))
 
     return datasets
 
@@ -117,13 +113,12 @@ class Concat(Operation):
             "time_components": time_components,
             "dims": dims,
             "apply_average": params.get("apply_average", False),
-            "fix_provider": params.get("fix_provider"),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
         }
 
     def calculate(self):
         self._add_output_config()
-        fix_provider = get_dataset_fix_provider(self.params.get("fix_provider"))
+        provider = get_dataset_fix_provider()
         collection = dataset_paths_by_id(self.collection)
 
         # Concat intentionally does not use the base operation flow:
@@ -132,7 +127,7 @@ class Concat(Operation):
         # - apply dataset-id-aware fixes after each group has been opened.
         norm_collection = normalise.normalise_file_groups(
             collection,
-            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, fix_provider),
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
         )
 
         rs = normalise.ResultSet(vars())
@@ -140,7 +135,7 @@ class Concat(Operation):
         datasets = apply_concat_dataset_fixes(
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
-            fix_provider=fix_provider,
+            provider=provider,
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
@@ -162,7 +157,6 @@ def concat(
     split_method="time:auto",
     file_namer="standard",
     apply_average=False,
-    fix_provider=None,
 ):
     return Concat(
         collection=collection,
@@ -175,5 +169,4 @@ def concat(
         split_method=split_method,
         file_namer=file_namer,
         apply_average=apply_average,
-        fix_provider=fix_provider,
     ).calculate()

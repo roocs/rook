@@ -84,7 +84,7 @@ def get_storage_base(project: str) -> str | None:
 def get_fix_backend() -> str:
     """Return the configured dataset fix provider backend."""
     config = _get_section("fixes")
-    backend = config.get("backend", "legacy")
+    backend = config.get("backend", "woodpecker")
     allowed = {"legacy", "woodpecker"}
     if backend not in allowed:
         allowed_values = ", ".join(sorted(allowed))

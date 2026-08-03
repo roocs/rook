@@ -63,20 +63,14 @@ class Operation:
 
     def calculate(self):
         self._add_output_config()
-        fix_provider = self.params.get("fix_provider")
-        operation_params = dict(self.params)
-        operation_params.pop("fix_provider", None)
-        norm_collection = normalise.normalise(
-            self.collection,
-            fix_provider=fix_provider,
-        )
+        norm_collection = normalise.normalise(self.collection)
 
         rs = normalise.ResultSet(vars())
 
         for dset, collection in norm_collection.items():
             rs.add(
                 dset,
-                process(self.get_operation_callable(), collection, **operation_params),
+                process(self.get_operation_callable(), collection, **self.params),
             )
 
         return rs

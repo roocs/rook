@@ -19,10 +19,9 @@ DATASET_FIX_PROVIDERS = {
 }
 
 
-def get_dataset_fix_provider(name=None):
+def get_dataset_fix_provider():
     """Return a configured dataset fix provider."""
-    if name is None:
-        name = get_fix_backend()
+    name = get_fix_backend()
 
     provider = DATASET_FIX_PROVIDERS.get(name)
     if provider is None:

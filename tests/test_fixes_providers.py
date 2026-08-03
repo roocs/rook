@@ -12,7 +12,9 @@ from rook.fixes.providers import (
 )
 
 
-def test_get_dataset_fix_provider_returns_legacy_provider_by_default():
+def test_get_dataset_fix_provider_returns_configured_legacy_provider(monkeypatch):
+    monkeypatch.setattr("rook.fixes.providers.get_fix_backend", lambda: "legacy")
+
     provider = get_dataset_fix_provider()
 
     assert isinstance(provider, LegacyDatasetFixProvider)
@@ -124,13 +126,6 @@ def test_legacy_provider_leaves_unknown_dataset_unchanged():
     )
 
     assert result is source
-
-
-def test_get_dataset_fix_provider_returns_woodpecker_provider():
-    provider = get_dataset_fix_provider("woodpecker")
-
-    assert isinstance(provider, WoodpeckerDatasetFixProvider)
-    assert provider.name == "woodpecker"
 
 
 def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
@@ -272,8 +267,3 @@ def test_woodpecker_provider_leaves_unknown_dataset_unchanged(monkeypatch):
     )
 
     assert result is source
-
-
-def test_get_dataset_fix_provider_rejects_unknown_provider():
-    with pytest.raises(ValueError, match="Unsupported dataset fix provider"):
-        get_dataset_fix_provider("unknown")

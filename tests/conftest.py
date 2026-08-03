@@ -84,6 +84,9 @@ def write_roocs_cfg(stratus):
     [clisops:write]
     file_size_limit = 100KB
 
+    [fixes]
+    backend = woodpecker
+
     [project:cmip5]
     base_dir = {{ base_dir }}/badc/cmip5/data/cmip5
     use_inventory = False
