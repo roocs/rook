@@ -87,6 +87,9 @@ def write_roocs_cfg(stratus):
     [fixes]
     backend = woodpecker
 
+    [health]
+    projects = c3s-cica-atlas
+
     [project:cmip5]
     base_dir = {{ base_dir }}/badc/cmip5/data/cmip5
     use_inventory = False
@@ -117,6 +120,17 @@ def write_roocs_cfg(stratus):
     cfg = Template(cfg_templ).render(base_dir=stratus.path)
     with ROOCS_CFG.open("w") as fp:
         fp.write(cfg)
+
+    health_sentinel = (
+        Path(stratus.path)
+        / "pool"
+        / "data"
+        / "c3s-cica-atlas"
+        / ".health-check.txt"
+    )
+    health_sentinel.parent.mkdir(parents=True, exist_ok=True)
+    health_sentinel.write_text("rook test health sentinel\n")
+
     # point to roocs cfg in environment
     os.environ["ROOCS_CONFIG"] = ROOCS_CFG.as_posix()
     # TODO: reload configs in clisops
@@ -128,6 +142,7 @@ def write_roocs_cfg(stratus):
     clisops.CONFIG = cfg
     clisops.project_utils.CONFIG = cfg
     # print("clisops.config", clisops.CONFIG["project:cmip5"]["base_dir"])
+    return ROOCS_CFG
 
 
 @pytest.fixture

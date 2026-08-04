@@ -15,6 +15,10 @@ Export generated `roocs.ini` to be used in tests:
 export ROOCS_CONFIG=$PWD/tests/.roocs.ini
 ```
 
+This test configuration enables the health filesystem check for the existing
+`c3s-cica-atlas` mini-climate-data project. Test setup creates its
+`base_dir/.health-check.txt` sentinel.
+
 Start rook service:
 ```
 make start

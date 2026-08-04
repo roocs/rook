@@ -1,8 +1,11 @@
+from pathlib import Path
+
 import pytest
 from pywps import Service
 from pywps.tests import client_for
 
 import rook.processes.wps_health as health_module
+from rook.config import get_health_readable_files
 from rook.exceptions import HealthCheckError
 from rook.processes.wps_health import HEALTHY_RESPONSE, Health
 
@@ -21,6 +24,19 @@ def test_wps_health_returns_raw_success_marker():
 
     assert response.status_code == 200
     assert response.content_type == "text/plain; charset=utf-8"
+    assert response.data.decode() == HEALTHY_RESPONSE
+
+
+def test_wps_health_uses_test_roocs_config(write_roocs_cfg):
+    [sentinel] = get_health_readable_files().values()
+    client = client_for(Service(processes=[Health()]))
+
+    response = execute_health(client)
+
+    assert write_roocs_cfg.is_file()
+    assert get_health_readable_files() == {"c3s-cica-atlas": sentinel}
+    assert Path(sentinel).is_file()
+    assert response.status_code == 200
     assert response.data.decode() == HEALTHY_RESPONSE
 
 
