@@ -1,224 +1,140 @@
-# Rook Release and Cleanup TODO
+# Rook Release TODO
 
-This document tracks the cleanup and release-preparation phase after the
-`v1.2.3` release.
+This checklist tracks the production release after `v1.2.3`. The implementation
+work for the Woodpecker handoff is complete. The remaining work is packaging,
+environment refresh, release verification, tagging, and deployment.
 
-The previous phases renamed the internal request-processing layer from
-`rook.director` to `rook.pflow` and integrated the Woodpecker fixes library.
-The next phase should keep that shape stable while preparing a production-ready
-release.
+Rook is deployed as a service. It is not published to PyPI. A Rook release is a
+versioned commit and Git tag followed by deployment of the service artifacts.
 
-Keep the work in small, reviewable pull requests. Preserve WPS behavior unless
-a change is explicit, documented, and covered by tests.
+## Completed
 
-## Current Phase Goal
+- [x] Define the Rook/Woodpecker boundary: Rook decides whether a source is
+  eligible for fixes; Woodpecker owns how those fixes are applied.
+- [x] Add the generic fix-provider interface and Woodpecker adapter.
+- [x] Route catalog-backed dataset fixes through the configured provider while
+  leaving direct local, URL, S3, Zarr, and Kerchunk inputs unchanged.
+- [x] Preserve CMIP6-decadal concat preparation through the provider
+  `prepare(...)` phase.
+- [x] Make Woodpecker the default backend in the packaged and sample
+  configuration.
+- [x] Retain the legacy provider as an explicit configuration-selected rollback
+  option.
+- [x] Remove the temporary WPS-level fix-provider override.
+- [x] Run smoke tests with one configuration-selected provider instead of
+  parametrizing the suite over both providers.
+- [x] Keep focused legacy compatibility tests without duplicating the full
+  Woodpecker test suite.
+- [x] Add focused synthetic Woodpecker coverage for ATLAS, CMIP6-decadal, and
+  concat behavior.
+- [x] Make mini-ESGF data opt-in for tests that require realistic catalog paths,
+  public URLs, or WPS integration fixtures.
+- [x] Document the Woodpecker default and legacy rollback configuration.
+- [x] Remove Rook's obsolete PyPI/TestPyPI workflows, badge, upload target, and
+  publishing dependency.
+- [x] Document the manual release-tag flow: merge the version commit first, then
+  tag the exact commit on `main`.
 
-Prepare a new Rook release that is suitable for production deployment. The
-Woodpecker integration is far enough along for this release; the remaining work
-should simplify provider selection, remove unnecessary parity-test complexity,
-complete release verification, and document the deployment-ready state.
+## Remaining Release Work
 
-Woodpecker should become the default fix provider. Keep the legacy provider as
-a configuration-selected fallback, including for targeted smoke-test runs, but
-do not run both providers in parallel through every smoke test. A smoke-test run
-should exercise the single provider selected by configuration. The temporary
-WPS-level provider override should be removed when the configuration-driven
-tests cover the required cases.
+Complete these tasks in order.
 
-Further mini-ESGF/mini-climate-data work is not a blocker for this release. The
-focused synthetic coverage already added is sufficient for the current phase;
-broader test-data improvements will continue later.
+### 1. Publish Woodpecker packages
 
-## Phase Goals
+These tasks belong to the Woodpecker repository and must be complete before
+Rook stops using Git dependencies.
 
-- identify the current Rook fix entry points and the source identity each one
-  receives;
-- map Rook's dataset/project fix behavior to Woodpecker concepts;
-- keep the pflow dataset-fix policy explicit while delegating the actual fixes;
-- make dataset fixes part of the normal data/processing flow instead of
-  operation-specific hooks added only where they are needed;
-- preserve concat-specific CMIP6 decadal behavior until it can be represented
-  cleanly through Woodpecker;
-- keep direct local, URL, S3, Zarr, Kerchunk, catalog-backed, and workflow-file
-  inputs behaviorally stable;
-- remove obsolete Rook fix helpers only after Woodpecker-backed behavior is
-  covered by focused tests;
-- document the new fix boundary clearly enough that future operator and pflow
-  cleanup can continue without another vocabulary pass.
+- [ ] Publish the core distribution as `roocs-woodpecker`. Keep the Python
+  import package and command named `woodpecker`.
+- [ ] Publish a new Woodpecker version rather than changing the existing
+  `v0.7.0` tag, whose metadata still uses the occupied `woodpecker`
+  distribution name.
+- [ ] Update and publish `woodpecker-atlas-plugin` and
+  `woodpecker-cmip6-decadal-plugin` with dependencies on
+  `roocs-woodpecker`, not the unrelated `woodpecker` distribution.
+- [ ] In a clean environment, install the three distributions from PyPI and
+  confirm that `woodpecker`, `woodpecker_atlas_plugin`, and
+  `woodpecker_cmip6_decadal_plugin` import successfully.
+- [ ] Confirm that Woodpecker discovers the `c3s.atlas` and
+  `c3s.cmip6_decadal` recipes from the installed plugins.
 
-## Fix Boundary To Clarify
+### 2. Switch Rook to released Woodpecker packages
 
-These names should stay boring and predictable:
+- [ ] Replace the three Git URL requirements in `pyproject.toml` with bounded
+  released-package requirements for `roocs-woodpecker`,
+  `woodpecker-atlas-plugin`, and `woodpecker-cmip6-decadal-plugin`.
+- [ ] Replace or remove the matching Git URL entries in
+  `requirements_upstream.txt` so it no longer overrides the release packages.
+- [ ] Add the released Woodpecker packages to the pip section of
+  `environment.yml`. This is required because the production Docker image
+  installs Rook with `pip install . --no-deps`.
+- [ ] Regenerate `conda-lock.yml`, `linux-64.spec`, and the `spec-file.txt`
+  alias with `make conda-spec` on Linux.
+- [ ] Recreate the `rook` Conda environment from the refreshed definition and
+  confirm `python -m pip check` passes. Remove stale `0.6.x` Woodpecker plugins
+  from local or cached environments before interpreting failures.
+- [ ] Build the Docker image and confirm all three Woodpecker distributions and
+  import packages are present in the image.
 
-- dataset source identity: the project/dataset information needed to decide
-  whether fixes may be applied;
-- dataset fix policy: Rook-side policy that decides when a source is eligible
-  for fixes;
-- fix provider: Woodpecker-backed code that applies the actual dataset/project
-  fixes;
-- operation-specific preparation: fixes or preparation that belong to a
-  specific operation, for example concat's current decadal preparation;
-- direct source: local/remote user input that should open as-is unless it has
-  explicit source identity.
+### 3. Run the release gate
 
-Rook should decide *whether* a dataset source is eligible for fixes. Woodpecker
-should own *how* those fixes are applied.
+- [ ] Remove stale generated Sphinx API entries for modules moved under
+  `rook.fixes.providers`, `rook.fixes.legacy`, and related utility packages so
+  the strict documentation build passes without autodoc import warnings.
+- [ ] Run pre-commit over the complete repository.
+- [ ] Run focused fix-provider, dataset-opening, pflow, operation, ATLAS,
+  CMIP6-decadal, and concat tests.
+- [ ] Run the default test suite without smoke or online tests on every
+  supported Python version through CI.
+- [ ] Build the documentation with warnings treated as errors.
+- [ ] Build the Rook wheel and source distribution as local release artifacts.
+- [ ] Start the production-style Docker image with Woodpecker configured and
+  run the smoke suite once.
+- [ ] Confirm the health process returns exactly `ROOK_HEALTH_OK`, including the
+  configured filesystem sentinel checks used in production.
+- [ ] Run one separately configured legacy-backend smoke check if rollback
+  compatibility is required for this deployment.
+- [ ] Verify that representative ATLAS and CMIP6-decadal requests produce the
+  expected fixed datasets through the deployed service.
 
-## Suggested Pull Request Order
+### 4. Version, tag, and deploy Rook
 
-1. Make Woodpecker the configured default fix provider while retaining the
-   legacy provider as an explicit configuration fallback.
-2. Simplify provider plumbing and tests so production and smoke tests use one
-   configuration-selected provider per run. Remove provider parametrization and
-   the temporary WPS override where they are no longer needed.
-3. Keep a small targeted legacy-provider test set and support an optional smoke
-   run with the legacy backend selected in configuration.
-4. Remove obsolete Rook fix helpers only where the Woodpecker-backed behavior
-   is already covered; explicitly retain any compatibility code still needed
-   for the legacy fallback.
-5. Refresh deployment configuration, documentation, and changelog for the new
-   default and fallback behavior.
-6. Run focused pflow/operator tests, lint, docs, the default non-smoke suite,
-   and one Woodpecker-configured smoke-test run. Run the legacy smoke path as a
-   separate compatibility check when required.
-7. Prepare and publish the release, then deploy it to production.
+- [ ] Finalize the changelog entry for the release and record the released
+  Woodpecker package versions.
+- [ ] Run `bump-my-version` on a release branch to update and commit the Rook
+  version metadata. Do not create the Git tag yet.
+- [ ] Merge the release commit through the normal review flow and wait for CI
+  to pass on `main`.
+- [ ] Update local `main` and create an annotated `vX.Y.Z` tag on the exact
+  merged commit.
+- [ ] Push the single release tag and create the GitHub release if one is used
+  for deployment tracking.
+- [ ] Deploy the tagged service artifacts to production.
+- [ ] Run post-deployment health, smoke, ATLAS, and CMIP6-decadal checks.
+- [ ] Record the deployed Rook and Woodpecker versions and retain the documented
+  `[fixes] backend = legacy` rollback procedure.
 
-## Phase Checklist
+## Release Guardrails
 
-Use this as the running progress log for the phase. Tick a box only after the
-corresponding PR has landed.
+- Preserve the public WPS process interface, including deprecated compatibility
+  inputs still used by CDS clients.
+- Apply project-specific fixes only when the dataset source has sufficient
+  catalog identity.
+- Keep direct local, URL, S3, Zarr, and Kerchunk inputs opening as-is.
+- Preserve workflow chaining, public output URLs, naming, splitting,
+  provenance, and error-response behavior.
+- Run project commands through the explicit `rook` Conda environment.
+- Do not make broader mini-ESGF cleanup or object-storage feature work a blocker
+  unless a concrete release regression requires it.
 
-- [ ] Woodpecker integration boundary is written down.
-- [ ] Woodpecker dependency is added.
-- [ ] Rook has a small Woodpecker adapter or provider.
-  Note: keep the provider interface generic. The main provider method should be
-  `apply(ds, context=...)`, with optional `prepare(...)` and `finalise(...)`
-  hooks for operation lifecycle needs. Avoid adding new provider methods named
-  after specific projects, activities, or fixes unless there is no generic
-  lifecycle boundary for the behavior. The usefulness of the lifecycle phases
-  should be revisited after decadal data providers have gained practical
-  experience with Woodpecker. Do not remove or rename the phases only from an
-  interface-design concern while that feedback is still being collected.
-- [ ] Catalog-backed dataset fixes use Woodpecker.
-- [ ] Direct local, URL, S3, Zarr, and Kerchunk inputs still open as-is.
-- [ ] Workflow-file inputs still feed later workflow steps.
-- [ ] Concat decadal behavior is preserved or explicitly moved to Woodpecker.
-  Note: concat still has a special CMIP6-decadal pre-concat calendar
-  preparation step for proleptic Gregorian inputs. It is now hidden behind the
-  generic `prepare(...)` hook. The Woodpecker provider uses the direct
-  `cmip6_decadal.calendar_normalization` fix for this step; the legacy provider
-  still delegates to the old Rook helper. Decide whether this remains an
-  operation-specific Rook preparation hook or becomes a more explicit
-  Woodpecker recipe/phase.
-- [ ] Make Woodpecker the default backend in `roocs.ini` and keep `legacy` as an
-  explicit configuration option.
-- [ ] Remove the temporary `fix_provider` WPS override once smoke and focused
-  tests can select the backend entirely through configuration.
-- [ ] Simplify the parity-test setup. Do not parametrize the smoke suite over
-  both providers. Run the suite once with its configured provider, using
-  Woodpecker for the release gate and a separate legacy-configured run only
-  when compatibility needs to be checked.
-- [ ] Keep a focused legacy-provider unit/integration test set without
-  duplicating the complete Woodpecker test suite.
-- [ ] Obsolete Rook fix helpers are removed or explicitly justified.
-- [ ] Focused pflow/operator tests cover the new fix boundary.
-- [ ] Documentation and changelog describe the Woodpecker handoff.
-- [ ] Smoke tests pass after the integration.
-- [ ] Production configuration uses Woodpecker and has a documented legacy
-  rollback switch.
-- [ ] The release is built, published, and ready for production deployment.
+## Deferred Work
 
-## Guardrails
-
-Every pull request should demonstrate that:
-
-- code and documentation stay clean, simple, and direct;
-- abstractions are added only when they make the processing flow easier to
-  read;
-- the WPS process interface remains compatible, including existing inputs used
-  by CDS calls; avoid changing public WPS inputs unless there is an explicit
-  migration plan because CDS API changes have a longer adaptation cycle;
-- direct local, URL, S3, Zarr, and Kerchunk inputs still work;
-- catalog-backed NetCDF processing is unchanged except for the delegated fix
-  implementation;
-- original-file responses still contain public download URLs;
-- workflow outputs can feed later workflow steps;
-- dataset fixes are applied only when the source identity supports them;
-- output naming, splitting, provenance, and error responses remain stable unless
-  a deliberate change is documented.
-
-For this phase and future cleanup tasks, always run project commands through the
-`rook` conda environment. Do not rely on the active shell environment; use an
-explicit command such as `conda run -n rook pytest ...` so verification uses the
-same dependencies as the project setup.
-
-Run focused tests while iterating, followed by lint, docs, and the default
-non-smoke test suite before each pull request.
-
-## Future Work
-
-These are intentionally outside the immediate production-release work, but
-they should stay visible:
-
-- do another iteration on operators after the fix boundary is clearer;
-- do another iteration on `rook.pflow` after Woodpecker integration settles;
-- revisit the processing flow once Woodpecker users, especially decadal data
-  providers, have practical experience with the current provider interface.
-  The target shape is an explicit flow with source resolution, source identity,
-  opening, preparation, dataset/project fixes, operation execution, and output
-  finalization as named stages, rather than fixes being squeezed into
-  individual operators;
-- review and clean up the `workflow.py` component;
-- clean up smoke tests so workflows and process inputs are built with small
-  Python helpers instead of large hard-coded JSON documents, making provider
-  and parameter variants easier to tweak;
-- refactor the dashboard process;
-- refactor the usage process;
-- extend the lightweight `health` WPS process with deeper operational checks
-  after their contract and failure behavior have been agreed;
-- clean up all WPS process modules in general.
-
-## Synthetic Test Data
-
-Woodpecker already provides synthetic test data builders such as
-`woodpecker.testing.make_cmip6_decadal`, `make_atlas`, `make_cmip6`, `make_cmip7`,
-and `make_cordex`. Use these for focused fix/provider tests while keeping
-mini-esgf-data for integration coverage that needs realistic catalog paths,
-public URL behavior, WPS catalog configuration, or path-resolution behavior.
-
-Status: the first synthetic-data cleanup PR is done. It made mini-esgf-data
-opt-in, added focused synthetic coverage for decadal and atlas fixes, added
-synthetic concat coverage with temporary NetCDF files, and added a regression
-check that concat finalization writes to the configured output directory.
-
-Pause further mini-ESGF/mini-climate-data cleanup until after the production
-release. Do not expand this into a release blocker unless a concrete regression
-cannot be covered with the existing focused synthetic data or required
-integration fixtures.
-
-Work in small steps:
-
-1. [x] Make mini-esgf-data opt-in for tests that actually need it.
-   `load_test_data` and the mini-ESGF roocs config fixture are no longer
-   session-autouse; tests that need them use the `mini_esgf_data` marker and
-   `load_test_data` fixture explicitly.
-2. [x] Keep mini-esgf-data coverage for WPS, catalog lookup, path resolution,
-   metalink/public URL behavior, and other integration checks that need the
-   realistic file layout. These tests are marked with `mini_esgf_data`.
-3. [x] Add or migrate focused fix tests to synthetic Woodpecker data, especially
-   decadal calendar preparation, decadal apply behavior, atlas fixes, and
-   provider routing.
-4. [x] Add synthetic concat coverage using temporary NetCDF files so the
-   per-file `prepare` step, grouped time concat, and dataset-id-aware `apply`
-   step are tested without depending on mini-esgf-data.
-
-## Deferred Features
-
-These remain outside this cleanup phase:
-
-- live S3 integration tests requiring external test data or credentials;
-- writing operation output directly to S3 or Zarr;
-- combining multiple Zarr stores or selecting Zarr groups through WPS inputs;
-- supporting additional object-store protocols;
-- replacing mini-esgf-data;
-- redesigning all Rook configuration at once.
+- Revisit the provider lifecycle after production experience with Woodpecker,
+  especially the CMIP6-decadal `prepare(...)` phase.
+- Continue cleanup of operators, `rook.pflow`, `workflow.py`, dashboard, usage,
+  and WPS process modules.
+- Replace hard-coded smoke workflow documents with small Python builders.
+- Extend the health process only after deeper operational checks have a stable
+  contract.
+- Add live S3 integration coverage and future S3/Zarr output support.
+- Continue mini-ESGF replacement work after the production release.
