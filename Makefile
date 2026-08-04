@@ -197,7 +197,3 @@ dist: clean ## build source and wheel package
 	@echo "Building source and wheel package ..."
 	@python -m flit build
 	@bash -c 'ls -l dist/'
-
-release: dist ## upload source and wheel packages
-	@echo "Uploading source and wheel packages ..."
-	@python -m flit publish dist/*

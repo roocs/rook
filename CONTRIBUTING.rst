@@ -113,15 +113,16 @@ To run a subset of tests:
 Deploying
 ---------
 
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run:
+A reminder for the maintainers on how to deploy. Make sure the release branch
+includes the changelog, refreshed Conda artifacts, and version metadata. Push
+and merge that release commit, then tag the merged commit on ``main``:
 
 .. code-block:: console
 
-    $ bump-my-version bump patch # possible: major / minor / patch
-    $ git push
-    $ git push --tags
+    $ git switch main
+    $ git pull --ff-only
+    $ git tag -a v1.2.4 -m "Release v1.2.4"
+    $ git push origin v1.2.4
 
 Code of Conduct
 ---------------

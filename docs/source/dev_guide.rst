@@ -78,17 +78,15 @@ Do the same as above using the ``Makefile``.
 Prepare a release
 -----------------
 
-Update the Conda specification file to build identical environments_ on a specific OS.
+Update the Conda lock and specification files used to build identical
+environments_ on a specific OS.
 
 .. note:: You should run this on your target OS, in our case Linux.
 
 .. code-block:: console
 
-    $ conda env create -f environment.yml
-    $ source activate rook
-    $ make clean
-    $ make install
-    $ conda list -n rook --explicit > linux-64.spec
+    $ conda activate rook
+    $ make conda-spec
 
 For backward compatibility during migration, ``spec-file.txt`` is kept as a symlink alias to ``linux-64.spec``.
 
@@ -100,13 +98,18 @@ Bump a new version
 
 Make a new version of rook in the following steps:
 
-* Make sure everything is committed to GitHub.
+* Prepare the change on a release branch.
 * Update ``CHANGELOG.rst`` with the next version.
-* Dry Run: ``bump-my-version bump --dry-run --verbose --new-version 1.2.1 patch``
-* Do it: ``bump-my-version bump --new-version 1.2.1 patch``
-* ... or: ``bump-my-version bump --new-version 1.3.0 minor``
-* Push it: ``git push``
-* Push tag: ``git push --tags``
+* Dry run: ``bump-my-version bump --dry-run --verbose --new-version 1.2.4 patch``.
+* Create the release commit: ``bump-my-version bump --new-version 1.2.4 patch``.
+* Push the branch and merge the release commit through the normal review flow.
+* Update local ``main``: ``git switch main && git pull --ff-only``.
+* Tag the merged commit: ``git tag -a v1.2.4 -m "Release v1.2.4"``.
+* Push the tag: ``git push origin v1.2.4``.
+
+``bump-my-version`` updates and commits the version metadata but deliberately
+does not create the tag. Creating it after the merge ensures the release tag
+identifies the exact commit deployed from ``main``.
 
 See the bump-my-version_ documentation for details.
 

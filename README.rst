@@ -4,7 +4,7 @@ rook
 
 
 +----------------------------+-----------------------------------------------------+
-| Versions                   | |pypi| |conda| |versions|                           |
+| Versions                   | |conda| |versions|                                  |
 +----------------------------+-----------------------------------------------------+
 | Documentation and Support  | |docs| |gitter|                                     |
 +----------------------------+-----------------------------------------------------+
@@ -100,23 +100,32 @@ Use bump-my-version_ to release a new version.
 Patch Release Quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Minimal patch release flow (example: ``1.2.1``):
+Prepare the release commit on a branch (example: ``1.2.4``):
 
 .. code-block:: console
 
         $ edit CHANGELOG.rst
         $ make conda-spec
-        $ bump-my-version bump --new-version 1.2.1 patch
+        $ bump-my-version bump --new-version 1.2.4 patch
         $ git push
-        $ git push --tags
+
+After the release commit has been merged, tag the exact commit on ``main``:
+
+.. code-block:: console
+
+        $ git switch main
+        $ git pull --ff-only
+        $ git tag -a v1.2.4 -m "Release v1.2.4"
+        $ git push origin v1.2.4
 
 What this does:
 
 * ``edit CHANGELOG.rst`` adds the release notes for the new patch version.
 * ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec`` (and refreshes ``spec-file.txt``).
-* ``bump-my-version`` updates version metadata and creates the release tag.
-* ``git push`` publishes the commit.
-* ``git push --tags`` publishes the release tag and triggers release/tag workflows.
+* ``bump-my-version`` updates version metadata and creates the release commit;
+  it deliberately does not create a tag.
+* ``git push`` publishes the release branch for review and merge.
+* The annotated tag is created manually from the merged ``main`` commit.
 
 Tests
 -----
@@ -164,10 +173,6 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. |license| image:: https://img.shields.io/badge/license-Apache%202.0-blue.svg
         :target: https://github.com/roocs/rook/blob/main/LICENSE.txt
         :alt: License
-
-.. |pypi| image:: https://img.shields.io/pypi/v/rook.svg
-        :target: https://pypi.org/project/rook/
-        :alt: Python Package Index Build
 
 .. |pre-commit-ci| image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
         :target: https://pre-commit.com/
