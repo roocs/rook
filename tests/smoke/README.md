@@ -2,6 +2,8 @@
 
 Smoke tests are run on a live pywps server.
 The tests are marked with `pytest.mark.smoke`.
+They include the nginx `/health` GetCapabilities proxy and the `/health2`
+health-process proxy.
 
 ## Run smoke tests locally
 

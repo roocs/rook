@@ -1,8 +1,9 @@
 import json
+from urllib.parse import urljoin
 
 import pytest
 import requests
-from owslib.wps import ComplexDataInput
+from owslib.wps import ComplexDataInput, WebProcessingService
 
 from rook.processes.wps_health import HEALTHY_RESPONSE
 
@@ -300,6 +301,13 @@ def test_smoke_get_capabilities(wps):
     assert "orchestrate" in processes
 
 
+def test_smoke_nginx_health_get_capabilities(wps):
+    caps = WebProcessingService(urljoin(wps.wps.url, "/health"), timeout=30)
+
+    assert caps.identification.type == "WPS"
+    assert "health" in [process.identifier for process in caps.processes]
+
+
 def test_smoke_execute_health(wps):
     response = requests.get(
         wps.wps.url,
@@ -312,6 +320,13 @@ def test_smoke_execute_health(wps):
         },
         timeout=30,
     )
+
+    response.raise_for_status()
+    assert response.text == HEALTHY_RESPONSE
+
+
+def test_smoke_nginx_health2_execute_health(wps):
+    response = requests.get(urljoin(wps.wps.url, "/health2"), timeout=30)
 
     response.raise_for_status()
     assert response.text == HEALTHY_RESPONSE
