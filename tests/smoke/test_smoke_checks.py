@@ -302,7 +302,11 @@ def test_smoke_get_capabilities(wps):
 
 
 def test_smoke_nginx_health_get_capabilities(wps):
-    caps = WebProcessingService(urljoin(wps.wps.url, "/health"), timeout=30)
+    response = requests.get(urljoin(wps.wps.url, "/health"), timeout=30)
+    response.raise_for_status()
+
+    caps = WebProcessingService(wps.wps.url, skip_caps=True)
+    caps.getcapabilities(xml=response.content)
 
     assert caps.identification.type == "WPS"
     assert "health" in [process.identifier for process in caps.processes]
