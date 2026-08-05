@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+1.3.0 (2026-08-05)
+==================
+
 * Added the lightweight synchronous ``health`` WPS process for service health
   checks. Its raw output is ``ROOK_HEALTH_OK`` on success; failed checks return
   an OGC exception with an explanation and omit the success marker. Deeper
@@ -14,8 +17,9 @@ Unreleased
 * Made Woodpecker the default dataset fix provider while retaining the legacy
   provider as a configuration-selected fallback.
 * Replaced the Woodpecker Git dependencies with the released
-  ``roocs-woodpecker`` 0.7.x core, ATLAS plugin, and CMIP6-decadal plugin, and
-  install them with Rook on top of the Conda environment.
+  ``roocs-woodpecker``, ``roocs-woodpecker-atlas-plugin``, and
+  ``roocs-woodpecker-cmip6-decadal-plugin`` 0.7.1 packages, installed with Rook
+  on top of the Conda environment.
 * Removed the temporary per-request fix-provider override. Smoke tests now use
   the single provider selected in ``roocs.ini`` instead of running both
   providers for every relevant case.
