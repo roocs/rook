@@ -68,6 +68,7 @@ dev = [
   "coverage >=7.5.0",
   "cruft >=2.15.0",
   "flit >=3.9.0,<4.0",
+  "flit_core >=3.9,<4",
   "ipython>=8.13.0",
   "nbconvert >=7.10.0",
   "nbsphinx >=0.9.5",

@@ -89,9 +89,9 @@ Rook stops using Git dependencies.
 - [ ] Run the default test suite without smoke or online tests on every
   supported Python version through CI.
 - [x] Build the documentation with warnings treated as errors.
-- [ ] Build the Rook wheel and source distribution as local release artifacts.
-- [x] Start the production-style Docker image with Woodpecker configured and
-  run the smoke suite once.
+- [x] Build the Rook wheel and source distribution as local release artifacts.
+- [x] Install the production-style service with Woodpecker configured and run
+  the smoke suite once on the testing system.
 - [ ] Confirm the health process returns exactly `ROOK_HEALTH_OK`, including the
   configured filesystem sentinel checks used in production.
 - [ ] Run one separately configured legacy-backend smoke check if rollback
@@ -103,7 +103,7 @@ Rook stops using Git dependencies.
 
 - [x] Finalize the changelog entry for the release and record the released
   Woodpecker package versions.
-- [ ] Run `bump-my-version` on a release branch to update and commit the Rook
+- [x] Run `bump-my-version` on a release branch to update and commit the Rook
   version metadata. Do not create the Git tag yet.
 - [ ] Merge the release commit through the normal review flow and wait for CI
   to pass on `main`.
