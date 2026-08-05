@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+1.3.0 (2026-08-05)
+==================
+
 * Added the lightweight synchronous ``health`` WPS process for service health
   checks. Its raw output is ``ROOK_HEALTH_OK`` on success; failed checks return
   an OGC exception with an explanation and omit the success marker. Deeper
