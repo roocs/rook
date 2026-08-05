@@ -27,8 +27,8 @@ class WoodpeckerDatasetFixProvider(FixProvider):
     )
     unavailable_message = (
         "Woodpecker is required to apply fixes with the woodpecker backend. "
-        "Install woodpecker, the woodpecker-atlas plugin, and the "
-        "woodpecker-cmip6-decadal plugin, or use the legacy backend."
+        "Install roocs-woodpecker, roocs-woodpecker-atlas-plugin, and "
+        "roocs-woodpecker-cmip6-decadal-plugin, or use the legacy backend."
     )
 
     @cached_property

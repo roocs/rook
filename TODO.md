@@ -44,35 +44,37 @@ Complete these tasks in order.
 These tasks belong to the Woodpecker repository and must be complete before
 Rook stops using Git dependencies.
 
-- [ ] Publish the core distribution as `roocs-woodpecker`. Keep the Python
+- [x] Publish the core distribution as `roocs-woodpecker`. Keep the Python
   import package and command named `woodpecker`.
-- [ ] Publish a new Woodpecker version rather than changing the existing
+- [x] Publish a new Woodpecker version rather than changing the existing
   `v0.7.0` tag, whose metadata still uses the occupied `woodpecker`
   distribution name.
-- [ ] Update and publish `woodpecker-atlas-plugin` and
-  `woodpecker-cmip6-decadal-plugin` with dependencies on
+- [x] Update and publish `roocs-woodpecker-atlas-plugin` and
+  `roocs-woodpecker-cmip6-decadal-plugin` with dependencies on
   `roocs-woodpecker`, not the unrelated `woodpecker` distribution.
-- [ ] In a clean environment, install the three distributions from PyPI and
+- [x] In a clean environment, install the three distributions from PyPI and
   confirm that `woodpecker`, `woodpecker_atlas_plugin`, and
   `woodpecker_cmip6_decadal_plugin` import successfully.
-- [ ] Confirm that Woodpecker discovers the `c3s.atlas` and
+- [x] Confirm that Woodpecker discovers the `c3s.atlas` and
   `c3s.cmip6_decadal` recipes from the installed plugins.
 
 ### 2. Switch Rook to released Woodpecker packages
 
-- [ ] Replace the three Git URL requirements in `pyproject.toml` with bounded
+- [x] Replace the three Git URL requirements in `pyproject.toml` with bounded
   released-package requirements for `roocs-woodpecker`,
-  `woodpecker-atlas-plugin`, and `woodpecker-cmip6-decadal-plugin`.
-- [ ] Replace or remove the matching Git URL entries in
+  `roocs-woodpecker-atlas-plugin`, and
+  `roocs-woodpecker-cmip6-decadal-plugin`.
+- [x] Replace or remove the matching Git URL entries in
   `requirements_upstream.txt` so it no longer overrides the release packages.
-- [ ] Add the released Woodpecker packages to the pip section of
-  `environment.yml`. This is required because the production Docker image
-  installs Rook with `pip install . --no-deps`.
-- [ ] Regenerate `conda-lock.yml`, `linux-64.spec`, and the `spec-file.txt`
+- [x] Keep `environment.yml` Conda-only and install Rook with its PyPI-only
+  Woodpecker dependencies on top of the created Conda environment.
+- [x] Let the production Docker image run `python -m pip install .` with
+  dependency resolution after creating the Conda environment.
+- [x] Regenerate `conda-lock.yml`, `linux-64.spec`, and the `spec-file.txt`
   alias with `make conda-spec` on Linux.
-- [ ] Recreate the `rook` Conda environment from the refreshed definition and
-  confirm `python -m pip check` passes. Remove stale `0.6.x` Woodpecker plugins
-  from local or cached environments before interpreting failures.
+- [x] Recreate the `rook` Conda environment from the refreshed definition and
+  install Rook on top of it. Confirm `python -m pip check` passes and all three
+  Woodpecker distributions are installed at compatible versions.
 - [ ] Build the Docker image and confirm all three Woodpecker distributions and
   import packages are present in the image.
 

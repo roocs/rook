@@ -18,8 +18,8 @@ ENV PATH=/opt/conda/envs/rook/bin:$PATH
 # Copy WPS project
 COPY . /code
 
-# Install WPS project
-RUN pip install . --no-deps
+# Install Rook and its PyPI-only dependencies on top of the Conda environment
+RUN python -m pip install .
 
 # Start WPS service on port 5000 on 0.0.0.0
 EXPOSE 5000

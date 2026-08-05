@@ -13,6 +13,9 @@ Unreleased
 
 * Made Woodpecker the default dataset fix provider while retaining the legacy
   provider as a configuration-selected fallback.
+* Replaced the Woodpecker Git dependencies with the released
+  ``roocs-woodpecker`` 0.7.x core, ATLAS plugin, and CMIP6-decadal plugin, and
+  install them with Rook on top of the Conda environment.
 * Removed the temporary per-request fix-provider override. Smoke tests now use
   the single provider selected in ``roocs.ini`` instead of running both
   providers for every relevant case.
