@@ -80,17 +80,17 @@ Rook stops using Git dependencies.
 
 ### 3. Run the release gate
 
-- [ ] Remove stale generated Sphinx API entries for modules moved under
+- [x] Remove stale generated Sphinx API entries for modules moved under
   `rook.fixes.providers`, `rook.fixes.legacy`, and related utility packages so
   the strict documentation build passes without autodoc import warnings.
-- [ ] Run pre-commit over the complete repository.
-- [ ] Run focused fix-provider, dataset-opening, pflow, operation, ATLAS,
+- [x] Run pre-commit over the complete repository.
+- [x] Run focused fix-provider, dataset-opening, pflow, operation, ATLAS,
   CMIP6-decadal, and concat tests.
 - [ ] Run the default test suite without smoke or online tests on every
   supported Python version through CI.
-- [ ] Build the documentation with warnings treated as errors.
+- [x] Build the documentation with warnings treated as errors.
 - [ ] Build the Rook wheel and source distribution as local release artifacts.
-- [ ] Start the production-style Docker image with Woodpecker configured and
+- [x] Start the production-style Docker image with Woodpecker configured and
   run the smoke suite once.
 - [ ] Confirm the health process returns exactly `ROOK_HEALTH_OK`, including the
   configured filesystem sentinel checks used in production.
@@ -101,7 +101,7 @@ Rook stops using Git dependencies.
 
 ### 4. Version, tag, and deploy Rook
 
-- [ ] Finalize the changelog entry for the release and record the released
+- [x] Finalize the changelog entry for the release and record the released
   Woodpecker package versions.
 - [ ] Run `bump-my-version` on a release branch to update and commit the Rook
   version metadata. Do not create the Git tag yet.
