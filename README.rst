@@ -34,6 +34,39 @@ xarray and the `clisops`_ library, enabling efficient subsetting,
 averaging, and extraction of climate data from archives such as
 CMIP and CORDEX.
 
+Architecture at a Glance
+------------------------
+
+Rook connects climate-data clients with processing operations and data pools.
+It runs operations close to the data and returns only the requested result.
+
+.. mermaid::
+
+   flowchart LR
+      subgraph clients["Clients"]
+         CDS["Copernicus CDS"]
+         ESGF["ESGF"]
+         NOTEBOOKS["Notebooks"]
+      end
+
+      ROOK["Rook WPS<br/>Remote processing service"]
+
+      subgraph processing["Processing library"]
+         CLISOPS["clisops"]
+         OPERATORS["Subset · Average · Regrid · …"]
+         CLISOPS --- OPERATORS
+      end
+
+      subgraph data["Data pools"]
+         CMIP6["CMIP6"]
+         CORDEX["CORDEX"]
+         OTHER["Other collections"]
+      end
+
+      clients -->|"Request"| ROOK
+      ROOK -->|"Operation"| processing
+      processing -->|"Read data"| data
+
 Rook in a Minute
 ----------------
 
