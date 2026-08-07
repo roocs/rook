@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title description">
+  <title id="title">Rook architecture overview</title>
+  <desc id="description">Clients send requests through Rook WPS to clisops operations that read climate data pools.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#50657a"/>
+    </marker>
+    <style>
+      .group { fill: #f7f9fb; stroke: #8ca0b3; stroke-width: 2; }
+      .node { fill: #ffffff; stroke: #50657a; stroke-width: 1.5; }
+      .rook { fill: #e8f2ff; stroke: #2878b5; stroke-width: 2.5; }
+      .heading { fill: #263746; font: 600 19px system-ui, sans-serif; text-anchor: middle; }
+      .label { fill: #263746; font: 16px system-ui, sans-serif; text-anchor: middle; }
+      .small { fill: #526474; font: 14px system-ui, sans-serif; text-anchor: middle; }
+      .arrow { fill: none; stroke: #50657a; stroke-width: 2.5; marker-end: url(#arrow); }
+      .arrow-label { fill: #526474; font: 14px system-ui, sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect class="group" x="20" y="35" width="245" height="320" rx="12"/>
+  <text class="heading" x="142.5" y="68">Clients</text>
+  <rect class="node" x="50" y="95" width="185" height="55" rx="8"/>
+  <text class="label" x="142.5" y="128">Copernicus CDS</text>
+  <rect class="node" x="50" y="175" width="185" height="55" rx="8"/>
+  <text class="label" x="142.5" y="208">ESGF</text>
+  <rect class="node" x="50" y="255" width="185" height="55" rx="8"/>
+  <text class="label" x="142.5" y="288">Notebooks</text>
+
+  <rect class="rook" x="350" y="130" width="200" height="120" rx="12"/>
+  <text class="heading" x="450" y="180">Rook WPS</text>
+  <text class="small" x="450" y="210">Remote processing</text>
+  <text class="small" x="450" y="230">service</text>
+
+  <rect class="group" x="635" y="75" width="245" height="230" rx="12"/>
+  <text class="heading" x="757.5" y="108">Processing library</text>
+  <rect class="node" x="665" y="130" width="185" height="55" rx="8"/>
+  <text class="label" x="757.5" y="164">clisops</text>
+  <rect class="node" x="665" y="210" width="185" height="55" rx="8"/>
+  <text class="small" x="757.5" y="243">Subset · Average · Regrid · …</text>
+  <path d="M757.5 185 L757.5 210" stroke="#8ca0b3" stroke-width="2"/>
+
+  <rect class="group" x="965" y="35" width="215" height="320" rx="12"/>
+  <text class="heading" x="1072.5" y="68">Data pools</text>
+  <rect class="node" x="995" y="95" width="155" height="55" rx="8"/>
+  <text class="label" x="1072.5" y="128">CMIP6</text>
+  <rect class="node" x="995" y="175" width="155" height="55" rx="8"/>
+  <text class="label" x="1072.5" y="208">CORDEX</text>
+  <rect class="node" x="995" y="255" width="155" height="55" rx="8"/>
+  <text class="label" x="1072.5" y="288">Other collections</text>
+
+  <path class="arrow" d="M265 190 L340 190"/>
+  <text class="arrow-label" x="302.5" y="176">Request</text>
+  <path class="arrow" d="M550 190 L625 190"/>
+  <text class="arrow-label" x="587.5" y="176">Operation</text>
+  <path class="arrow" d="M880 190 L955 190"/>
+  <text class="arrow-label" x="917.5" y="176">Read data</text>
+</svg>

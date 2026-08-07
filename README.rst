@@ -40,32 +40,11 @@ Architecture at a Glance
 Rook connects climate-data clients with processing operations and data pools.
 It runs operations close to the data and returns only the requested result.
 
-.. mermaid::
+.. image:: docs/source/_images/rook-architecture.svg
+   :alt: Clients send requests through Rook WPS to clisops operations that read climate data pools.
+   :width: 100%
 
-   flowchart LR
-      subgraph clients["Clients"]
-         CDS["Copernicus CDS"]
-         ESGF["ESGF"]
-         NOTEBOOKS["Notebooks"]
-      end
-
-      ROOK["Rook WPS<br/>Remote processing service"]
-
-      subgraph processing["Processing library"]
-         CLISOPS["clisops"]
-         OPERATORS["Subset · Average · Regrid · …"]
-         CLISOPS --- OPERATORS
-      end
-
-      subgraph data["Data pools"]
-         CMIP6["CMIP6"]
-         CORDEX["CORDEX"]
-         OTHER["Other collections"]
-      end
-
-      clients -->|"Request"| ROOK
-      ROOK -->|"Operation"| processing
-      processing -->|"Read data"| data
+The diagram is maintained as `Mermaid source`_.
 
 Rook in a Minute
 ----------------
@@ -185,6 +164,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`clisops`: https://github.com/roocs/clisops/tree/master
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
+.. _`Mermaid source`: docs/source/_images/rook-architecture.mmd
 .. _bump-my-version: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
 .. |build| image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg?branch=main

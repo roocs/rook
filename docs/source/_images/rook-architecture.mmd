@@ -1,0 +1,24 @@
+flowchart LR
+   subgraph clients["Clients"]
+      CDS["Copernicus CDS"]
+      ESGF["ESGF"]
+      NOTEBOOKS["Notebooks"]
+   end
+
+   ROOK["Rook WPS<br/>Remote processing service"]
+
+   subgraph processing["Processing library"]
+      CLISOPS["clisops"]
+      OPERATORS["Subset · Average · Regrid · …"]
+      CLISOPS --- OPERATORS
+   end
+
+   subgraph data["Data pools"]
+      CMIP6["CMIP6"]
+      CORDEX["CORDEX"]
+      OTHER["Other collections"]
+   end
+
+   clients -->|"Request"| ROOK
+   ROOK -->|"Operation"| processing
+   processing -->|"Read data"| data
