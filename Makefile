@@ -187,11 +187,10 @@ conda-lock: ## regenerate conda lock file from environment.yml
 	@echo "Regenerating $(CONDA_LOCK_FILE) for $(CONDA_LOCK_PLATFORM) ..."
 	@conda-lock lock -f environment.yml -p $(CONDA_LOCK_PLATFORM) --lockfile $(CONDA_LOCK_FILE)
 
-conda-spec: conda-lock ## regenerate explicit conda spec file and refresh spec-file.txt alias
+conda-spec: conda-lock ## regenerate the explicit conda spec file
 	@echo "Rendering $(CONDA_SPEC_FILE) from $(CONDA_LOCK_FILE) ..."
 	@conda-lock render -k explicit -p $(CONDA_LOCK_PLATFORM) --filename-template '{platform}.spec' $(CONDA_LOCK_FILE)
-	@ln -sfn $(CONDA_SPEC_FILE) spec-file.txt
-	@ls -l $(CONDA_SPEC_FILE) spec-file.txt
+	@ls -l $(CONDA_SPEC_FILE)
 
 dist: clean ## build source and wheel package
 	@echo "Building source and wheel package ..."

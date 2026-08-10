@@ -40,7 +40,7 @@ Architecture at a Glance
 Rook connects climate-data clients with processing operations and data pools.
 It runs operations close to the data and returns only the requested result.
 
-.. image:: docs/source/_images/rook-architecture.svg
+.. image:: https://raw.githubusercontent.com/roocs/rook/main/docs/source/_images/rook-architecture.svg
    :alt: Clients send requests through Rook WPS to clisops operations that read climate data pools.
    :width: 100%
 
@@ -133,7 +133,7 @@ After the release commit has been merged, tag the exact commit on ``main``:
 What this does:
 
 * ``edit CHANGELOG.rst`` adds the release notes for the new patch version.
-* ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec`` (and refreshes ``spec-file.txt``).
+* ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec``.
 * ``bump-my-version`` updates version metadata and creates the release commit;
   it deliberately does not create a tag.
 * ``git push`` publishes the release branch for review and merge.
@@ -164,7 +164,7 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
 .. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
 .. _`clisops`: https://github.com/roocs/clisops/tree/master
 .. _`Developer Guide`: https://rook-wps.readthedocs.io/en/latest/dev_guide.html
-.. _`Mermaid source`: docs/source/_images/rook-architecture.mmd
+.. _`Mermaid source`: https://github.com/roocs/rook/blob/main/docs/source/_images/rook-architecture.mmd
 .. _bump-my-version: https://rook-wps.readthedocs.io/en/latest/dev_guide.html#bump-a-new-version
 
 .. |build| image:: https://github.com/roocs/rook/actions/workflows/main.yml/badge.svg?branch=main
