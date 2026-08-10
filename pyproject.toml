@@ -184,6 +184,7 @@ include = [
   "LICENSE",
   "Makefile",
   "README.rst",
+  "linux-64.spec",
   "environment.yml",
   "environment-dev.yml",
   "environment-docs.yml",

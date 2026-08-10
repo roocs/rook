@@ -133,7 +133,7 @@ After the release commit has been merged, tag the exact commit on ``main``:
 What this does:
 
 * ``edit CHANGELOG.rst`` adds the release notes for the new patch version.
-* ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec`` (and refreshes ``spec-file.txt``).
+* ``make conda-spec`` regenerates ``conda-lock.yml`` and ``linux-64.spec``.
 * ``bump-my-version`` updates version metadata and creates the release commit;
   it deliberately does not create a tag.
 * ``git push`` publishes the release branch for review and merge.

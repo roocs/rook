@@ -88,7 +88,7 @@ environments_ on a specific OS.
     $ conda activate rook
     $ make conda-spec
 
-For backward compatibility during migration, ``spec-file.txt`` is kept as a symlink alias to ``linux-64.spec``.
+Deployment configuration should use ``linux-64.spec`` directly.
 
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 

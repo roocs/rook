@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Removed the legacy ``spec-file.txt`` alias; deployments should use the
+  canonical ``linux-64.spec`` file directly.
+
 1.3.0 (2026-08-05)
 ==================
 
