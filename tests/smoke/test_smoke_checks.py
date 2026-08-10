@@ -312,6 +312,9 @@ def test_smoke_nginx_health_get_capabilities(wps):
     assert "health" in [process.identifier for process in caps.processes]
 
 
+@pytest.mark.xfail(
+    reason="Production access restrictions may block direct WPS execution; use the nginx /health2 endpoint instead."
+)
 def test_smoke_execute_health(wps):
     response = requests.get(
         wps.wps.url,
