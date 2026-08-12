@@ -4,7 +4,7 @@ import pathlib
 
 from pywps.app.exceptions import ProcessError
 
-from rook.utils.input_utils import clean_inputs
+from rook.utils.input_utils import clean_inputs, fix_parameters
 
 from .resolver import resolve_request_decision
 from .results import RequestResult
@@ -12,8 +12,9 @@ from .results import RequestResult
 
 def execute_request(collection, inputs, runner):
     """Resolve and execute a request."""
-    decision = resolve_request_decision(collection, inputs)
-    output_uris = execute_decision(decision, inputs, runner)
+    normalized_inputs = fix_parameters(dict(inputs))
+    decision = resolve_request_decision(collection, normalized_inputs)
+    output_uris = execute_decision(decision, normalized_inputs, runner)
     return RequestResult(decision=decision, output_uris=output_uris)
 
 

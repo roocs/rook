@@ -291,6 +291,43 @@ def test_catalog_aligned_subset_returns_matching_original_files(catalog_resolver
     assert result.output_uris == aligned_urls
 
 
+def test_redundant_time_components_allow_aligned_original_files(
+    catalog_resolver, monkeypatch
+):
+    collection = ["c3s-cordex.example.dataset"]
+    aligned_urls = ["https://example.test/data/input-2001.nc"]
+    result = FakeSearchResult(
+        {collection[0]: ["/data/input-2001.nc"]},
+        download_records={collection[0]: aligned_urls},
+    )
+    catalog_resolver(result)
+
+    class AlignedFakeAlignment(FakeAlignment):
+        is_aligned = True
+        aligned_files = aligned_urls
+
+        def __init__(self, _urls, inputs):
+            assert inputs == {"time": "2001-01-01/2001-12-31"}
+
+    monkeypatch.setattr(resolver_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
+
+    result = execute_resolved_request(
+        collection,
+        {
+            "time": "2001-01-01/2001-12-31",
+            "time_components": (
+                "year:2001|month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
+                "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,"
+                "19,20,21,22,23,24,25,26,27,28,29,30,31"
+            ),
+        },
+        lambda _inputs: pytest.fail("runner should not be called"),
+    )
+
+    assert result.use_original_files is True
+    assert result.output_uris == aligned_urls
+
+
 def test_catalog_non_aligned_subset_is_processed(tmp_path, catalog_resolver, monkeypatch):
     collection = ["c3s-cmip6.example.dataset"]
     source = tmp_path / "input.nc"

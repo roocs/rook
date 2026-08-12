@@ -1,4 +1,5 @@
 from pywps.app.exceptions import ProcessError
+from clisops.parameter.time_parameter import TimeParameter
 from clisops.project_utils import url_to_file_path
 from clisops.exceptions import InvalidProject
 
@@ -33,13 +34,17 @@ def get_grid_param(grid: str, custom_grid: str | None):
 
 def fix_parameters(parameters):
     if "time_components" in parameters:
-        parameters["time_components"] = fix_time_components(
-            parameters["time_components"]
+        time_components = fix_time_components(
+            parameters["time_components"], time=parameters.get("time")
         )
+        if time_components is None:
+            parameters.pop("time_components")
+        else:
+            parameters["time_components"] = time_components
     return parameters
 
 
-def fix_time_components(tc):
+def fix_time_components(tc, time=None):
     # Remove redundant time-component parts to avoid for example issues with 360day calendars.
     if not tc:
         return None
@@ -53,9 +58,33 @@ def fix_time_components(tc):
             continue
         if tc_part == TC_ALL_DAYS:
             continue
+        if _covers_time_years(tc_part, time):
+            continue
         new_tc_parts.append(tc_part)
-    new_tc = "|".join(new_tc_parts)
-    return new_tc
+    return "|".join(new_tc_parts) or None
+
+
+def _covers_time_years(tc_part, time):
+    """Return whether a year component includes every year bounded by time."""
+    if not time:
+        return False
+
+    separator = ":" if ":" in tc_part else "=" if "=" in tc_part else None
+    if separator is None:
+        return False
+
+    component, values = tc_part.split(separator, 1)
+    if component.strip().lower() != "year":
+        return False
+
+    try:
+        selected_years = {int(value.strip()) for value in values.split(",")}
+        start, end = TimeParameter(time).get_bounds()
+        time_years = set(range(int(start[:4]), int(end[:4]) + 1))
+    except (TypeError, ValueError):
+        return False
+
+    return time_years.issubset(selected_years)
 
 
 def parse_wps_input(inputs, key, as_sequence=False, must_exist=False, default=None):
