@@ -38,7 +38,11 @@ def test_workflow_operator_factory_keeps_prefix_and_runner(tmp_path):
 
     assert operator.prefix == "subset"
     assert operator.runner is execution_mod.run_subset
+    assert operator.allow_aligned_original_files is True
     assert execution_mod.Subset(tmp_path).prefix == "subset"
+
+    concat_operator = execution_mod.make_workflow_operator("concat", tmp_path)
+    assert concat_operator.allow_aligned_original_files is False
 
 
 def test_run_regrid_normalizes_custom_grid(monkeypatch):

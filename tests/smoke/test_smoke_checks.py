@@ -221,6 +221,28 @@ WF_C3S_CORDEX = json.dumps(
     }
 )
 
+WF_C3S_CORDEX_DAY_ORIGINAL_FALLBACK = json.dumps(
+    {
+        "doc": "return overlapping original files for a daily CORDEX subset",
+        "inputs": {"ds": [C3S_CORDEX_DAY_COLLECTION]},
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "inputs/ds",
+                    "time": "2006/2006",
+                    "time_components": (
+                        "year:2006|"
+                        "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
+                        f"{TC_ALL_DAYS}"
+                    ),
+                },
+            },
+        },
+    }
+)
+
 WF_C3S_CMIP6_DECADAL = json.dumps(
     {
         "doc": "subset on c3s-cmip6-decadal",
@@ -395,6 +417,17 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path, open_dataset):
     assert "rlds" in ds.variables
 
 
+def test_smoke_execute_daily_subset_returns_overlapping_original_files(wps):
+    inputs = [
+        ("collection", C3S_CMIP6_DAY_COLLECTION),
+        ("time", "2020-06-01/2020-06-30"),
+    ]
+    urls = wps.execute("subset", inputs)
+
+    assert urls
+    assert all("esg_c3s-cmip6" in url for url in urls)
+
+
 def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_MON_LEVEL_COLLECTION),
@@ -477,6 +510,7 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
         "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20201216.nc"
         in urls[0]
     )
+    assert "esg_c3s-cordex" not in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
@@ -785,6 +819,16 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
         "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
         in urls[0]
     )
+
+
+def test_smoke_execute_daily_cordex_original_fallback_orchestrate(wps):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CORDEX_DAY_ORIGINAL_FALLBACK)),
+    ]
+    urls = wps.execute("orchestrate", inputs)
+
+    assert urls
+    assert all("esg_c3s-cordex" in url for url in urls)
 
 
 def test_smoke_execute_c3s_cmip6_decadal_concat(wps):

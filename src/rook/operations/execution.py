@@ -28,6 +28,7 @@ class WorkflowOperation:
 
     prefix: str
     runner: object
+    allow_aligned_original_files: bool = False
 
 
 def collect_file_uris(operation, args):
@@ -84,13 +85,16 @@ def run_workflow_files(args, runner):
 class Operator:
     """Workflow operation adapter."""
 
-    def __init__(self, output_dir, prefix, runner):
+    def __init__(
+        self, output_dir, prefix, runner, allow_aligned_original_files=False
+    ):
         if isinstance(output_dir, pathlib.Path):
             output_dir_ = output_dir.as_posix()
         else:
             output_dir_ = output_dir
         self.prefix = prefix
         self.runner = runner
+        self.allow_aligned_original_files = allow_aligned_original_files
         self.config = {
             "output_dir": output_dir_,
             # 'original_files': original_files
@@ -106,7 +110,12 @@ class Operator:
         if is_file_list(collection):
             output_uris = run_workflow_files(args, self.runner)
         else:
-            request_result = execute_resolved_request(collection, args, self.runner)
+            request_result = execute_resolved_request(
+                collection,
+                args,
+                self.runner,
+                allow_aligned_original_files=self.allow_aligned_original_files,
+            )
             output_uris = request_result.output_uris
 
         return output_uris
@@ -116,7 +125,11 @@ class Operator:
 
 
 WORKFLOW_OPERATIONS = {
-    "subset": WorkflowOperation(prefix="subset", runner=run_subset),
+    "subset": WorkflowOperation(
+        prefix="subset",
+        runner=run_subset,
+        allow_aligned_original_files=True,
+    ),
     "average_time": WorkflowOperation(prefix="average_time", runner=run_average_by_time),
     "average": WorkflowOperation(prefix="average", runner=run_average_by_dim),
     "average_shape": WorkflowOperation(prefix="average_shape", runner=run_average_by_shape),
@@ -129,7 +142,12 @@ WORKFLOW_OPERATIONS = {
 def make_workflow_operator(name, output_dir):
     """Return the configured workflow operation adapter."""
     operation = WORKFLOW_OPERATIONS[name]
-    return Operator(output_dir, prefix=operation.prefix, runner=operation.runner)
+    return Operator(
+        output_dir,
+        prefix=operation.prefix,
+        runner=operation.runner,
+        allow_aligned_original_files=operation.allow_aligned_original_files,
+    )
 
 
 def subset_operator(output_dir):

@@ -9,10 +9,17 @@ from .results import RequestResult
 from .sources import CatalogCollection, DirectDataset, WorkflowFiles
 
 
-def execute_resolved_request(collection, inputs, runner):
+def execute_resolved_request(
+    collection, inputs, runner, *, allow_aligned_original_files=False
+):
     """Resolve a request, execute it when needed, and translate WPS errors."""
     try:
-        return execute_request(collection, inputs, runner)
+        return execute_request(
+            collection,
+            inputs,
+            runner,
+            allow_aligned_original_files=allow_aligned_original_files,
+        )
     except Exception as e:
         raise ProcessError(f"{e}")
 
