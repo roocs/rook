@@ -156,7 +156,12 @@ class Subset(Process):
         }
 
         # Plan the request before processing or returning original files
-        request_result = execute_resolved_request(collection, inputs, run_subset)
+        request_result = execute_resolved_request(
+            collection,
+            inputs,
+            run_subset,
+            allow_aligned_original_files=True,
+        )
 
         ml4 = build_metalink(
             "subset-result",

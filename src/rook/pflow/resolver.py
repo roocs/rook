@@ -1,6 +1,7 @@
 """Resolve requests to processing-flow decisions."""
 
 from collections import OrderedDict
+import re
 
 from clisops.project_utils import get_project_name
 
@@ -13,14 +14,18 @@ from .policies import may_return_original_files, requires_processing
 from .sources import CatalogCollection, DirectDataset
 
 
-def resolve_request_decision(collection, inputs):
+def resolve_request_decision(collection, inputs, allow_aligned_original_files=False):
     """Return the decision for a request."""
     source = classify_request_source(collection)
 
     if isinstance(source, DirectDataset):
         return RunOperation(project=source.project)
 
-    return resolve_catalog_collection(source, inputs)
+    return resolve_catalog_collection(
+        source,
+        inputs,
+        allow_aligned_original_files=allow_aligned_original_files,
+    )
 
 
 def classify_request_source(collection):
@@ -33,7 +38,7 @@ def classify_request_source(collection):
     return CatalogCollection(collection=collection, project=project)
 
 
-def resolve_catalog_collection(source, inputs):
+def resolve_catalog_collection(source, inputs, allow_aligned_original_files=False):
     """Return the decision for a catalog collection request."""
     project = source.project
     collection = source.collection
@@ -46,7 +51,10 @@ def resolve_catalog_collection(source, inputs):
     if requires_processing(inputs):
         return operation_decision(project, search_result)
 
-    return aligned_subset_decision(project, search_result, inputs)
+    if not allow_aligned_original_files:
+        return operation_decision(project, search_result)
+
+    return subset_original_files_decision(project, search_result, inputs)
 
 
 def resolve_project(collection):
@@ -80,14 +88,46 @@ def operation_decision(project, search_result):
     )
 
 
-def aligned_subset_decision(project, search_result, inputs):
-    """Return an original-file decision when subset bounds align with files."""
+def subset_original_files_decision(project, search_result, inputs):
+    """Prefer original files for exact or temporal-only subset requests."""
     original_file_urls = aligned_original_file_urls(search_result, inputs)
 
-    if original_file_urls is None:
-        return operation_decision(project, search_result)
+    if original_file_urls is not None:
+        return original_files_decision(project, search_result, original_file_urls)
 
-    return original_files_decision(project, search_result, original_file_urls)
+    # The catalog has already limited these files to those overlapping `time`.
+    # Returning them may include extra timesteps at file boundaries, but avoids
+    # an expensive temporal-only subset that can exhaust worker memory.
+    if is_high_frequency_temporal_subset(search_result, inputs):
+        return original_files_decision(project, search_result)
+
+    return operation_decision(project, search_result)
+
+
+def is_high_frequency_temporal_subset(search_result, inputs):
+    """Return whether a daily/sub-daily subset may over-include only time."""
+    is_temporal_only = bool(inputs.get("time")) and not any(
+        inputs.get(key) for key in ("time_components", "area", "level", "shape")
+    )
+    if not is_temporal_only:
+        return False
+
+    dataset_ids = search_result.download_urls()
+    return bool(dataset_ids) and all(
+        has_daily_or_subdaily_frequency(dataset_id) for dataset_id in dataset_ids
+    )
+
+
+def has_daily_or_subdaily_frequency(dataset_id):
+    """Return whether a dataset identifier contains a daily-or-finer frequency."""
+    for component in dataset_id.lower().split("."):
+        if component.endswith("day"):
+            return True
+        if re.fullmatch(r"[a-z]*\d*hr[a-z]*", component):
+            return True
+        if "hour" in component:
+            return True
+    return False
 
 
 def aligned_original_file_urls(search_result, inputs):

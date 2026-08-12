@@ -152,3 +152,23 @@ def test_fix_time_components():
 
     assert fix_time_components("") is None
     assert fix_time_components(None) is None
+
+
+def test_fix_time_components_removes_years_covered_by_time():
+    assert (
+        fix_time_components(
+            "year:2000,2001,2002|month:jan,feb",
+            time="2000-06-01/2002-05-31",
+        )
+        == "month:jan,feb"
+    )
+
+
+def test_fix_time_components_keeps_year_subset():
+    assert (
+        fix_time_components(
+            "year:2000,2002|month:jan,feb",
+            time="2000-01-01/2002-12-31",
+        )
+        == "year:2000,2002|month:jan,feb"
+    )
