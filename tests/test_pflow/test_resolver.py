@@ -338,6 +338,53 @@ def test_redundant_time_components_allow_aligned_original_files(
     assert result.output_uris == aligned_urls
 
 
+def test_year_components_select_aligned_files_within_longer_time_range(
+    catalog_resolver, monkeypatch
+):
+    collection = ["c3s-cmip6.example.day.huss.dataset"]
+    years = range(2015, 2021)
+    urls = [f"https://example.test/data/huss-{year}.nc" for year in years]
+    catalog = catalog_resolver(
+        FakeSearchResult(
+            {collection[0]: [f"/data/huss-{year}.nc" for year in years]},
+            download_records={collection[0]: urls},
+        )
+    )
+    file_times = {
+        url: (
+            f"{year}-01-01T12:00:00",
+            f"{year}-12-31T12:00:00",
+        )
+        for year, url in zip(years, urls, strict=True)
+    }
+    monkeypatch.setattr(
+        resolver_mod.SubsetAlignmentChecker,
+        "_get_file_times",
+        lambda _self, path: file_times[path],
+    )
+
+    result = execute_resolved_request(
+        collection,
+        {
+            "time": "2015/2020",
+            "time_components": (
+                "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
+                "year:2015,2016"
+            ),
+        },
+        lambda _inputs: pytest.fail("runner should not be called"),
+        allow_aligned_original_files=True,
+    )
+
+    assert catalog.search_kwargs == {
+        "collection": collection,
+        "time": "2015/2020",
+        "time_components": "year:2015,2016",
+    }
+    assert result.use_original_files is True
+    assert result.output_uris == urls[:2]
+
+
 @pytest.mark.parametrize("frequency", ["day", "3hr"])
 def test_catalog_non_aligned_high_frequency_subset_returns_overlapping_files(
     frequency, tmp_path, catalog_resolver, monkeypatch
