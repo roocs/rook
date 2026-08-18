@@ -6,6 +6,7 @@ from typing import Any
 
 from clisops.config import get_config as _get_clisops_config
 from clisops.config import reload_config as _reload_clisops_config
+from clisops.utils.output_utils import parse_size
 
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
@@ -14,6 +15,11 @@ DEFAULT_SUBSET_BATCHING = {
     "target_timesteps": 2000,
     "min_batch_years": 1,
     "max_batch_years": 10,
+}
+
+DEFAULT_SUBSET_BATCH_OUTPUT = {
+    "merge_outputs": True,
+    "merge_target_size": "200MB",
 }
 
 
@@ -144,6 +150,49 @@ def get_subset_batching_config() -> dict[str, int]:
     return batching
 
 
+def get_subset_batch_output_config() -> dict[str, bool | int]:
+    """Return configuration for safely merging subset batch outputs."""
+    section = _get_section("subset:batching")
+    write_section = _get_section("clisops:write")
+    file_size_limit = write_section.get("file_size_limit", "2GB")
+    try:
+        max_output_bytes = int(parse_size(str(file_size_limit)))
+    except (AttributeError, TypeError, ValueError):
+        raise ConfigurationError(
+            "Configuration option 'clisops:write.file_size_limit' must be a size "
+            "such as '2GB'."
+        ) from None
+    if max_output_bytes < 1:
+        raise ConfigurationError(
+            "Configuration option 'clisops:write.file_size_limit' must be greater "
+            "than zero."
+        )
+
+    merge_target_size = section.get(
+        "merge_target_size", DEFAULT_SUBSET_BATCH_OUTPUT["merge_target_size"]
+    )
+    try:
+        merge_target_bytes = int(parse_size(str(merge_target_size)))
+    except (AttributeError, TypeError, ValueError):
+        raise ConfigurationError(
+            "Configuration option 'subset:batching.merge_target_size' must be a "
+            "size such as '200MB'."
+        ) from None
+    if merge_target_bytes < 1:
+        raise ConfigurationError(
+            "Configuration option 'subset:batching.merge_target_size' must be "
+            "greater than zero."
+        )
+    return {
+        "merge_outputs": _parse_config_bool(
+            section.get("merge_outputs", DEFAULT_SUBSET_BATCH_OUTPUT["merge_outputs"]),
+            "subset:batching.merge_outputs",
+        ),
+        "merge_target_bytes": min(merge_target_bytes, max_output_bytes),
+        "max_output_bytes": max_output_bytes,
+    }
+
+
 def _get_section(name: str) -> dict[str, Any]:
     section = get_config().get(name, {})
     if not isinstance(section, dict):
@@ -180,6 +229,18 @@ def _parse_bool(value: Any, option: str) -> bool:
         if lowered in {"0", "false", "no", "off"}:
             return False
     raise ConfigurationError(f"S3 option '{option}' must be a boolean.")
+
+
+def _parse_config_bool(value: Any, option: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+    raise ConfigurationError(f"Configuration option '{option}' must be a boolean.")
 
 
 def _parse_positive_int(value: Any, option: str) -> int:

@@ -301,6 +301,11 @@ def make_recording_subset(
     monkeypatch.setattr(
         time_batching_mod.config, "get_subset_batching_config", lambda: batching_config
     )
+    monkeypatch.setattr(
+        time_batching_mod.batch_outputs,
+        "merge_batch_outputs",
+        lambda outputs, **_kwargs: outputs,
+    )
     return operation, calls, opened_sources
 
 

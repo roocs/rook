@@ -5,9 +5,9 @@ documented in `CHANGELOG.rst`.
 
 ## Subset batching
 
-- [ ] Add optional post-processing that combines the files produced by a
-  batched subset request into one client-facing result. The implementation must
-  preserve the batching memory limit and clean up intermediate files safely.
+- [ ] Evaluate the performance, encoding fidelity, and memory overhead of the
+  bounded small-file merge on representative production requests, including
+  360-day calendars and project-specific metadata.
 - [ ] Replace the subset batching module's local standard-library stream
   handler with centralized Rook/PyWPS logging. Ensure messages from Rook and
   clisops are routed consistently to the configured service or Slurm job logs

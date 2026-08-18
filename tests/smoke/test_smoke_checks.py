@@ -818,9 +818,8 @@ def test_smoke_execute_c3s_cmip6_subset_batching_orchestrate(wps):
 
     urls = wps.execute("orchestrate", inputs)
 
-    assert len(urls) == 2
-    assert any("20150101-20191231" in url for url in urls)
-    assert any("20200101-20201231" in url for url in urls)
+    assert len(urls) == 1
+    assert "20150101-20201231" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path, open_dataset):
