@@ -24,6 +24,11 @@ C3S_ATLAS_V25_ERA5_COLLECTION = "c3s-cica-atlas.psl.ERA5.mon.v25"
 C3S_ATLAS_V25_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mon.v25"
 
 
+def first_output_name(output_metalink):
+    """Return the first file named by a WPS output metalink."""
+    return Path(parse_metalink(output_metalink)[0]).name
+
+
 def test_wps_subset_does_not_expose_fix_provider_configuration():
     process = Subset()
     inputs = [inp.identifier for inp in process.inputs]
@@ -134,7 +139,8 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
-    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    outputs = get_output(resp.xml)
+    doc = prov.read(outputs["prov"][len("file://") :])
     assert (
         'roocs:time="1860-01-01/1900-12-30", roocs:area="1,1,300,89"' in doc.get_provn()
     )
@@ -142,7 +148,7 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     dataset = (
         "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
     )
-    output = "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_18600116-18691216.nc"
+    output = first_output_name(outputs["output"])
     assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
     assert provn.count("wasDerivedFrom(") == 1
 
@@ -157,13 +163,14 @@ def test_wps_subset_cmip6_multiple_files_prov(get_output, pywps_cfg):
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_response_success(resp)
-    doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
+    outputs = get_output(resp.xml)
+    doc = prov.read(outputs["prov"][len("file://") :])
     provn = doc.get_provn()
     assert 'roocs:time="1850-01-01/2013-12-30"' in provn
     dataset = (
         "CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical." "r1i1p1f1.SImon.siconc.gn.latest"
     )
-    output = "siconc_SImon_MPI-ESM1-2-HR_historical_" "r1i1p1f1_gn_18500116-18591216.nc"
+    output = first_output_name(outputs["output"])
     assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
     assert provn.count("wasDerivedFrom(") == 1
 
