@@ -18,6 +18,11 @@ C3S_CMIP6_DAY_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
 )
 
+C3S_CMIP6_DAY_HUSS_COLLECTION = (
+    "c3s-cmip6.ScenarioMIP.EC-Earth-Consortium.EC-Earth3-CC.ssp245."
+    "r1i1p1f1.day.huss.gr.v20210113"
+)
+
 C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 )
@@ -193,6 +198,28 @@ WF_C3S_CMIP6_360DAY_CALENDAR = json.dumps(
                     "collection": "inputs/ds",
                     "time": "2015/2015",
                     "time_components": f"month:01,02,03|{TC_ALL_DAYS}",
+                },
+            },
+        },
+    }
+)
+
+WF_C3S_CMIP6_SUBSET_BATCHING = json.dumps(
+    {
+        "doc": "two-batch daily subset on cmip6",
+        "inputs": {"huss": [C3S_CMIP6_DAY_HUSS_COLLECTION]},
+        "outputs": {"output": "subset_huss_1/output"},
+        "steps": {
+            "subset_huss_1": {
+                "run": "subset",
+                "in": {
+                    "collection": "inputs/huss",
+                    "area": "25.5,35.5,45.0,42.5",
+                    "time": "2015/2020",
+                    "time_components": (
+                        "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
+                        "year:2015,2016,2017,2018,2019,2020"
+                    ),
                 },
             },
         },
@@ -783,6 +810,16 @@ def test_smoke_execute_c3s_cmip6_360day_calendar_orchestrate(wps):
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
     assert "pr_day_HadGEM3-GC31-LL_ssp245_r1i1p1f3_gn_20150101-20150330.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_subset_batching_orchestrate(wps):
+    inputs = [("workflow", ComplexDataInput(WF_C3S_CMIP6_SUBSET_BATCHING))]
+
+    urls = wps.execute("orchestrate", inputs)
+
+    assert len(urls) == 2
+    assert any("20150101-20191231" in url for url in urls)
+    assert any("20200101-20201231" in url for url in urls)
 
 
 def test_smoke_execute_c3s_cmip6_orchestrate_metadata(wps, tmp_path, open_dataset):
