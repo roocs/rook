@@ -7,7 +7,7 @@ from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
 from rook.processes.wps_subset import Subset
-from rook.utils.metalink_utils import parse_metalink
+from rook.utils.metalink_utils import extract_paths_from_metalink, parse_metalink
 
 C3S_CMIP6_MON_COLLECTION = (
     "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
@@ -26,7 +26,7 @@ C3S_ATLAS_V25_CORDEX_COLLECTION = "c3s-cica-atlas.huss.CORDEX-CORE.historical.mo
 
 def first_output_name(output_metalink):
     """Return the first file named by a WPS output metalink."""
-    return Path(parse_metalink(output_metalink)[0]).name
+    return Path(extract_paths_from_metalink(output_metalink)[0]).name
 
 
 def test_wps_subset_does_not_expose_fix_provider_configuration():

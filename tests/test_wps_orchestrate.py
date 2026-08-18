@@ -8,7 +8,7 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_orchestrate import Orchestrate
-from rook.utils.metalink_utils import parse_metalink
+from rook.utils.metalink_utils import extract_paths_from_metalink, parse_metalink
 
 pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
@@ -18,7 +18,7 @@ ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
 
 def first_output_name(output_metalink):
     """Return the first file named by a WPS output metalink."""
-    return Path(parse_metalink(output_metalink)[0]).name
+    return Path(extract_paths_from_metalink(output_metalink)[0]).name
 
 
 def derived_relations(provn):
