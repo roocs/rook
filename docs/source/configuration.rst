@@ -83,11 +83,12 @@ number of timesteps. Configure the target and year limits in ``roocs.ini``:
    merge_target_size = 200MB
 
 When a request produces multiple small batches, Rook merges consecutive files
-only while their estimated uncompressed size remains below
-``merge_target_size``. This bounds the merge's memory use independently of the
-larger ``clisops:write.file_size_limit`` ceiling. Rook caps the effective merge
-target at that ceiling when it is configured lower. Set
-``merge_outputs = false`` to return the individual batch files instead.
+by using the first batch's on-disk size to estimate how many batches fit within
+``merge_target_size``. Rook caps this planning target at
+``clisops:write.file_size_limit`` when that limit is configured lower. Because
+the estimate is based on one compressed file, the merged file's actual size can
+vary. If merging fails, Rook returns the original batch files. Set
+``merge_outputs = false`` to always return the individual batch files.
 
 
 .. _PyWPS: https://pywps.org/
