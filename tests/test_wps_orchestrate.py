@@ -8,12 +8,26 @@ from pywps import Service
 from pywps.tests import assert_response_success, client_for
 
 from rook.processes.wps_orchestrate import Orchestrate
-from rook.utils.metalink_utils import parse_metalink
+from rook.utils.metalink_utils import extract_paths_from_metalink, parse_metalink
 
 pytestmark = [pytest.mark.mini_esgf_data, pytest.mark.usefixtures("load_test_data")]
 
 
 ESMPY_MISSING = importlib.util.find_spec("esmpy") is None
+
+
+def first_output_name(output_metalink):
+    """Return the first file named by a WPS output metalink."""
+    return Path(extract_paths_from_metalink(output_metalink)[0]).name
+
+
+def derived_relations(provn):
+    """Return provenance derivation relations in document order."""
+    return [
+        line.strip()
+        for line in provn.splitlines()
+        if line.strip().startswith("wasDerivedFrom(")
+    ]
 
 
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
@@ -54,7 +68,8 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
         f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
     )
     assert_response_success(resp)
-    file_uri = get_output(resp.xml)["prov"]
+    outputs = get_output(resp.xml)
+    file_uri = outputs["prov"]
     doc = prov.read(file_uri[len("file://") :])
     provn = doc.get_provn()
     assert 'roocs:time="1985-01-01/2014-12-30"' in provn
@@ -63,15 +78,18 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     dataset = (
         "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
     )
-    subset_output = (
-        "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_19850116-19941216.nc"
+    relations = derived_relations(provn)
+    assert len(relations) == 2
+    subset_relation = next(
+        relation for relation in relations if f", roocs:{dataset}," in relation
     )
-    average_output = (
-        "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_19850101-20140101_avg-year.nc"
+    subset_output = subset_relation.removeprefix("wasDerivedFrom(roocs:").split(",")[0]
+    average_output = first_output_name(outputs["output"])
+    assert any(
+        relation.startswith(f"wasDerivedFrom(roocs:{average_output},")
+        and f", roocs:{subset_output}," in relation
+        for relation in relations
     )
-    assert f"wasDerivedFrom(roocs:{subset_output}, roocs:{dataset}" in provn
-    assert f"wasDerivedFrom(roocs:{average_output}, roocs:{subset_output}" in provn
-    assert provn.count("wasDerivedFrom(") == 2
 
 
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")

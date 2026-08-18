@@ -79,6 +79,16 @@ number of timesteps. Configure the target and year limits in ``roocs.ini``:
    target_timesteps = 2000
    min_batch_years = 1
    max_batch_years = 10
+   merge_outputs = true
+   merge_target_size = 200MB
+
+When a request produces multiple small batches, Rook merges consecutive files
+by using the first batch's on-disk size to estimate how many batches fit within
+``merge_target_size``. Rook caps this planning target at
+``clisops:write.file_size_limit`` when that limit is configured lower. Because
+the estimate is based on one compressed file, the merged file's actual size can
+vary. If merging fails, Rook returns the original batch files. Set
+``merge_outputs = false`` to always return the individual batch files.
 
 
 .. _PyWPS: https://pywps.org/

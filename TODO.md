@@ -5,9 +5,13 @@ documented in `CHANGELOG.rst`.
 
 ## Subset batching
 
-- [ ] Add optional post-processing that combines the files produced by a
-  batched subset request into one client-facing result. The implementation must
-  preserve the batching memory limit and clean up intermediate files safely.
+- [ ] Evaluate the performance, encoding fidelity, peak memory use, and
+  reliability of the first-batch on-disk size estimate on representative
+  production requests, including 360-day calendars and project-specific
+  metadata.
+- [ ] Decide whether subset batch merging needs strict post-write output-size
+  validation. Currently `clisops:write.file_size_limit` caps the estimated
+  merge plan rather than the final file's measured size.
 - [ ] Replace the subset batching module's local standard-library stream
   handler with centralized Rook/PyWPS logging. Ensure messages from Rook and
   clisops are routed consistently to the configured service or Slurm job logs

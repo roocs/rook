@@ -12,7 +12,7 @@ from clisops.parameter.time_parameter import TimeParameter
 from rook import config
 from rook.io.datasets import DatasetSource, open_dataset
 
-from . import consolidate, normalise
+from . import batch_outputs, consolidate, normalise
 from .base import Operation
 
 logger = logging.getLogger(__name__)
@@ -106,9 +106,24 @@ class TimeBatchingOperation(Operation):
                 outputs.extend(self._open_and_process(batch_source))
         finally:
             self.params["time"] = original_time
-        # TODO: Add optional post-processing to combine batch output files into a
-        # single subset result for clients that expect one file.
-        return outputs
+        output_config = config.get_subset_batch_output_config()
+        if output_config["merge_outputs"]:
+            logger.info(
+                f"Merging {len(outputs)} subset batch output(s) with "
+                f"max_output_bytes={output_config['max_output_bytes']} and "
+                f"merge_target_bytes={output_config['merge_target_bytes']}"
+            )
+        merged_outputs = batch_outputs.merge_batch_outputs(
+            outputs,
+            file_namer=self._file_namer,
+            output_type=self._output_type,
+            **output_config,
+        )
+        logger.info(
+            f"Subset batch output post-processing complete: "
+            f"inputs={len(outputs)}, outputs={len(merged_outputs)}"
+        )
+        return merged_outputs
 
     def _open_and_process(self, source):
         dataset = open_dataset(source)

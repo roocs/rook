@@ -124,6 +124,76 @@ def test_subset_batching_rejects_inverted_year_bounds(monkeypatch):
         config.get_subset_batching_config()
 
 
+def test_subset_batch_output_uses_defaults_and_clisops_size_limit(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"clisops:write": {"file_size_limit": "2GB"}},
+    )
+
+    assert config.get_subset_batch_output_config() == {
+        "merge_outputs": True,
+        "merge_target_bytes": 200_000_000,
+        "max_output_bytes": 2_000_000_000,
+    }
+
+
+def test_subset_batch_output_can_be_overridden(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "clisops:write": {"file_size_limit": "500MB"},
+            "subset:batching": {
+                "merge_outputs": "false",
+                "merge_target_size": "100MB",
+            },
+        },
+    )
+
+    assert config.get_subset_batch_output_config() == {
+        "merge_outputs": False,
+        "merge_target_bytes": 100_000_000,
+        "max_output_bytes": 500_000_000,
+    }
+
+
+@pytest.mark.parametrize("value", ["invalid", "0MB"])
+def test_subset_batch_output_rejects_invalid_merge_target(monkeypatch, value):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"subset:batching": {"merge_target_size": value}},
+    )
+
+    with pytest.raises(config.ConfigurationError, match="merge_target_size"):
+        config.get_subset_batch_output_config()
+
+
+def test_subset_batch_output_target_is_capped_by_clisops_limit(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "clisops:write": {"file_size_limit": "100MB"},
+            "subset:batching": {"merge_target_size": "200MB"},
+        },
+    )
+
+    assert config.get_subset_batch_output_config()["merge_target_bytes"] == 100_000_000
+
+
+def test_subset_batch_output_rejects_zero_clisops_limit(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"clisops:write": {"file_size_limit": "0MB"}},
+    )
+
+    with pytest.raises(config.ConfigurationError, match="file_size_limit"):
+        config.get_subset_batch_output_config()
+
+
 def test_health_readable_files_default_to_empty(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 
