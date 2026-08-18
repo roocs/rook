@@ -68,12 +68,12 @@ class Operation:
         rs = normalise.ResultSet(vars())
 
         for dset, collection in norm_collection.items():
-            rs.add(
-                dset,
-                process(self.get_operation_callable(), collection, **self.params),
-            )
+            rs.add(dset, self._process_collection(dset, collection))
 
         return rs
+
+    def _process_collection(self, _dataset_id, collection):
+        return process(self.get_operation_callable(), collection, **self.params)
 
 
 def is_prepared_dataset_collection(collection):

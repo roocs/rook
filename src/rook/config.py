@@ -10,6 +10,18 @@ from clisops.config import reload_config as _reload_clisops_config
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
+DEFAULT_BATCH_FREQUENCIES = (
+    "day",
+    "6hr",
+    "6hrPt",
+    "3hr",
+    "3hrPt",
+    "1hr",
+    "1hrCM",
+    "1hrPt",
+    "subhrPt",
+)
+
 
 class ConfigurationError(ValueError):
     """Raised when Rook configuration contains an invalid value."""
@@ -121,6 +133,40 @@ def get_fix_backend() -> str:
             f"Configuration option 'fixes.backend' must be one of: {allowed_values}."
         )
     return backend
+
+
+def get_subset_time_batch_size() -> int:
+    """Return the configured subset time-batch size in years."""
+    value = _get_section("subset").get("time_batch_size", 5)
+    if isinstance(value, bool):
+        raise ConfigurationError(
+            "Configuration option 'subset.time_batch_size' must be a positive integer."
+        )
+
+    try:
+        batch_size = int(value)
+    except (TypeError, ValueError):
+        raise ConfigurationError(
+            "Configuration option 'subset.time_batch_size' must be a positive integer."
+        ) from None
+
+    if batch_size < 1 or str(batch_size) != str(value).strip():
+        raise ConfigurationError(
+            "Configuration option 'subset.time_batch_size' must be a positive integer."
+        )
+    return batch_size
+
+
+def get_batch_frequencies() -> frozenset[str]:
+    """Return normalized frequencies eligible for subset time batching."""
+    values = _get_section("rook").get("batch_frequencies", DEFAULT_BATCH_FREQUENCIES)
+    if not isinstance(values, (list, tuple)) or not all(
+        isinstance(value, str) and value.strip() for value in values
+    ):
+        raise ConfigurationError(
+            "Configuration option 'rook.batch_frequencies' must be a list of frequencies."
+        )
+    return frozenset(value.strip().casefold() for value in values)
 
 
 def _get_section(name: str) -> dict[str, Any]:

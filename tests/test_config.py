@@ -64,6 +64,60 @@ def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
         config.get_fix_backend()
 
 
+def test_subset_time_batch_size_defaults_to_five_years(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_subset_time_batch_size() == 5
+
+
+def test_subset_time_batch_size_uses_rook_config(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {"subset": {"time_batch_size": "3"}})
+
+    assert config.get_subset_time_batch_size() == 3
+
+
+@pytest.mark.parametrize("value", [0, -1, 2.5, True, "invalid"])
+def test_subset_time_batch_size_requires_positive_integer(monkeypatch, value):
+    monkeypatch.setattr(config, "_CONFIG", {"subset": {"time_batch_size": value}})
+
+    with pytest.raises(config.ConfigurationError, match=r"subset\.time_batch_size"):
+        config.get_subset_time_batch_size()
+
+
+def test_batch_frequencies_use_case_insensitive_defaults(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_batch_frequencies() == {
+        "day",
+        "6hr",
+        "6hrpt",
+        "3hr",
+        "3hrpt",
+        "1hr",
+        "1hrcm",
+        "1hrpt",
+        "subhrpt",
+    }
+
+
+def test_batch_frequencies_use_rook_config_override(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"rook": {"batch_frequencies": ["DAY", "customHr"]}},
+    )
+
+    assert config.get_batch_frequencies() == {"day", "customhr"}
+
+
+@pytest.mark.parametrize("value", ["day 3hr", ["day", ""], ["day", 3]])
+def test_batch_frequencies_require_list_of_nonempty_strings(monkeypatch, value):
+    monkeypatch.setattr(config, "_CONFIG", {"rook": {"batch_frequencies": value}})
+
+    with pytest.raises(config.ConfigurationError, match=r"rook\.batch_frequencies"):
+        config.get_batch_frequencies()
+
+
 def test_health_readable_files_default_to_empty(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 
