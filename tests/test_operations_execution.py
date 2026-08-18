@@ -219,10 +219,14 @@ def test_time_batches_clamp_gregorian_year_end_to_360_day_calendar():
 
 class FakeTimeCoordinate:
     class YearValues:
+        """Minimal stand-in for xarray's year values."""
+
         def __init__(self, values):
             self.values = values
 
     class DatetimeAccessor:
+        """Minimal stand-in for xarray's datetime accessor."""
+
         def __init__(self, calendar, years):
             self.calendar = calendar
             self.year = FakeTimeCoordinate.YearValues(years)
@@ -257,7 +261,7 @@ def make_recording_subset(
         "time": TimeParameter(time),
         "area": "0,0,10,10",
         "time_components": "month:01,02",
-        "output_dir": "/tmp/output",
+        "output_dir": "test-output",
     }
     start, end = operation.params["time"].get_bounds()
     paths = [
@@ -266,7 +270,7 @@ def make_recording_subset(
     operation.collection = (DatasetSource("project.dataset", paths),)
     operation._file_namer = "standard"
     operation._split_method = "time:auto"
-    operation._output_dir = "/tmp/output"
+    operation._output_dir = "test-output"
     operation._output_type = "netcdf"
     if batching_config is None:
         batching_config = {
