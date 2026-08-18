@@ -92,8 +92,11 @@ def get_years_from_file(fpath):
 
     if not years:
         ds = open_xr_dataset(fpath)
-        if hasattr(ds, "time"):
-            years = {int(yr) for yr in ds.time.dt.year}
+        try:
+            if hasattr(ds, "time"):
+                years = {int(yr) for yr in ds.time.dt.year}
+        finally:
+            ds.close()
 
     return years
 

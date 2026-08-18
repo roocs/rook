@@ -3,11 +3,14 @@
 from datetime import timedelta
 
 import cftime
+from loguru import logger
 
 from clisops.parameter.time_parameter import TimeParameter
 
 from rook import config
+from rook.io.datasets import DatasetSource, open_dataset
 
+from . import consolidate, normalise
 from .base import Operation
 
 
@@ -22,36 +25,74 @@ class TimeBatchingOperation(Operation):
         """Return normalized frequency values eligible for batching."""
         raise NotImplementedError
 
-    def _process_collection(self, dataset_id, collection):
+    def calculate(self):
+        """Process eligible sources one time batch at a time."""
         time = self.params.get("time")
-        if (
-            time is None
-            or time.type != "interval"
-            or not _has_batch_frequency(collection, self.get_batch_frequencies())
-        ):
-            return super()._process_collection(dataset_id, collection)
+        if time is None or time.type != "interval":
+            return super().calculate()
 
         start, end = time.get_bounds()
-        if not start or not end or not hasattr(collection, "time"):
-            return super()._process_collection(dataset_id, collection)
+        if not start or not end:
+            return super().calculate()
 
-        batches = time_batches(
-            start,
-            end,
-            collection.time.dt.calendar,
-            self.get_time_batch_size(),
-        )
+        plans = [self._batch_plan(source, start, end) for source in self.collection]
+        if not any(len(batches) > 1 for _, batches in plans):
+            return super().calculate()
+
+        self._add_output_config()
+        result_set = normalise.ResultSet(vars())
+
+        for source, batches in plans:
+            outputs = self._process_source(source, batches, time)
+            result_set.add(source.key, outputs)
+        return result_set
+
+    def _batch_plan(self, source, start, end):
+        frequency, calendar = _source_time_metadata(source)
+        if calendar is None:
+            return source, []
+
+        batches = time_batches(start, end, calendar, self.get_time_batch_size())
         if len(batches) <= 1:
-            return super()._process_collection(dataset_id, collection)
+            return source, batches
+        if frequency not in self.get_batch_frequencies():
+            logger.info(
+                f"Subset batching skipped for {source.key}: "
+                f"frequency={frequency!r} is not configured"
+            )
+            return source, []
+
+        logger.info(
+            f"Subset batching enabled for {source.key}: frequency={frequency}, "
+            f"batches={len(batches)}, batch_size={self.get_time_batch_size()} years"
+        )
+        return source, batches
+
+    def _process_source(self, source, batches, original_time):
+        if len(batches) <= 1:
+            return self._open_and_process(source)
 
         outputs = []
         try:
-            for start, end in batches:
-                self.params["time"] = TimeParameter(f"{start}/{end}")
-                outputs.extend(super()._process_collection(dataset_id, collection))
+            for index, (start, end) in enumerate(batches, start=1):
+                batch_time = TimeParameter(f"{start}/{end}")
+                batch_source = _source_for_time(source, batch_time)
+                logger.info(
+                    f"Running subset batch {index}/{len(batches)} for {source.key}: "
+                    f"{start}/{end} using {len(batch_source.paths)} source file(s)"
+                )
+                self.params["time"] = batch_time
+                outputs.extend(self._open_and_process(batch_source))
         finally:
-            self.params["time"] = time
+            self.params["time"] = original_time
         return outputs
+
+    def _open_and_process(self, source):
+        dataset = open_dataset(source)
+        try:
+            return super()._process_collection(source.key, dataset)
+        finally:
+            dataset.close()
 
 
 class SubsetTimeBatchingOperation(TimeBatchingOperation):
@@ -87,12 +128,28 @@ def time_batches(start_value, end_value, calendar, batch_size):
     return batches
 
 
-def _has_batch_frequency(dataset, batch_frequencies):
-    """Return whether the dataset's frequency facet is configured for batching."""
-    frequency = getattr(dataset, "attrs", {}).get("frequency")
-    return (
-        isinstance(frequency, str) and frequency.strip().casefold() in batch_frequencies
-    )
+def _source_time_metadata(source):
+    """Read frequency and calendar without opening the complete source collection."""
+    metadata_source = DatasetSource(source.dataset_id, source.paths[0])
+    dataset = open_dataset(metadata_source)
+    try:
+        frequency = dataset.attrs.get("frequency")
+        if isinstance(frequency, str):
+            frequency = frequency.strip().casefold()
+        else:
+            frequency = None
+        calendar = dataset.time.dt.calendar if hasattr(dataset, "time") else None
+        return frequency, calendar
+    finally:
+        dataset.close()
+
+
+def _source_for_time(source, time):
+    """Return a source containing only files that overlap one time batch."""
+    if len(source.paths) == 1:
+        return source
+    paths = consolidate.get_files_matching_time_range(time, list(source.paths))
+    return DatasetSource(source.dataset_id, paths)
 
 
 def _parse_time(value, calendar):

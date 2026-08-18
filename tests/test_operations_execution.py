@@ -1,5 +1,6 @@
 from clisops.utils.file_utils import FileMapper
 from clisops.parameter.time_parameter import TimeParameter
+from loguru import logger
 import pytest
 
 from rook.pflow.sources import WorkflowFiles
@@ -185,9 +186,8 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
 
 def test_subset_uses_base_operation_calculate():
-    assert Subset.calculate is Operation.calculate
+    assert Subset.calculate is TimeBatchingOperation.calculate
     assert issubclass(Subset, SubsetTimeBatchingOperation)
-    assert Subset._process_collection is TimeBatchingOperation._process_collection
 
 
 class FakeTimeCoordinate:
@@ -200,9 +200,14 @@ class FakeTimeCoordinate:
 
 
 class FakeSubsetDataset:
-    def __init__(self, calendar="standard", frequency="day"):
+    def __init__(self, source=None, calendar="standard", frequency="day"):
+        self.source = source
         self.time = FakeTimeCoordinate(calendar)
         self.attrs = {"frequency": frequency}
+        self.closed = False
+
+    def close(self):
+        self.closed = True
 
 
 def make_recording_subset(
@@ -210,8 +215,11 @@ def make_recording_subset(
     time,
     batch_size=5,
     batch_frequencies=BATCH_FREQUENCIES,
+    frequency="day",
+    calendar="standard",
 ):
     calls = []
+    opened_sources = []
     operation = object.__new__(Subset)
     operation.params = {
         "time": TimeParameter(time),
@@ -219,6 +227,22 @@ def make_recording_subset(
         "time_components": "month:01,02",
         "output_dir": "/tmp/output",
     }
+    start, end = operation.params["time"].get_bounds()
+    paths = [
+        f"/data/input_{year}.nc" for year in range(int(start[:4]), int(end[:4]) + 1)
+    ]
+    operation.collection = (DatasetSource("project.dataset", paths),)
+    operation._file_namer = "standard"
+    operation._split_method = "time:auto"
+    operation._output_dir = "/tmp/output"
+    operation._output_type = "netcdf"
+
+    def fake_open_dataset(source):
+        opened_sources.append(source)
+        return FakeSubsetDataset(source, calendar=calendar, frequency=frequency)
+
+    def fake_normalise(sources):
+        return {source.key: fake_open_dataset(source) for source in sources}
 
     def fake_process(_func, collection, **params):
         bounds = params["time"].get_bounds()
@@ -226,6 +250,8 @@ def make_recording_subset(
         return [f"subset-{len(calls)}.nc"]
 
     monkeypatch.setattr(operation_base, "process", fake_process)
+    monkeypatch.setattr(time_batching_mod, "open_dataset", fake_open_dataset)
+    monkeypatch.setattr(operation_base.normalise, "normalise", fake_normalise)
     monkeypatch.setattr(
         time_batching_mod.config, "get_subset_time_batch_size", lambda: batch_size
     )
@@ -234,16 +260,21 @@ def make_recording_subset(
         "get_batch_frequencies",
         lambda: batch_frequencies,
     )
-    return operation, calls
+    return operation, calls, opened_sources
+
+
+def calculate_outputs(operation):
+    result = operation.calculate()
+    return next(iter(result._results.values()))
 
 
 def test_subset_request_fitting_one_batch_uses_existing_processing_path(monkeypatch):
-    operation, calls = make_recording_subset(monkeypatch, "2000-01-01/2004-12-31")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2004-12-31"
+    )
     original_time = operation.params["time"]
 
-    outputs = operation._process_collection(
-        "project.model.day.variable", FakeSubsetDataset()
-    )
+    outputs = calculate_outputs(operation)
 
     assert outputs == ["subset-1.nc"]
     assert len(calls) == 1
@@ -251,13 +282,11 @@ def test_subset_request_fitting_one_batch_uses_existing_processing_path(monkeypa
 
 
 def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
-    operation, calls = make_recording_subset(
+    operation, calls, opened = make_recording_subset(
         monkeypatch, "2000-01-01/2012-08-17T12:34:56"
     )
 
-    outputs = operation._process_collection(
-        "project.model.day.variable", FakeSubsetDataset()
-    )
+    outputs = calculate_outputs(operation)
 
     assert outputs == ["subset-1.nc", "subset-2.nc", "subset-3.nc"]
     assert [call[1] for call in calls] == [
@@ -267,17 +296,43 @@ def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
     ]
     assert all(call[2]["area"] == "0,0,10,10" for call in calls)
     assert all(call[2]["time_components"] == "month:01,02" for call in calls)
+    assert [len(source.paths) for source in opened[1:]] == [5, 5, 3]
+    assert all(call[0].closed is True for call in calls)
+
+
+def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
+    operation, calls, opened = make_recording_subset(monkeypatch, "2015/2100")
+    messages = []
+    sink = logger.add(messages.append, format="{message}")
+
+    try:
+        outputs = calculate_outputs(operation)
+    finally:
+        logger.remove(sink)
+
+    assert len(outputs) == 18
+    assert len(calls) == 18
+    assert len(opened[0].paths) == 1
+    assert [len(source.paths) for source in opened[1:]] == [5] * 17 + [1]
+    assert any(
+        "batching enabled" in message and "batches=18" in message
+        for message in messages
+    )
+    assert any(
+        "batch 18/18" in message and "1 source file(s)" in message
+        for message in messages
+    )
 
 
 def test_subset_batch_size_is_configurable(monkeypatch):
-    operation, calls = make_recording_subset(
-        monkeypatch, "2000-01-01/2006-12-31", batch_size=3
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000-01-01/2006-12-31",
+        batch_size=3,
+        frequency="3HR",
     )
 
-    operation._process_collection(
-        "project.model.unrelated.variable",
-        FakeSubsetDataset(frequency="3HR"),
-    )
+    calculate_outputs(operation)
 
     assert [call[1] for call in calls] == [
         ("2000-01-01T00:00:00", "2002-12-31T23:59:59"),
@@ -287,11 +342,11 @@ def test_subset_batch_size_is_configurable(monkeypatch):
 
 
 def test_subset_monthly_request_is_not_batched(monkeypatch):
-    operation, calls = make_recording_subset(monkeypatch, "2000-01-01/2020-12-31")
-
-    operation._process_collection(
-        "project.model.day.variable", FakeSubsetDataset(frequency="mon")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2020-12-31", frequency="mon"
     )
+
+    calculate_outputs(operation)
 
     assert len(calls) == 1
 
@@ -301,45 +356,45 @@ def test_subset_monthly_request_is_not_batched(monkeypatch):
     ["day", "6hr", "6hrPt", "3hr", "3hrPt", "1hr", "1hrCM", "1hrPt", "subhrPt"],
 )
 def test_subset_configured_frequency_is_batched(monkeypatch, frequency):
-    operation, calls = make_recording_subset(monkeypatch, "2000-01-01/2006-12-31")
-
-    operation._process_collection(
-        "project.identifier.without.frequency", FakeSubsetDataset(frequency=frequency)
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2006-12-31", frequency=frequency
     )
+
+    calculate_outputs(operation)
 
     assert len(calls) == 2
 
 
 @pytest.mark.parametrize("frequency", ["mon", "Amon", "yr", "fx"])
 def test_subset_noneligible_frequency_is_not_batched(monkeypatch, frequency):
-    operation, calls = make_recording_subset(monkeypatch, "2000-01-01/2020-12-31")
-
-    operation._process_collection(
-        "project.identifier.contains.day", FakeSubsetDataset(frequency=frequency)
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2020-12-31", frequency=frequency
     )
+
+    calculate_outputs(operation)
 
     assert len(calls) == 1
 
 
 def test_subset_batch_frequency_configuration_can_be_overridden(monkeypatch):
-    operation, calls = make_recording_subset(
+    operation, calls, _opened = make_recording_subset(
         monkeypatch,
         "2000-01-01/2006-12-31",
         batch_frequencies=frozenset({"custom"}),
+        frequency="CUSTOM",
     )
 
-    operation._process_collection(
-        "project.model.mon.variable", FakeSubsetDataset(frequency="CUSTOM")
-    )
+    calculate_outputs(operation)
 
     assert len(calls) == 2
 
 
 def test_subset_batches_use_dataset_calendar(monkeypatch):
-    operation, calls = make_recording_subset(monkeypatch, "2000-02-30/2006-02-30")
-    dataset = FakeSubsetDataset(calendar="360_day")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-02-30/2006-02-30", calendar="360_day"
+    )
 
-    operation._process_collection("project.model.day.variable", dataset)
+    calculate_outputs(operation)
 
     assert [call[1] for call in calls] == [
         ("2000-02-30T00:00:00", "2005-02-29T23:59:59"),
