@@ -213,26 +213,36 @@ def _parse_time(value, calendar):
     date, clock = value.split("T", 1)
     year, month, day = (int(part) for part in date.split("-"))
     hour, minute, second = (int(part) for part in clock.split(":"))
-    return cftime.datetime(year, month, day, hour, minute, second, calendar=calendar)
+    return _calendar_datetime(year, month, day, hour, minute, second, calendar)
 
 
 def _add_years(value, years):
     """Add calendar years, clamping leap-only dates to the month end."""
-    day = value.day
-    while day:
-        try:
-            return cftime.datetime(
-                value.year + years,
-                value.month,
-                day,
-                value.hour,
-                value.minute,
-                value.second,
-                calendar=value.calendar,
-            )
-        except ValueError:
-            day -= 1
-    raise ValueError(f"Could not add {years} years to {value!s}.")
+    return _calendar_datetime(
+        value.year + years,
+        value.month,
+        value.day,
+        value.hour,
+        value.minute,
+        value.second,
+        value.calendar,
+    )
+
+
+def _calendar_datetime(year, month, day, hour, minute, second, calendar):
+    """Create a calendar date, clamping invalid month-end days downward."""
+    month_start = cftime.datetime(
+        year, month, 1, hour, minute, second, calendar=calendar
+    )
+    return cftime.datetime(
+        year,
+        month,
+        min(day, month_start.daysinmonth),
+        hour,
+        minute,
+        second,
+        calendar=calendar,
+    )
 
 
 def _format_time(value):

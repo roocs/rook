@@ -248,9 +248,9 @@ WF_C3S_CORDEX = json.dumps(
     }
 )
 
-WF_C3S_CORDEX_DAY_ORIGINAL_FALLBACK = json.dumps(
+WF_C3S_CORDEX_DAY_ALIGNED_SUBSET = json.dumps(
     {
-        "doc": "return overlapping original files for a daily CORDEX subset",
+        "doc": "return an aligned original file for a daily CORDEX subset",
         "inputs": {"ds": [C3S_CORDEX_DAY_COLLECTION]},
         "outputs": {"output": "subset/output"},
         "steps": {
@@ -258,9 +258,9 @@ WF_C3S_CORDEX_DAY_ORIGINAL_FALLBACK = json.dumps(
                 "run": "subset",
                 "in": {
                     "collection": "inputs/ds",
-                    "time": "2006/2006",
+                    "time": "2006/2010",
                     "time_components": (
-                        "year:2006|"
+                        "year:2006,2007,2008,2009,2010|"
                         "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
                         f"{TC_ALL_DAYS}"
                     ),
@@ -444,15 +444,16 @@ def test_smoke_execute_c3s_cmip6_subset(wps, tmp_path, open_dataset):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_daily_subset_returns_overlapping_original_files(wps):
+def test_smoke_execute_aligned_daily_subset_returns_original_file(wps):
     inputs = [
         ("collection", C3S_CMIP6_DAY_COLLECTION),
-        ("time", "2020-06-01/2020-06-30"),
+        ("time", "2015/2049"),
     ]
     urls = wps.execute("subset", inputs)
 
-    assert urls
-    assert all("esg_c3s-cmip6" in url for url in urls)
+    assert len(urls) == 1
+    assert "20150101-20491230" in urls[0]
+    assert "esg_c3s-cmip6" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_subset_level(wps, tmp_path, open_dataset):
@@ -858,14 +859,15 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     )
 
 
-def test_smoke_execute_daily_cordex_original_fallback_orchestrate(wps):
+def test_smoke_execute_aligned_daily_cordex_subset_returns_original_file(wps):
     inputs = [
-        ("workflow", ComplexDataInput(WF_C3S_CORDEX_DAY_ORIGINAL_FALLBACK)),
+        ("workflow", ComplexDataInput(WF_C3S_CORDEX_DAY_ALIGNED_SUBSET)),
     ]
     urls = wps.execute("orchestrate", inputs)
 
-    assert urls
-    assert all("esg_c3s-cordex" in url for url in urls)
+    assert len(urls) == 1
+    assert "20060101-20101231" in urls[0]
+    assert "esg_c3s-cordex" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_decadal_concat(wps):

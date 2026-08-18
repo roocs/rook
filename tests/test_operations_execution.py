@@ -19,6 +19,7 @@ from rook.operations.time_batching import (
     SubsetTimeBatchingOperation,
     TimeBatchingOperation,
     estimate_timesteps_per_year,
+    time_batches,
 )
 
 
@@ -205,6 +206,15 @@ def test_timestep_estimate_extrapolates_partial_time_axes():
     assert estimate_timesteps_per_year(daily, daily.dt.calendar) == 365
     assert estimate_timesteps_per_year(three_hourly, three_hourly.dt.calendar) == 2922
     assert estimate_timesteps_per_year(monthly, monthly.dt.calendar) == 12
+
+
+def test_time_batches_clamp_gregorian_year_end_to_360_day_calendar():
+    assert time_batches(
+        "2015-01-01T00:00:00",
+        "2015-12-31T23:59:59",
+        "360_day",
+        6,
+    ) == [("2015-01-01T00:00:00", "2015-12-30T23:59:59")]
 
 
 class FakeTimeCoordinate:
