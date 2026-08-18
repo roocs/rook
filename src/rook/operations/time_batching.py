@@ -106,6 +106,8 @@ class TimeBatchingOperation(Operation):
                 outputs.extend(self._open_and_process(batch_source))
         finally:
             self.params["time"] = original_time
+        # TODO: Add optional post-processing to combine batch output files into a
+        # single subset result for clients that expect one file.
         return outputs
 
     def _open_and_process(self, source):

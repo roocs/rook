@@ -1,7 +1,17 @@
 # Rook TODO
 
-This file tracks the next work after `v1.3.0`. Completed release work belongs in
-`CHANGELOG.rst`; only unfinished or deliberately deferred work stays here.
+Only unfinished or deliberately deferred work belongs here. Completed work is
+documented in `CHANGELOG.rst`.
+
+## Subset batching
+
+- [ ] Add optional post-processing that combines the files produced by a
+  batched subset request into one client-facing result. The implementation must
+  preserve the batching memory limit and clean up intermediate files safely.
+- [ ] Replace the subset batching module's local standard-library stream
+  handler with centralized Rook/PyWPS logging. Ensure messages from Rook and
+  clisops are routed consistently to the configured service or Slurm job logs
+  without duplication.
 
 ## Packaging
 
