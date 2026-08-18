@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from clisops.parameter import time_parameter
+from clisops.parameter import time_components_parameter, time_parameter
 from clisops.project_utils import url_to_file_path
 from clisops.utils.time_utils import to_isoformat
 
@@ -18,11 +18,18 @@ class SubsetAlignmentChecker:
         self._deduce_alignment(inputs)
 
     def _deduce_alignment(self, inputs):
-        # At present, we reject alignment if any "time_components", "area", "shape" or "level" subset is requested
-        if inputs.get("time_components", None) or inputs.get("area", None) or inputs.get("level", None) or inputs.get("shape", None):
+        if any(inputs.get(key) for key in ("area", "level", "shape")):
             return
 
         time = inputs.get("time", None)
+        time_components = inputs.get("time_components", None)
+
+        if time_components:
+            bounds = self._whole_year_component_bounds(time, time_components)
+            if bounds is None:
+                return
+            self._check_time_alignment(*bounds)
+            return
 
         # add in a catch for if time bounds are None
         # this means is_aligned = True and all files are needed
@@ -34,6 +41,27 @@ class SubsetAlignmentChecker:
         else:
             start, end = time_parameter.TimeParameter(time).get_bounds()
             self._check_time_alignment(start, end)
+
+    def _whole_year_component_bounds(self, time, time_components):
+        """Return effective bounds for consecutive whole-year selections."""
+        components = time_components_parameter.TimeComponentsParameter(
+            time_components
+        ).value
+        if set(components) != {"year"}:
+            return None
+
+        years = sorted(set(components["year"]))
+        if not years or years != list(range(years[0], years[-1] + 1)):
+            return None
+
+        start = f"{years[0]:04d}-01-01T00:00:00"
+        end = f"{years[-1]:04d}-12-31T23:59:59"
+        if time:
+            time_start, time_end = time_parameter.TimeParameter(time).get_bounds()
+            start = max(start, time_start)
+            end = min(end, time_end)
+
+        return (start, end) if start <= end else None
 
     def _get_file_times(self, fpath):
         # get start and end times from the time dimension in the file
@@ -68,43 +96,32 @@ class SubsetAlignmentChecker:
         the `end` is after the end time of the last file then that is considered
         a valid match to the required time range.
         """
-        # Set matches as a counter to see if we get valid time alignment.
-        # Must result in matches==2 in order to be valid.
-        matches = 0
+        aligned_files = self._find_aligned_files(start, end)
+        if aligned_files is not None:
+            self.is_aligned = True
+            self.aligned_files = aligned_files
 
-        # First of all truncate requested range to actual range if it extends
-        # beyond the actual range in the files
-
-        start_in_files, _ = self._get_file_times(self.input_files[0])
-        _, end_in_files = self._get_file_times(self.input_files[-1])
-
-        if start < start_in_files:
-            start = start_in_files
-
-        if end > end_in_files:
-            end = end_in_files
-
-        # Now go through files to check alignment
+    def _find_aligned_files(self, start, end):
+        """Return files that exactly cover a requested range, if any."""
+        overlapping = []
         for fpath in self.input_files:
             fstart, fend = self._get_file_times(fpath)
-
-            # Break out if start of file is beyond end of requested range
             if fstart > end:
                 break
+            if fend >= start:
+                overlapping.append((fpath, fstart, fend))
 
-            if fstart == start:
-                matches += 1
+        if not overlapping:
+            return None
 
-            if fend == end:
-                matches += 1
+        # A request may extend beyond available data. In that case the usable
+        # data boundary is still considered aligned.
+        start = max(start, overlapping[0][1])
+        end = min(end, overlapping[-1][2])
 
-            if fstart >= start or end <= fend:
-                self.aligned_files.append(fpath)
+        if not any(fstart == start for _, fstart, _ in overlapping):
+            return None
+        if not any(fend == end for _, _, fend in overlapping):
+            return None
 
-        if matches != 2:
-            self.aligned_files.clear()
-            return
-
-        else:
-            self.is_aligned = True
-            return
+        return [fpath for fpath, _, _ in overlapping]
