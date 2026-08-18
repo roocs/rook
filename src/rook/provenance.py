@@ -143,7 +143,8 @@ class Provenance:
             label=operator,
             attributes=attributes,
         )
-        # input data
+        # Keep the provenance graph bounded: large collections and batched
+        # outputs are represented by their first input and output item.
         ds_in = Path(collection[0]).name
         op_input = self._data_entitiy(identifier=ROOCS[ds_in], label=ds_in)
         # operator started by clisops
@@ -152,10 +153,9 @@ class Provenance:
         else:
             self.doc.start(op, starter=self.sw_clisops, trigger=self.sw_rook)
         # Generated output file
-        for out in output:
-            ds_out = Path(out).name
-            op_output = self._data_entitiy(identifier=ROOCS[ds_out], label=ds_out)
-            self.doc.wasDerivedFrom(op_output, op_input, activity=op)
+        ds_out = Path(output[0]).name
+        op_output = self._data_entitiy(identifier=ROOCS[ds_out], label=ds_out)
+        self.doc.wasDerivedFrom(op_output, op_input, activity=op)
 
     def _data_entitiy(self, identifier, label=None):
         records = self.doc.get_record(identifier)

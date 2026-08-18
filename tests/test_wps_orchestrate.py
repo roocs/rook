@@ -56,16 +56,22 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     assert_response_success(resp)
     file_uri = get_output(resp.xml)["prov"]
     doc = prov.read(file_uri[len("file://") :])
-    assert 'roocs:time="1985-01-01/2014-12-30"' in doc.get_provn()
-    assert 'roocs:freq="year"' in doc.get_provn()
-    assert (
-        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc, roocs:CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"  # noqa
-        in doc.get_provn()
+    provn = doc.get_provn()
+    assert 'roocs:time="1985-01-01/2014-12-30"' in provn
+    assert 'roocs:freq="year"' in provn
+
+    dataset = (
+        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
     )
-    assert (
-        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850101-20140101_avg-year.nc, roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216.nc"  # noqa
-        in doc.get_provn()
+    subset_output = (
+        "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_19850116-19941216.nc"
     )
+    average_output = (
+        "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_19850101-20140101_avg-year.nc"
+    )
+    assert f"wasDerivedFrom(roocs:{subset_output}, roocs:{dataset}" in provn
+    assert f"wasDerivedFrom(roocs:{average_output}, roocs:{subset_output}" in provn
+    assert provn.count("wasDerivedFrom(") == 2
 
 
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
