@@ -10,6 +10,12 @@ from clisops.config import reload_config as _reload_clisops_config
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
+DEFAULT_SUBSET_BATCHING = {
+    "target_timesteps": 2000,
+    "min_batch_years": 1,
+    "max_batch_years": 10,
+}
+
 
 class ConfigurationError(ValueError):
     """Raised when Rook configuration contains an invalid value."""
@@ -123,6 +129,21 @@ def get_fix_backend() -> str:
     return backend
 
 
+def get_subset_batching_config() -> dict[str, int]:
+    """Return validated timestep-based subset batching configuration."""
+    section = _get_section("subset:batching")
+    batching = {
+        key: _parse_positive_int(section.get(key, default), f"subset:batching.{key}")
+        for key, default in DEFAULT_SUBSET_BATCHING.items()
+    }
+    if batching["min_batch_years"] > batching["max_batch_years"]:
+        raise ConfigurationError(
+            "Configuration option 'subset:batching.min_batch_years' must not exceed "
+            "'subset:batching.max_batch_years'."
+        )
+    return batching
+
+
 def _get_section(name: str) -> dict[str, Any]:
     section = get_config().get(name, {})
     if not isinstance(section, dict):
@@ -159,3 +180,21 @@ def _parse_bool(value: Any, option: str) -> bool:
         if lowered in {"0", "false", "no", "off"}:
             return False
     raise ConfigurationError(f"S3 option '{option}' must be a boolean.")
+
+
+def _parse_positive_int(value: Any, option: str) -> int:
+    if isinstance(value, bool):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        )
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        ) from None
+    if parsed < 1 or str(parsed) != str(value).strip():
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        )
+    return parsed

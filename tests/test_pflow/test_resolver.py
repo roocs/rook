@@ -300,6 +300,37 @@ def test_catalog_aligned_subset_returns_matching_original_files(catalog_resolver
     assert result.output_uris == aligned_urls
 
 
+def test_long_daily_aligned_subset_returns_original_files_before_processing(
+    catalog_resolver, monkeypatch
+):
+    collection = ["c3s-cmip6.example.model.day.tas"]
+    aligned_urls = [
+        f"https://example.test/data/input-{year}.nc" for year in range(1980, 2001)
+    ]
+    catalog_resolver(
+        FakeSearchResult(
+            {collection[0]: [f"/data/input-{year}.nc" for year in range(1980, 2001)]},
+            download_records={collection[0]: aligned_urls},
+        )
+    )
+
+    class AlignedFakeAlignment(FakeAlignment):
+        is_aligned = True
+        aligned_files = aligned_urls
+
+    monkeypatch.setattr(resolver_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
+
+    result = execute_resolved_request(
+        collection,
+        {"time": "1980-01-01/2000-12-31"},
+        lambda _inputs: pytest.fail("batching runner should not be called"),
+        allow_aligned_original_files=True,
+    )
+
+    assert result.use_original_files is True
+    assert result.output_uris == aligned_urls
+
+
 def test_redundant_time_components_allow_aligned_original_files(
     catalog_resolver, monkeypatch
 ):
@@ -385,8 +416,8 @@ def test_year_components_select_aligned_files_within_longer_time_range(
     assert result.output_uris == urls[:2]
 
 
-@pytest.mark.parametrize("frequency", ["day", "3hr"])
-def test_catalog_non_aligned_high_frequency_subset_returns_overlapping_files(
+@pytest.mark.parametrize("frequency", ["day", "3hr", "mon", "yr"])
+def test_catalog_non_aligned_temporal_subset_is_processed(
     frequency, tmp_path, catalog_resolver, monkeypatch
 ):
     collection = [
@@ -411,14 +442,12 @@ def test_catalog_non_aligned_high_frequency_subset_returns_overlapping_files(
     result = execute_resolved_request(
         collection,
         {"time": "2005-01-01/2005-12-31"},
-        lambda _inputs: pytest.fail("runner should not be called"),
+        lambda _inputs: ["subset.nc"],
         allow_aligned_original_files=True,
     )
 
-    assert result.use_original_files is True
-    assert result.output_uris == [
-        "https://example.test/data/input-2000-2009.nc"
-    ]
+    assert result.use_original_files is False
+    assert result.output_uris == ["subset.nc"]
 
 
 @pytest.mark.parametrize("frequency", ["mon", "Amon", "yr"])

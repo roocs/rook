@@ -66,4 +66,19 @@ To use the legacy fixes, set:
 Supported values are ``legacy`` and ``woodpecker``.
 
 
+Subset time batching
+--------------------
+
+After checking whether original files can be returned, Rook estimates the
+dataset's timesteps per year and sizes subset batches toward a configurable
+number of timesteps. Configure the target and year limits in ``roocs.ini``:
+
+.. code-block:: ini
+
+   [subset:batching]
+   target_timesteps = 2000
+   min_batch_years = 1
+   max_batch_years = 10
+
+
 .. _PyWPS: https://pywps.org/

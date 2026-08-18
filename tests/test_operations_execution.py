@@ -1,8 +1,13 @@
+import logging
+
 from clisops.utils.file_utils import FileMapper
+from clisops.parameter.time_parameter import TimeParameter
+import xarray as xr
 
 from rook.pflow.sources import WorkflowFiles
 from rook.io.datasets import DatasetSource
 import rook.operations.execution as execution_mod
+import rook.operations.time_batching as time_batching_mod
 from rook.operations.average import Average, AverageShape, AverageTime
 from rook.operations import Operator
 from rook.operations.base import Operation, is_prepared_dataset_collection
@@ -10,6 +15,12 @@ import rook.operations.base as operation_base
 from rook.operations.concat import Concat
 from rook.operations.regrid import Regrid
 from rook.operations.subset import Subset
+from rook.operations.time_batching import (
+    SubsetTimeBatchingOperation,
+    TimeBatchingOperation,
+    estimate_timesteps_per_year,
+    time_batches,
+)
 
 
 def recording_operator(output_dir):
@@ -174,7 +185,254 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
 
 def test_subset_uses_base_operation_calculate():
-    assert Subset.calculate is Operation.calculate
+    assert Subset.calculate is TimeBatchingOperation.calculate
+    assert issubclass(Subset, SubsetTimeBatchingOperation)
+
+
+def test_timestep_estimate_extrapolates_partial_time_axes():
+    daily = xr.DataArray(
+        xr.date_range("2000-06-01", periods=30, freq="D", use_cftime=True),
+        dims="time",
+    )
+    three_hourly = xr.DataArray(
+        xr.date_range("2000-06-01", periods=30, freq="3h", use_cftime=True),
+        dims="time",
+    )
+    monthly = xr.DataArray(
+        xr.date_range("2000-06-01", periods=12, freq="MS", use_cftime=True),
+        dims="time",
+    )
+
+    assert estimate_timesteps_per_year(daily, daily.dt.calendar) == 365
+    assert estimate_timesteps_per_year(three_hourly, three_hourly.dt.calendar) == 2922
+    assert estimate_timesteps_per_year(monthly, monthly.dt.calendar) == 12
+
+
+def test_time_batches_clamp_gregorian_year_end_to_360_day_calendar():
+    assert time_batches(
+        "2015-01-01T00:00:00",
+        "2015-12-31T23:59:59",
+        "360_day",
+        6,
+    ) == [("2015-01-01T00:00:00", "2015-12-30T23:59:59")]
+
+
+class FakeTimeCoordinate:
+    class YearValues:
+        """Minimal stand-in for xarray's year values."""
+
+        def __init__(self, values):
+            self.values = values
+
+    class DatetimeAccessor:
+        """Minimal stand-in for xarray's datetime accessor."""
+
+        def __init__(self, calendar, years):
+            self.calendar = calendar
+            self.year = FakeTimeCoordinate.YearValues(years)
+
+    def __init__(self, calendar="standard", timesteps_per_year=365):
+        self.size = timesteps_per_year
+        self.dt = self.DatetimeAccessor(calendar, [2000] * timesteps_per_year)
+
+
+class FakeSubsetDataset:
+    def __init__(self, source=None, calendar="standard", timesteps_per_year=365):
+        self.source = source
+        self.time = FakeTimeCoordinate(calendar, timesteps_per_year)
+        self.attrs = {}
+        self.closed = False
+
+    def close(self):
+        self.closed = True
+
+
+def make_recording_subset(
+    monkeypatch,
+    time,
+    batching_config=None,
+    timesteps_per_year=365,
+    calendar="standard",
+):
+    calls = []
+    opened_sources = []
+    operation = object.__new__(Subset)
+    operation.params = {
+        "time": TimeParameter(time),
+        "area": "0,0,10,10",
+        "time_components": "month:01,02",
+        "output_dir": "test-output",
+    }
+    start, end = operation.params["time"].get_bounds()
+    paths = [
+        f"/data/input_{year}.nc" for year in range(int(start[:4]), int(end[:4]) + 1)
+    ]
+    operation.collection = (DatasetSource("project.dataset", paths),)
+    operation._file_namer = "standard"
+    operation._split_method = "time:auto"
+    operation._output_dir = "test-output"
+    operation._output_type = "netcdf"
+    if batching_config is None:
+        batching_config = {
+            "target_timesteps": 2000,
+            "min_batch_years": 1,
+            "max_batch_years": 10,
+        }
+
+    def fake_open_dataset(source):
+        opened_sources.append(source)
+        return FakeSubsetDataset(
+            source,
+            calendar=calendar,
+            timesteps_per_year=timesteps_per_year,
+        )
+
+    def fake_normalise(sources):
+        return {source.key: fake_open_dataset(source) for source in sources}
+
+    def fake_process(_func, collection, **params):
+        bounds = params["time"].get_bounds()
+        calls.append((collection, bounds, dict(params)))
+        return [f"subset-{len(calls)}.nc"]
+
+    monkeypatch.setattr(operation_base, "process", fake_process)
+    monkeypatch.setattr(time_batching_mod, "open_dataset", fake_open_dataset)
+    monkeypatch.setattr(operation_base.normalise, "normalise", fake_normalise)
+    monkeypatch.setattr(
+        time_batching_mod.config, "get_subset_batching_config", lambda: batching_config
+    )
+    return operation, calls, opened_sources
+
+
+def calculate_outputs(operation):
+    result = operation.calculate()
+    return next(iter(result._results.values()))
+
+
+def test_subset_request_fitting_one_batch_uses_existing_processing_path(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2004-12-31"
+    )
+    original_time = operation.params["time"]
+
+    outputs = calculate_outputs(operation)
+
+    assert outputs == ["subset-1.nc"]
+    assert len(calls) == 1
+    assert calls[0][2]["time"] is original_time
+
+
+def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
+    operation, calls, opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2012-08-17T12:34:56"
+    )
+
+    outputs = calculate_outputs(operation)
+
+    assert outputs == ["subset-1.nc", "subset-2.nc", "subset-3.nc"]
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2004-12-31T23:59:59"),
+        ("2005-01-01T00:00:00", "2009-12-31T23:59:59"),
+        ("2010-01-01T00:00:00", "2012-08-17T12:34:56"),
+    ]
+    assert all(call[2]["area"] == "0,0,10,10" for call in calls)
+    assert all(call[2]["time_components"] == "month:01,02" for call in calls)
+    assert [len(source.paths) for source in opened[1:]] == [5, 5, 3]
+    assert all(call[0].closed is True for call in calls)
+
+
+def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
+    operation, calls, opened = make_recording_subset(monkeypatch, "2015/2100")
+    messages = []
+
+    class MessageHandler(logging.Handler):
+        def emit(self, record):
+            messages.append(record.getMessage())
+
+    handler = MessageHandler()
+    time_batching_mod.logger.addHandler(handler)
+    previous_disable_level = logging.root.manager.disable
+    logging.disable(logging.NOTSET)
+
+    try:
+        outputs = calculate_outputs(operation)
+    finally:
+        logging.disable(previous_disable_level)
+        time_batching_mod.logger.removeHandler(handler)
+
+    assert len(outputs) == 18
+    assert len(calls) == 18
+    assert len(opened[0].paths) == 1
+    assert [len(source.paths) for source in opened[1:]] == [5] * 17 + [1]
+    assert any(
+        "batching plan" in message and "batches=18" in message for message in messages
+    )
+    assert any(
+        "batch 18/18" in message and "1 source file(s)" in message
+        for message in messages
+    )
+
+
+def test_subset_higher_frequency_data_uses_shorter_batches(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000-01-01/2006-12-31",
+        timesteps_per_year=2920,
+    )
+
+    calculate_outputs(operation)
+
+    assert [call[1] for call in calls] == [
+        (f"{year}-01-01T00:00:00", f"{year}-12-31T23:59:59")
+        for year in range(2000, 2007)
+    ]
+
+
+def test_subset_low_frequency_data_uses_maximum_batch_years(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-01-01/2025-12-31", timesteps_per_year=12
+    )
+
+    calculate_outputs(operation)
+
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2009-12-31T23:59:59"),
+        ("2010-01-01T00:00:00", "2019-12-31T23:59:59"),
+        ("2020-01-01T00:00:00", "2025-12-31T23:59:59"),
+    ]
+
+
+def test_subset_timestep_batch_configuration_can_be_overridden(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000-01-01/2006-12-31",
+        batching_config={
+            "target_timesteps": 1000,
+            "min_batch_years": 2,
+            "max_batch_years": 4,
+        },
+    )
+
+    calculate_outputs(operation)
+
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2002-12-31T23:59:59"),
+        ("2003-01-01T00:00:00", "2005-12-31T23:59:59"),
+        ("2006-01-01T00:00:00", "2006-12-31T23:59:59"),
+    ]
+
+
+def test_subset_batches_use_dataset_calendar(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch, "2000-02-30/2006-02-30", calendar="360_day"
+    )
+
+    calculate_outputs(operation)
+
+    assert [call[1] for call in calls] == [
+        ("2000-02-30T00:00:00", "2005-02-29T23:59:59"),
+        ("2005-02-30T00:00:00", "2006-02-30T23:59:59"),
+    ]
 
 
 def test_base_operation_uses_configured_fix_provider_during_dataset_opening(

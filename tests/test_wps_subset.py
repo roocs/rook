@@ -138,10 +138,13 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     assert (
         'roocs:time="1860-01-01/1900-12-30", roocs:area="1,1,300,89"' in doc.get_provn()
     )
-    assert (
-        "wasDerivedFrom(roocs:rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18600116-19001216.nc, roocs:CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"  # noqa
-        in doc.get_provn()
+    provn = doc.get_provn()
+    dataset = (
+        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
     )
+    output = "rlds_Amon_IPSL-CM6A-LR_historical_" "r1i1p1f1_gr_18600116-18691216.nc"
+    assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
+    assert provn.count("wasDerivedFrom(") == 1
 
 
 @pytest.mark.mini_esgf_data
@@ -155,12 +158,14 @@ def test_wps_subset_cmip6_multiple_files_prov(get_output, pywps_cfg):
     )
     assert_response_success(resp)
     doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
-    print(doc.get_provn())
-    assert 'roocs:time="1850-01-01/2013-12-30"' in doc.get_provn()
-    assert (
-        "wasDerivedFrom(roocs:siconc_SImon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_18500116-20131216.nc, roocs:CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"  # noqa
-        in doc.get_provn()
+    provn = doc.get_provn()
+    assert 'roocs:time="1850-01-01/2013-12-30"' in provn
+    dataset = (
+        "CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical." "r1i1p1f1.SImon.siconc.gn.latest"
     )
+    output = "siconc_SImon_MPI-ESM1-2-HR_historical_" "r1i1p1f1_gn_18500116-18591216.nc"
+    assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
+    assert provn.count("wasDerivedFrom(") == 1
 
 
 @pytest.mark.mini_esgf_data

@@ -64,6 +64,66 @@ def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
         config.get_fix_backend()
 
 
+def test_subset_batching_uses_timestep_defaults(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_subset_batching_config() == {
+        "target_timesteps": 2000,
+        "min_batch_years": 1,
+        "max_batch_years": 10,
+    }
+
+
+def test_subset_batching_uses_config_override(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "subset:batching": {
+                "target_timesteps": "1000",
+                "min_batch_years": "2",
+                "max_batch_years": "4",
+            }
+        },
+    )
+
+    assert config.get_subset_batching_config() == {
+        "target_timesteps": 1000,
+        "min_batch_years": 2,
+        "max_batch_years": 4,
+    }
+
+
+@pytest.mark.parametrize("value", [0, -1, 2.5, True, "invalid"])
+def test_subset_batching_requires_positive_integers(monkeypatch, value):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"subset:batching": {"target_timesteps": value}},
+    )
+
+    with pytest.raises(
+        config.ConfigurationError, match=r"subset:batching\.target_timesteps"
+    ):
+        config.get_subset_batching_config()
+
+
+def test_subset_batching_rejects_inverted_year_bounds(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "subset:batching": {
+                "min_batch_years": "5",
+                "max_batch_years": "2",
+            }
+        },
+    )
+
+    with pytest.raises(config.ConfigurationError, match="min_batch_years"):
+        config.get_subset_batching_config()
+
+
 def test_health_readable_files_default_to_empty(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 

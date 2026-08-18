@@ -1,7 +1,6 @@
 """Resolve requests to processing-flow decisions."""
 
 from collections import OrderedDict
-import re
 
 from clisops.project_utils import get_project_name
 
@@ -95,39 +94,7 @@ def subset_original_files_decision(project, search_result, inputs):
     if original_file_urls is not None:
         return original_files_decision(project, search_result, original_file_urls)
 
-    # The catalog has already limited these files to those overlapping `time`.
-    # Returning them may include extra timesteps at file boundaries, but avoids
-    # an expensive temporal-only subset that can exhaust worker memory.
-    if is_high_frequency_temporal_subset(search_result, inputs):
-        return original_files_decision(project, search_result)
-
     return operation_decision(project, search_result)
-
-
-def is_high_frequency_temporal_subset(search_result, inputs):
-    """Return whether a daily/sub-daily subset may over-include only time."""
-    is_temporal_only = bool(inputs.get("time")) and not any(
-        inputs.get(key) for key in ("time_components", "area", "level", "shape")
-    )
-    if not is_temporal_only:
-        return False
-
-    dataset_ids = search_result.download_urls()
-    return bool(dataset_ids) and all(
-        has_daily_or_subdaily_frequency(dataset_id) for dataset_id in dataset_ids
-    )
-
-
-def has_daily_or_subdaily_frequency(dataset_id):
-    """Return whether a dataset identifier contains a daily-or-finer frequency."""
-    for component in dataset_id.lower().split("."):
-        if component.endswith("day"):
-            return True
-        if re.fullmatch(r"[a-z]*\d*hr[a-z]*", component):
-            return True
-        if "hour" in component:
-            return True
-    return False
 
 
 def aligned_original_file_urls(search_result, inputs):
