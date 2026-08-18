@@ -2,9 +2,9 @@
 
 from collections import Counter
 from datetime import timedelta
+import logging
 
 import cftime
-from loguru import logger
 import numpy as np
 
 from clisops.parameter.time_parameter import TimeParameter
@@ -14,6 +14,13 @@ from rook.io.datasets import DatasetSource, open_dataset
 
 from . import consolidate, normalise
 from .base import Operation
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.propagate = False
+if not logger.handlers:
+    # TODO: Replace this local sink with centralized Rook/PyWPS logging setup.
+    logger.addHandler(logging.StreamHandler())
 
 
 class TimeBatchingOperation(Operation):

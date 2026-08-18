@@ -1,6 +1,7 @@
+import logging
+
 from clisops.utils.file_utils import FileMapper
 from clisops.parameter.time_parameter import TimeParameter
-from loguru import logger
 import xarray as xr
 
 from rook.pflow.sources import WorkflowFiles
@@ -329,12 +330,21 @@ def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
 def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
     operation, calls, opened = make_recording_subset(monkeypatch, "2015/2100")
     messages = []
-    sink = logger.add(messages.append, format="{message}")
+
+    class MessageHandler(logging.Handler):
+        def emit(self, record):
+            messages.append(record.getMessage())
+
+    handler = MessageHandler()
+    time_batching_mod.logger.addHandler(handler)
+    previous_disable_level = logging.root.manager.disable
+    logging.disable(logging.NOTSET)
 
     try:
         outputs = calculate_outputs(operation)
     finally:
-        logger.remove(sink)
+        logging.disable(previous_disable_level)
+        time_batching_mod.logger.removeHandler(handler)
 
     assert len(outputs) == 18
     assert len(calls) == 18
