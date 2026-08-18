@@ -355,7 +355,7 @@ def test_year_components_select_aligned_files_within_longer_time_range(
             f"{year}-01-01T12:00:00",
             f"{year}-12-31T12:00:00",
         )
-        for year, url in zip(years, urls)
+        for year, url in zip(years, urls, strict=True)
     }
     monkeypatch.setattr(
         resolver_mod.SubsetAlignmentChecker,

@@ -34,7 +34,7 @@ def test_year_components_narrow_longer_time_to_original_files(monkeypatch):
             f"{year}-01-01T12:00:00",
             f"{year}-12-31T12:00:00",
         )
-        for year, path in zip(range(2015, 2021), input_files)
+        for year, path in zip(range(2015, 2021), input_files, strict=True)
     }
     monkeypatch.setattr(
         SubsetAlignmentChecker,
@@ -58,7 +58,7 @@ def test_non_contiguous_years_still_require_subsetting(monkeypatch):
             f"{year}-01-01T12:00:00",
             f"{year}-12-31T12:00:00",
         )
-        for year, path in zip(range(2015, 2018), input_files)
+        for year, path in zip(range(2015, 2018), input_files, strict=True)
     }
     monkeypatch.setattr(
         SubsetAlignmentChecker,
