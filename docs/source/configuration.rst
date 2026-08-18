@@ -69,25 +69,16 @@ Supported values are ``legacy`` and ``woodpecker``.
 Subset time batching
 --------------------
 
-Rook processes long daily and sub-daily subset requests in consecutive
-five-year batches after checking whether original files can be returned. To
-change the batch size, set the number of years in ``roocs.ini``:
+After checking whether original files can be returned, Rook estimates the
+dataset's timesteps per year and sizes subset batches toward a configurable
+number of timesteps. Configure the target and year limits in ``roocs.ini``:
 
 .. code-block:: ini
 
-   [subset]
-   time_batch_size = 5
-
-Batching is enabled only when the dataset's ``frequency`` facet is in the
-global, case-insensitive allow-list. The defaults can be overridden with:
-
-.. code-block:: ini
-
-   [config_data_types]
-   extra_lists = batch_frequencies
-
-   [rook]
-   batch_frequencies = day 6hr 6hrPt 3hr 3hrPt 1hr 1hrCM 1hrPt subhrPt
+   [subset:batching]
+   target_timesteps = 2000
+   min_batch_years = 1
+   max_batch_years = 10
 
 
 .. _PyWPS: https://pywps.org/

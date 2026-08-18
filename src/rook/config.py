@@ -10,17 +10,11 @@ from clisops.config import reload_config as _reload_clisops_config
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
-DEFAULT_BATCH_FREQUENCIES = (
-    "day",
-    "6hr",
-    "6hrPt",
-    "3hr",
-    "3hrPt",
-    "1hr",
-    "1hrCM",
-    "1hrPt",
-    "subhrPt",
-)
+DEFAULT_SUBSET_BATCHING = {
+    "target_timesteps": 2000,
+    "min_batch_years": 1,
+    "max_batch_years": 10,
+}
 
 
 class ConfigurationError(ValueError):
@@ -135,38 +129,19 @@ def get_fix_backend() -> str:
     return backend
 
 
-def get_subset_time_batch_size() -> int:
-    """Return the configured subset time-batch size in years."""
-    value = _get_section("subset").get("time_batch_size", 5)
-    if isinstance(value, bool):
+def get_subset_batching_config() -> dict[str, int]:
+    """Return validated timestep-based subset batching configuration."""
+    section = _get_section("subset:batching")
+    batching = {
+        key: _parse_positive_int(section.get(key, default), f"subset:batching.{key}")
+        for key, default in DEFAULT_SUBSET_BATCHING.items()
+    }
+    if batching["min_batch_years"] > batching["max_batch_years"]:
         raise ConfigurationError(
-            "Configuration option 'subset.time_batch_size' must be a positive integer."
+            "Configuration option 'subset:batching.min_batch_years' must not exceed "
+            "'subset:batching.max_batch_years'."
         )
-
-    try:
-        batch_size = int(value)
-    except (TypeError, ValueError):
-        raise ConfigurationError(
-            "Configuration option 'subset.time_batch_size' must be a positive integer."
-        ) from None
-
-    if batch_size < 1 or str(batch_size) != str(value).strip():
-        raise ConfigurationError(
-            "Configuration option 'subset.time_batch_size' must be a positive integer."
-        )
-    return batch_size
-
-
-def get_batch_frequencies() -> frozenset[str]:
-    """Return normalized frequencies eligible for subset time batching."""
-    values = _get_section("rook").get("batch_frequencies", DEFAULT_BATCH_FREQUENCIES)
-    if not isinstance(values, (list, tuple)) or not all(
-        isinstance(value, str) and value.strip() for value in values
-    ):
-        raise ConfigurationError(
-            "Configuration option 'rook.batch_frequencies' must be a list of frequencies."
-        )
-    return frozenset(value.strip().casefold() for value in values)
+    return batching
 
 
 def _get_section(name: str) -> dict[str, Any]:
@@ -205,3 +180,21 @@ def _parse_bool(value: Any, option: str) -> bool:
         if lowered in {"0", "false", "no", "off"}:
             return False
     raise ConfigurationError(f"S3 option '{option}' must be a boolean.")
+
+
+def _parse_positive_int(value: Any, option: str) -> int:
+    if isinstance(value, bool):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        )
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        ) from None
+    if parsed < 1 or str(parsed) != str(value).strip():
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be a positive integer."
+        )
+    return parsed

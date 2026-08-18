@@ -1,9 +1,11 @@
 """Calendar-aware time batching utilities for Rook operations."""
 
+from collections import Counter
 from datetime import timedelta
 
 import cftime
 from loguru import logger
+import numpy as np
 
 from clisops.parameter.time_parameter import TimeParameter
 
@@ -15,14 +17,10 @@ from .base import Operation
 
 
 class TimeBatchingOperation(Operation):
-    """Operation layer that batches long daily/sub-daily time intervals."""
+    """Operation layer that limits approximate time-axis size per batch."""
 
-    def get_time_batch_size(self):
-        """Return the operation-specific batch size in years."""
-        raise NotImplementedError
-
-    def get_batch_frequencies(self):
-        """Return normalized frequency values eligible for batching."""
+    def get_batching_config(self):
+        """Return operation-specific timestep batching configuration."""
         raise NotImplementedError
 
     def calculate(self):
@@ -48,23 +46,21 @@ class TimeBatchingOperation(Operation):
         return result_set
 
     def _batch_plan(self, source, start, end):
-        frequency, calendar = _source_time_metadata(source)
-        if calendar is None:
+        timesteps_per_year, calendar = _source_time_metadata(source)
+        if timesteps_per_year is None or calendar is None:
             return source, []
 
-        batches = time_batches(start, end, calendar, self.get_time_batch_size())
+        batching = self.get_batching_config()
+        batch_years = calculate_batch_years(timesteps_per_year, **batching)
+        batches = time_batches(start, end, calendar, batch_years)
         if len(batches) <= 1:
             return source, batches
-        if frequency not in self.get_batch_frequencies():
-            logger.info(
-                f"Subset batching skipped for {source.key}: "
-                f"frequency={frequency!r} is not configured"
-            )
-            return source, []
 
         logger.info(
-            f"Subset batching enabled for {source.key}: frequency={frequency}, "
-            f"batches={len(batches)}, batch_size={self.get_time_batch_size()} years"
+            f"Subset batching enabled for {source.key}: "
+            f"timesteps_per_year={timesteps_per_year}, "
+            f"target_timesteps={batching['target_timesteps']}, "
+            f"batches={len(batches)}, batch_size={batch_years} years"
         )
         return source, batches
 
@@ -98,11 +94,16 @@ class TimeBatchingOperation(Operation):
 class SubsetTimeBatchingOperation(TimeBatchingOperation):
     """Time-batching layer configured specifically for the subset operation."""
 
-    def get_time_batch_size(self):
-        return config.get_subset_time_batch_size()
+    def get_batching_config(self):
+        return config.get_subset_batching_config()
 
-    def get_batch_frequencies(self):
-        return config.get_batch_frequencies()
+
+def calculate_batch_years(
+    timesteps_per_year, target_timesteps, min_batch_years, max_batch_years
+):
+    """Derive a clamped batch length from an estimated annual timestep count."""
+    batch_years = round(target_timesteps / timesteps_per_year)
+    return max(min_batch_years, min(max_batch_years, batch_years))
 
 
 def time_batches(start_value, end_value, calendar, batch_size):
@@ -129,19 +130,48 @@ def time_batches(start_value, end_value, calendar, batch_size):
 
 
 def _source_time_metadata(source):
-    """Read frequency and calendar without opening the complete source collection."""
+    """Estimate annual timesteps and read calendar from one source file."""
     metadata_source = DatasetSource(source.dataset_id, source.paths[0])
     dataset = open_dataset(metadata_source)
     try:
-        frequency = dataset.attrs.get("frequency")
-        if isinstance(frequency, str):
-            frequency = frequency.strip().casefold()
-        else:
-            frequency = None
-        calendar = dataset.time.dt.calendar if hasattr(dataset, "time") else None
-        return frequency, calendar
+        if not hasattr(dataset, "time") or dataset.time.size == 0:
+            return None, None
+        calendar = dataset.time.dt.calendar
+        return estimate_timesteps_per_year(dataset.time, calendar), calendar
     finally:
         dataset.close()
+
+
+def estimate_timesteps_per_year(time, calendar):
+    """Estimate annual timestep count from the observed time-axis cadence."""
+    values = getattr(time, "values", ())
+    if len(values) >= 2:
+        elapsed_seconds = _timedelta_seconds(values[-1] - values[0])
+        if elapsed_seconds > 0:
+            observed_intervals = len(values) - 1
+            seconds_per_year = _calendar_days_per_year(calendar) * 86400
+            return max(
+                1, round(observed_intervals * seconds_per_year / elapsed_seconds)
+            )
+
+    years = Counter(int(year) for year in time.dt.year.values)
+    return max(years.values())
+
+
+def _timedelta_seconds(value):
+    if hasattr(value, "total_seconds"):
+        return value.total_seconds()
+    return float(value / np.timedelta64(1, "s"))
+
+
+def _calendar_days_per_year(calendar):
+    return {
+        "360_day": 360,
+        "365_day": 365,
+        "noleap": 365,
+        "366_day": 366,
+        "all_leap": 366,
+    }.get(calendar, 365.2425)
 
 
 def _source_for_time(source, time):
