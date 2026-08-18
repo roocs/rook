@@ -341,8 +341,7 @@ def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
     assert len(opened[0].paths) == 1
     assert [len(source.paths) for source in opened[1:]] == [5] * 17 + [1]
     assert any(
-        "batching enabled" in message and "batches=18" in message
-        for message in messages
+        "batching plan" in message and "batches=18" in message for message in messages
     )
     assert any(
         "batch 18/18" in message and "1 source file(s)" in message

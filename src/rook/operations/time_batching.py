@@ -27,14 +27,29 @@ class TimeBatchingOperation(Operation):
         """Process eligible sources one time batch at a time."""
         time = self.params.get("time")
         if time is None or time.type != "interval":
+            logger.info(
+                "Subset batching not planned: request has no time interval; "
+                "using the normal subset path"
+            )
             return super().calculate()
 
         start, end = time.get_bounds()
         if not start or not end:
+            logger.info(
+                "Subset batching not planned: request has an open time boundary; "
+                "using the normal subset path"
+            )
             return super().calculate()
 
+        logger.info(
+            f"Planning subset batching for {len(self.collection)} source(s): "
+            f"requested_time={start}/{end}"
+        )
         plans = [self._batch_plan(source, start, end) for source in self.collection]
         if not any(len(batches) > 1 for _, batches in plans):
+            logger.info(
+                "Subset batching not required by any source; using the normal subset path"
+            )
             return super().calculate()
 
         self._add_output_config()
@@ -48,20 +63,23 @@ class TimeBatchingOperation(Operation):
     def _batch_plan(self, source, start, end):
         timesteps_per_year, calendar = _source_time_metadata(source)
         if timesteps_per_year is None or calendar is None:
+            logger.info(
+                f"Subset batching unavailable for {source.key}: "
+                "could not estimate timesteps per year or determine the calendar"
+            )
             return source, []
 
         batching = self.get_batching_config()
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
         batches = time_batches(start, end, calendar, batch_years)
-        if len(batches) <= 1:
-            return source, batches
-
         logger.info(
-            f"Subset batching enabled for {source.key}: "
+            f"Subset batching plan for {source.key}: calendar={calendar}, "
             f"timesteps_per_year={timesteps_per_year}, "
             f"target_timesteps={batching['target_timesteps']}, "
-            f"batches={len(batches)}, batch_size={batch_years} years"
+            f"batch_size={batch_years} years, batches={len(batches)}"
         )
+        if len(batches) <= 1:
+            return source, batches
         return source, batches
 
     def _process_source(self, source, batches, original_time):
