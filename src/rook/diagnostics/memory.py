@@ -29,8 +29,8 @@ def memory_checkpoint(label, details=None):
 
 
 def malloc_trim_diagnostic_enabled():
-    """Return whether the opt-in native allocator diagnostic is enabled."""
-    return os.environ.get(_MALLOC_TRIM_ENV, "").strip().lower() in {
+    """Return whether native allocator trimming is enabled (the default)."""
+    return os.environ.get(_MALLOC_TRIM_ENV, "1").strip().lower() in {
         "1",
         "true",
         "yes",

@@ -30,12 +30,12 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
     ]
 
 
-def test_malloc_trim_diagnostic_is_opt_in(monkeypatch):
+def test_malloc_trim_diagnostic_is_enabled_by_default(monkeypatch):
     monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
-    assert diagnostics.malloc_trim_diagnostic_enabled() is False
-
-    monkeypatch.setenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", "true")
     assert diagnostics.malloc_trim_diagnostic_enabled() is True
+
+    monkeypatch.setenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", "0")
+    assert diagnostics.malloc_trim_diagnostic_enabled() is False
 
 
 def test_malloc_trim_reports_unavailable_off_linux(monkeypatch):
