@@ -65,7 +65,7 @@ def test_run_step_dispatches_registered_workflow_operation(tmp_path):
     )
 
 
-def test_subset_temporal_selection_is_pushed_into_upstream_concat(tmp_path):
+def test_subset_selection_is_pushed_into_upstream_concat(tmp_path):
     calls = []
     wf = workflow.Workflow(output_dir=tmp_path)
 
@@ -104,6 +104,7 @@ def test_subset_temporal_selection_is_pushed_into_upstream_concat(tmp_path):
                     "collection": "concat/output",
                     "time": "1962/1962",
                     "time_components": "month:aug|year:1962",
+                    "area": "-10,35,30,70",
                 },
             },
         },
@@ -119,6 +120,7 @@ def test_subset_temporal_selection_is_pushed_into_upstream_concat(tmp_path):
             "dims": "realization",
             "time": "1962/1962",
             "time_components": "month:aug|year:1962",
+            "area": "-10,35,30,70",
         },
     )
     assert calls[1] == (
@@ -127,25 +129,31 @@ def test_subset_temporal_selection_is_pushed_into_upstream_concat(tmp_path):
             "collection": ["concat.nc"],
             "time": "1962/1962",
             "time_components": "month:aug|year:1962",
+            "area": "-10,35,30,70",
         },
     )
 
 
-def test_temporal_pushdown_stops_at_time_average():
-    hint = {"time": "1962/1962", "time_components": "month:aug"}
+def test_subset_pushdown_respects_average_dimensions():
+    hint = {
+        "time": "1962/1962",
+        "time_components": "month:aug",
+        "area": "-10,35,30,70",
+    }
 
     assert (
-        workflow._temporal_pushdown_for_upstream(
+        workflow._subset_pushdown_for_upstream(
             {"run": "average", "in": {"dims": ["realization"]}}, hint
         )
         == hint
     )
-    assert (
-        workflow._temporal_pushdown_for_upstream(
-            {"run": "average", "in": {"dims": ["time"]}}, hint
-        )
-        == {}
-    )
+    assert workflow._subset_pushdown_for_upstream(
+        {"run": "average", "in": {"dims": ["time"]}}, hint
+    ) == {"area": "-10,35,30,70"}
+    assert workflow._subset_pushdown_for_upstream(
+        {"run": "average", "in": {"dims": ["latitude", "longitude"]}},
+        hint,
+    ) == {"time": "1962/1962", "time_components": "month:aug"}
 
 
 def test_load_wfdoc_inline_document_does_not_warn_about_file_check(caplog):

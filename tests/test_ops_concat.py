@@ -199,12 +199,26 @@ def test_parsed_time_components_are_plain_lists_for_low_level_clisops():
     }
 
 
+def test_parsed_area_uses_clisops_bbox_bounds():
+    parameter = concat_mod.area_parameter.AreaParameter("-10,30,30,70")
+
+    assert concat_mod.parsed_area(parameter) == {
+        "lon_bnds": (-10.0, 30.0),
+        "lat_bnds": (30.0, 70.0),
+    }
+
+
 def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
+    lat = np.arange(20.0, 81.0, 10.0)
+    lon = np.arange(-20.0, 41.0, 10.0)
+    values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
+        (len(time), len(lat), len(lon))
+    )
     dataset = xr.Dataset(
-        {"psl": ("time", dask_array.arange(len(time), chunks=365))},
-        coords={"time": time},
+        {"psl": (("time", "lat", "lon"), values.rechunk((365, 7, 7)))},
+        coords={"time": time, "lat": lat, "lon": lon},
     )
     requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
     components = concat_mod.time_components_parameter.TimeComponentsParameter(
@@ -214,11 +228,14 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     selected = concat_mod.concat_dataset_selector(
         components,
         requested_time=requested_time,
+        area="-10,30,30,70",
     )(dataset)
 
     assert selected.sizes["time"] == 31
     assert set(selected.time.dt.year.values) == {1962}
     assert set(selected.time.dt.month.values) == {8}
+    assert selected.sizes["lat"] == 5
+    assert selected.sizes["lon"] == 5
     assert isinstance(selected.psl.data, dask_array.Array)
     diagnostics = capsys.readouterr().err
     assert "concat selector configured" in diagnostics
@@ -226,6 +243,70 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     assert f"concat selector before selection | time={len(time)}" in diagnostics
     assert "concat selector after subset_time | time=365" in diagnostics
     assert "concat selector after subset_time_by_components | time=31" in diagnostics
+    assert "concat selector before area selection | lat=7 lon=7" in diagnostics
+    assert "concat selector after area selection | lat=5 lon=5" in diagnostics
+
+
+def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
+    monkeypatch,
+):
+    dask_array = __import__("dask.array", fromlist=["array"])
+    time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)
+    lat = np.arange(20.0, 81.0, 10.0)
+    lon = np.arange(-20.0, 41.0, 10.0)
+    datasets = []
+    for realization in range(2):
+        values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
+            (len(time), len(lat), len(lon))
+        )
+        datasets.append(
+            xr.Dataset(
+                {
+                    "psl": (
+                        ("time", "lat", "lon"),
+                        values.rechunk((365, 7, 7)) + realization,
+                    )
+                },
+                coords={"time": time, "lat": lat, "lon": lon},
+            )
+        )
+
+    original_concat = xr.concat
+    expected = concat_mod.subset_bbox(
+        original_concat(datasets, dim="realization"),
+        **concat_mod.parsed_area("-10,30,30,70"),
+    )
+    seen_by_concat = []
+
+    def record_concat(selected, dim):
+        seen_by_concat.append(
+            [(dataset.sizes["lat"], dataset.sizes["lon"]) for dataset in selected]
+        )
+        return original_concat(selected, dim=dim)
+
+    monkeypatch.setattr("rook.batch.concat.xr.concat", record_concat)
+    processor = ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=365,
+            min_batch_years=1,
+            max_batch_years=1,
+        )
+    )
+
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=lambda combined, _time, _index, _total: [
+            xr.testing.assert_equal(combined, expected)
+        ],
+        select_dataset=concat_mod.concat_dataset_selector(
+            None,
+            area="-10,30,30,70",
+        ),
+    )
+
+    assert outputs == [None]
+    assert seen_by_concat == [[(5, 5), (5, 5)]]
 
 
 def test_concat_batch_sees_only_requested_component_days(monkeypatch):
@@ -312,7 +393,10 @@ def test_concat_temporal_plan_excludes_unrequested_component_years(capsys):
 
 def test_concat_selector_without_components_preserves_requested_time_behavior():
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
-    dataset = xr.Dataset({"psl": ("time", range(len(time)))}, coords={"time": time})
+    dataset = xr.Dataset(
+        {"psl": (("time", "lat", "lon"), np.zeros((len(time), 2, 3)))},
+        coords={"time": time, "lat": [40.0, 50.0], "lon": [0.0, 10.0, 20.0]},
+    )
 
     selected = concat_mod.concat_dataset_selector(
         None,
@@ -321,6 +405,8 @@ def test_concat_selector_without_components_preserves_requested_time_behavior():
 
     assert selected.sizes["time"] == 365
     assert set(selected.time.dt.year.values) == {1962}
+    assert selected.sizes["lat"] == 2
+    assert selected.sizes["lon"] == 3
 
 
 def test_concat_dataset_selector_is_disabled_without_time_components():

@@ -115,9 +115,9 @@ class Workflow(BaseWorkflow):
         tree = build_tree(wfdoc)
         return self._run_tree(steps, tree, "root")
 
-    def _run_tree(self, steps, tree, step_id, temporal_pushdown=None):
+    def _run_tree(self, steps, tree, step_id, subset_pushdown=None):
         step = steps.get(step_id)
-        temporal_pushdown = _temporal_pushdown_for_upstream(step, temporal_pushdown)
+        subset_pushdown = _subset_pushdown_for_upstream(step, subset_pushdown)
         tree_outputs = {}
         for next_step_id in tree.neighbors(step_id):
             data = tree.get_edge_data(step_id, next_step_id)
@@ -126,7 +126,7 @@ class Workflow(BaseWorkflow):
                 steps,
                 tree,
                 next_step_id,
-                temporal_pushdown=temporal_pushdown,
+                subset_pushdown=subset_pushdown,
             )
         outputs = None
         LOGGER.debug(f"tree outputs={tree_outputs}")
@@ -135,7 +135,7 @@ class Workflow(BaseWorkflow):
                 step_id,
                 steps[step_id],
                 tree_outputs,
-                temporal_pushdown=temporal_pushdown,
+                subset_pushdown=subset_pushdown,
             )
         elif tree_outputs:
             outputs = next(iter(tree_outputs.values()))
@@ -143,13 +143,13 @@ class Workflow(BaseWorkflow):
         LOGGER.debug(f"outputs={outputs}")
         return outputs
 
-    def _run_step(self, step_id, step, inputs=None, temporal_pushdown=None):
+    def _run_step(self, step_id, step, inputs=None, subset_pushdown=None):
         LOGGER.debug(f"run step={step}, inputs={inputs}")
         operation_inputs = deepcopy(step["in"])
         if inputs:
             operation_inputs.update(inputs)
-        if step["run"] == "concat" and temporal_pushdown:
-            for name, value in temporal_pushdown.items():
+        if step["run"] == "concat" and subset_pushdown:
+            for name, value in subset_pushdown.items():
                 operation_inputs.setdefault(name, value)
 
         operation = self.operations.get(step["run"])
@@ -164,8 +164,8 @@ class Workflow(BaseWorkflow):
         return result
 
 
-def _temporal_pushdown_for_upstream(step, inherited=None):
-    """Carry downstream subset time constraints across time-preserving steps."""
+def _subset_pushdown_for_upstream(step, inherited=None):
+    """Carry safe downstream subset hints into an upstream concat."""
     inherited = dict(inherited or {})
     if step is None:
         return inherited
@@ -174,7 +174,7 @@ def _temporal_pushdown_for_upstream(step, inherited=None):
     if operation == "subset":
         return {
             name: step["in"][name]
-            for name in ("time", "time_components")
+            for name in ("time", "time_components", "area")
             if step["in"].get(name) is not None
         }
     if operation == "concat":
@@ -183,7 +183,17 @@ def _temporal_pushdown_for_upstream(step, inherited=None):
         dimensions = step["in"].get("dims") or ()
         if isinstance(dimensions, str):
             dimensions = (dimensions,)
-        return inherited if "time" not in dimensions else {}
+        forwarded = inherited.copy()
+        if "time" in dimensions:
+            forwarded.pop("time", None)
+            forwarded.pop("time_components", None)
+        if set(dimensions).intersection(
+            {"latitude", "longitude", "lat", "lon", "x", "y"}
+        ):
+            forwarded.pop("area", None)
+        return forwarded
     if operation in {"regrid", "average_shape", "weighted_average"}:
-        return inherited
+        forwarded = inherited.copy()
+        forwarded.pop("area", None)
+        return forwarded
     return {}

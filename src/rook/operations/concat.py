@@ -6,8 +6,9 @@ import numpy as np
 import xarray as xr
 
 from clisops.core.average import average_over_dims as average
-from clisops.core.subset import subset_time, subset_time_by_components
+from clisops.core.subset import subset_bbox, subset_time, subset_time_by_components
 from clisops.ops import subset
+from clisops.parameter import area_parameter
 from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
@@ -160,15 +161,25 @@ def parsed_time_components(time_components):
     return {name: list(values) for name, values in dict(components).items()}
 
 
-def concat_dataset_selector(time_components, requested_time=None):
-    """Return a lazy per-realization selector for the effective request time."""
+def parsed_area(area):
+    """Return low-level clisops longitude and latitude bounds."""
+    if area is None:
+        return None
+    if isinstance(area, area_parameter.AreaParameter):
+        return area.asdict()
+    return area_parameter.AreaParameter(area).asdict()
+
+
+def concat_dataset_selector(time_components, requested_time=None, area=None):
+    """Return a lazy per-realization selector for pushed-down subset hints."""
     components = parsed_time_components(time_components)
     bounds = _requested_interval_bounds(requested_time)
+    area_bounds = parsed_area(area)
     memory_checkpoint(
         "concat selector configured",
-        f"time_components={components} requested_bounds={bounds}",
+        f"time_components={components} requested_bounds={bounds} area={area_bounds}",
     )
-    if not components and bounds is None:
+    if not components and bounds is None and area_bounds is None:
         return None
 
     def select_dataset(dataset):
@@ -198,6 +209,16 @@ def concat_dataset_selector(time_components, requested_time=None):
         memory_checkpoint(
             "concat selector after subset_time_by_components",
             f"time={selected.sizes.get('time', 0)} time_components={components}",
+        )
+        memory_checkpoint(
+            "concat selector before area selection",
+            _spatial_sizes(selected),
+        )
+        if area_bounds is not None:
+            selected = subset_bbox(selected, **area_bounds)
+        memory_checkpoint(
+            "concat selector after area selection",
+            _spatial_sizes(selected),
         )
         return selected
 
@@ -267,12 +288,19 @@ def _requested_interval_bounds(requested_time):
     return start, end
 
 
+def _spatial_sizes(dataset):
+    names = ("lat", "latitude", "y", "lon", "longitude", "x")
+    sizes = [f"{name}={dataset.sizes[name]}" for name in names if name in dataset.sizes]
+    return " ".join(sizes) or "spatial_sizes=unavailable"
+
+
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         time = time_parameter.TimeParameter(params.get("time"))
         time_components = time_components_parameter.TimeComponentsParameter(
             params.get("time_components")
         )
+        area = area_parameter.AreaParameter(params.get("area"))
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = resolve_collection(collection)
 
@@ -280,6 +308,7 @@ class Concat(Operation):
         self.params = {
             "time": time,
             "time_components": time_components,
+            "area": area,
             "dims": dims,
             "apply_average": params.get("apply_average", False),
             "ignore_undetected_dims": params.get("ignore_undetected_dims"),
@@ -316,6 +345,7 @@ class Concat(Operation):
         batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
         time_components = self.params.get("time_components")
         requested_time = self.params.get("time")
+        area = self.params.get("area")
         effective_time = effective_concat_time(requested_time, time_components)
         memory_checkpoint(
             "ConcatBatchPlanner input",
@@ -335,6 +365,7 @@ class Concat(Operation):
             select_dataset=concat_dataset_selector(
                 time_components,
                 requested_time=requested_time,
+                area=area,
             ),
             include_batch=concat_batch_filter(time_components),
             signature_dataset=decadal_dataset_signature,
@@ -349,6 +380,7 @@ def concat(
     collection,
     time=None,
     time_components=None,
+    area=None,
     dims=None,
     ignore_undetected_dims=False,
     output_dir=None,
@@ -361,6 +393,7 @@ def concat(
         collection=collection,
         time=time,
         time_components=time_components,
+        area=area,
         dims=dims,
         ignore_undetected_dims=ignore_undetected_dims,
         output_dir=output_dir,
