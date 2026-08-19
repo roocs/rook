@@ -4,6 +4,24 @@ from rook.diagnostics import dataset_summary
 from rook.operations import normalise
 
 
+def test_lazy_group_opener_uses_storage_chunks_without_auto_rechunking(
+    monkeypatch, tmp_path
+):
+    calls = []
+    expected = object()
+
+    def fake_open(path, **kwargs):
+        calls.append((path, kwargs))
+        return expected
+
+    monkeypatch.setattr(normalise, "open_xr_dataset", fake_open)
+
+    result = normalise.open_lazy_xr_dataset(tmp_path / "part.nc")
+
+    assert result is expected
+    assert calls == [(str(tmp_path / "part.nc"), {"chunks": {}})]
+
+
 def test_normalise_file_groups_opens_prepares_and_concatenates_files(monkeypatch):
     calls = []
     concat_calls = []
@@ -77,7 +95,7 @@ def test_dataset_summary_reports_backing_type_and_compact_chunks():
     assert "eager[numpy:ndarray;chunks=none]" in summary
 
 
-def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path):
+def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path, capsys):
     dask_array = __import__("dask.array", fromlist=["Array"])
     paths = []
     for index, times in enumerate(([0, 1], [2, 3]), start=1):
@@ -113,4 +131,13 @@ def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path):
         [2, 2, 2],
         [3, 3, 3],
     ]
+    diagnostics = capsys.readouterr().err.splitlines()
+    assert any(
+        "after opening file" in line and "psl[dask:Array" in line
+        for line in diagnostics
+    )
+    assert any(
+        "after normalise xr.concat" in line and "psl[dask:Array" in line
+        for line in diagnostics
+    )
     dataset.close()

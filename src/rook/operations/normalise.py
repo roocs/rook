@@ -30,7 +30,7 @@ def keep_dataset(ds):
 
 def open_lazy_xr_dataset(path):
     """Open one grouped file with Dask-backed, storage-aware chunks."""
-    return open_xr_dataset(str(path), chunks="auto")
+    return open_xr_dataset(str(path), chunks={})
 
 
 def normalise_file_groups(
