@@ -1,4 +1,4 @@
-"""Calendar-aware adaptive time-batch planning."""
+"""Shared calendar-aware adaptive batch planning mechanics."""
 
 from collections import Counter
 from dataclasses import dataclass
@@ -64,41 +64,6 @@ class BaseBatchPlanner:
                 start, end, calendar, batch_years
             )
         ]
-
-
-class SubsetBatchPlanner(BaseBatchPlanner):
-    """Plan batches for a subset request with closed requested bounds."""
-
-    def plan(self, time, bounds):
-        if bounds.start is None or bounds.end is None:
-            return []
-        return self._plan(time, bounds)
-
-
-class ConcatBatchPlanner(BaseBatchPlanner):
-    """Plan batches across the time coordinate shared by concat inputs."""
-
-    def plan(self, datasets, requested_time=None):
-        return self._plan(
-            _representative_time(datasets),
-            _requested_bounds(requested_time),
-        )
-
-
-def _representative_time(datasets):
-    for dataset in datasets:
-        if "time" in dataset.coords:
-            return dataset.time
-    return None
-
-
-def _requested_bounds(time):
-    if time is None or getattr(time, "type", None) != "interval":
-        return None
-    start, end = time.get_bounds()
-    if not start or not end:
-        return None
-    return TimeBounds(start, end)
 
 
 def calculate_batch_years(
