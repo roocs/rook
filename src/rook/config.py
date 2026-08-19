@@ -24,8 +24,6 @@ DEFAULT_CONCAT_BATCHING = {
     "max_batch_years": 1,
 }
 
-DEFAULT_CONCAT_WRITE_PATH = "clisops"
-CONCAT_WRITE_PATH_ENV = "ROOK_CONCAT_WRITE_PATH"
 DEFAULT_DIAGNOSTIC_FREE_MEMORY = False
 DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 
@@ -155,23 +153,6 @@ def get_batching_config() -> dict[str, int]:
 def get_concat_batching_config() -> dict[str, int]:
     """Return conservative adaptive batching settings for concat operations."""
     return _get_time_batching_config("concat:batching", DEFAULT_CONCAT_BATCHING)
-
-
-def get_concat_write_path() -> str:
-    """Return the diagnostic concat writer selection."""
-    section = _get_section("diagnostics")
-    write_path = os.environ.get(
-        CONCAT_WRITE_PATH_ENV,
-        section.get("write_path", DEFAULT_CONCAT_WRITE_PATH),
-    )
-    if not isinstance(write_path, str) or write_path.strip().lower() not in {
-        "clisops",
-        "xarray",
-    }:
-        raise ConfigurationError(
-            "Concat write path must be either 'clisops' or 'xarray'."
-        )
-    return write_path.strip().lower()
 
 
 def get_diagnostic_free_memory() -> bool:

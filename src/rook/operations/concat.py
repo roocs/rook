@@ -1,9 +1,7 @@
 import collections
 from collections.abc import Mapping
 from functools import partial
-from pathlib import Path
 
-import dask
 import numpy as np
 import xarray as xr
 
@@ -23,8 +21,6 @@ from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 from clisops.utils.dataset_utils import cf_convert_between_lon_frames
-from clisops.utils.file_namers import get_file_namer
-from clisops.utils.output_utils import get_format_engine
 
 from rook import config
 from rook.batch import ConcatBatch, ConcatBatchPlanner
@@ -150,70 +146,11 @@ def finalise_concat_batch(ds, time, _index, _total, *, params, dim, standard_nam
     batch_params = dict(params)
     if time is not None:
         batch_params["time"] = time_parameter.TimeParameter(time)
-    write_path = config.get_concat_write_path()
-    writer_label = f"batch={_index}/{_total} interval={time} writer={write_path}"
-
-    if write_path == "xarray":
-        if batch_params.get("apply_average", False):
-            ds = average(ds, dims=[dim])
-        memory_checkpoint("before direct xarray/netCDF writer", writer_label)
-        outputs = write_concat_batch_direct(ds, batch_params, _index)
-        memory_checkpoint("after direct xarray/netCDF writer", writer_label)
-        return outputs
-
+    writer_label = f"batch={_index}/{_total} interval={time}"
     memory_checkpoint("before clisops subset writer", writer_label)
     outputs = finalise_concat_output(ds, batch_params, dim)
     memory_checkpoint("after clisops subset writer", writer_label)
     return outputs
-
-
-def write_concat_batch_direct(ds, params, batch_index):
-    """Write one already-selected concat batch without clisops Subset."""
-    output_type = params.get("output_type", "netcdf")
-    if output_type not in {"netcdf", "nc"}:
-        raise ValueError(
-            "The diagnostic xarray concat writer supports NetCDF output only."
-        )
-
-    output_dir = Path(params.get("output_dir") or Path.cwd()).expanduser()
-    output_dir.mkdir(parents=True, exist_ok=True)
-    namer = get_file_namer(params.get("file_namer", "standard"))()
-    output_path = output_dir / namer.get_file_name(ds, fmt=output_type)
-    if output_path.exists():
-        output_path = output_path.with_name(
-            f"{output_path.stem}_batch-{batch_index:03d}{output_path.suffix}"
-        )
-
-    engine = get_format_engine(output_type)
-    delayed_write = None
-    memory_checkpoint(
-        "before direct xarray to_netcdf graph",
-        f"batch={batch_index} path={output_path}",
-    )
-    try:
-        delayed_write = ds.to_netcdf(
-            output_path,
-            engine=engine,
-            compute=False,
-        )
-        memory_checkpoint(
-            "after direct xarray to_netcdf graph",
-            f"batch={batch_index} path={output_path}",
-        )
-        with dask.config.set(scheduler="synchronous"):
-            memory_checkpoint(
-                "before direct xarray delayed write",
-                f"batch={batch_index} path={output_path}",
-            )
-            delayed_write.compute()
-            memory_checkpoint(
-                "after direct xarray delayed write",
-                f"batch={batch_index} path={output_path}",
-            )
-    finally:
-        delayed_write = None
-
-    return [output_path.as_posix()]
 
 
 def parsed_time_components(time_components):
