@@ -1,7 +1,7 @@
 """Process-memory checkpoints suitable for Slurm and PyWPS jobs."""
 
 import ctypes
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 import os
 from pathlib import Path
 import sys
@@ -13,9 +13,7 @@ _STATUS_PATH = Path("/proc/self/status")
 
 def current_timestamp():
     """Return the current UTC time in a compact ISO-8601 form."""
-    return (
-        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def current_rss():

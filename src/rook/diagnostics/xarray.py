@@ -91,7 +91,7 @@ def _chunk_summary(variable):
         return "chunks=none"
 
     dimensions = []
-    for dim, chunks in zip(variable.dims, variable.chunks):
+    for dim, chunks in zip(variable.dims, variable.chunks, strict=True):
         if not chunks:
             dimensions.append(f"{dim}:empty")
             continue

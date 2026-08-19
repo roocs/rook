@@ -379,7 +379,9 @@ def subset_inputs(collection, **params):
     return inputs
 
 
-def assert_decadal_fixes(dataset, *, start_token, realizations=10, calendar=None):
+def assert_decadal_fixes(
+    dataset, *, expected_startdate, realizations=10, calendar=None
+):
     """Check the observable output contract of the decadal Woodpecker recipe."""
     assert dataset.time.attrs["long_name"] == "valid_time"
     if calendar is not None:
@@ -397,8 +399,8 @@ def assert_decadal_fixes(dataset, *, start_token, realizations=10, calendar=None
     )
     assert dataset.leadtime.attrs["standard_name"] == "forecast_period"
 
-    assert dataset.attrs["startdate"] == start_token
-    assert dataset.attrs["sub_experiment_id"] == start_token
+    assert dataset.attrs["startdate"] == expected_startdate
+    assert dataset.attrs["sub_experiment_id"] == expected_startdate
     assert isinstance(dataset.attrs["realization_index"], Integral)
     assert dataset.attrs["forcing_description"]
     assert dataset.attrs["physics_description"]
@@ -946,7 +948,7 @@ def test_smoke_execute_c3s_cmip6_decadal_concat(wps, tmp_path, open_dataset):
     assert "19951116-19951216.nc" in urls[0]
 
     with open_dataset(urls[0], tmp_path) as dataset:
-        assert_decadal_fixes(dataset, start_token="s199511")
+        assert_decadal_fixes(dataset, expected_startdate="s199511")
 
 
 def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
@@ -964,7 +966,7 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
     with open_dataset(urls[0], tmp_path) as dataset:
         assert_decadal_fixes(
             dataset,
-            start_token="s197611",
+            expected_startdate="s197611",
             calendar="standard",
         )
 
@@ -985,7 +987,7 @@ def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
     with open_dataset(urls[0], tmp_path) as dataset:
         assert_decadal_fixes(
             dataset,
-            start_token="s196111",
+            expected_startdate="s196111",
             calendar="standard",
         )
         assert dataset.sizes["realization"] == 10
