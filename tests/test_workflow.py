@@ -65,6 +65,89 @@ def test_run_step_dispatches_registered_workflow_operation(tmp_path):
     )
 
 
+def test_subset_temporal_selection_is_pushed_into_upstream_concat(tmp_path):
+    calls = []
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeOperation:
+        def __init__(self, name):
+            self.name = name
+
+        def call(self, inputs):
+            calls.append((self.name, dict(inputs)))
+            return [f"{self.name}.nc"]
+
+    class FakeProvenance:
+        def add_operator(self, *_args):
+            pass
+
+    wf.operations = {
+        "concat": FakeOperation("concat"),
+        "subset": FakeOperation("subset"),
+    }
+    wf.prov = FakeProvenance()
+    document = {
+        "doc": "decadal temporal pushdown",
+        "inputs": {"ds": ["realization-1", "realization-2"]},
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "concat": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/ds",
+                    "dims": "realization",
+                },
+            },
+            "subset": {
+                "run": "subset",
+                "in": {
+                    "collection": "concat/output",
+                    "time": "1962/1962",
+                    "time_components": "month:aug|year:1962",
+                },
+            },
+        },
+    }
+
+    result = wf._run(document)
+
+    assert result == ["subset.nc"]
+    assert calls[0] == (
+        "concat",
+        {
+            "collection": ["realization-1", "realization-2"],
+            "dims": "realization",
+            "time": "1962/1962",
+            "time_components": "month:aug|year:1962",
+        },
+    )
+    assert calls[1] == (
+        "subset",
+        {
+            "collection": ["concat.nc"],
+            "time": "1962/1962",
+            "time_components": "month:aug|year:1962",
+        },
+    )
+
+
+def test_temporal_pushdown_stops_at_time_average():
+    hint = {"time": "1962/1962", "time_components": "month:aug"}
+
+    assert (
+        workflow._temporal_pushdown_for_upstream(
+            {"run": "average", "in": {"dims": ["realization"]}}, hint
+        )
+        == hint
+    )
+    assert (
+        workflow._temporal_pushdown_for_upstream(
+            {"run": "average", "in": {"dims": ["time"]}}, hint
+        )
+        == {}
+    )
+
+
 def test_load_wfdoc_inline_document_does_not_warn_about_file_check(caplog):
     data = '{"doc": "' + ("x" * 300) + '", "steps": {}}'
 

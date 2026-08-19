@@ -164,17 +164,29 @@ def concat_dataset_selector(time_components, requested_time=None):
     """Return a lazy per-realization selector for the effective request time."""
     components = parsed_time_components(time_components)
     bounds = _requested_interval_bounds(requested_time)
+    memory_checkpoint(
+        "concat selector configured",
+        f"time_components={components} requested_bounds={bounds}",
+    )
     if not components and bounds is None:
         return None
 
     def select_dataset(dataset):
         selected = dataset
+        memory_checkpoint(
+            "concat selector before selection",
+            f"time={selected.sizes.get('time', 0)}",
+        )
         if bounds is not None:
             selected = subset_time(
                 selected,
                 start_date=bounds[0],
                 end_date=bounds[1],
             )
+        memory_checkpoint(
+            "concat selector after subset_time",
+            f"time={selected.sizes.get('time', 0)} bounds={bounds}",
+        )
         if components:
             try:
                 selected = subset_time_by_components(
@@ -183,6 +195,10 @@ def concat_dataset_selector(time_components, requested_time=None):
                 )
             except KeyError:
                 selected = selected.isel(time=slice(0, 0))
+        memory_checkpoint(
+            "concat selector after subset_time_by_components",
+            f"time={selected.sizes.get('time', 0)} time_components={components}",
+        )
         return selected
 
     return select_dataset
@@ -192,14 +208,18 @@ def effective_concat_time(requested_time, time_components):
     """Narrow planning bounds using explicit year components when available."""
     components = parsed_time_components(time_components)
     years = sorted(set((components or {}).get("year", ())))
+    requested_bounds = _requested_interval_bounds(requested_time)
     if not years:
+        memory_checkpoint(
+            "effective concat time",
+            f"requested={requested_bounds} component_years=[] effective={requested_bounds}",
+        )
         return requested_time
 
     component_bounds = (
         f"{years[0]:04d}-01-01T00:00:00",
         f"{years[-1]:04d}-12-31T23:59:59",
     )
-    requested_bounds = _requested_interval_bounds(requested_time)
     if requested_bounds is None:
         bounds = component_bounds
     else:
@@ -208,8 +228,17 @@ def effective_concat_time(requested_time, time_components):
             min(requested_bounds[1], component_bounds[1]),
         )
     if bounds[0] > bounds[1]:
+        memory_checkpoint(
+            "effective concat time",
+            f"requested={requested_bounds} component_years={years} effective=empty",
+        )
         return requested_time
-    return time_parameter.TimeParameter(f"{bounds[0]}/{bounds[1]}")
+    effective = time_parameter.TimeParameter(f"{bounds[0]}/{bounds[1]}")
+    memory_checkpoint(
+        "effective concat time",
+        f"requested={requested_bounds} component_years={years} effective={effective.get_bounds()}",
+    )
+    return effective
 
 
 def concat_batch_filter(time_components):
@@ -287,6 +316,11 @@ class Concat(Operation):
         batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
         time_components = self.params.get("time_components")
         requested_time = self.params.get("time")
+        effective_time = effective_concat_time(requested_time, time_components)
+        memory_checkpoint(
+            "ConcatBatchPlanner input",
+            f"requested_time={_requested_interval_bounds(effective_time)}",
+        )
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
             datasets,
@@ -297,7 +331,7 @@ class Concat(Operation):
                 dim=dim,
                 standard_name=standard_name,
             ),
-            requested_time=effective_concat_time(requested_time, time_components),
+            requested_time=effective_time,
             select_dataset=concat_dataset_selector(
                 time_components,
                 requested_time=requested_time,
