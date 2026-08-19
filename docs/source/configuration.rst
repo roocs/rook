@@ -104,5 +104,30 @@ are written incrementally. These settings do not affect subset batching.
    min_batch_years = 1
    max_batch_years = 1
 
+Processing diagnostics
+----------------------
+
+Concat uses the normal clisops subset writer by default. To compare its memory
+behavior with a direct xarray/Dask/NetCDF write of the already-selected batch,
+use the general diagnostics section or its environment override:
+
+.. code-block:: ini
+
+   [diagnostics]
+   write_path = xarray
+   free_memory = false
+
+.. code-block:: console
+
+   $ ROOK_CONCAT_WRITE_PATH=xarray rook start
+
+Supported values are ``clisops`` and ``xarray``. The direct writer is intended
+only for diagnostics and supports NetCDF output. Set ``free_memory = true`` to
+run both ``gc.collect()`` and ``malloc_trim(0)`` after each concat batch. Explicit
+cleanup remains disabled by default because it did not materially reduce the
+observed retained memory. Normal dataset closing and reference dropping are
+always performed. The
+``ROOK_DIAGNOSTIC_MALLOC_TRIM`` environment variable overrides this setting.
+
 
 .. _PyWPS: https://pywps.org/

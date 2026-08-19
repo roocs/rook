@@ -7,8 +7,8 @@ import xarray as xr
 
 from rook.diagnostics import (
     dataset_signature,
+    free_memory_diagnostic_enabled,
     malloc_trim,
-    malloc_trim_diagnostic_enabled,
     memory_checkpoint,
 )
 
@@ -88,20 +88,21 @@ class ConcatBatch(BatchProcessor):
                 memory_checkpoint("after dropping combined", batch_label)
                 selected = None
                 memory_checkpoint("after dropping selected", batch_label)
-                collected = gc.collect()
+                free_memory = free_memory_diagnostic_enabled()
+                collected = gc.collect() if free_memory else None
                 retained_selected = _retained_count(selected_references)
                 retained_combined = int(
                     combined_reference is not None and combined_reference() is not None
                 )
                 retained_arrays = _retained_count(array_references)
                 memory_checkpoint(
-                    "after gc.collect()",
-                    f"{batch_label} collected={collected} "
+                    "after gc.collect()" if free_memory else "gc.collect() skipped",
+                    f"{batch_label} free_memory={free_memory} collected={collected} "
                     f"retained_selected={retained_selected} "
                     f"retained_combined={retained_combined} "
                     f"retained_arrays={retained_arrays}",
                 )
-                if malloc_trim_diagnostic_enabled():
+                if free_memory:
                     trimmed = malloc_trim()
                     memory_checkpoint(
                         "after malloc_trim(0)",

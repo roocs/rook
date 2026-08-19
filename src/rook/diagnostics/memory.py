@@ -5,8 +5,9 @@ import os
 from pathlib import Path
 import sys
 
+from rook import config
+
 _STATUS_PATH = Path("/proc/self/status")
-_MALLOC_TRIM_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 
 
 def current_rss():
@@ -28,14 +29,14 @@ def memory_checkpoint(label, details=None):
     print(message, file=sys.stderr, flush=True)
 
 
+def free_memory_diagnostic_enabled():
+    """Return whether explicit Python and native memory cleanup is enabled."""
+    return config.get_diagnostic_free_memory()
+
+
 def malloc_trim_diagnostic_enabled():
-    """Return whether native allocator trimming is enabled (the default)."""
-    return os.environ.get(_MALLOC_TRIM_ENV, "1").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    """Return whether native allocator cleanup is enabled."""
+    return free_memory_diagnostic_enabled()
 
 
 def malloc_trim():

@@ -169,6 +169,72 @@ def test_finalise_concat_output_writes_to_configured_output_dir(tmp_path):
     assert (tmp_path / "output_001.nc").is_file()
 
 
+def test_direct_concat_writer_matches_clisops_batch_output(
+    monkeypatch, tmp_path, capsys
+):
+    dask_array = __import__("dask.array", fromlist=["array"])
+
+    def make_dataset():
+        values = dask_array.arange(24, chunks=12).reshape((2, 3, 4))
+        return xr.Dataset(
+            {"psl": (("time", "lat", "lon"), values)},
+            coords={
+                "time": np.array(["1962-08-01", "1962-08-02"], dtype="datetime64[ns]"),
+                "lat": [40.0, 50.0, 60.0],
+                "lon": [-10.0, 0.0, 10.0, 20.0],
+            },
+            attrs={"title": "already selected concat batch"},
+        ).expand_dims(realization=[0, 1])
+
+    interval = "1962-08-01T00:00:00/1962-08-02T23:59:59"
+    common = {
+        "time": concat_mod.time_parameter.TimeParameter(interval),
+        "time_components": None,
+        "output_type": "netcdf",
+        "split_method": "time:auto",
+        "file_namer": "simple",
+        "apply_average": False,
+    }
+    direct_dir = tmp_path / "direct"
+    clisops_dir = tmp_path / "clisops"
+    direct_dir.mkdir()
+    clisops_dir.mkdir()
+
+    monkeypatch.setattr(concat_mod.config, "get_concat_write_path", lambda: "xarray")
+    direct_output = concat_mod.finalise_concat_batch(
+        make_dataset(),
+        interval,
+        1,
+        1,
+        params={**common, "output_dir": direct_dir},
+        dim="realization",
+        standard_name="realization",
+    )[0]
+
+    monkeypatch.setattr(concat_mod.config, "get_concat_write_path", lambda: "clisops")
+    clisops_output = concat_mod.finalise_concat_batch(
+        make_dataset(),
+        interval,
+        1,
+        1,
+        params={**common, "output_dir": clisops_dir},
+        dim="realization",
+        standard_name="realization",
+    )[0]
+
+    with (
+        xr.open_dataset(direct_output) as direct_ds,
+        xr.open_dataset(clisops_output) as clisops_ds,
+    ):
+        xr.testing.assert_identical(direct_ds, clisops_ds)
+
+    diagnostics = capsys.readouterr().err
+    assert "before direct xarray/netCDF writer" in diagnostics
+    assert "after direct xarray delayed write" in diagnostics
+    assert "before clisops subset writer" in diagnostics
+    assert "after clisops subset writer" in diagnostics
+
+
 def test_concat_dataset_selector_uses_lazy_low_level_component_subset():
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)

@@ -130,6 +130,65 @@ def test_concat_batching_can_be_configured_independently(monkeypatch):
     }
 
 
+def test_concat_write_path_defaults_to_clisops(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+    monkeypatch.delenv("ROOK_CONCAT_WRITE_PATH", raising=False)
+
+    assert config.get_concat_write_path() == "clisops"
+
+
+def test_concat_write_path_environment_overrides_config(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"write_path": "clisops"}},
+    )
+    monkeypatch.setenv("ROOK_CONCAT_WRITE_PATH", "xarray")
+
+    assert config.get_concat_write_path() == "xarray"
+
+
+def test_concat_write_path_rejects_unknown_value(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"write_path": "unknown"}},
+    )
+    monkeypatch.delenv("ROOK_CONCAT_WRITE_PATH", raising=False)
+
+    with pytest.raises(config.ConfigurationError, match="Concat write path"):
+        config.get_concat_write_path()
+
+
+def test_diagnostic_free_memory_defaults_to_false(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+    monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
+
+    assert config.get_diagnostic_free_memory() is False
+
+
+def test_diagnostic_free_memory_uses_general_section(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"free_memory": "true"}},
+    )
+    monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
+
+    assert config.get_diagnostic_free_memory() is True
+
+
+def test_diagnostic_free_memory_environment_overrides_config(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"free_memory": "false"}},
+    )
+    monkeypatch.setenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", "true")
+
+    assert config.get_diagnostic_free_memory() is True
+
+
 @pytest.mark.parametrize("value", [0, -1, 2.5, True, "invalid"])
 def test_batching_requires_positive_integers(monkeypatch, value):
     monkeypatch.setattr(

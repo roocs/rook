@@ -1,5 +1,6 @@
 import weakref
 
+import pytest
 import xarray as xr
 
 from rook.batch import (
@@ -291,7 +292,7 @@ def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
         )
     )
     checkpoints = []
-    gc_details = []
+    cleanup_details = []
     selected_refs = []
     combined_refs = []
 
@@ -314,8 +315,8 @@ def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
 
     def checkpoint(label, details=None):
         checkpoints.append(label)
-        if label == "after gc.collect()":
-            gc_details.append(details)
+        if label == "gc.collect() skipped":
+            cleanup_details.append(details)
 
     monkeypatch.setattr("rook.batch.concat.xr.concat", concat)
     monkeypatch.setattr(
@@ -323,7 +324,11 @@ def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
         checkpoint,
     )
     monkeypatch.setattr(
-        "rook.batch.concat.malloc_trim_diagnostic_enabled", lambda: False
+        "rook.batch.concat.free_memory_diagnostic_enabled", lambda: False
+    )
+    monkeypatch.setattr(
+        "rook.batch.concat.gc.collect",
+        lambda: pytest.fail("gc.collect() must be disabled"),
     )
 
     outputs = processor.process(
@@ -342,25 +347,26 @@ def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
         "after combined.close()",
         "after dropping combined",
         "after dropping selected",
-        "after gc.collect()",
+        "gc.collect() skipped",
     ]
-    assert checkpoints.count("after gc.collect()") == 2
+    assert checkpoints.count("gc.collect() skipped") == 2
     assert all(
         "retained_selected=0 retained_combined=0 retained_arrays=0" in details
-        for details in gc_details
+        for details in cleanup_details
     )
     first_cleanup = checkpoints.index("after operation() returns")
     assert checkpoints[first_cleanup : first_cleanup + len(cleanup)] == cleanup
 
 
-def test_concat_batch_can_run_opt_in_malloc_trim_diagnostic(monkeypatch):
+def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
     time = xr.date_range("2000-01-01", periods=2, freq="D", use_cftime=True)
     dataset = xr.Dataset(coords={"time": time})
     checkpoints = []
 
     monkeypatch.setattr(
-        "rook.batch.concat.malloc_trim_diagnostic_enabled", lambda: True
+        "rook.batch.concat.free_memory_diagnostic_enabled", lambda: True
     )
+    monkeypatch.setattr("rook.batch.concat.gc.collect", lambda: 7)
     monkeypatch.setattr("rook.batch.concat.malloc_trim", lambda: True)
     monkeypatch.setattr(
         "rook.batch.concat.memory_checkpoint",
@@ -380,6 +386,10 @@ def test_concat_batch_can_run_opt_in_malloc_trim_diagnostic(monkeypatch):
         signature_dataset=lambda *_args, **_kwargs: None,
     )
 
+    assert any(
+        label == "after gc.collect()" and "free_memory=True collected=7" in details
+        for label, details in checkpoints
+    )
     assert any(
         label == "after malloc_trim(0)" and "released=True" in details
         for label, details in checkpoints
