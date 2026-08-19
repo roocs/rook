@@ -6,13 +6,21 @@ import numpy as np
 import xarray as xr
 
 from clisops.core.average import average_over_dims as average
-from clisops.core.subset import subset_bbox, subset_time, subset_time_by_components
+from clisops.core.subset import (
+    assign_bounds,
+    get_lat,
+    get_lon,
+    subset_bbox,
+    subset_time,
+    subset_time_by_components,
+)
 from clisops.ops import subset
 from clisops.parameter import area_parameter
 from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
+from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 
 from rook import config
 from rook.batch import ConcatBatch, ConcatBatchPlanner
@@ -215,7 +223,7 @@ def concat_dataset_selector(time_components, requested_time=None, area=None):
             _spatial_sizes(selected),
         )
         if area_bounds is not None:
-            selected = subset_bbox(selected, **area_bounds)
+            selected = clisops_subset_area(selected, area_bounds)
         memory_checkpoint(
             "concat selector after area selection",
             _spatial_sizes(selected),
@@ -223,6 +231,20 @@ def concat_dataset_selector(time_components, requested_time=None, area=None):
         return selected
 
     return select_dataset
+
+
+def clisops_subset_area(dataset, area_bounds):
+    """Apply the longitude-frame and bbox path used by clisops Subset."""
+    longitude = get_lon(dataset)
+    latitude = get_lat(dataset)
+    lon_bounds = assign_bounds(area_bounds["lon_bnds"], dataset[longitude.name])
+    lat_bounds = assign_bounds(area_bounds["lat_bnds"], dataset[latitude.name])
+    converted, lower, upper = cf_convert_between_lon_frames(dataset, lon_bounds)
+    return subset_bbox(
+        converted,
+        lon_bnds=(lower, upper),
+        lat_bnds=lat_bounds,
+    )
 
 
 def effective_concat_time(requested_time, time_components):

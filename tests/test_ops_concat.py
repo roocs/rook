@@ -212,14 +212,16 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
     lat = np.arange(20.0, 81.0, 10.0)
-    lon = np.arange(-20.0, 41.0, 10.0)
+    lon = np.arange(0.0, 360.0, 10.0)
     values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
         (len(time), len(lat), len(lon))
     )
     dataset = xr.Dataset(
-        {"psl": (("time", "lat", "lon"), values.rechunk((365, 7, 7)))},
+        {"psl": (("time", "lat", "lon"), values.rechunk((365, 7, 36)))},
         coords={"time": time, "lat": lat, "lon": lon},
     )
+    dataset.lat.attrs = {"standard_name": "latitude", "units": "degrees_north"}
+    dataset.lon.attrs = {"standard_name": "longitude", "units": "degrees_east"}
     requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
     components = concat_mod.time_components_parameter.TimeComponentsParameter(
         "month:aug|year:1962"
@@ -228,7 +230,7 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     selected = concat_mod.concat_dataset_selector(
         components,
         requested_time=requested_time,
-        area="-10,30,30,70",
+        area="-10,30,35,70",
     )(dataset)
 
     assert selected.sizes["time"] == 31
@@ -236,6 +238,7 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     assert set(selected.time.dt.month.values) == {8}
     assert selected.sizes["lat"] == 5
     assert selected.sizes["lon"] == 5
+    assert selected.lon.values.tolist() == [-10.0, 0.0, 10.0, 20.0, 30.0]
     assert isinstance(selected.psl.data, dask_array.Array)
     diagnostics = capsys.readouterr().err
     assert "concat selector configured" in diagnostics
@@ -243,7 +246,7 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     assert f"concat selector before selection | time={len(time)}" in diagnostics
     assert "concat selector after subset_time | time=365" in diagnostics
     assert "concat selector after subset_time_by_components | time=31" in diagnostics
-    assert "concat selector before area selection | lat=7 lon=7" in diagnostics
+    assert "concat selector before area selection | lat=7 lon=36" in diagnostics
     assert "concat selector after area selection | lat=5 lon=5" in diagnostics
 
 
@@ -253,7 +256,7 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)
     lat = np.arange(20.0, 81.0, 10.0)
-    lon = np.arange(-20.0, 41.0, 10.0)
+    lon = np.arange(0.0, 360.0, 10.0)
     datasets = []
     for realization in range(2):
         values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
@@ -264,18 +267,27 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
                 {
                     "psl": (
                         ("time", "lat", "lon"),
-                        values.rechunk((365, 7, 7)) + realization,
+                        values.rechunk((365, 7, 36)) + realization,
                     )
                 },
                 coords={"time": time, "lat": lat, "lon": lon},
             )
         )
+        datasets[-1].lat.attrs = {
+            "standard_name": "latitude",
+            "units": "degrees_north",
+        }
+        datasets[-1].lon.attrs = {
+            "standard_name": "longitude",
+            "units": "degrees_east",
+        }
 
     original_concat = xr.concat
-    expected = concat_mod.subset_bbox(
+    expected = concat_mod.subset(
         original_concat(datasets, dim="realization"),
-        **concat_mod.parsed_area("-10,30,30,70"),
-    )
+        area="-10,30,35,70",
+        output_type="xarray",
+    )[0]
     seen_by_concat = []
 
     def record_concat(selected, dim):
@@ -301,12 +313,31 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
         ],
         select_dataset=concat_mod.concat_dataset_selector(
             None,
-            area="-10,30,30,70",
+            area="-10,30,35,70",
         ),
     )
 
     assert outputs == [None]
     assert seen_by_concat == [[(5, 5), (5, 5)]]
+
+
+def test_area_pushdown_accepts_dataset_longitude_convention():
+    lon = np.arange(0.0, 360.0, 10.0)
+    lat = np.arange(20.0, 81.0, 10.0)
+    dataset = xr.Dataset(
+        {"psl": (("lat", "lon"), np.zeros((len(lat), len(lon))))},
+        coords={"lat": lat, "lon": lon},
+    )
+    dataset.lat.attrs = {"standard_name": "latitude", "units": "degrees_north"}
+    dataset.lon.attrs = {"standard_name": "longitude", "units": "degrees_east"}
+
+    selected = concat_mod.concat_dataset_selector(
+        None,
+        area="10,30,35,70",
+    )(dataset)
+
+    assert selected.lon.values.tolist() == [10.0, 20.0, 30.0]
+    assert selected.lat.values.tolist() == [30.0, 40.0, 50.0, 60.0, 70.0]
 
 
 def test_concat_batch_sees_only_requested_component_days(monkeypatch):
