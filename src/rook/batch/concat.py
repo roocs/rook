@@ -24,6 +24,7 @@ class ConcatBatch(BatchProcessor):
         operation,
         requested_time=None,
         select_dataset=None,
+        signature_dataset=dataset_signature,
     ):
         """Slice, combine, operate on, and close every batch sequentially."""
         batches = self.get_planner().plan(datasets, requested_time)
@@ -38,7 +39,7 @@ class ConcatBatch(BatchProcessor):
                 "after batch selection / time-component selector", batch_label
             )
             for realization, dataset in enumerate(selected, start=1):
-                dataset_signature(
+                signature_dataset(
                     "after batch/time-component selection",
                     dataset,
                     identity=f"{batch_label} realization={realization}",
@@ -47,7 +48,7 @@ class ConcatBatch(BatchProcessor):
             memory_checkpoint("before realization xr.concat", batch_label)
             combined = xr.concat(selected, dim=dim)
             memory_checkpoint("after realization xr.concat", batch_label)
-            dataset_signature(
+            signature_dataset(
                 "after realization concat",
                 combined,
                 identity=batch_label,

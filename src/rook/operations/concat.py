@@ -27,6 +27,31 @@ from .base import Operation, resolve_collection
 coord_by_standard_name = {
     "realization": "realization",
 }
+DECADAL_FIX_COORDS = ("time", "reftime", "leadtime", "realization")
+DECADAL_FIX_ATTRS = (
+    "dataset_id",
+    "project_id",
+    "startdate",
+    "sub_experiment_id",
+    "realization_index",
+)
+DECADAL_DESCRIPTION_ATTRS = (
+    "forcing_description",
+    "physics_description",
+    "initialization_description",
+)
+
+
+def decadal_dataset_signature(label, dataset, *, identity=None):
+    """Report the coordinates and metadata produced by the decadal recipe."""
+    dataset_signature(
+        label,
+        dataset,
+        identity=identity,
+        coordinate_names=DECADAL_FIX_COORDS,
+        attribute_names=DECADAL_FIX_ATTRS,
+        presence_attributes=DECADAL_DESCRIPTION_ATTRS,
+    )
 
 
 def drop_time_bnds(ds: xr.Dataset) -> xr.Dataset:
@@ -61,7 +86,7 @@ def apply_concat_dataset_fixes(collection, output_dir, provider):
     datasets = []
 
     for ds_id, ds in collection.items():
-        dataset_signature("before Woodpecker apply", ds, identity=ds_id)
+        decadal_dataset_signature("before Woodpecker apply", ds, identity=ds_id)
         context = FixContext(
             dataset_id=ds_id,
             operation="concat",
@@ -70,7 +95,7 @@ def apply_concat_dataset_fixes(collection, output_dir, provider):
             recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
         )
         fixed = provider.apply(ds, context=context)
-        dataset_signature("after Woodpecker apply", fixed, identity=ds_id)
+        decadal_dataset_signature("after Woodpecker apply", fixed, identity=ds_id)
         datasets.append(fixed)
 
     return datasets
@@ -181,6 +206,7 @@ class Concat(Operation):
             ),
             requested_time=self.params.get("time"),
             select_dataset=concat_dataset_selector(self.params.get("time_components")),
+            signature_dataset=decadal_dataset_signature,
         )
         memory_checkpoint("after ConcatBatch")
         rs.add("output", outputs)

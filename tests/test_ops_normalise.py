@@ -1,5 +1,6 @@
 import xarray as xr
 
+from rook.diagnostics import dataset_summary
 from rook.operations import normalise
 
 
@@ -69,8 +70,47 @@ def test_dataset_summary_reports_backing_type_and_compact_chunks():
         }
     )
 
-    summary = normalise._dataset_summary(dataset)
+    summary = dataset_summary(dataset)
 
     assert "sizes={'time': 12}" in summary
     assert "lazy[dask:Array;chunks=time:3x4]" in summary
     assert "eager[numpy:ndarray;chunks=none]" in summary
+
+
+def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path):
+    dask_array = __import__("dask.array", fromlist=["Array"])
+    paths = []
+    for index, times in enumerate(([0, 1], [2, 3]), start=1):
+        path = tmp_path / f"part-{index}.nc"
+        xr.Dataset(
+            {"psl": (("time", "lat"), [[index] * 3, [index + 1] * 3])},
+            coords={"time": times, "lat": [10.0, 20.0, 30.0]},
+        ).to_netcdf(
+            path,
+            engine="h5netcdf",
+            encoding={"psl": {"chunksizes": (1, 3)}},
+        )
+        paths.append(path)
+
+    opened_backings = []
+
+    def record_backing(dataset):
+        opened_backings.append(type(dataset.psl.data))
+        return dataset
+
+    collection = normalise.normalise_file_groups(
+        {"realization": paths},
+        prepare_dataset=record_backing,
+    )
+    dataset = collection["realization"]
+
+    assert opened_backings == [dask_array.Array, dask_array.Array]
+    assert isinstance(dataset.psl.data, dask_array.Array)
+    assert dataset.sizes == {"time": 4, "lat": 3}
+    assert dataset.psl.compute().values.tolist() == [
+        [1, 1, 1],
+        [2, 2, 2],
+        [2, 2, 2],
+        [3, 3, 3],
+    ]
+    dataset.close()

@@ -5,6 +5,7 @@ import sys
 import xarray as xr
 
 import rook.diagnostics as diagnostics
+import rook.diagnostics.memory as memory_diagnostics
 
 
 def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp_path):
@@ -12,7 +13,7 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
     status.write_text("Name:\tpython\nVmRSS:\t123456 kB\n")
     calls = []
 
-    monkeypatch.setattr(diagnostics, "_STATUS_PATH", status)
+    monkeypatch.setattr(memory_diagnostics, "_STATUS_PATH", status)
     monkeypatch.setattr(
         "builtins.print",
         lambda message, **kwargs: calls.append((message, kwargs)),
@@ -22,7 +23,7 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
 
     assert calls == [
         (
-            f"[rook-concat-diag] pid={os.getpid()} VmRSS: 123456 kB "
+            f"[rook-diagnostic] pid={os.getpid()} VmRSS: 123456 kB "
             "before test stage | group=example",
             {"file": sys.stderr, "flush": True},
         )
@@ -30,7 +31,9 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
 
 
 def test_dataset_signature_reports_decadal_fix_markers(monkeypatch, capsys):
-    monkeypatch.setattr(diagnostics, "_STATUS_PATH", Path("/missing/proc/status"))
+    monkeypatch.setattr(
+        memory_diagnostics, "_STATUS_PATH", Path("/missing/proc/status")
+    )
     dataset = xr.Dataset(
         {
             "tas": ("time", [280.0, 281.0]),
@@ -59,6 +62,13 @@ def test_dataset_signature_reports_decadal_fix_markers(monkeypatch, capsys):
         "after Woodpecker apply",
         dataset,
         identity="realization-1",
+        coordinate_names=("time", "reftime", "leadtime", "realization"),
+        attribute_names=("dataset_id", "startdate", "sub_experiment_id"),
+        presence_attributes=(
+            "forcing_description",
+            "physics_description",
+            "initialization_description",
+        ),
     )
 
     message = capsys.readouterr().err
