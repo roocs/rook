@@ -15,6 +15,9 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
 
     monkeypatch.setattr(memory_diagnostics, "_STATUS_PATH", status)
     monkeypatch.setattr(
+        memory_diagnostics, "current_timestamp", lambda: "2026-08-19T12:34:56Z"
+    )
+    monkeypatch.setattr(
         "builtins.print",
         lambda message, **kwargs: calls.append((message, kwargs)),
     )
@@ -23,7 +26,7 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
 
     assert calls == [
         (
-            f"[rook-diagnostic] pid={os.getpid()} VmRSS: 123456 kB "
+            f"[diagnostic] 2026-08-19T12:34:56Z pid={os.getpid()} VmRSS: 123456 kB "
             "before test stage | group=example",
             {"file": sys.stderr, "flush": True},
         )

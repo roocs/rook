@@ -168,7 +168,7 @@ def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
                 "lon": 4,
             }
             assert set(dataset.time.dt.year.values) == {year}
-            assert dataset.realization.values.tolist() == [0, 1]
+            assert dataset.realization.values.tolist() == [1, 2]
             assert dataset.realization.attrs == {"standard_name": "realization"}
             assert dataset.lat.min() >= -20
             assert dataset.lat.max() <= 20

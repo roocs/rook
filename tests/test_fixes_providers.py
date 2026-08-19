@@ -200,6 +200,48 @@ def test_woodpecker_provider_applies_decadal_recipe_without_check(monkeypatch):
     ]
 
 
+def test_woodpecker_provider_reports_applied_fix_stats(monkeypatch):
+    checkpoints = []
+    source = xr.Dataset(attrs={"source_name": "EC-Earth3"})
+
+    class FixResult:
+        stats = {"attempted": 3, "changed": 2}
+
+    class FakeRecipe:
+        @staticmethod
+        def get(recipe_id):
+            return {"id": recipe_id}
+
+        @staticmethod
+        def apply(_ds, _recipe, phase=None, dry_run=True):
+            return FixResult()
+
+    class FakeWoodpecker:
+        recipe = FakeRecipe
+
+    monkeypatch.setattr(
+        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
+    )
+    monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
+    monkeypatch.setattr(
+        "rook.fixes.providers.woodpecker.memory_checkpoint",
+        lambda label, details=None: checkpoints.append((label, details)),
+    )
+
+    WoodpeckerDatasetFixProvider().apply(
+        source,
+        context=FixContext(dataset_id="c3s-cmip6-decadal.example.dataset"),
+    )
+
+    assert checkpoints == [
+        (
+            "Woodpecker fixes applied",
+            "dataset=c3s-cmip6-decadal.example.dataset "
+            "recipe=c3s.cmip6_decadal phase=apply attempted=3 changed=2",
+        )
+    ]
+
+
 def test_woodpecker_provider_applies_atlas_recipe(monkeypatch):
     calls = []
     source = xr.Dataset(attrs={"source": "input"})

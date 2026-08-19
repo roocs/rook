@@ -1,4 +1,5 @@
 import json
+from numbers import Integral
 from urllib.parse import urljoin
 
 import pytest
@@ -376,6 +377,32 @@ def subset_inputs(collection, **params):
     inputs = [("collection", collection)]
     inputs.extend((name, value) for name, value in params.items() if value is not None)
     return inputs
+
+
+def assert_decadal_fixes(dataset, *, start_token, realizations=10, calendar=None):
+    """Check the observable output contract of the decadal Woodpecker recipe."""
+    assert dataset.time.attrs["long_name"] == "valid_time"
+    if calendar is not None:
+        assert dataset.time.dt.calendar == calendar
+    assert dataset.realization.dtype == "int32"
+    assert set(dataset.realization.values) == set(range(1, realizations + 1))
+    assert dataset.realization.attrs["standard_name"] == "realization"
+
+    assert "reftime" in dataset.coords
+    assert dataset.reftime.attrs["long_name"] == "Start date of the forecast"
+    assert dataset.reftime.attrs["standard_name"] == "forecast_reference_time"
+    assert "leadtime" in dataset.coords
+    assert dataset.leadtime.attrs["long_name"] == (
+        "Time elapsed since the start of the forecast"
+    )
+    assert dataset.leadtime.attrs["standard_name"] == "forecast_period"
+
+    assert dataset.attrs["startdate"] == start_token
+    assert dataset.attrs["sub_experiment_id"] == start_token
+    assert isinstance(dataset.attrs["realization_index"], Integral)
+    assert dataset.attrs["forcing_description"]
+    assert dataset.attrs["physics_description"]
+    assert dataset.attrs["initialization_description"]
 
 
 def test_smoke_get_capabilities(wps):
@@ -908,7 +935,7 @@ def test_smoke_execute_aligned_daily_cordex_subset_returns_original_file(wps):
     assert "esg_c3s-cordex" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_decadal_concat(wps):
+def test_smoke_execute_c3s_cmip6_decadal_concat(wps, tmp_path, open_dataset):
     inputs = concat_inputs(
         C3S_CMIP6_DECADAL_COLLECTIONS,
         time="1995/1995",
@@ -918,8 +945,13 @@ def test_smoke_execute_c3s_cmip6_decadal_concat(wps):
     assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
     assert "19951116-19951216.nc" in urls[0]
 
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(dataset, start_token="s199511")
 
-def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps):
+
+def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
+    wps, tmp_path, open_dataset
+):
     inputs = concat_inputs(
         C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS,
         time="1985-01-01/1985-12-31",
@@ -928,6 +960,13 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps):
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
     assert "19850116-19851216.nc" in urls[0]
+
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(
+            dataset,
+            start_token="s197611",
+            calendar="standard",
+        )
 
 
 def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
@@ -944,6 +983,11 @@ def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
     assert "19621201-19621231.nc" in urls[0]
 
     with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(
+            dataset,
+            start_token="s196111",
+            calendar="standard",
+        )
         assert dataset.sizes["realization"] == 10
         assert dataset.sizes["time"] == 31
         assert set(dataset.time.dt.year.values) == {1962}

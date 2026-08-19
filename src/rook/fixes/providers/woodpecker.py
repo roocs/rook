@@ -3,6 +3,7 @@
 import importlib
 from functools import cached_property
 
+from rook.diagnostics import memory_checkpoint
 from rook.fixes.providers.base import (
     ATLAS_DATASET_PREFIXES,
     CMIP6_DECADAL_DATASET_PREFIX,
@@ -39,6 +40,14 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
     def prepare(self, ds, *, context=None):
         context = context or FixContext()
+        dataset_id = context.dataset_id or ""
+        if dataset_id.startswith(CMIP6_DECADAL_DATASET_PREFIX):
+            return self._apply_decadal_recipe(
+                ds,
+                dataset_id=dataset_id,
+                recipe_id=context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+                phase=context.phase or WOODPECKER_PREPARE_PHASE,
+            )
         return self._apply_recipe(
             ds,
             recipe_id=context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
@@ -57,13 +66,31 @@ class WoodpeckerDatasetFixProvider(FixProvider):
             )
 
         if dataset_id.startswith(CMIP6_DECADAL_DATASET_PREFIX):
-            return self._apply_recipe(
+            return self._apply_decadal_recipe(
                 ds,
+                dataset_id=dataset_id,
                 recipe_id=context.recipe_id or WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
                 phase=context.phase or WOODPECKER_APPLY_PHASE,
             )
 
         return ds
+
+    def _apply_decadal_recipe(self, ds, *, dataset_id, recipe_id, phase):
+        """Expose the catalog identity while Woodpecker matches decadal fixes."""
+        previous_source_name = ds.attrs.get("source_name")
+        ds.attrs["source_name"] = f"{dataset_id}.nc"
+        try:
+            return self._apply_recipe(
+                ds,
+                recipe_id=recipe_id,
+                phase=phase,
+                dataset_id=dataset_id,
+            )
+        finally:
+            if previous_source_name is None:
+                ds.attrs.pop("source_name", None)
+            else:
+                ds.attrs["source_name"] = previous_source_name
 
     def _apply_atlas_recipe(self, ds, *, dataset_id, recipe_id):
         previous_dataset_id = ds.attrs.get("dataset_id")
@@ -78,6 +105,7 @@ class WoodpeckerDatasetFixProvider(FixProvider):
                 ds,
                 recipe_id=recipe_id,
                 phase=WOODPECKER_APPLY_PHASE,
+                dataset_id=dataset_id,
             )
         finally:
             if previous_dataset_id is None:
@@ -92,7 +120,25 @@ class WoodpeckerDatasetFixProvider(FixProvider):
 
         return ds
 
-    def _apply_recipe(self, ds, *, recipe_id, phase=None):
+    def _apply_recipe(self, ds, *, recipe_id, phase=None, dataset_id=None):
         recipe = self.woodpecker.recipe.get(recipe_id)
-        self.woodpecker.recipe.apply(ds, recipe, phase=phase, dry_run=False)
+        result = self.woodpecker.recipe.apply(
+            ds,
+            recipe,
+            phase=phase,
+            dry_run=False,
+        )
+        stats = getattr(result, "stats", None) or {}
+        identity = (
+            dataset_id
+            or ds.attrs.get("dataset_id")
+            or ds.attrs.get("source_name")
+            or "unknown"
+        )
+        details = (
+            f"dataset={identity} recipe={recipe_id} phase={phase} "
+            f"attempted={stats.get('attempted', 'unknown')} "
+            f"changed={stats.get('changed', 'unknown')}"
+        )
+        memory_checkpoint("Woodpecker fixes applied", details)
         return ds

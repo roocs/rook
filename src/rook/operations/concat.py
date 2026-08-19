@@ -56,9 +56,10 @@ def dataset_paths_by_id(sources):
     return collection
 
 
-def apply_concat_calendar_fix(ds, provider):
+def apply_concat_calendar_fix(ds, provider, dataset_id=None):
     """Apply concat-specific preparation before grouped files are combined."""
     context = FixContext(
+        dataset_id=dataset_id,
         operation="concat",
         phase="prepare",
         recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
@@ -137,7 +138,9 @@ def open_concat_batch_dataset(
 
     normalized = normalise.normalise_file_groups(
         collections.OrderedDict(((dataset_id, batch_paths),)),
-        prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
+        prepare_dataset=lambda ds: apply_concat_calendar_fix(
+            ds, provider, dataset_id=dataset_id
+        ),
     )[dataset_id]
     try:
         fixed = apply_concat_dataset_fix(dataset_id, normalized, output_dir, provider)
@@ -361,9 +364,12 @@ class Concat(Operation):
         requested_time = self.params.get("time")
         area = self.params.get("area")
         effective_time = effective_concat_time(requested_time, time_components)
+        planning_dataset_id = next(iter(collection), None)
         planning_time = concat_planning_time(
             collection,
-            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(
+                ds, provider, dataset_id=planning_dataset_id
+            ),
         )
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(

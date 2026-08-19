@@ -1,6 +1,7 @@
 """Process-memory checkpoints suitable for Slurm and PyWPS jobs."""
 
 import ctypes
+from datetime import datetime, timezone
 import os
 from pathlib import Path
 import sys
@@ -8,6 +9,13 @@ import sys
 from rook import config
 
 _STATUS_PATH = Path("/proc/self/status")
+
+
+def current_timestamp():
+    """Return the current UTC time in a compact ISO-8601 form."""
+    return (
+        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    )
 
 
 def current_rss():
@@ -23,7 +31,10 @@ def current_rss():
 
 def memory_checkpoint(label, details=None):
     """Write one immediately flushed RSS diagnostic directly to stderr."""
-    message = f"[rook-diagnostic] pid={os.getpid()} {current_rss()} {label}"
+    message = (
+        f"[diagnostic] {current_timestamp()} pid={os.getpid()} "
+        f"{current_rss()} {label}"
+    )
     if details:
         message = f"{message} | {details}"
     print(message, file=sys.stderr, flush=True)

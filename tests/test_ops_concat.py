@@ -35,13 +35,22 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix():
 
     class FakeProvider:
         def prepare(self, ds, *, context=None):
-            calls.append((ds.attrs["source"], context.operation, context.phase))
+            calls.append(
+                (
+                    ds.attrs["source"],
+                    context.dataset_id,
+                    context.operation,
+                    context.phase,
+                )
+            )
             return ds
 
-    result = concat_mod.apply_concat_calendar_fix(source, FakeProvider())
+    result = concat_mod.apply_concat_calendar_fix(
+        source, FakeProvider(), dataset_id="decadal.dataset"
+    )
 
     assert result is source
-    assert calls == [("input", "concat", "prepare")]
+    assert calls == [("input", "decadal.dataset", "concat", "prepare")]
 
 
 def test_concat_batch_paths_keeps_only_files_overlapping_batch():
@@ -71,7 +80,9 @@ def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(
 
     class FakeProvider:
         def prepare(self, dataset, *, context=None):
-            calls.append(("prepare", context.operation, context.phase))
+            calls.append(
+                ("prepare", context.dataset_id, context.operation, context.phase)
+            )
             return dataset
 
         def apply(self, dataset, *, context=None):
@@ -107,7 +118,7 @@ def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(
 
     assert calls[:3] == [
         ("normalize", {"dataset.id": ("psl_day_model_19620101-19621231.nc",)}),
-        ("prepare", "concat", "prepare"),
+        ("prepare", "dataset.id", "concat", "prepare"),
         ("apply", "dataset.id", "concat", "apply", tmp_path.as_posix()),
     ]
     result.close()
