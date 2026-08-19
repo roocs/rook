@@ -24,10 +24,13 @@ class ConcatBatch(BatchProcessor):
         operation,
         requested_time=None,
         select_dataset=None,
+        include_batch=None,
         signature_dataset=dataset_signature,
     ):
         """Slice, combine, operate on, and close every batch sequentially."""
         batches = self.get_planner().plan(datasets, requested_time)
+        if include_batch is not None:
+            batches = [batch for batch in batches if include_batch(batch)]
 
         def process_time_batch(batch, index, total):
             batch_label = f"batch={index}/{total} interval={batch.interval}"

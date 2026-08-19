@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 
 import rook.operations.concat as concat_mod
+from rook.batch import ConcatBatch, ConcatBatchPlanner, TimeBatch
 from rook.io.datasets import DatasetSource
 
 
@@ -185,6 +186,112 @@ def test_concat_dataset_selector_uses_lazy_low_level_component_subset():
     assert selected.sizes["time"] == 31
     assert set(selected.time.dt.month.values) == {8}
     assert hasattr(selected.tas.data, "dask")
+
+
+def test_parsed_time_components_are_plain_lists_for_low_level_clisops():
+    parameter = concat_mod.time_components_parameter.TimeComponentsParameter(
+        "month:aug|year:1962"
+    )
+
+    assert concat_mod.parsed_time_components(parameter) == {
+        "year": [1962],
+        "month": [8],
+    }
+
+
+def test_concat_selector_combines_requested_time_and_components_lazily():
+    dask_array = __import__("dask.array", fromlist=["array"])
+    time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
+    dataset = xr.Dataset(
+        {"psl": ("time", dask_array.arange(len(time), chunks=365))},
+        coords={"time": time},
+    )
+    requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
+    components = concat_mod.time_components_parameter.TimeComponentsParameter(
+        "month:aug|year:1962"
+    )
+
+    selected = concat_mod.concat_dataset_selector(
+        components,
+        requested_time=requested_time,
+    )(dataset)
+
+    assert selected.sizes["time"] == 31
+    assert set(selected.time.dt.year.values) == {1962}
+    assert set(selected.time.dt.month.values) == {8}
+    assert isinstance(selected.psl.data, dask_array.Array)
+
+
+def test_concat_batch_sees_only_requested_component_days(monkeypatch):
+    time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
+    datasets = [
+        xr.Dataset({"psl": ("time", range(len(time)))}, coords={"time": time})
+        for _ in range(2)
+    ]
+    requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
+    components = concat_mod.time_components_parameter.TimeComponentsParameter(
+        "month:aug|year:1962"
+    )
+    seen_by_concat = []
+    original_concat = xr.concat
+
+    def record_concat(selected, dim):
+        seen_by_concat.append([dataset.sizes["time"] for dataset in selected])
+        return original_concat(selected, dim=dim)
+
+    monkeypatch.setattr("rook.batch.concat.xr.concat", record_concat)
+    processor = ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=1826,
+            min_batch_years=1,
+            max_batch_years=5,
+        )
+    )
+
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=lambda combined, _time, _index, _total: [combined.sizes["time"]],
+        requested_time=concat_mod.effective_concat_time(requested_time, components),
+        select_dataset=concat_mod.concat_dataset_selector(
+            components,
+            requested_time=requested_time,
+        ),
+        include_batch=concat_mod.concat_batch_filter(components),
+    )
+
+    assert outputs == [31]
+    assert seen_by_concat == [[31, 31]]
+
+
+def test_concat_temporal_plan_excludes_unrequested_component_years():
+    components = concat_mod.time_components_parameter.TimeComponentsParameter(
+        "month:aug|year:1961,1963"
+    )
+
+    effective_time = concat_mod.effective_concat_time(None, components)
+    include_batch = concat_mod.concat_batch_filter(components)
+
+    assert effective_time.get_bounds() == (
+        "1961-01-01T00:00:00",
+        "1963-12-31T23:59:59",
+    )
+    assert include_batch(TimeBatch("1961-01-01", "1961-12-31")) is True
+    assert include_batch(TimeBatch("1962-01-01", "1962-12-31")) is False
+    assert include_batch(TimeBatch("1963-01-01", "1963-12-31")) is True
+
+
+def test_concat_selector_without_components_preserves_requested_time_behavior():
+    time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
+    dataset = xr.Dataset({"psl": ("time", range(len(time)))}, coords={"time": time})
+
+    selected = concat_mod.concat_dataset_selector(
+        None,
+        requested_time=concat_mod.time_parameter.TimeParameter("1962/1962"),
+    )(dataset)
+
+    assert selected.sizes["time"] == 365
+    assert set(selected.time.dt.year.values) == {1962}
 
 
 def test_concat_dataset_selector_is_disabled_without_time_components():

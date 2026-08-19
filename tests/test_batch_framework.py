@@ -175,3 +175,31 @@ def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
 
     assert outputs == [31]
     assert events == [("select", 365), ("select", 365), ("concat", [31, 31])]
+
+
+def test_concat_batch_filters_irrelevant_batches_before_selection():
+    time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
+    datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
+    processor = ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=365,
+            min_batch_years=1,
+            max_batch_years=1,
+        )
+    )
+    selected_years = []
+
+    def select(dataset):
+        selected_years.append(int(dataset.time.dt.year.values[0]))
+        return dataset
+
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=lambda _combined, interval, _index, _total: [interval],
+        select_dataset=select,
+        include_batch=lambda batch: batch.start.startswith(("1961", "1963")),
+    )
+
+    assert [interval[:4] for interval in outputs] == ["1961", "1963"]
+    assert selected_years == [1961, 1961, 1963, 1963]

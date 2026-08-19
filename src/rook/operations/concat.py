@@ -1,11 +1,12 @@
 import collections
+from collections.abc import Mapping
 from functools import partial
 
 import numpy as np
 import xarray as xr
 
 from clisops.core.average import average_over_dims as average
-from clisops.core.subset import subset_time_by_components
+from clisops.core.subset import subset_time, subset_time_by_components
 from clisops.ops import subset
 from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
@@ -139,12 +140,102 @@ def finalise_concat_batch(ds, time, _index, _total, *, params, dim, standard_nam
     return finalise_concat_output(ds, batch_params, dim)
 
 
-def concat_dataset_selector(time_components):
-    """Return a lazy per-realization time-component selector when requested."""
-    components = getattr(time_components, "value", None)
+def parsed_time_components(time_components):
+    """Return the plain component dictionary required by low-level clisops."""
+    if time_components is None:
+        return None
+    if isinstance(time_components, time_components_parameter.TimeComponentsParameter):
+        components = time_components.asdict().get("time_components")
+    elif isinstance(time_components, Mapping):
+        components = time_components
+    else:
+        components = (
+            time_components_parameter.TimeComponentsParameter(time_components)
+            .asdict()
+            .get("time_components")
+        )
+
     if not components:
         return None
-    return partial(subset_time_by_components, time_components=components)
+    return {name: list(values) for name, values in dict(components).items()}
+
+
+def concat_dataset_selector(time_components, requested_time=None):
+    """Return a lazy per-realization selector for the effective request time."""
+    components = parsed_time_components(time_components)
+    bounds = _requested_interval_bounds(requested_time)
+    if not components and bounds is None:
+        return None
+
+    def select_dataset(dataset):
+        selected = dataset
+        if bounds is not None:
+            selected = subset_time(
+                selected,
+                start_date=bounds[0],
+                end_date=bounds[1],
+            )
+        if components:
+            try:
+                selected = subset_time_by_components(
+                    selected,
+                    time_components=components,
+                )
+            except KeyError:
+                selected = selected.isel(time=slice(0, 0))
+        return selected
+
+    return select_dataset
+
+
+def effective_concat_time(requested_time, time_components):
+    """Narrow planning bounds using explicit year components when available."""
+    components = parsed_time_components(time_components)
+    years = sorted(set((components or {}).get("year", ())))
+    if not years:
+        return requested_time
+
+    component_bounds = (
+        f"{years[0]:04d}-01-01T00:00:00",
+        f"{years[-1]:04d}-12-31T23:59:59",
+    )
+    requested_bounds = _requested_interval_bounds(requested_time)
+    if requested_bounds is None:
+        bounds = component_bounds
+    else:
+        bounds = (
+            max(requested_bounds[0], component_bounds[0]),
+            min(requested_bounds[1], component_bounds[1]),
+        )
+    if bounds[0] > bounds[1]:
+        return requested_time
+    return time_parameter.TimeParameter(f"{bounds[0]}/{bounds[1]}")
+
+
+def concat_batch_filter(time_components):
+    """Return a generic batch predicate for explicit component years."""
+    components = parsed_time_components(time_components)
+    years = set((components or {}).get("year", ()))
+    if not years:
+        return None
+
+    def includes_selected_year(batch):
+        if batch.start is None or batch.end is None:
+            return True
+        return bool(
+            years.intersection(range(int(batch.start[:4]), int(batch.end[:4]) + 1))
+        )
+
+    return includes_selected_year
+
+
+def _requested_interval_bounds(requested_time):
+    if requested_time is None or getattr(requested_time, "type", None) != "interval":
+        return None
+    start, end = requested_time.get_bounds()
+    if not start or not end:
+        return None
+    return start, end
 
 
 class Concat(Operation):
@@ -194,6 +285,8 @@ class Concat(Operation):
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
         batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
+        time_components = self.params.get("time_components")
+        requested_time = self.params.get("time")
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
             datasets,
@@ -204,8 +297,12 @@ class Concat(Operation):
                 dim=dim,
                 standard_name=standard_name,
             ),
-            requested_time=self.params.get("time"),
-            select_dataset=concat_dataset_selector(self.params.get("time_components")),
+            requested_time=effective_concat_time(requested_time, time_components),
+            select_dataset=concat_dataset_selector(
+                time_components,
+                requested_time=requested_time,
+            ),
+            include_batch=concat_batch_filter(time_components),
             signature_dataset=decadal_dataset_signature,
         )
         memory_checkpoint("after ConcatBatch")
