@@ -30,6 +30,20 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
     ]
 
 
+def test_malloc_trim_diagnostic_is_opt_in(monkeypatch):
+    monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
+    assert diagnostics.malloc_trim_diagnostic_enabled() is False
+
+    monkeypatch.setenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", "true")
+    assert diagnostics.malloc_trim_diagnostic_enabled() is True
+
+
+def test_malloc_trim_reports_unavailable_off_linux(monkeypatch):
+    monkeypatch.setattr(memory_diagnostics.sys, "platform", "darwin")
+
+    assert diagnostics.malloc_trim() is None
+
+
 def test_dataset_signature_reports_decadal_fix_markers(monkeypatch, capsys):
     monkeypatch.setattr(
         memory_diagnostics, "_STATUS_PATH", Path("/missing/proc/status")

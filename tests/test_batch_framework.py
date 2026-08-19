@@ -1,3 +1,5 @@
+import weakref
+
 import xarray as xr
 
 from rook.batch import (
@@ -276,3 +278,109 @@ def test_concat_batch_filters_irrelevant_batches_before_selection():
 
     assert [interval[:4] for interval in outputs] == ["1961", "1963"]
     assert selected_years == [1961, 1961, 1963, 1963]
+
+
+def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
+    time = xr.date_range("2000-01-01", "2001-12-31", freq="D", use_cftime=True)
+    datasets = [xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time})]
+    processor = ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=365,
+            min_batch_years=1,
+            max_batch_years=1,
+        )
+    )
+    checkpoints = []
+    gc_details = []
+    selected_refs = []
+    combined_refs = []
+
+    class Combined:
+        def close(self):
+            checkpoints.append("close called")
+
+    def select(dataset):
+        if selected_refs:
+            assert selected_refs[-1]() is None
+            assert combined_refs[-1]() is None
+        selected_refs.append(weakref.ref(dataset))
+        return dataset
+
+    def concat(_selected, dim):
+        assert dim == "realization"
+        combined = Combined()
+        combined_refs.append(weakref.ref(combined))
+        return combined
+
+    def checkpoint(label, details=None):
+        checkpoints.append(label)
+        if label == "after gc.collect()":
+            gc_details.append(details)
+
+    monkeypatch.setattr("rook.batch.concat.xr.concat", concat)
+    monkeypatch.setattr(
+        "rook.batch.concat.memory_checkpoint",
+        checkpoint,
+    )
+    monkeypatch.setattr(
+        "rook.batch.concat.malloc_trim_diagnostic_enabled", lambda: False
+    )
+
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=lambda _combined, _time, index, _total: [f"batch-{index}.nc"],
+        select_dataset=select,
+        signature_dataset=lambda *_args, **_kwargs: None,
+    )
+
+    assert outputs == ["batch-1.nc", "batch-2.nc"]
+    cleanup = [
+        "after operation() returns",
+        "after final operation/write",
+        "close called",
+        "after combined.close()",
+        "after dropping combined",
+        "after dropping selected",
+        "after gc.collect()",
+    ]
+    assert checkpoints.count("after gc.collect()") == 2
+    assert all(
+        "retained_selected=0 retained_combined=0 retained_arrays=0" in details
+        for details in gc_details
+    )
+    first_cleanup = checkpoints.index("after operation() returns")
+    assert checkpoints[first_cleanup : first_cleanup + len(cleanup)] == cleanup
+
+
+def test_concat_batch_can_run_opt_in_malloc_trim_diagnostic(monkeypatch):
+    time = xr.date_range("2000-01-01", periods=2, freq="D", use_cftime=True)
+    dataset = xr.Dataset(coords={"time": time})
+    checkpoints = []
+
+    monkeypatch.setattr(
+        "rook.batch.concat.malloc_trim_diagnostic_enabled", lambda: True
+    )
+    monkeypatch.setattr("rook.batch.concat.malloc_trim", lambda: True)
+    monkeypatch.setattr(
+        "rook.batch.concat.memory_checkpoint",
+        lambda label, details=None: checkpoints.append((label, details)),
+    )
+
+    ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=365,
+            min_batch_years=1,
+            max_batch_years=1,
+        )
+    ).process(
+        [dataset],
+        dim="realization",
+        operation=lambda *_args: ["batch.nc"],
+        signature_dataset=lambda *_args, **_kwargs: None,
+    )
+
+    assert any(
+        label == "after malloc_trim(0)" and "released=True" in details
+        for label, details in checkpoints
+    )
