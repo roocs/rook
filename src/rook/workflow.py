@@ -13,6 +13,33 @@ from .operations import (
 from .provenance import Provenance
 
 LOGGER = logging.getLogger()
+_TEMPORAL_PUSHDOWN_PARAMETERS = ("time", "time_components")
+
+
+class _SubsetPushdown(dict):
+    """Subset hints plus shared state about their physical execution."""
+
+    def __init__(self, values=None, *, state=None):
+        super().__init__(values or {})
+        self._state = (
+            state if state is not None else {"attempted": set(), "failed": set()}
+        )
+
+    def copy(self):
+        return type(self)(self, state=self._state)
+
+    def record(self, name, successful):
+        self._state["attempted"].add(name)
+        if not successful:
+            self._state["failed"].add(name)
+
+    def reject(self, names):
+        for name in names:
+            if name in self:
+                self.record(name, False)
+
+    def consumed(self, name):
+        return name in self._state["attempted"] and name not in self._state["failed"]
 
 
 def is_file(data):
@@ -145,19 +172,37 @@ class Workflow(BaseWorkflow):
 
     def _run_step(self, step_id, step, inputs=None, subset_pushdown=None):
         LOGGER.debug(f"run step={step}, inputs={inputs}")
+        if subset_pushdown is not None and not isinstance(
+            subset_pushdown, _SubsetPushdown
+        ):
+            subset_pushdown = _SubsetPushdown(subset_pushdown)
         operation_inputs = deepcopy(step["in"])
         if inputs:
             operation_inputs.update(inputs)
+        pushdown_results = {}
         if step["run"] == "concat" and subset_pushdown:
             for name, value in subset_pushdown.items():
-                operation_inputs.setdefault(name, value)
+                existing = operation_inputs.get(name)
+                successful = existing is None or existing == value
+                if existing is None:
+                    operation_inputs[name] = value
+                if name in _TEMPORAL_PUSHDOWN_PARAMETERS:
+                    pushdown_results[name] = successful
+        if step["run"] == "subset" and isinstance(subset_pushdown, _SubsetPushdown):
+            for name in _TEMPORAL_PUSHDOWN_PARAMETERS:
+                if subset_pushdown.consumed(name):
+                    operation_inputs.pop(name, None)
 
         operation = self.operations.get(step["run"])
         if operation is None:
+            for name in pushdown_results:
+                subset_pushdown.record(name, False)
             result = None
         else:
             collection = operation_inputs["collection"]
             result = operation.call(operation_inputs)
+            for name, successful in pushdown_results.items():
+                subset_pushdown.record(name, successful)
             self.prov.add_operator(step_id, operation_inputs, collection, result)
 
         LOGGER.debug(f"run result={result}")
@@ -166,17 +211,20 @@ class Workflow(BaseWorkflow):
 
 def _subset_pushdown_for_upstream(step, inherited=None):
     """Carry safe downstream subset hints into an upstream concat."""
-    inherited = dict(inherited or {})
+    if not isinstance(inherited, _SubsetPushdown):
+        inherited = _SubsetPushdown(inherited)
     if step is None:
         return inherited
 
     operation = step["run"]
     if operation == "subset":
-        return {
-            name: step["in"][name]
-            for name in ("time", "time_components", "area")
-            if step["in"].get(name) is not None
-        }
+        return _SubsetPushdown(
+            {
+                name: step["in"][name]
+                for name in ("time", "time_components", "area")
+                if step["in"].get(name) is not None
+            }
+        )
     if operation == "concat":
         return inherited
     if operation == "average":
@@ -185,6 +233,7 @@ def _subset_pushdown_for_upstream(step, inherited=None):
             dimensions = (dimensions,)
         forwarded = inherited.copy()
         if "time" in dimensions:
+            forwarded.reject(_TEMPORAL_PUSHDOWN_PARAMETERS)
             forwarded.pop("time", None)
             forwarded.pop("time_components", None)
         if set(dimensions).intersection(
@@ -196,4 +245,5 @@ def _subset_pushdown_for_upstream(step, inherited=None):
         forwarded = inherited.copy()
         forwarded.pop("area", None)
         return forwarded
-    return {}
+    inherited.reject(_TEMPORAL_PUSHDOWN_PARAMETERS)
+    return _SubsetPushdown(state=getattr(inherited, "_state", None))

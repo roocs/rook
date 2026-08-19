@@ -127,11 +127,189 @@ def test_subset_selection_is_pushed_into_upstream_concat(tmp_path):
         "subset",
         {
             "collection": ["concat.nc"],
-            "time": "1962/1962",
-            "time_components": "month:aug|year:1962",
             "area": "-10,35,30,70",
         },
     )
+
+
+def _recording_workflow(tmp_path, document):
+    calls = []
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeOperation:
+        def __init__(self, name):
+            self.name = name
+
+        def call(self, inputs):
+            calls.append((self.name, dict(inputs)))
+            return [f"{self.name}.nc"]
+
+    class FakeProvenance:
+        def add_operator(self, *_args):
+            pass
+
+    wf.operations = {
+        "concat": FakeOperation("concat"),
+        "subset": FakeOperation("subset"),
+    }
+    wf.prov = FakeProvenance()
+    wf._run(document)
+    return calls
+
+
+def _concat_subset_document(subset_inputs, concat_inputs=None):
+    return {
+        "doc": "physical concat subset rewrite",
+        "inputs": {"ds": ["realization-1", "realization-2"]},
+        "outputs": {"output": "subset/output"},
+        "steps": {
+            "concat": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/ds",
+                    "dims": "realization",
+                    **(concat_inputs or {}),
+                },
+            },
+            "subset": {
+                "run": "subset",
+                "in": {"collection": "concat/output", **subset_inputs},
+            },
+        },
+    }
+
+
+def test_concat_subset_moves_time_to_physical_concat(tmp_path):
+    calls = _recording_workflow(
+        tmp_path,
+        _concat_subset_document({"time": "1962/1962"}),
+    )
+
+    assert calls[0][1]["time"] == "1962/1962"
+    assert "time" not in calls[1][1]
+
+
+def test_concat_subset_moves_time_components_to_physical_concat(tmp_path):
+    calls = _recording_workflow(
+        tmp_path,
+        _concat_subset_document({"time_components": "month:aug|year:1962"}),
+    )
+
+    assert calls[0][1]["time_components"] == "month:aug|year:1962"
+    assert "time_components" not in calls[1][1]
+
+
+def test_subset_without_compatible_concat_keeps_temporal_parameters(tmp_path):
+    calls = []
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeSubset:
+        def call(self, inputs):
+            calls.append(dict(inputs))
+            return ["subset.nc"]
+
+    class FakeProvenance:
+        def add_operator(self, *_args):
+            pass
+
+    wf.operations = {"subset": FakeSubset()}
+    wf.prov = FakeProvenance()
+    wf._run(
+        {
+            "doc": "ordinary subset",
+            "inputs": {"ds": ["input.nc"]},
+            "outputs": {"output": "subset/output"},
+            "steps": {
+                "subset": {
+                    "run": "subset",
+                    "in": {
+                        "collection": "inputs/ds",
+                        "time": "1962/1962",
+                        "time_components": "month:aug|year:1962",
+                    },
+                }
+            },
+        }
+    )
+
+    assert calls[0]["time"] == "1962/1962"
+    assert calls[0]["time_components"] == "month:aug|year:1962"
+
+
+def test_conflicting_concat_time_does_not_consume_subset_time(tmp_path):
+    calls = _recording_workflow(
+        tmp_path,
+        _concat_subset_document(
+            {"time": "1962/1962"},
+            concat_inputs={"time": "1960/1961"},
+        ),
+    )
+
+    assert calls[0][1]["time"] == "1960/1961"
+    assert calls[1][1]["time"] == "1962/1962"
+
+
+def test_unsupported_temporal_pushdown_keeps_subset_time(tmp_path):
+    calls = []
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeOperation:
+        def __init__(self, name):
+            self.name = name
+
+        def call(self, inputs):
+            calls.append((self.name, dict(inputs)))
+            return [f"{self.name}.nc"]
+
+    class FakeProvenance:
+        def add_operator(self, *_args):
+            pass
+
+    wf.operations = {
+        name: FakeOperation(name) for name in ("concat", "average", "subset")
+    }
+    wf.prov = FakeProvenance()
+    document = _concat_subset_document({"time": "1962/1962"})
+    document["steps"]["subset"]["in"]["collection"] = "average/output"
+    document["steps"]["average"] = {
+        "run": "average",
+        "in": {"collection": "concat/output", "dims": ["time"]},
+    }
+
+    wf._run(document)
+
+    assert "time" not in calls[0][1]
+    assert calls[2][1]["time"] == "1962/1962"
+
+
+def test_temporal_execution_rewrite_preserves_logical_result(tmp_path):
+    dates = ["1961-08-01", "1962-07-01", "1962-08-01", "1962-08-02"]
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FilterOperation:
+        def call(self, inputs):
+            selected = list(inputs["collection"])
+            if inputs.get("time") == "1962/1962":
+                selected = [value for value in selected if value.startswith("1962-")]
+            if inputs.get("time_components") == "month:aug|year:1962":
+                selected = [value for value in selected if value.startswith("1962-08-")]
+            return selected
+
+    class FakeProvenance:
+        def add_operator(self, *_args):
+            pass
+
+    wf.operations = {"concat": FilterOperation(), "subset": FilterOperation()}
+    wf.prov = FakeProvenance()
+    document = _concat_subset_document(
+        {
+            "time": "1962/1962",
+            "time_components": "month:aug|year:1962",
+        }
+    )
+    document["inputs"]["ds"] = dates
+
+    assert wf._run(document) == ["1962-08-01", "1962-08-02"]
 
 
 def test_subset_pushdown_respects_average_dimensions():
