@@ -14,6 +14,7 @@ from clisops.project_utils import derive_ds_id
 
 from rook import config
 from rook.batch import ConcatBatch, ConcatBatchPlanner
+from rook.diagnostics import dataset_signature, memory_checkpoint
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     FixContext,
@@ -60,6 +61,7 @@ def apply_concat_dataset_fixes(collection, output_dir, provider):
     datasets = []
 
     for ds_id, ds in collection.items():
+        dataset_signature("before Woodpecker apply", ds, identity=ds_id)
         context = FixContext(
             dataset_id=ds_id,
             operation="concat",
@@ -67,7 +69,9 @@ def apply_concat_dataset_fixes(collection, output_dir, provider):
             output_dir=output_dir,
             recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
         )
-        datasets.append(provider.apply(ds, context=context))
+        fixed = provider.apply(ds, context=context)
+        dataset_signature("after Woodpecker apply", fixed, identity=ds_id)
+        datasets.append(fixed)
 
     return datasets
 
@@ -137,6 +141,7 @@ class Concat(Operation):
         }
 
     def calculate(self):
+        memory_checkpoint("concat start")
         self._add_output_config()
         provider = get_dataset_fix_provider()
         collection = dataset_paths_by_id(self.collection)
@@ -145,21 +150,26 @@ class Concat(Operation):
         # - keep paths grouped by dataset id;
         # - prepare each opened file by fixing its calendar before time concat;
         # - apply dataset-id-aware fixes after each group has been opened.
+        memory_checkpoint("before normalise_file_groups")
         norm_collection = normalise.normalise_file_groups(
             collection,
             prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
         )
+        memory_checkpoint("after normalise_file_groups")
 
         rs = normalise.ResultSet(vars())
 
+        memory_checkpoint("before Woodpecker dataset fixes")
         datasets = apply_concat_dataset_fixes(
             norm_collection,
             output_dir=self.params.get("output_dir", "."),
             provider=provider,
         )
+        memory_checkpoint("after Woodpecker dataset fixes")
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
         batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
+        memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
             datasets,
             dim=dim,
@@ -172,6 +182,7 @@ class Concat(Operation):
             requested_time=self.params.get("time"),
             select_dataset=concat_dataset_selector(self.params.get("time_components")),
         )
+        memory_checkpoint("after ConcatBatch")
         rs.add("output", outputs)
 
         return rs

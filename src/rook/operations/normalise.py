@@ -5,9 +5,9 @@ import pathlib
 
 from clisops.utils.dataset_utils import open_xr_dataset
 from loguru import logger
-import psutil
 import xarray as xr
 
+from rook.diagnostics import dataset_signature, memory_checkpoint
 from rook.io.datasets import open_dataset
 
 
@@ -43,25 +43,28 @@ def normalise_file_groups(
 
     for dset, file_paths in collection.items():
         file_paths = tuple(file_paths)
-        logger.info(
-            "Normalizing group={} files={} rss={}",
-            dset,
-            len(file_paths),
-            _rss_size(),
+        memory_checkpoint(
+            "normalise group start",
+            f"group={dset} files={len(file_paths)}",
         )
         datasets = []
         for index, file in enumerate(file_paths, start=1):
-            dataset = prepare_dataset(opener(file))
-            datasets.append(dataset)
-            logger.info(
-                "Normalized input group={} file={}/{} {}",
-                dset,
-                index,
-                len(file_paths),
-                _dataset_summary(dataset),
+            file_label = f"group={dset} file={index}/{len(file_paths)}"
+            memory_checkpoint("before opening file", file_label)
+            dataset = opener(file)
+            memory_checkpoint(
+                "after opening file",
+                f"{file_label} {_dataset_summary(dataset)}",
             )
+            memory_checkpoint("before prepare_dataset", file_label)
+            dataset = prepare_dataset(dataset)
+            memory_checkpoint(
+                "after prepare_dataset",
+                f"{file_label} {_dataset_summary(dataset)}",
+            )
+            datasets.append(dataset)
 
-        logger.info("Concatenating group={} rss={}", dset, _rss_size())
+        memory_checkpoint("before normalise xr.concat", f"group={dset}")
         normalized = xr.concat(
             datasets,
             dim=concat_dim,
@@ -71,19 +74,13 @@ def normalise_file_groups(
             join="exact",
         )
         norm_collection[dset] = normalized
-        logger.info(
-            "Normalized group={} rss={} {}",
-            dset,
-            _rss_size(),
-            _dataset_summary(normalized),
+        memory_checkpoint(
+            "after normalise xr.concat",
+            f"group={dset} {_dataset_summary(normalized)}",
         )
+        dataset_signature("after normalized group concat", normalized, identity=dset)
 
     return norm_collection
-
-
-def _rss_size():
-    rss = psutil.Process().memory_info().rss
-    return f"{rss / (1024**2):.1f}MiB"
 
 
 def _dataset_summary(dataset, variable_limit=8):
