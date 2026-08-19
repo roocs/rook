@@ -4,6 +4,7 @@ from .base import BatchProcessor
 from .concat import ConcatBatch
 from .planner import (
     TimeBatch,
+    TimeBounds,
     TimeBatchPlanner,
     calculate_batch_years,
     estimate_timesteps_per_year,
@@ -16,6 +17,7 @@ __all__ = [
     "ConcatBatch",
     "SubsetBatch",
     "TimeBatch",
+    "TimeBounds",
     "TimeBatchPlanner",
     "calculate_batch_years",
     "estimate_timesteps_per_year",

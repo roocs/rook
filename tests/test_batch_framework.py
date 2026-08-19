@@ -1,6 +1,12 @@
 import xarray as xr
 
-from rook.batch import BatchProcessor, ConcatBatch, TimeBatch, TimeBatchPlanner
+from rook.batch import (
+    BatchProcessor,
+    ConcatBatch,
+    TimeBatch,
+    TimeBatchPlanner,
+    TimeBounds,
+)
 
 
 def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
@@ -20,13 +26,17 @@ def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
 
     daily_batches = TimeBatchPlanner(**config).plan(
         daily,
-        start="2000-01-01T00:00:00",
-        end="2012-12-31T23:59:59",
+        bounds=TimeBounds(
+            "2000-01-01T00:00:00",
+            "2012-12-31T23:59:59",
+        ),
     )
     monthly_batches = TimeBatchPlanner(**config).plan(
         monthly,
-        start="2000-01-01T00:00:00",
-        end="2025-12-31T23:59:59",
+        bounds=TimeBounds(
+            "2000-01-01T00:00:00",
+            "2025-12-31T23:59:59",
+        ),
     )
 
     assert [batch.start[:4] for batch in daily_batches] == ["2000", "2005", "2010"]
@@ -71,11 +81,11 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
 
     datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
 
-    def process(selected, interval, index, total):
+    def process(combined, interval, index, total):
         calls.append(
             (
-                selected[0].time.values[0].year,
-                selected[0].sizes["time"],
+                combined.time.values[0].year,
+                combined.sizes["time"],
                 interval,
                 index,
                 total,
@@ -83,7 +93,11 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
         )
         return [f"batch-{index}.nc"]
 
-    outputs = processor.process(datasets, process)
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=process,
+    )
 
     assert outputs == ["batch-1.nc", "batch-2.nc"]
     assert [(call[0], call[1]) for call in calls] == [(2000, 12), (2001, 12)]

@@ -15,26 +15,19 @@ class BatchProcessor:
         """Return the time-batch planner used by this processor."""
         raise NotImplementedError
 
-    def plan(self, time, *, start=None, end=None, calendar=None):
+    def plan(self, time, *, bounds=None):
         """Plan batches through the processor's shared planner."""
-        return self.get_planner().plan(
-            time,
-            start=start,
-            end=end,
-            calendar=calendar,
-        )
+        return self.get_planner().plan(time, bounds=bounds)
 
     def process(
         self,
         time,
         process_batch: Callable[[TimeBatch, int, int], Iterable[Output]],
         *,
-        start=None,
-        end=None,
-        calendar=None,
+        bounds=None,
     ) -> list[Output]:
         """Plan and execute batches, completing each callback in sequence."""
-        batches = self.plan(time, start=start, end=end, calendar=calendar)
+        batches = self.plan(time, bounds=bounds)
         return self.execute(batches, process_batch)
 
     def execute(

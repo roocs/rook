@@ -93,8 +93,8 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(
         concat_mod,
-        "combine_concat_datasets",
-        lambda datasets, dim, standard_name: combined,
+        "prepare_concat_dataset",
+        lambda dataset, dim, standard_name: combined,
     )
     monkeypatch.setattr(
         concat_mod,
@@ -168,7 +168,7 @@ def test_finalise_concat_output_writes_to_configured_output_dir(tmp_path):
     assert (tmp_path / "output_001.nc").is_file()
 
 
-def test_combine_concat_datasets_sets_realization_coordinate_metadata():
+def test_prepare_concat_dataset_sets_realization_coordinate_metadata():
     datasets = [
         xr.Dataset(
             {
@@ -186,8 +186,8 @@ def test_combine_concat_datasets_sets_realization_coordinate_metadata():
         ),
     ]
 
-    result = concat_mod.combine_concat_datasets(
-        datasets,
+    result = concat_mod.prepare_concat_dataset(
+        xr.concat(datasets, dim="realization"),
         dim="realization",
         standard_name="realization",
     )
@@ -248,11 +248,11 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         },
     )
 
-    def combine(selected, dim, standard_name):
+    def combine(selected, dim):
         index = len([event for event in events if event[0] == "combined"]) + 1
         if index > 1:
             assert events[-1] == ("closed", index - 1)
-        assert dim == standard_name == "realization"
+        assert dim == "realization"
         assert [dataset.sizes["time"] for dataset in selected] == [12, 12]
         assert all(hasattr(dataset.tas.data, "dask") for dataset in selected)
         events.append(("combined", index))
@@ -263,7 +263,12 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         events.append(("written", index, params["time"].get_bounds(), dim))
         return [str(tmp_path / f"concat-{index}.nc")]
 
-    monkeypatch.setattr(concat_mod, "combine_concat_datasets", combine)
+    monkeypatch.setattr("rook.batch.concat.xr.concat", combine)
+    monkeypatch.setattr(
+        concat_mod,
+        "prepare_concat_dataset",
+        lambda dataset, dim, standard_name: dataset,
+    )
     monkeypatch.setattr(concat_mod, "finalise_concat_output", finalise)
 
     result = concat_mod.concat(

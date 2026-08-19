@@ -13,6 +13,7 @@ from .base import BatchProcessor
 from .outputs import merge_batch_outputs
 from .planner import (
     TimeBatchPlanner,
+    TimeBounds,
     calculate_batch_years,
     estimate_timesteps_per_year,
 )
@@ -60,7 +61,8 @@ class SubsetBatch(BatchProcessor, Operation):
             f"Planning subset batching for {len(self.collection)} source(s): "
             f"requested_time={start}/{end}"
         )
-        plans = [self._batch_plan(source, start, end) for source in self.collection]
+        bounds = TimeBounds(start, end)
+        plans = [self._batch_plan(source, bounds) for source in self.collection]
         if not any(len(batches) > 1 for _, batches in plans):
             logger.info(
                 "Subset batching not required by any source; using the normal subset path"
@@ -75,7 +77,7 @@ class SubsetBatch(BatchProcessor, Operation):
             result_set.add(source.key, outputs)
         return result_set
 
-    def _batch_plan(self, source, start, end):
+    def _batch_plan(self, source, bounds):
         timesteps_per_year, calendar, time = _source_time_metadata(source)
         if timesteps_per_year is None or calendar is None:
             logger.info(
@@ -90,7 +92,7 @@ class SubsetBatch(BatchProcessor, Operation):
             "min_batch_years": planner.min_batch_years,
             "max_batch_years": planner.max_batch_years,
         }
-        batches = self.plan(time, start=start, end=end, calendar=calendar)
+        batches = self.plan(time, bounds=bounds)
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
         logger.info(
             f"Subset batching plan for {source.key}: calendar={calendar}, "

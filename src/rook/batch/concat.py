@@ -1,6 +1,9 @@
 """Generic callback-based concat batching processor."""
 
+import xarray as xr
+
 from .base import BatchProcessor
+from .planner import TimeBounds
 
 
 class ConcatBatch(BatchProcessor):
@@ -12,20 +15,30 @@ class ConcatBatch(BatchProcessor):
     def get_planner(self):
         return self._planner
 
-    def process(self, datasets, process_batch, *, requested_time=None):
-        """Lazily slice every dataset and execute the callback sequentially."""
+    def process(
+        self,
+        datasets,
+        *,
+        dim,
+        operation,
+        requested_time=None,
+    ):
+        """Slice, combine, operate on, and close every batch sequentially."""
         time = _representative_time(datasets)
-        start, end = _closed_time_bounds(requested_time)
+        bounds = _requested_bounds(requested_time)
 
         def process_time_batch(batch, index, total):
             selected = _select_time_batch(datasets, batch)
-            return process_batch(selected, batch.interval, index, total)
+            combined = xr.concat(selected, dim=dim)
+            try:
+                return operation(combined, batch.interval, index, total)
+            finally:
+                combined.close()
 
         return super().process(
             time,
             process_time_batch,
-            start=start,
-            end=end,
+            bounds=bounds,
         )
 
 
@@ -36,13 +49,13 @@ def _representative_time(datasets):
     return None
 
 
-def _closed_time_bounds(time):
+def _requested_bounds(time):
     if time is None or getattr(time, "type", None) != "interval":
-        return None, None
+        return None
     start, end = time.get_bounds()
     if not start or not end:
-        return None, None
-    return start, end
+        return None
+    return TimeBounds(start, end)
 
 
 def _select_time_batch(datasets, batch):

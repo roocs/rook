@@ -23,6 +23,14 @@ class TimeBatch:
         return f"{self.start}/{self.end}"
 
 
+@dataclass(frozen=True)
+class TimeBounds:
+    """Optional requested bounds supplied to a time-batch plan."""
+
+    start: str | None
+    end: str | None
+
+
 class TimeBatchPlanner:
     """Plan adaptive batches from a representative time coordinate."""
 
@@ -31,12 +39,14 @@ class TimeBatchPlanner:
         self.min_batch_years = min_batch_years
         self.max_batch_years = max_batch_years
 
-    def plan(self, time, *, start=None, end=None, calendar=None):
-        """Return batches spanning explicit bounds or the coordinate itself."""
+    def plan(self, time, *, bounds=None):
+        """Return batches spanning requested bounds or the coordinate itself."""
+        start = bounds.start if bounds is not None else None
+        end = bounds.end if bounds is not None else None
         if time is None or getattr(time, "size", 0) == 0:
             return [TimeBatch(start, end)]
 
-        calendar = calendar or time.dt.calendar
+        calendar = time.dt.calendar
         if start is None:
             start = _format_time_value(time.values[0], calendar)
         if end is None:

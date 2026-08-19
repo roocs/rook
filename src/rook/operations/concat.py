@@ -1,4 +1,5 @@
 import collections
+from functools import partial
 
 import numpy as np
 import xarray as xr
@@ -76,9 +77,8 @@ def concat_dimension(dims):
     return coord_by_standard_name.get(standard_name, None), standard_name
 
 
-def combine_concat_datasets(datasets, dim, standard_name):
-    """Concatenate datasets and restore concat coordinate metadata."""
-    ds = xr.concat(datasets, dim=dim)
+def prepare_concat_dataset(ds, dim, standard_name):
+    """Restore concat coordinate metadata on a combined dataset."""
     ds = ds.assign_coords({dim: (dim, np.array(ds[dim].values, dtype="int32"))})
     ds.coords[dim].attrs = {"standard_name": standard_name}
     return drop_time_bnds(ds)
@@ -100,16 +100,13 @@ def finalise_concat_output(ds, params, dim):
     )
 
 
-def combine_and_finalise_concat(datasets, params, dim, standard_name, time=None):
-    """Combine prepared datasets, finalize the result, and write it."""
-    processed_ds = combine_concat_datasets(datasets, dim, standard_name)
+def finalise_concat_batch(ds, time, _index, _total, *, params, dim, standard_name):
+    """Apply concat finalization to one combined time batch."""
+    ds = prepare_concat_dataset(ds, dim, standard_name)
     batch_params = dict(params)
     if time is not None:
         batch_params["time"] = time_parameter.TimeParameter(time)
-    try:
-        return finalise_concat_output(processed_ds, batch_params, dim)
-    finally:
-        processed_ds.close()
+    return finalise_concat_output(ds, batch_params, dim)
 
 
 class Concat(Operation):
@@ -156,12 +153,12 @@ class Concat(Operation):
         batcher = ConcatBatch(TimeBatchPlanner(**config.get_batching_config()))
         outputs = batcher.process(
             datasets,
-            lambda selected, time, _index, _total: combine_and_finalise_concat(
-                selected,
-                self.params,
-                dim,
-                standard_name,
-                time,
+            dim=dim,
+            operation=partial(
+                finalise_concat_batch,
+                params=self.params,
+                dim=dim,
+                standard_name=standard_name,
             ),
             requested_time=self.params.get("time"),
         )
