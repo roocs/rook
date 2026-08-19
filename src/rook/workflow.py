@@ -1,6 +1,7 @@
 import logging
 from copy import deepcopy
 from pathlib import Path
+import sys
 
 import networkx as nx
 import yaml
@@ -13,12 +14,14 @@ from .operations import (
 from .provenance import Provenance
 
 LOGGER = logging.getLogger()
-_TEMPORAL_PUSHDOWN_PARAMETERS = ("time", "time_components")
+_PUSHDOWN_PARAMETERS = ("time", "time_components", "area")
+_TEMPORAL_PUSHDOWN_PARAMETERS = _PUSHDOWN_PARAMETERS[:2]
 _SUBSET_SELECTION_PARAMETERS = {"time", "time_components", "area", "level"}
 _SUBSET_PASSTHROUGH_DEFAULTS = {
     "output_type": {None, "netcdf"},
     "split_method": {None, "time:auto"},
     "file_namer": {None, "standard"},
+    "ignore_undetected_dims": {None, False},
 }
 _SUBSET_PASSTHROUGH_CONTROLS = {"original_files", "pre_checked"}
 
@@ -48,8 +51,8 @@ class _SubsetPushdown(dict):
     def consumed(self, name):
         return name in self._state["attempted"] and name not in self._state["failed"]
 
-    def consumed_temporal_selection(self):
-        return any(self.consumed(name) for name in _TEMPORAL_PUSHDOWN_PARAMETERS)
+    def consumed_selection(self):
+        return any(self.consumed(name) for name in _PUSHDOWN_PARAMETERS)
 
 
 def is_file(data):
@@ -196,14 +199,30 @@ class Workflow(BaseWorkflow):
                 successful = existing is None or existing == value
                 if existing is None:
                     operation_inputs[name] = value
-                if name in _TEMPORAL_PUSHDOWN_PARAMETERS:
+                if name in _PUSHDOWN_PARAMETERS:
                     pushdown_results[name] = successful
         if step["run"] == "subset" and isinstance(subset_pushdown, _SubsetPushdown):
-            for name in _TEMPORAL_PUSHDOWN_PARAMETERS:
+            for name in _PUSHDOWN_PARAMETERS:
                 if subset_pushdown.consumed(name):
                     operation_inputs.pop(name, None)
 
-            if _subset_can_pass_through(operation_inputs, subset_pushdown):
+            can_pass = _subset_can_pass_through(operation_inputs, subset_pushdown)
+            consumed = {
+                name: subset_pushdown.consumed(name) for name in _PUSHDOWN_PARAMETERS
+            }
+            print(
+                "[workflow] subset pass-through check "
+                f"step={step_id} "
+                f"inputs={operation_inputs!r} "
+                f"pushdown={dict(subset_pushdown)!r} "
+                f"attempted={subset_pushdown._state['attempted']!r} "
+                f"failed={subset_pushdown._state['failed']!r} "
+                f"consumed={consumed!r} "
+                f"can_pass={can_pass}",
+                file=sys.stderr,
+                flush=True,
+            )
+            if can_pass:
                 collection = operation_inputs["collection"]
                 result = collection
                 self.prov.add_operator(step_id, operation_inputs, collection, result)
@@ -256,19 +275,21 @@ def _subset_pushdown_for_upstream(step, inherited=None):
         if set(dimensions).intersection(
             {"latitude", "longitude", "lat", "lon", "x", "y"}
         ):
+            forwarded.reject(("area",))
             forwarded.pop("area", None)
         return forwarded
     if operation in {"regrid", "average_shape", "weighted_average"}:
         forwarded = inherited.copy()
+        forwarded.reject(("area",))
         forwarded.pop("area", None)
         return forwarded
-    inherited.reject(_TEMPORAL_PUSHDOWN_PARAMETERS)
+    inherited.reject(_PUSHDOWN_PARAMETERS)
     return _SubsetPushdown(state=getattr(inherited, "_state", None))
 
 
 def _subset_can_pass_through(operation_inputs, subset_pushdown):
     """Return whether a physically empty optimized subset can be bypassed."""
-    if not subset_pushdown.consumed_temporal_selection():
+    if not subset_pushdown.consumed_selection():
         return False
 
     for name, value in operation_inputs.items():

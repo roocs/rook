@@ -65,7 +65,7 @@ def test_run_step_dispatches_registered_workflow_operation(tmp_path):
     )
 
 
-def test_subset_selection_is_pushed_into_upstream_concat(tmp_path):
+def test_subset_selection_consumed_by_concat_becomes_pass_through(tmp_path, capsys):
     calls = []
     wf = workflow.Workflow(output_dir=tmp_path)
 
@@ -112,7 +112,7 @@ def test_subset_selection_is_pushed_into_upstream_concat(tmp_path):
 
     result = wf._run(document)
 
-    assert result == ["subset.nc"]
+    assert result == ["concat.nc"]
     assert calls[0] == (
         "concat",
         {
@@ -123,13 +123,14 @@ def test_subset_selection_is_pushed_into_upstream_concat(tmp_path):
             "area": "-10,35,30,70",
         },
     )
-    assert calls[1] == (
-        "subset",
-        {
-            "collection": ["concat.nc"],
-            "area": "-10,35,30,70",
-        },
+    assert len(calls) == 1
+    diagnostic = capsys.readouterr().err
+    assert "[workflow] subset pass-through check step=subset" in diagnostic
+    assert "attempted=" in diagnostic
+    assert (
+        "consumed={'time': True, 'time_components': True, 'area': True}" in diagnostic
     )
+    assert "can_pass=True" in diagnostic
 
 
 def _recording_workflow(tmp_path, document):
@@ -227,12 +228,45 @@ def test_default_output_controls_do_not_prevent_pass_through(tmp_path):
                 "output_type": "netcdf",
                 "split_method": "time:auto",
                 "file_namer": "standard",
+                "ignore_undetected_dims": False,
+                "original_files": False,
+                "pre_checked": False,
             }
         ),
     )
 
     assert len(calls) == 1
     assert result == ["concat.nc"]
+
+
+def test_concat_subset_time_and_area_passes_only_after_both_are_consumed(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document({"time": "1962/1963", "area": "-10,35,30,70"}),
+    )
+
+    assert calls[0][1]["time"] == "1962/1963"
+    assert calls[0][1]["area"] == "-10,35,30,70"
+    assert len(calls) == 1
+    assert result == ["concat.nc"]
+
+
+def test_conflicting_concat_area_keeps_area_on_subset(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document(
+            {"time": "1962/1963", "area": "-10,35,30,70"},
+            concat_inputs={"area": "0,35,30,70"},
+        ),
+    )
+
+    assert calls[0][1]["time"] == "1962/1963"
+    assert calls[0][1]["area"] == "0,35,30,70"
+    assert calls[1][1] == {
+        "collection": ["concat.nc"],
+        "area": "-10,35,30,70",
+    }
+    assert result == ["subset.nc"]
 
 
 def test_subset_without_compatible_concat_keeps_temporal_parameters(tmp_path):
@@ -300,6 +334,19 @@ def test_explicit_output_option_keeps_real_subset_execution(tmp_path):
     assert calls[1] == (
         "subset",
         {"collection": ["concat.nc"], "output_type": "zarr"},
+    )
+    assert result == ["subset.nc"]
+
+
+def test_unknown_subset_parameter_prevents_pass_through(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document({"time": "1962/1962", "unknown_option": "value"}),
+    )
+
+    assert calls[1] == (
+        "subset",
+        {"collection": ["concat.nc"], "unknown_option": "value"},
     )
     assert result == ["subset.nc"]
 
