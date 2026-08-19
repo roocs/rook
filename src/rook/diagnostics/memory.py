@@ -1,12 +1,13 @@
 """Process-memory checkpoints suitable for Slurm and PyWPS jobs."""
 
 import ctypes
-from datetime import UTC, datetime
 import os
-from pathlib import Path
 import sys
+from datetime import UTC, datetime
+from pathlib import Path
 
 from rook import config
+
 
 _STATUS_PATH = Path("/proc/self/status")
 

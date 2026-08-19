@@ -8,6 +8,7 @@ from owslib.wps import ComplexDataInput, WebProcessingService
 
 from rook.processes.wps_health import HEALTHY_RESPONSE
 
+
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
 

@@ -1,12 +1,13 @@
 import pytest
 import xarray as xr
 
+import rook.fixes.providers.woodpecker as woodpecker_provider
 from rook.fixes.providers import (
+    WOODPECKER_ATLAS_RECIPE_ID,
+    WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     FixContext,
     FixProvider,
     LegacyDatasetFixProvider,
-    WOODPECKER_ATLAS_RECIPE_ID,
-    WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     WoodpeckerDatasetFixProvider,
     get_dataset_fix_provider,
 )
@@ -222,11 +223,12 @@ def test_woodpecker_provider_reports_applied_fix_stats(monkeypatch):
     monkeypatch.setattr(
         WoodpeckerDatasetFixProvider, "require_available", lambda self: None
     )
-    monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
     monkeypatch.setattr(
-        "rook.fixes.providers.woodpecker.memory_checkpoint",
+        woodpecker_provider,
+        "memory_checkpoint",
         lambda label, details=None: checkpoints.append((label, details)),
     )
+    monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
 
     WoodpeckerDatasetFixProvider().apply(
         source,
