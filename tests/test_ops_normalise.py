@@ -79,6 +79,24 @@ def test_normalise_file_groups_allows_plain_opening_without_prepare():
     assert collection["second"].time.values.tolist() == ["two"]
 
 
+def test_normalized_group_close_closes_every_opened_file_dataset():
+    closed = []
+
+    def opener(path):
+        dataset = xr.Dataset({"tas": ("time", [1])}, coords={"time": [path]})
+        dataset.set_close(lambda: closed.append(path))
+        return dataset
+
+    normalized = normalise.normalise_file_groups(
+        {"dataset": ("one", "two")},
+        opener=opener,
+    )["dataset"]
+
+    assert closed == []
+    normalized.close()
+    assert closed == ["one", "two"]
+
+
 def test_dataset_summary_reports_backing_type_and_compact_chunks():
     dask_array = __import__("dask.array", fromlist=["array"])
     dataset = xr.Dataset(

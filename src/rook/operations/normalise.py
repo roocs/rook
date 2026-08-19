@@ -53,30 +53,42 @@ def normalise_file_groups(
             f"group={dset} files={len(file_paths)}",
         )
         datasets = []
-        for index, file in enumerate(file_paths, start=1):
-            file_label = f"group={dset} file={index}/{len(file_paths)}"
-            memory_checkpoint("before opening file", file_label)
-            dataset = opener(file)
-            memory_checkpoint(
-                "after opening file",
-                f"{file_label} {dataset_summary(dataset)}",
-            )
-            memory_checkpoint("before prepare_dataset", file_label)
-            dataset = prepare_dataset(dataset)
-            memory_checkpoint(
-                "after prepare_dataset",
-                f"{file_label} {dataset_summary(dataset)}",
-            )
-            datasets.append(dataset)
+        opened_datasets = []
+        try:
+            for index, file in enumerate(file_paths, start=1):
+                file_label = f"group={dset} file={index}/{len(file_paths)}"
+                memory_checkpoint("before opening file", file_label)
+                opened = opener(file)
+                opened_datasets.append(opened)
+                memory_checkpoint(
+                    "after opening file",
+                    f"{file_label} {dataset_summary(opened)}",
+                )
+                memory_checkpoint("before prepare_dataset", file_label)
+                dataset = prepare_dataset(opened)
+                memory_checkpoint(
+                    "after prepare_dataset",
+                    f"{file_label} {dataset_summary(dataset)}",
+                )
+                datasets.append(dataset)
 
-        memory_checkpoint("before normalise xr.concat", f"group={dset}")
-        normalized = xr.concat(
-            datasets,
-            dim=concat_dim,
-            data_vars="minimal",
-            coords="minimal",
-            compat="override",
-            join="exact",
+            memory_checkpoint("before normalise xr.concat", f"group={dset}")
+            normalized = xr.concat(
+                datasets,
+                dim=concat_dim,
+                data_vars="minimal",
+                coords="minimal",
+                compat="override",
+                join="exact",
+            )
+        except Exception:
+            _close_datasets(datasets, opened_datasets)
+            raise
+
+        normalized.set_close(
+            lambda datasets=datasets, opened=opened_datasets: _close_datasets(
+                datasets, opened
+            )
         )
         norm_collection[dset] = normalized
         memory_checkpoint(
@@ -86,6 +98,17 @@ def normalise_file_groups(
         dataset_signature("after normalized group concat", normalized, identity=dset)
 
     return norm_collection
+
+
+def _close_datasets(*groups):
+    """Close datasets once, preserving all lazy inputs until group close."""
+    closed = set()
+    for datasets in groups:
+        for dataset in datasets:
+            identity = id(dataset)
+            if identity not in closed:
+                dataset.close()
+                closed.add(identity)
 
 
 class ResultSet:

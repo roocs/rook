@@ -6,6 +6,15 @@ from rook.batch import ConcatBatch, ConcatBatchPlanner, TimeBatch
 from rook.io.datasets import DatasetSource
 
 
+def _concat_batch_inputs(datasets):
+    collection = {str(index): (f"source-{index}.nc",) for index in range(len(datasets))}
+
+    def open_dataset(dataset_id, _paths, _batch):
+        return datasets[int(dataset_id)].copy(deep=False)
+
+    return collection, open_dataset
+
+
 def test_concat_dataset_paths_are_keyed_by_catalog_id(monkeypatch):
     sources = [
         DatasetSource("project.dataset", ["one.nc", "two.nc"]),
@@ -58,10 +67,103 @@ def test_apply_concat_dataset_fixes_preserves_dataset_identity(tmp_path):
     assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
 
 
+def test_concat_batch_paths_keeps_only_files_overlapping_batch():
+    paths = (
+        "psl_day_model_19610101-19611231.nc",
+        "psl_day_model_19620101-19621231.nc",
+        "psl_day_model_19630101-19631231.nc",
+    )
+
+    selected = concat_mod.concat_batch_paths(
+        paths,
+        TimeBatch("1962-01-01T00:00:00", "1962-12-31T23:59:59"),
+    )
+
+    assert selected == ("psl_day_model_19620101-19621231.nc",)
+
+
+def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(
+    monkeypatch, tmp_path
+):
+    calls = []
+    normalized = xr.Dataset(
+        {"psl": ("time", [1.0])},
+        coords={"time": [np.datetime64("1962-01-01")]},
+    )
+    normalized.set_close(lambda: calls.append(("closed", "dataset.id")))
+
+    class FakeProvider:
+        def prepare(self, dataset, *, context=None):
+            calls.append(("prepare", context.operation, context.phase))
+            return dataset
+
+        def apply(self, dataset, *, context=None):
+            calls.append(
+                (
+                    "apply",
+                    context.dataset_id,
+                    context.operation,
+                    context.phase,
+                    context.output_dir,
+                )
+            )
+            return dataset
+
+    def normalize(collection, prepare_dataset):
+        calls.append(("normalize", collection))
+        prepare_dataset(normalized)
+        return {"dataset.id": normalized}
+
+    monkeypatch.setattr(concat_mod.normalise, "normalise_file_groups", normalize)
+
+    result = concat_mod.open_concat_batch_dataset(
+        "dataset.id",
+        (
+            "psl_day_model_19610101-19611231.nc",
+            "psl_day_model_19620101-19621231.nc",
+            "psl_day_model_19630101-19631231.nc",
+        ),
+        TimeBatch("1962-01-01", "1962-12-31"),
+        provider=FakeProvider(),
+        output_dir=tmp_path.as_posix(),
+    )
+
+    assert calls[:3] == [
+        ("normalize", {"dataset.id": ("psl_day_model_19620101-19621231.nc",)}),
+        ("prepare", "concat", "prepare"),
+        ("apply", "dataset.id", "concat", "apply", tmp_path.as_posix()),
+    ]
+    result.close()
+    assert calls[-1] == ("closed", "dataset.id")
+
+
+def test_concat_planning_time_closes_metadata_datasets():
+    closed = []
+    paths = ("1961.nc", "1962.nc")
+
+    def opener(path):
+        year = int(path[:4])
+        dataset = xr.Dataset(
+            coords={"time": [np.datetime64(f"{year}-01-01")]},
+        )
+        dataset.set_close(lambda: closed.append(path))
+        return dataset
+
+    time = concat_mod.concat_planning_time(
+        {"dataset.id": paths},
+        prepare_dataset=lambda dataset: dataset,
+        opener=opener,
+    )
+
+    assert time.dt.year.values.tolist() == [1961, 1962]
+    assert closed == list(paths)
+
+
 def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     calls = []
     source = DatasetSource("dataset.id", ["input.nc"])
-    combined = xr.Dataset({"tas": ("realization", [1.0])})
+    time = xr.date_range("2000-01-01", periods=2, freq="D", use_cftime=True)
+    combined = xr.Dataset({"tas": ("time", [1.0, 2.0])}, coords={"time": time})
     final = ["https://example.com/fixed.nc"]
 
     class FakeProvider:
@@ -72,7 +174,9 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     fake_provider = FakeProvider()
 
     monkeypatch.setattr(
-        concat_mod, "dataset_paths_by_id", lambda collection: collection
+        concat_mod,
+        "dataset_paths_by_id",
+        lambda _collection: {"dataset.id": source.paths},
     )
     monkeypatch.setattr(
         concat_mod,
@@ -80,17 +184,18 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
         lambda: calls.append(("provider",)) or fake_provider,
     )
     monkeypatch.setattr(
-        concat_mod.normalise,
-        "normalise_file_groups",
-        lambda collection, prepare_dataset: {"dataset.id": prepare_dataset(source)},
+        concat_mod,
+        "concat_planning_time",
+        lambda collection, prepare_dataset: calls.append(("planning", collection))
+        or prepare_dataset(combined).time,
     )
     monkeypatch.setattr(
         concat_mod,
-        "apply_concat_dataset_fixes",
-        lambda collection, output_dir, provider: calls.append(
-            (collection, output_dir, provider)
+        "open_concat_batch_dataset",
+        lambda dataset_id, paths, batch, provider, output_dir: calls.append(
+            ("open", dataset_id, paths, batch.interval, provider, output_dir)
         )
-        or [combined],
+        or combined.copy(deep=False),
     )
     monkeypatch.setattr(
         concat_mod,
@@ -112,11 +217,15 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     assert result.file_uris == ["https://example.com/fixed.nc"]
     assert calls == [
         ("provider",),
-        ("prepare", source, "concat", "prepare"),
+        ("planning", {"dataset.id": ("input.nc",)}),
+        ("prepare", combined, "concat", "prepare"),
         (
-            {"dataset.id": source},
-            tmp_path.as_posix(),
+            "open",
+            "dataset.id",
+            ("input.nc",),
+            "2000-01-01T00:00:00/2000-01-02T00:00:00",
             fake_provider,
+            tmp_path.as_posix(),
         ),
     ]
 
@@ -304,10 +413,13 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
             max_batch_years=1,
         )
     )
+    collection, open_dataset = _concat_batch_inputs(datasets)
 
     outputs = processor.process(
-        datasets,
+        collection,
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=lambda combined, _time, _index, _total: [
             xr.testing.assert_equal(combined, expected)
         ],
@@ -365,10 +477,13 @@ def test_concat_batch_sees_only_requested_component_days(monkeypatch):
             max_batch_years=5,
         )
     )
+    collection, open_dataset = _concat_batch_inputs(datasets)
 
     outputs = processor.process(
-        datasets,
+        collection,
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=lambda combined, _time, _index, _total: [combined.sizes["time"]],
         requested_time=concat_mod.effective_concat_time(requested_time, components),
         select_dataset=concat_mod.concat_dataset_selector(
@@ -395,7 +510,7 @@ def test_concat_planner_uses_effective_requested_interval():
         min_batch_years=1,
         max_batch_years=5,
     ).plan(
-        [dataset],
+        dataset.time,
         concat_mod.effective_concat_time(requested_time, components),
     )
 
@@ -487,7 +602,10 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         )
         for realization in range(2)
     ]
-    source = DatasetSource("dataset.id", ["input.nc"])
+    sources = {
+        "first.id": ("first.nc",),
+        "second.id": ("second.nc",),
+    }
     events = []
     prepared = object()
 
@@ -498,23 +616,33 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         def close(self):
             events.append(("closed", self.index))
 
-    monkeypatch.setattr(
-        concat_mod, "dataset_paths_by_id", lambda _collection: {"dataset.id": source}
-    )
+    monkeypatch.setattr(concat_mod, "dataset_paths_by_id", lambda _collection: sources)
     monkeypatch.setattr(concat_mod, "get_dataset_fix_provider", lambda: prepared)
     monkeypatch.setattr(
-        concat_mod.normalise,
-        "normalise_file_groups",
-        lambda _collection, prepare_dataset: events.append(("normalised",))
-        or {"dataset.id": source},
+        concat_mod,
+        "concat_planning_time",
+        lambda _collection, prepare_dataset: xr.DataArray(time, dims="time"),
     )
+
+    opened = 0
+
+    def open_batch(dataset_id, paths, batch, provider, output_dir):
+        nonlocal opened
+        realization = list(sources).index(dataset_id)
+        dataset = datasets[realization].copy(deep=False)
+        opened += 1
+        identity = (batch.start[:4], dataset_id, opened)
+        events.append(("opened", *identity))
+        dataset.set_close(lambda: events.append(("source-closed", *identity)))
+        assert paths == sources[dataset_id]
+        assert provider is prepared
+        assert output_dir == tmp_path.as_posix()
+        return dataset
+
     monkeypatch.setattr(
         concat_mod,
-        "apply_concat_dataset_fixes",
-        lambda _collection, output_dir, provider: events.append(
-            ("fixed", output_dir, provider)
-        )
-        or datasets,
+        "open_concat_batch_dataset",
+        open_batch,
     )
     monkeypatch.setattr(
         concat_mod.config,
@@ -529,7 +657,9 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
     def combine(selected, dim):
         index = len([event for event in events if event[0] == "combined"]) + 1
         if index > 1:
-            assert events[-1] == ("closed", index - 1)
+            assert any(
+                event[:3] == ("source-closed", "2000", "second.id") for event in events
+            )
         assert dim == "realization"
         assert [dataset.sizes["time"] for dataset in selected] == [12, 12]
         assert all(hasattr(dataset.tas.data, "dask") for dataset in selected)
@@ -550,7 +680,7 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
     monkeypatch.setattr(concat_mod, "finalise_concat_output", finalise)
 
     result = concat_mod.concat(
-        collection=[source],
+        collection=[DatasetSource("dataset.id", ["input.nc"])],
         dims=["realization"],
         output_dir=tmp_path.as_posix(),
     )
@@ -559,13 +689,8 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         str(tmp_path / "concat-1.nc"),
         str(tmp_path / "concat-2.nc"),
     ]
-    assert [event[0] for event in events] == [
-        "normalised",
-        "fixed",
-        "combined",
-        "written",
-        "closed",
-        "combined",
-        "written",
-        "closed",
-    ]
+    assert [event[0] for event in events].count("opened") == 4
+    assert [event[0] for event in events].count("source-closed") == 4
+    assert [event[0] for event in events].count("combined") == 2
+    assert [event[0] for event in events].count("written") == 2
+    assert [event[0] for event in events].count("closed") == 2

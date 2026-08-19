@@ -31,7 +31,7 @@ from rook.fixes import (
     get_dataset_fix_provider,
 )
 
-from . import normalise
+from . import consolidate, normalise
 from .base import Operation, resolve_collection
 
 coord_by_standard_name = {
@@ -96,19 +96,94 @@ def apply_concat_dataset_fixes(collection, output_dir, provider):
     datasets = []
 
     for ds_id, ds in collection.items():
-        decadal_dataset_signature("before Woodpecker apply", ds, identity=ds_id)
-        context = FixContext(
-            dataset_id=ds_id,
-            operation="concat",
-            phase="apply",
-            output_dir=output_dir,
-            recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
-        )
-        fixed = provider.apply(ds, context=context)
-        decadal_dataset_signature("after Woodpecker apply", fixed, identity=ds_id)
-        datasets.append(fixed)
+        datasets.append(apply_concat_dataset_fix(ds_id, ds, output_dir, provider))
 
     return datasets
+
+
+def apply_concat_dataset_fix(dataset_id, dataset, output_dir, provider):
+    """Apply the dataset-id-aware concat fix to one realization."""
+    decadal_dataset_signature("before Woodpecker apply", dataset, identity=dataset_id)
+    context = FixContext(
+        dataset_id=dataset_id,
+        operation="concat",
+        phase="apply",
+        output_dir=output_dir,
+        recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
+    )
+    fixed = provider.apply(dataset, context=context)
+    decadal_dataset_signature("after Woodpecker apply", fixed, identity=dataset_id)
+    return fixed
+
+
+def concat_planning_time(collection, prepare_dataset, opener=None):
+    """Load one realization's time coordinates without retaining source datasets."""
+    if not collection:
+        return None
+    if opener is None:
+        opener = normalise.open_lazy_xr_dataset
+
+    paths = next(iter(collection.values()))
+    coordinates = []
+    for path in paths:
+        opened = opener(path)
+        prepared = opened
+        try:
+            prepared = prepare_dataset(opened)
+            if "time" in prepared.coords and prepared.time.size:
+                coordinates.append(prepared.time.load().copy(deep=True))
+        finally:
+            prepared.close()
+            if prepared is not opened:
+                opened.close()
+
+    if not coordinates:
+        return None
+    if len(coordinates) == 1:
+        return coordinates[0]
+    return xr.concat(coordinates, dim="time")
+
+
+def concat_batch_paths(paths, batch):
+    """Return source paths whose time ranges overlap one batch."""
+    paths = tuple(paths)
+    if batch.interval is None or len(paths) == 1:
+        return paths
+    interval = time_parameter.TimeParameter(batch.interval)
+    return tuple(consolidate.get_files_matching_time_range(interval, list(paths)))
+
+
+def open_concat_batch_dataset(
+    dataset_id,
+    paths,
+    batch,
+    *,
+    provider,
+    output_dir,
+):
+    """Open, normalize, and fix one realization for one time batch."""
+    batch_paths = concat_batch_paths(paths, batch)
+    memory_checkpoint(
+        "concat batch realization paths",
+        f"dataset={dataset_id} interval={batch.interval} paths={len(batch_paths)}",
+    )
+    if not batch_paths:
+        raise ValueError(
+            f"No source paths overlap concat batch {batch.interval} for {dataset_id}."
+        )
+
+    normalized = normalise.normalise_file_groups(
+        collections.OrderedDict(((dataset_id, batch_paths),)),
+        prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
+    )[dataset_id]
+    try:
+        fixed = apply_concat_dataset_fix(dataset_id, normalized, output_dir, provider)
+    except Exception:
+        normalized.close()
+        raise
+    if fixed is not normalized:
+        fixed.set_close(normalized.close)
+    return fixed
 
 
 def concat_dimension(dims):
@@ -345,27 +420,7 @@ class Concat(Operation):
         self._add_output_config()
         provider = get_dataset_fix_provider()
         collection = dataset_paths_by_id(self.collection)
-
-        # Concat intentionally does not use the base operation flow:
-        # - keep paths grouped by dataset id;
-        # - prepare each opened file by fixing its calendar before time concat;
-        # - apply dataset-id-aware fixes after each group has been opened.
-        memory_checkpoint("before normalise_file_groups")
-        norm_collection = normalise.normalise_file_groups(
-            collection,
-            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
-        )
-        memory_checkpoint("after normalise_file_groups")
-
         rs = normalise.ResultSet(vars())
-
-        memory_checkpoint("before Woodpecker dataset fixes")
-        datasets = apply_concat_dataset_fixes(
-            norm_collection,
-            output_dir=self.params.get("output_dir", "."),
-            provider=provider,
-        )
-        memory_checkpoint("after Woodpecker dataset fixes")
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
         batcher = ConcatBatch(ConcatBatchPlanner(**config.get_concat_batching_config()))
@@ -373,14 +428,24 @@ class Concat(Operation):
         requested_time = self.params.get("time")
         area = self.params.get("area")
         effective_time = effective_concat_time(requested_time, time_components)
+        planning_time = concat_planning_time(
+            collection,
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
+        )
         memory_checkpoint(
             "ConcatBatchPlanner input",
             f"requested_time={_requested_interval_bounds(effective_time)}",
         )
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
-            datasets,
+            collection,
+            planning_time=planning_time,
             dim=dim,
+            open_dataset=partial(
+                open_concat_batch_dataset,
+                provider=provider,
+                output_dir=self.params.get("output_dir", "."),
+            ),
             operation=partial(
                 finalise_concat_batch,
                 params=self.params,

@@ -73,10 +73,7 @@ def test_subset_and_concat_planners_adapt_the_common_planning_mechanics():
             return "2001-01-01T00:00:00", "2001-12-31T23:59:59"
 
     concat = ConcatBatchPlanner(**config)
-    batches = concat.plan(
-        [xr.Dataset(coords={"time": time})],
-        RequestedTime(),
-    )
+    batches = concat.plan(time, RequestedTime())
 
     assert batches == [TimeBatch("2001-01-01T00:00:00", "2001-12-31T23:59:59")]
     assert isinstance(concat, BaseBatchPlanner)
@@ -87,7 +84,6 @@ def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
         xr.date_range("2000-01-01", "2006-12-31", freq="D", use_cftime=True),
         dims="time",
     )
-    datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
     concat = ConcatBatchPlanner(
         target_timesteps=365,
         min_batch_years=1,
@@ -101,8 +97,8 @@ def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
         def get_bounds():
             return "2000-01-01T00:00:00", "2006-12-31T23:59:59"
 
-    bounded = concat.plan(datasets, SevenYearRequest())
-    unconstrained = concat.plan(datasets)
+    bounded = concat.plan(time, SevenYearRequest())
+    unconstrained = concat.plan(time)
 
     assert [batch.start[:4] for batch in bounded] == [
         "2000",
@@ -131,7 +127,7 @@ def test_concat_request_shorter_than_one_year_stays_in_one_batch():
         max_batch_years=1,
     )
 
-    assert planner.plan([xr.Dataset(coords={"time": time})]) == [
+    assert planner.plan(time) == [
         TimeBatch("2000-03-01T00:00:00", "2000-08-31T00:00:00")
     ]
 
@@ -177,6 +173,15 @@ def test_batch_processor_completes_each_callback_before_starting_the_next():
     ]
 
 
+def _concat_batch_inputs(datasets):
+    collection = {str(index): (f"source-{index}.nc",) for index in range(len(datasets))}
+
+    def open_dataset(dataset_id, _paths, _batch):
+        return datasets[int(dataset_id)].copy(deep=False)
+
+    return collection, open_dataset
+
+
 def test_concat_batch_is_a_generic_time_batch_callback_processor():
     time = xr.DataArray(
         xr.date_range("2000-01-01", periods=24, freq="MS", use_cftime=True),
@@ -192,6 +197,7 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
     calls = []
 
     datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
+    collection, open_dataset = _concat_batch_inputs(datasets)
 
     def process(combined, interval, index, total):
         calls.append(
@@ -206,8 +212,10 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
         return [f"batch-{index}.nc"]
 
     outputs = processor.process(
-        datasets,
+        collection,
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=process,
     )
 
@@ -222,6 +230,7 @@ def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
         xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time})
         for _ in range(2)
     ]
+    collection, open_dataset = _concat_batch_inputs(datasets)
     processor = ConcatBatch(
         ConcatBatchPlanner(
             target_timesteps=365,
@@ -243,8 +252,10 @@ def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
     monkeypatch.setattr("rook.batch.concat.xr.concat", concat)
 
     outputs = processor.process(
-        datasets,
+        collection,
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=lambda combined, _time, _index, _total: [combined.sizes["time"]],
         select_dataset=select_august,
     )
@@ -256,6 +267,7 @@ def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
 def test_concat_batch_filters_irrelevant_batches_before_selection():
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
     datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
+    collection, open_dataset = _concat_batch_inputs(datasets)
     processor = ConcatBatch(
         ConcatBatchPlanner(
             target_timesteps=365,
@@ -270,8 +282,10 @@ def test_concat_batch_filters_irrelevant_batches_before_selection():
         return dataset
 
     outputs = processor.process(
-        datasets,
+        collection,
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=lambda _combined, interval, _index, _total: [interval],
         select_dataset=select,
         include_batch=lambda batch: batch.start.startswith(("1961", "1963")),
@@ -281,9 +295,10 @@ def test_concat_batch_filters_irrelevant_batches_before_selection():
     assert selected_years == [1961, 1961, 1963, 1963]
 
 
-def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
+def test_concat_batch_opens_fresh_sources_and_closes_them_before_next_batch(
+    monkeypatch,
+):
     time = xr.date_range("2000-01-01", "2001-12-31", freq="D", use_cftime=True)
-    datasets = [xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time})]
     processor = ConcatBatch(
         ConcatBatchPlanner(
             target_timesteps=365,
@@ -291,71 +306,72 @@ def test_concat_batch_releases_batch_references_before_next_batch(monkeypatch):
             max_batch_years=1,
         )
     )
-    checkpoints = []
-    cleanup_details = []
-    selected_refs = []
-    combined_refs = []
+    events = []
+    opened = []
 
-    class Combined:
-        def close(self):
-            checkpoints.append("close called")
-
-    def select(dataset):
-        if selected_refs:
-            assert selected_refs[-1]() is None
-            assert combined_refs[-1]() is None
-        selected_refs.append(weakref.ref(dataset))
+    def open_dataset(dataset_id, _paths, batch):
+        if opened:
+            assert events[-1] == ("closed", opened[-1][0])
+            assert opened[-1][1]() is None
+        dataset = xr.Dataset(
+            {"tas": ("time", range(len(time)))},
+            coords={"time": time},
+        )
+        year = batch.start[:4]
+        dataset.set_close(lambda: events.append(("closed", year)))
+        opened.append((year, weakref.ref(dataset)))
+        events.append(("opened", year, dataset_id))
         return dataset
 
-    def concat(_selected, dim):
-        assert dim == "realization"
-        combined = Combined()
-        combined_refs.append(weakref.ref(combined))
-        return combined
-
-    def checkpoint(label, details=None):
-        checkpoints.append(label)
-        if label == "gc.collect() skipped":
-            cleanup_details.append(details)
-
-    monkeypatch.setattr("rook.batch.concat.xr.concat", concat)
-    monkeypatch.setattr(
-        "rook.batch.concat.memory_checkpoint",
-        checkpoint,
-    )
-    monkeypatch.setattr(
-        "rook.batch.concat.free_memory_diagnostic_enabled", lambda: False
-    )
-    monkeypatch.setattr(
-        "rook.batch.concat.gc.collect",
-        lambda: pytest.fail("gc.collect() must be disabled"),
-    )
-
     outputs = processor.process(
-        datasets,
+        {"realization": ("source.nc",)},
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=open_dataset,
         operation=lambda _combined, _time, index, _total: [f"batch-{index}.nc"],
-        select_dataset=select,
         signature_dataset=lambda *_args, **_kwargs: None,
     )
 
     assert outputs == ["batch-1.nc", "batch-2.nc"]
-    cleanup = [
-        "after operation() returns",
-        "after final operation/write",
-        "close called",
-        "after combined.close()",
-        "after dropping combined",
-        "after dropping selected",
-        "gc.collect() skipped",
+    assert events == [
+        ("opened", "2000", "realization"),
+        ("closed", "2000"),
+        ("opened", "2001", "realization"),
+        ("closed", "2001"),
     ]
-    assert checkpoints.count("gc.collect() skipped") == 2
-    assert all(
-        "retained_selected=0 retained_combined=0 retained_arrays=0" in details
-        for details in cleanup_details
+
+
+def test_concat_batch_closes_batch_sources_after_write_exception():
+    time = xr.DataArray(
+        xr.date_range("2000-01-01", periods=2, freq="D", use_cftime=True),
+        dims="time",
     )
-    first_cleanup = checkpoints.index("after operation() returns")
-    assert checkpoints[first_cleanup : first_cleanup + len(cleanup)] == cleanup
+    closed = []
+
+    def open_dataset(_dataset_id, _paths, _batch):
+        dataset = xr.Dataset(coords={"time": time})
+        dataset.set_close(lambda: closed.append(True))
+        return dataset
+
+    with pytest.raises(RuntimeError, match="write failed"):
+        ConcatBatch(
+            ConcatBatchPlanner(
+                target_timesteps=365,
+                min_batch_years=1,
+                max_batch_years=1,
+            )
+        ).process(
+            {"realization": ("source.nc",)},
+            planning_time=time,
+            dim="realization",
+            open_dataset=open_dataset,
+            operation=lambda *_args: (_ for _ in ()).throw(
+                RuntimeError("write failed")
+            ),
+            signature_dataset=lambda *_args, **_kwargs: None,
+        )
+
+    assert closed == [True]
 
 
 def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
@@ -380,14 +396,16 @@ def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
             max_batch_years=1,
         )
     ).process(
-        [dataset],
+        {"realization": ("source.nc",)},
+        planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
+        open_dataset=lambda _dataset_id, _paths, _batch: dataset.copy(deep=False),
         operation=lambda *_args: ["batch.nc"],
         signature_dataset=lambda *_args, **_kwargs: None,
     )
 
     assert any(
-        label == "after gc.collect()" and "free_memory=True collected=7" in details
+        label == "after gc.collect()" and "collected=7" in details
         for label, details in checkpoints
     )
     assert any(
