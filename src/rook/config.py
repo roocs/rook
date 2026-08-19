@@ -1,6 +1,7 @@
 """Central access to Rook configuration."""
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -11,11 +12,20 @@ from clisops.utils.output_utils import parse_size
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
-DEFAULT_SUBSET_BATCHING = {
+DEFAULT_BATCHING = {
     "target_timesteps": 2000,
     "min_batch_years": 1,
     "max_batch_years": 10,
 }
+
+DEFAULT_CONCAT_BATCHING = {
+    "target_timesteps": 365,
+    "min_batch_years": 1,
+    "max_batch_years": 1,
+}
+
+DEFAULT_DIAGNOSTIC_FREE_MEMORY = False
+DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 
 DEFAULT_SUBSET_BATCH_OUTPUT = {
     "merge_outputs": True,
@@ -135,17 +145,36 @@ def get_fix_backend() -> str:
     return backend
 
 
-def get_subset_batching_config() -> dict[str, int]:
-    """Return validated timestep-based subset batching configuration."""
-    section = _get_section("subset:batching")
+def get_batching_config() -> dict[str, int]:
+    """Return the established subset adaptive batching settings."""
+    return _get_time_batching_config("subset:batching", DEFAULT_BATCHING)
+
+
+def get_concat_batching_config() -> dict[str, int]:
+    """Return conservative adaptive batching settings for concat operations."""
+    return _get_time_batching_config("concat:batching", DEFAULT_CONCAT_BATCHING)
+
+
+def get_diagnostic_free_memory() -> bool:
+    """Return whether diagnostics should ask glibc to release free memory."""
+    section = _get_section("diagnostics")
+    value = os.environ.get(
+        DIAGNOSTIC_FREE_MEMORY_ENV,
+        section.get("free_memory", DEFAULT_DIAGNOSTIC_FREE_MEMORY),
+    )
+    return _parse_config_bool(value, "diagnostics.free_memory")
+
+
+def _get_time_batching_config(section_name, defaults):
+    section = _get_section(section_name)
     batching = {
-        key: _parse_positive_int(section.get(key, default), f"subset:batching.{key}")
-        for key, default in DEFAULT_SUBSET_BATCHING.items()
+        key: _parse_positive_int(section.get(key, default), f"{section_name}.{key}")
+        for key, default in defaults.items()
     }
     if batching["min_batch_years"] > batching["max_batch_years"]:
         raise ConfigurationError(
-            "Configuration option 'subset:batching.min_batch_years' must not exceed "
-            "'subset:batching.max_batch_years'."
+            f"Configuration option '{section_name}.min_batch_years' must not exceed "
+            f"'{section_name}.max_batch_years'."
         )
     return batching
 

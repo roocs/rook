@@ -5,7 +5,7 @@ import numpy as np
 import xarray as xr
 from clisops.utils.dataset_utils import open_xr_dataset
 
-from rook.operations import batch_outputs
+from rook.batch import outputs as batch_outputs
 
 
 def write_batch(

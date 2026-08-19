@@ -53,6 +53,7 @@ autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
 
 autodoc_default_options = {
+    "ignore-module-all": True,
     "members": True,
     "undoc-members": True,
     "private-members": False,

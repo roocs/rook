@@ -13,6 +13,45 @@ from .operations import (
 from .provenance import Provenance
 
 LOGGER = logging.getLogger()
+_PUSHDOWN_PARAMETERS = ("time", "time_components", "area")
+_TEMPORAL_PUSHDOWN_PARAMETERS = _PUSHDOWN_PARAMETERS[:2]
+_SUBSET_SELECTION_PARAMETERS = {"time", "time_components", "area", "level"}
+_SUBSET_PASSTHROUGH_DEFAULTS = {
+    "output_type": {None, "netcdf"},
+    "split_method": {None, "time:auto"},
+    "file_namer": {None, "standard"},
+    "ignore_undetected_dims": {None, False},
+}
+_SUBSET_PASSTHROUGH_CONTROLS = {"original_files", "pre_checked"}
+
+
+class _SubsetPushdown(dict):
+    """Subset hints plus shared state about their physical execution."""
+
+    def __init__(self, values=None, *, state=None):
+        super().__init__(values or {})
+        self._state = (
+            state if state is not None else {"attempted": set(), "failed": set()}
+        )
+
+    def copy(self):
+        return type(self)(self, state=self._state)
+
+    def record(self, name, successful):
+        self._state["attempted"].add(name)
+        if not successful:
+            self._state["failed"].add(name)
+
+    def reject(self, names):
+        for name in names:
+            if name in self:
+                self.record(name, False)
+
+    def consumed(self, name):
+        return name in self._state["attempted"] and name not in self._state["failed"]
+
+    def consumed_selection(self):
+        return any(self.consumed(name) for name in _PUSHDOWN_PARAMETERS)
 
 
 def is_file(data):
@@ -115,35 +154,138 @@ class Workflow(BaseWorkflow):
         tree = build_tree(wfdoc)
         return self._run_tree(steps, tree, "root")
 
-    def _run_tree(self, steps, tree, step_id):
+    def _run_tree(self, steps, tree, step_id, subset_pushdown=None):
+        step = steps.get(step_id)
+        subset_pushdown = _subset_pushdown_for_upstream(step, subset_pushdown)
         tree_outputs = {}
         for next_step_id in tree.neighbors(step_id):
             data = tree.get_edge_data(step_id, next_step_id)
             LOGGER.debug(f"data={data}")
-            tree_outputs[data["arg_id"]] = self._run_tree(steps, tree, next_step_id)
+            tree_outputs[data["arg_id"]] = self._run_tree(
+                steps,
+                tree,
+                next_step_id,
+                subset_pushdown=subset_pushdown,
+            )
         outputs = None
         LOGGER.debug(f"tree outputs={tree_outputs}")
         if step_id in steps:
-            outputs = self._run_step(step_id, steps[step_id], tree_outputs)
+            outputs = self._run_step(
+                step_id,
+                steps[step_id],
+                tree_outputs,
+                subset_pushdown=subset_pushdown,
+            )
         elif tree_outputs:
             outputs = next(iter(tree_outputs.values()))
             # outputs = list(tree_outputs.values())[0]
         LOGGER.debug(f"outputs={outputs}")
         return outputs
 
-    def _run_step(self, step_id, step, inputs=None):
+    def _run_step(self, step_id, step, inputs=None, subset_pushdown=None):
         LOGGER.debug(f"run step={step}, inputs={inputs}")
+        if subset_pushdown is not None and not isinstance(
+            subset_pushdown, _SubsetPushdown
+        ):
+            subset_pushdown = _SubsetPushdown(subset_pushdown)
         operation_inputs = deepcopy(step["in"])
         if inputs:
             operation_inputs.update(inputs)
+        pushdown_results = {}
+        if step["run"] == "concat" and subset_pushdown:
+            for name, value in subset_pushdown.items():
+                existing = operation_inputs.get(name)
+                successful = existing is None or existing == value
+                if existing is None:
+                    operation_inputs[name] = value
+                if name in _PUSHDOWN_PARAMETERS:
+                    pushdown_results[name] = successful
+        if step["run"] == "subset" and isinstance(subset_pushdown, _SubsetPushdown):
+            for name in _PUSHDOWN_PARAMETERS:
+                if subset_pushdown.consumed(name):
+                    operation_inputs.pop(name, None)
+
+            can_pass = _subset_can_pass_through(operation_inputs, subset_pushdown)
+            if can_pass:
+                collection = operation_inputs["collection"]
+                result = collection
+                self.prov.add_operator(step_id, operation_inputs, collection, result)
+                LOGGER.debug(f"pass through subset result={result}")
+                return result
 
         operation = self.operations.get(step["run"])
         if operation is None:
+            for name in pushdown_results:
+                subset_pushdown.record(name, False)
             result = None
         else:
             collection = operation_inputs["collection"]
             result = operation.call(operation_inputs)
+            for name, successful in pushdown_results.items():
+                subset_pushdown.record(name, successful)
             self.prov.add_operator(step_id, operation_inputs, collection, result)
 
         LOGGER.debug(f"run result={result}")
         return result
+
+
+def _subset_pushdown_for_upstream(step, inherited=None):
+    """Carry safe downstream subset hints into an upstream concat."""
+    if not isinstance(inherited, _SubsetPushdown):
+        inherited = _SubsetPushdown(inherited)
+    if step is None:
+        return inherited
+
+    operation = step["run"]
+    if operation == "subset":
+        return _SubsetPushdown(
+            {
+                name: step["in"][name]
+                for name in ("time", "time_components", "area")
+                if step["in"].get(name) is not None
+            }
+        )
+    if operation == "concat":
+        return inherited
+    if operation == "average":
+        dimensions = step["in"].get("dims") or ()
+        if isinstance(dimensions, str):
+            dimensions = (dimensions,)
+        forwarded = inherited.copy()
+        if "time" in dimensions:
+            forwarded.reject(_TEMPORAL_PUSHDOWN_PARAMETERS)
+            forwarded.pop("time", None)
+            forwarded.pop("time_components", None)
+        if set(dimensions).intersection(
+            {"latitude", "longitude", "lat", "lon", "x", "y"}
+        ):
+            forwarded.reject(("area",))
+            forwarded.pop("area", None)
+        return forwarded
+    if operation in {"regrid", "average_shape", "weighted_average"}:
+        forwarded = inherited.copy()
+        forwarded.reject(("area",))
+        forwarded.pop("area", None)
+        return forwarded
+    inherited.reject(_PUSHDOWN_PARAMETERS)
+    return _SubsetPushdown(state=getattr(inherited, "_state", None))
+
+
+def _subset_can_pass_through(operation_inputs, subset_pushdown):
+    """Return whether a physically empty optimized subset can be bypassed."""
+    if not subset_pushdown.consumed_selection():
+        return False
+
+    for name, value in operation_inputs.items():
+        if name == "collection" or value is None:
+            continue
+        if name in _SUBSET_SELECTION_PARAMETERS:
+            return False
+        if name in _SUBSET_PASSTHROUGH_DEFAULTS:
+            if value not in _SUBSET_PASSTHROUGH_DEFAULTS[name]:
+                return False
+            continue
+        if name in _SUBSET_PASSTHROUGH_CONTROLS:
+            continue
+        return False
+    return True

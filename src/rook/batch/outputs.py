@@ -48,14 +48,12 @@ def merge_batch_outputs(
 
 
 def _accept_batch_outputs(outputs: Sequence[str]) -> list[Path]:
-    """Accept outputs produced by the preceding subset batch calls."""
     return [Path(output) for output in outputs]
 
 
 def _plan_merges(
     outputs: Sequence[Path], *, enabled: bool, output_type: str, target_size: int
 ) -> list[list[Path]]:
-    """Group batch outputs using the first batch file as the size estimate."""
     if not enabled or len(outputs) <= 1:
         return [[output] for output in outputs]
     if output_type != "netcdf":
@@ -73,17 +71,10 @@ def _plan_merges(
 def _execute_merge_plan(
     groups: Sequence[Sequence[Path]], *, file_namer: str, output_type: str
 ) -> list[str]:
-    """Execute each group in a merge plan in order."""
     namer = get_file_namer(file_namer)()
     result = []
     for group in groups:
-        result.extend(
-            _merge_group(
-                group,
-                output_type=output_type,
-                namer=namer,
-            )
-        )
+        result.extend(_merge_group(group, output_type=output_type, namer=namer))
     return result
 
 
@@ -93,9 +84,5 @@ def _merge_group(group: Sequence[Path], *, output_type: str, namer) -> list[str]
 
     with open_xr_dataset([str(path) for path in group]) as dataset:
         target = group[0].parent / namer.get_file_name(dataset, fmt=output_type)
-        dataset.to_netcdf(
-            target,
-            engine="h5netcdf",
-            unlimited_dims=["time"],
-        )
+        dataset.to_netcdf(target, engine="h5netcdf", unlimited_dims=["time"])
     return [str(target)]

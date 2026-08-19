@@ -1,4 +1,5 @@
 import json
+from numbers import Integral
 from urllib.parse import urljoin
 
 import pytest
@@ -6,6 +7,7 @@ import requests
 from owslib.wps import ComplexDataInput, WebProcessingService
 
 from rook.processes.wps_health import HEALTHY_RESPONSE
+
 
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
@@ -83,6 +85,19 @@ C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS = (
     "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",  # noqa
     "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",  # noqa
     "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
+)
+
+C3S_CMIP6_DECADAL_DAY_COLLECTIONS = (
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r10i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r1i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r2i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r3i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r4i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r5i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r6i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r7i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r8i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r9i1p1f1.day.psl.gr.v20201216",  # noqa
 )
 
 WF_C3S_CMIP5 = json.dumps(
@@ -324,6 +339,32 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
     }
 )
 
+WF_C3S_CMIP6_DECADAL_DAY_DECEMBER = json.dumps(
+    {
+        "doc": "December daily subset on c3s-cmip6-decadal",
+        "inputs": {"psl": C3S_CMIP6_DECADAL_DAY_COLLECTIONS},
+        "outputs": {"output": "subset_psl_1/output"},
+        "steps": {
+            "concat_psl_1": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/psl",
+                    "dims": "realization",
+                },
+            },
+            "subset_psl_1": {
+                "run": "subset",
+                "in": {
+                    "collection": "concat_psl_1/output",
+                    "time": "1962/1962",
+                    "time_components": "month:dec|year:1962",
+                    "area": "-10,30,35,70",
+                },
+            },
+        },
+    }
+)
+
 
 def concat_inputs(collections, time=None):
     inputs = [("collection", collection) for collection in collections]
@@ -337,6 +378,34 @@ def subset_inputs(collection, **params):
     inputs = [("collection", collection)]
     inputs.extend((name, value) for name, value in params.items() if value is not None)
     return inputs
+
+
+def assert_decadal_fixes(
+    dataset, *, expected_startdate, realizations=10, calendar=None
+):
+    """Check the observable output contract of the decadal Woodpecker recipe."""
+    assert dataset.time.attrs["long_name"] == "valid_time"
+    if calendar is not None:
+        assert dataset.time.dt.calendar == calendar
+    assert dataset.realization.dtype == "int32"
+    assert set(dataset.realization.values) == set(range(1, realizations + 1))
+    assert dataset.realization.attrs["standard_name"] == "realization"
+
+    assert "reftime" in dataset.coords
+    assert dataset.reftime.attrs["long_name"] == "Start date of the forecast"
+    assert dataset.reftime.attrs["standard_name"] == "forecast_reference_time"
+    assert "leadtime" in dataset.coords
+    assert dataset.leadtime.attrs["long_name"] == (
+        "Time elapsed since the start of the forecast"
+    )
+    assert dataset.leadtime.attrs["standard_name"] == "forecast_period"
+
+    assert dataset.attrs["startdate"] == expected_startdate
+    assert dataset.attrs["sub_experiment_id"] == expected_startdate
+    assert isinstance(dataset.attrs["realization_index"], Integral)
+    assert dataset.attrs["forcing_description"]
+    assert dataset.attrs["physics_description"]
+    assert dataset.attrs["initialization_description"]
 
 
 def test_smoke_get_capabilities(wps):
@@ -869,7 +938,7 @@ def test_smoke_execute_aligned_daily_cordex_subset_returns_original_file(wps):
     assert "esg_c3s-cordex" in urls[0]
 
 
-def test_smoke_execute_c3s_cmip6_decadal_concat(wps):
+def test_smoke_execute_c3s_cmip6_decadal_concat(wps, tmp_path, open_dataset):
     inputs = concat_inputs(
         C3S_CMIP6_DECADAL_COLLECTIONS,
         time="1995/1995",
@@ -879,8 +948,13 @@ def test_smoke_execute_c3s_cmip6_decadal_concat(wps):
     assert "tas_Amon_HadGEM3-GC31-MM_dcppA-hindcast" in urls[0]
     assert "19951116-19951216.nc" in urls[0]
 
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(dataset, expected_startdate="s199511")
 
-def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps):
+
+def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
+    wps, tmp_path, open_dataset
+):
     inputs = concat_inputs(
         C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS,
         time="1985-01-01/1985-12-31",
@@ -889,6 +963,42 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps):
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
     assert "19850116-19851216.nc" in urls[0]
+
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(
+            dataset,
+            expected_startdate="s197611",
+            calendar="standard",
+        )
+
+
+def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
+    wps, tmp_path, open_dataset
+):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_DAY_DECEMBER)),
+    ]
+
+    urls = wps.execute("orchestrate", inputs)
+
+    assert len(urls) == 1
+    assert "psl_day_EC-Earth3_dcppA-hindcast" in urls[0]
+    assert "19621201-19621231.nc" in urls[0]
+
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert_decadal_fixes(
+            dataset,
+            expected_startdate="s196111",
+            calendar="standard",
+        )
+        assert dataset.sizes["realization"] == 10
+        assert dataset.sizes["time"] == 31
+        assert set(dataset.time.dt.year.values) == {1962}
+        assert set(dataset.time.dt.month.values) == {12}
+        assert dataset.lat.min() >= 30
+        assert dataset.lat.max() <= 70
+        assert dataset.lon.min() >= -10
+        assert dataset.lon.max() <= 35
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):

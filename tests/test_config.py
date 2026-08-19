@@ -64,17 +64,27 @@ def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
         config.get_fix_backend()
 
 
-def test_subset_batching_uses_timestep_defaults(monkeypatch):
+def test_batching_uses_timestep_defaults(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 
-    assert config.get_subset_batching_config() == {
+    assert config.get_batching_config() == {
         "target_timesteps": 2000,
         "min_batch_years": 1,
         "max_batch_years": 10,
     }
 
 
-def test_subset_batching_uses_config_override(monkeypatch):
+def test_concat_batching_uses_independent_conservative_defaults(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_concat_batching_config() == {
+        "target_timesteps": 365,
+        "min_batch_years": 1,
+        "max_batch_years": 1,
+    }
+
+
+def test_batching_uses_existing_config_override(monkeypatch):
     monkeypatch.setattr(
         config,
         "_CONFIG",
@@ -87,15 +97,70 @@ def test_subset_batching_uses_config_override(monkeypatch):
         },
     )
 
-    assert config.get_subset_batching_config() == {
+    assert config.get_batching_config() == {
         "target_timesteps": 1000,
         "min_batch_years": 2,
         "max_batch_years": 4,
     }
 
 
+def test_concat_batching_can_be_configured_independently(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "subset:batching": {"target_timesteps": "1000"},
+            "concat:batching": {
+                "target_timesteps": "180",
+                "min_batch_years": "1",
+                "max_batch_years": "1",
+            },
+        },
+    )
+
+    assert config.get_concat_batching_config() == {
+        "target_timesteps": 180,
+        "min_batch_years": 1,
+        "max_batch_years": 1,
+    }
+    assert config.get_batching_config() == {
+        "target_timesteps": 1000,
+        "min_batch_years": 1,
+        "max_batch_years": 10,
+    }
+
+
+def test_diagnostic_free_memory_defaults_to_false(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+    monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
+
+    assert config.get_diagnostic_free_memory() is False
+
+
+def test_diagnostic_free_memory_uses_general_section(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"free_memory": "true"}},
+    )
+    monkeypatch.delenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", raising=False)
+
+    assert config.get_diagnostic_free_memory() is True
+
+
+def test_diagnostic_free_memory_environment_overrides_config(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"diagnostics": {"free_memory": "false"}},
+    )
+    monkeypatch.setenv("ROOK_DIAGNOSTIC_MALLOC_TRIM", "true")
+
+    assert config.get_diagnostic_free_memory() is True
+
+
 @pytest.mark.parametrize("value", [0, -1, 2.5, True, "invalid"])
-def test_subset_batching_requires_positive_integers(monkeypatch, value):
+def test_batching_requires_positive_integers(monkeypatch, value):
     monkeypatch.setattr(
         config,
         "_CONFIG",
@@ -105,10 +170,10 @@ def test_subset_batching_requires_positive_integers(monkeypatch, value):
     with pytest.raises(
         config.ConfigurationError, match=r"subset:batching\.target_timesteps"
     ):
-        config.get_subset_batching_config()
+        config.get_batching_config()
 
 
-def test_subset_batching_rejects_inverted_year_bounds(monkeypatch):
+def test_batching_rejects_inverted_year_bounds(monkeypatch):
     monkeypatch.setattr(
         config,
         "_CONFIG",
@@ -121,7 +186,7 @@ def test_subset_batching_rejects_inverted_year_bounds(monkeypatch):
     )
 
     with pytest.raises(config.ConfigurationError, match="min_batch_years"):
-        config.get_subset_batching_config()
+        config.get_batching_config()
 
 
 def test_subset_batch_output_uses_defaults_and_clisops_size_limit(monkeypatch):

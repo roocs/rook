@@ -90,5 +90,36 @@ the estimate is based on one compressed file, the merged file's actual size can
 vary. If merging fails, Rook returns the original batch files. Set
 ``merge_outputs = false`` to always return the individual batch files.
 
+Concat time batching
+--------------------
+
+CMIP6-decadal concat uses a separate, conservative adaptive batching target. By
+default, concat batches are capped at one year so full unconstrained requests
+are written incrementally. These settings do not affect subset batching.
+
+.. code-block:: ini
+
+   [concat:batching]
+   target_timesteps = 365
+   min_batch_years = 1
+   max_batch_years = 1
+
+Processing diagnostics
+----------------------
+
+Explicit post-batch memory cleanup is configured in the general diagnostics
+section:
+
+.. code-block:: ini
+
+   [diagnostics]
+   free_memory = false
+
+Set ``free_memory = true`` to run both ``gc.collect()`` and ``malloc_trim(0)``
+after each concat batch. Explicit cleanup remains disabled by default because it
+did not materially reduce the observed retained memory. Normal dataset closing
+and reference dropping are always performed. The
+``ROOK_DIAGNOSTIC_MALLOC_TRIM`` environment variable overrides this setting.
+
 
 .. _PyWPS: https://pywps.org/

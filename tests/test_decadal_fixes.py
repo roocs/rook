@@ -123,6 +123,7 @@ def test_woodpecker_decadal_recipe_id_is_cmip6_decadal_full():
 
 def test_woodpecker_prepare_applies_decadal_prepare_phase():
     dataset = make_proleptic_gregorian_decadal_sample()
+    dataset.attrs["source_name"] = "EC-Earth3"
 
     result = WoodpeckerDatasetFixProvider().prepare(
         dataset,
@@ -137,6 +138,7 @@ def test_woodpecker_prepare_applies_decadal_prepare_phase():
     assert isinstance(result.time.values[0], cftime.DatetimeGregorian)
     assert result.time.attrs.get("calendar") == "standard"
     assert result.time.encoding.get("calendar") == "standard"
+    assert result.attrs["source_name"] == "EC-Earth3"
 
 
 def test_woodpecker_decadal_fixes_match_legacy_rook_output(tmp_path):

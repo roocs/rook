@@ -27,12 +27,17 @@ def keep_dataset(ds):
     return ds
 
 
+def open_lazy_xr_dataset(path):
+    """Open one grouped file with Dask-backed, storage-aware chunks."""
+    return open_xr_dataset(str(path), chunks={})
+
+
 def normalise_file_groups(
     collection,
     *,
     prepare_dataset=None,
     concat_dim="time",
-    opener=open_xr_dataset,
+    opener=open_lazy_xr_dataset,
 ):
     """Open grouped file paths and concatenate each group."""
     norm_collection = OrderedDict()
@@ -41,10 +46,47 @@ def normalise_file_groups(
         prepare_dataset = keep_dataset
 
     for dset, file_paths in collection.items():
-        datasets = [prepare_dataset(opener(file)) for file in file_paths]
-        norm_collection[dset] = xr.concat(datasets, dim=concat_dim)
+        file_paths = tuple(file_paths)
+        datasets = []
+        opened_datasets = []
+        try:
+            for file in file_paths:
+                opened = opener(file)
+                opened_datasets.append(opened)
+                dataset = prepare_dataset(opened)
+                datasets.append(dataset)
+
+            normalized = xr.concat(
+                datasets,
+                dim=concat_dim,
+                data_vars="minimal",
+                coords="minimal",
+                compat="override",
+                join="exact",
+            )
+        except Exception:
+            _close_datasets(datasets, opened_datasets)
+            raise
+
+        normalized.set_close(
+            lambda datasets=datasets, opened=opened_datasets: _close_datasets(
+                datasets, opened
+            )
+        )
+        norm_collection[dset] = normalized
 
     return norm_collection
+
+
+def _close_datasets(*groups):
+    """Close datasets once, preserving all lazy inputs until group close."""
+    closed = set()
+    for datasets in groups:
+        for dataset in datasets:
+            identity = id(dataset)
+            if identity not in closed:
+                dataset.close()
+                closed.add(identity)
 
 
 class ResultSet:
