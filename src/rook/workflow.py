@@ -14,6 +14,13 @@ from .provenance import Provenance
 
 LOGGER = logging.getLogger()
 _TEMPORAL_PUSHDOWN_PARAMETERS = ("time", "time_components")
+_SUBSET_SELECTION_PARAMETERS = {"time", "time_components", "area", "level"}
+_SUBSET_PASSTHROUGH_DEFAULTS = {
+    "output_type": {None, "netcdf"},
+    "split_method": {None, "time:auto"},
+    "file_namer": {None, "standard"},
+}
+_SUBSET_PASSTHROUGH_CONTROLS = {"original_files", "pre_checked"}
 
 
 class _SubsetPushdown(dict):
@@ -40,6 +47,9 @@ class _SubsetPushdown(dict):
 
     def consumed(self, name):
         return name in self._state["attempted"] and name not in self._state["failed"]
+
+    def consumed_temporal_selection(self):
+        return any(self.consumed(name) for name in _TEMPORAL_PUSHDOWN_PARAMETERS)
 
 
 def is_file(data):
@@ -193,6 +203,13 @@ class Workflow(BaseWorkflow):
                 if subset_pushdown.consumed(name):
                     operation_inputs.pop(name, None)
 
+            if _subset_can_pass_through(operation_inputs, subset_pushdown):
+                collection = operation_inputs["collection"]
+                result = collection
+                self.prov.add_operator(step_id, operation_inputs, collection, result)
+                LOGGER.debug(f"pass through subset result={result}")
+                return result
+
         operation = self.operations.get(step["run"])
         if operation is None:
             for name in pushdown_results:
@@ -247,3 +264,23 @@ def _subset_pushdown_for_upstream(step, inherited=None):
         return forwarded
     inherited.reject(_TEMPORAL_PUSHDOWN_PARAMETERS)
     return _SubsetPushdown(state=getattr(inherited, "_state", None))
+
+
+def _subset_can_pass_through(operation_inputs, subset_pushdown):
+    """Return whether a physically empty optimized subset can be bypassed."""
+    if not subset_pushdown.consumed_temporal_selection():
+        return False
+
+    for name, value in operation_inputs.items():
+        if name == "collection" or value is None:
+            continue
+        if name in _SUBSET_SELECTION_PARAMETERS:
+            return False
+        if name in _SUBSET_PASSTHROUGH_DEFAULTS:
+            if value not in _SUBSET_PASSTHROUGH_DEFAULTS[name]:
+                return False
+            continue
+        if name in _SUBSET_PASSTHROUGH_CONTROLS:
+            continue
+        return False
+    return True

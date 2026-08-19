@@ -153,8 +153,8 @@ def _recording_workflow(tmp_path, document):
         "subset": FakeOperation("subset"),
     }
     wf.prov = FakeProvenance()
-    wf._run(document)
-    return calls
+    result = wf._run(document)
+    return calls, result
 
 
 def _concat_subset_document(subset_inputs, concat_inputs=None):
@@ -179,24 +179,60 @@ def _concat_subset_document(subset_inputs, concat_inputs=None):
     }
 
 
-def test_concat_subset_moves_time_to_physical_concat(tmp_path):
-    calls = _recording_workflow(
+def test_concat_subset_time_becomes_pass_through(tmp_path):
+    calls, result = _recording_workflow(
         tmp_path,
         _concat_subset_document({"time": "1962/1962"}),
     )
 
     assert calls[0][1]["time"] == "1962/1962"
-    assert "time" not in calls[1][1]
+    assert len(calls) == 1
+    assert result == ["concat.nc"]
 
 
-def test_concat_subset_moves_time_components_to_physical_concat(tmp_path):
-    calls = _recording_workflow(
+def test_concat_subset_time_components_becomes_pass_through(tmp_path):
+    calls, result = _recording_workflow(
         tmp_path,
         _concat_subset_document({"time_components": "month:aug|year:1962"}),
     )
 
     assert calls[0][1]["time_components"] == "month:aug|year:1962"
-    assert "time_components" not in calls[1][1]
+    assert len(calls) == 1
+    assert result == ["concat.nc"]
+
+
+def test_concat_subset_time_and_components_becomes_pass_through(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document(
+            {
+                "time": "1962/1963",
+                "time_components": "month:aug",
+            }
+        ),
+    )
+
+    assert calls[0][1]["time"] == "1962/1963"
+    assert calls[0][1]["time_components"] == "month:aug"
+    assert len(calls) == 1
+    assert result == ["concat.nc"]
+
+
+def test_default_output_controls_do_not_prevent_pass_through(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document(
+            {
+                "time": "1962/1963",
+                "output_type": "netcdf",
+                "split_method": "time:auto",
+                "file_namer": "standard",
+            }
+        ),
+    )
+
+    assert len(calls) == 1
+    assert result == ["concat.nc"]
 
 
 def test_subset_without_compatible_concat_keeps_temporal_parameters(tmp_path):
@@ -237,7 +273,7 @@ def test_subset_without_compatible_concat_keeps_temporal_parameters(tmp_path):
 
 
 def test_conflicting_concat_time_does_not_consume_subset_time(tmp_path):
-    calls = _recording_workflow(
+    calls, _result = _recording_workflow(
         tmp_path,
         _concat_subset_document(
             {"time": "1962/1962"},
@@ -247,6 +283,57 @@ def test_conflicting_concat_time_does_not_consume_subset_time(tmp_path):
 
     assert calls[0][1]["time"] == "1960/1961"
     assert calls[1][1]["time"] == "1962/1962"
+
+
+def test_explicit_output_option_keeps_real_subset_execution(tmp_path):
+    calls, result = _recording_workflow(
+        tmp_path,
+        _concat_subset_document(
+            {
+                "time": "1962/1962",
+                "output_type": "zarr",
+            }
+        ),
+    )
+
+    assert calls[0][1]["time"] == "1962/1962"
+    assert calls[1] == (
+        "subset",
+        {"collection": ["concat.nc"], "output_type": "zarr"},
+    )
+    assert result == ["subset.nc"]
+
+
+def test_pass_through_returns_concat_paths_without_creating_subset_files(tmp_path):
+    concat_files = [tmp_path / "1962.nc", tmp_path / "1963.nc"]
+    concat_paths = [path.as_posix() for path in concat_files]
+    subset_path = tmp_path / "subset.nc"
+    provenance_steps = []
+    wf = workflow.Workflow(output_dir=tmp_path)
+
+    class FakeConcat:
+        def call(self, _inputs):
+            for path in concat_files:
+                path.touch()
+            return concat_paths
+
+    class FailingSubset:
+        def call(self, _inputs):
+            subset_path.touch()
+            raise AssertionError("pass-through must not call subset")
+
+    class FakeProvenance:
+        def add_operator(self, step_id, *_args):
+            provenance_steps.append(step_id)
+
+    wf.operations = {"concat": FakeConcat(), "subset": FailingSubset()}
+    wf.prov = FakeProvenance()
+
+    result = wf._run(_concat_subset_document({"time": "1962/1963"}))
+
+    assert result == concat_paths
+    assert not subset_path.exists()
+    assert provenance_steps == ["concat", "subset"]
 
 
 def test_unsupported_temporal_pushdown_keeps_subset_time(tmp_path):
