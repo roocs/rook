@@ -518,7 +518,7 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
     )
     monkeypatch.setattr(
         concat_mod.config,
-        "get_batching_config",
+        "get_concat_batching_config",
         lambda: {
             "target_timesteps": 12,
             "min_batch_years": 1,

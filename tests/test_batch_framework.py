@@ -79,6 +79,79 @@ def test_subset_and_concat_planners_adapt_the_common_planning_mechanics():
     assert isinstance(concat, BaseBatchPlanner)
 
 
+def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
+    time = xr.DataArray(
+        xr.date_range("2000-01-01", "2006-12-31", freq="D", use_cftime=True),
+        dims="time",
+    )
+    datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
+    concat = ConcatBatchPlanner(
+        target_timesteps=365,
+        min_batch_years=1,
+        max_batch_years=1,
+    )
+
+    class SevenYearRequest:
+        type = "interval"
+
+        @staticmethod
+        def get_bounds():
+            return "2000-01-01T00:00:00", "2006-12-31T23:59:59"
+
+    bounded = concat.plan(datasets, SevenYearRequest())
+    unconstrained = concat.plan(datasets)
+
+    assert [batch.start[:4] for batch in bounded] == [
+        "2000",
+        "2001",
+        "2002",
+        "2003",
+        "2004",
+        "2005",
+        "2006",
+    ]
+    assert [batch.start[:4] for batch in unconstrained] == [
+        batch.start[:4] for batch in bounded
+    ]
+    assert all(batch.start[:4] == batch.end[:4] for batch in bounded)
+    assert all(batch.start[:4] == batch.end[:4] for batch in unconstrained)
+
+
+def test_concat_request_shorter_than_one_year_stays_in_one_batch():
+    time = xr.DataArray(
+        xr.date_range("2000-03-01", "2000-08-31", freq="D", use_cftime=True),
+        dims="time",
+    )
+    planner = ConcatBatchPlanner(
+        target_timesteps=365,
+        min_batch_years=1,
+        max_batch_years=1,
+    )
+
+    assert planner.plan([xr.Dataset(coords={"time": time})]) == [
+        TimeBatch("2000-03-01T00:00:00", "2000-08-31T00:00:00")
+    ]
+
+
+def test_concat_year_ceiling_does_not_change_subset_batching():
+    time = xr.DataArray(
+        xr.date_range("2000-01-01", "2006-12-31", freq="D", use_cftime=True),
+        dims="time",
+    )
+    subset = SubsetBatchPlanner(
+        target_timesteps=2000,
+        min_batch_years=1,
+        max_batch_years=10,
+    )
+
+    batches = subset.plan(
+        time,
+        TimeBounds("2000-01-01T00:00:00", "2006-12-31T23:59:59"),
+    )
+
+    assert [batch.start[:4] for batch in batches] == ["2000", "2005"]
+
+
 def test_batch_processor_completes_each_callback_before_starting_the_next():
     events = []
     batches = [TimeBatch("2000", "2000"), TimeBatch("2001", "2001")]

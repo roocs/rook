@@ -90,5 +90,19 @@ the estimate is based on one compressed file, the merged file's actual size can
 vary. If merging fails, Rook returns the original batch files. Set
 ``merge_outputs = false`` to always return the individual batch files.
 
+Concat time batching
+--------------------
+
+CMIP6-decadal concat uses a separate, conservative adaptive batching target. By
+default, concat batches are capped at one year so full unconstrained requests
+are written incrementally. These settings do not affect subset batching.
+
+.. code-block:: ini
+
+   [concat:batching]
+   target_timesteps = 365
+   min_batch_years = 1
+   max_batch_years = 1
+
 
 .. _PyWPS: https://pywps.org/

@@ -364,7 +364,7 @@ class Concat(Operation):
         memory_checkpoint("after Woodpecker dataset fixes")
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
-        batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
+        batcher = ConcatBatch(ConcatBatchPlanner(**config.get_concat_batching_config()))
         time_components = self.params.get("time_components")
         requested_time = self.params.get("time")
         area = self.params.get("area")

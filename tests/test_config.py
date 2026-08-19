@@ -74,6 +74,16 @@ def test_batching_uses_timestep_defaults(monkeypatch):
     }
 
 
+def test_concat_batching_uses_independent_conservative_defaults(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_concat_batching_config() == {
+        "target_timesteps": 365,
+        "min_batch_years": 1,
+        "max_batch_years": 1,
+    }
+
+
 def test_batching_uses_existing_config_override(monkeypatch):
     monkeypatch.setattr(
         config,
@@ -91,6 +101,32 @@ def test_batching_uses_existing_config_override(monkeypatch):
         "target_timesteps": 1000,
         "min_batch_years": 2,
         "max_batch_years": 4,
+    }
+
+
+def test_concat_batching_can_be_configured_independently(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "subset:batching": {"target_timesteps": "1000"},
+            "concat:batching": {
+                "target_timesteps": "180",
+                "min_batch_years": "1",
+                "max_batch_years": "1",
+            },
+        },
+    )
+
+    assert config.get_concat_batching_config() == {
+        "target_timesteps": 180,
+        "min_batch_years": 1,
+        "max_batch_years": 1,
+    }
+    assert config.get_batching_config() == {
+        "target_timesteps": 1000,
+        "min_batch_years": 1,
+        "max_batch_years": 10,
     }
 
 
