@@ -2,9 +2,11 @@ import xarray as xr
 
 from rook.batch import (
     BatchProcessor,
+    BaseBatchPlanner,
     ConcatBatch,
+    ConcatBatchPlanner,
+    SubsetBatchPlanner,
     TimeBatch,
-    TimeBatchPlanner,
     TimeBounds,
 )
 
@@ -24,16 +26,18 @@ def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
         "max_batch_years": 10,
     }
 
-    daily_batches = TimeBatchPlanner(**config).plan(
+    planner = SubsetBatchPlanner(**config)
+
+    daily_batches = planner.plan(
         daily,
-        bounds=TimeBounds(
+        TimeBounds(
             "2000-01-01T00:00:00",
             "2012-12-31T23:59:59",
         ),
     )
-    monthly_batches = TimeBatchPlanner(**config).plan(
+    monthly_batches = planner.plan(
         monthly,
-        bounds=TimeBounds(
+        TimeBounds(
             "2000-01-01T00:00:00",
             "2025-12-31T23:59:59",
         ),
@@ -41,6 +45,38 @@ def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
 
     assert [batch.start[:4] for batch in daily_batches] == ["2000", "2005", "2010"]
     assert [batch.start[:4] for batch in monthly_batches] == ["2000", "2010", "2020"]
+    assert isinstance(planner, BaseBatchPlanner)
+
+
+def test_subset_and_concat_planners_adapt_the_common_planning_mechanics():
+    time = xr.DataArray(
+        xr.date_range("2000-01-01", periods=24, freq="MS", use_cftime=True),
+        dims="time",
+    )
+    config = {
+        "target_timesteps": 12,
+        "min_batch_years": 1,
+        "max_batch_years": 1,
+    }
+
+    subset = SubsetBatchPlanner(**config)
+    assert subset.plan(time, TimeBounds(None, "2001-12-31")) == []
+
+    class RequestedTime:
+        type = "interval"
+
+        @staticmethod
+        def get_bounds():
+            return "2001-01-01T00:00:00", "2001-12-31T23:59:59"
+
+    concat = ConcatBatchPlanner(**config)
+    batches = concat.plan(
+        [xr.Dataset(coords={"time": time})],
+        RequestedTime(),
+    )
+
+    assert batches == [TimeBatch("2001-01-01T00:00:00", "2001-12-31T23:59:59")]
+    assert isinstance(concat, BaseBatchPlanner)
 
 
 def test_batch_processor_completes_each_callback_before_starting_the_next():
@@ -71,7 +107,7 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
         dims="time",
     )
     processor = ConcatBatch(
-        TimeBatchPlanner(
+        ConcatBatchPlanner(
             target_timesteps=12,
             min_batch_years=1,
             max_batch_years=1,

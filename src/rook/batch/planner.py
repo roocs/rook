@@ -31,16 +31,16 @@ class TimeBounds:
     end: str | None
 
 
-class TimeBatchPlanner:
-    """Plan adaptive batches from a representative time coordinate."""
+class BaseBatchPlanner:
+    """Shared calendar-aware adaptive time-batch planning mechanics."""
 
     def __init__(self, *, target_timesteps, min_batch_years=1, max_batch_years=10):
         self.target_timesteps = target_timesteps
         self.min_batch_years = min_batch_years
         self.max_batch_years = max_batch_years
 
-    def plan(self, time, *, bounds=None):
-        """Return batches spanning requested bounds or the coordinate itself."""
+    def _plan(self, time, bounds=None):
+        """Build batches from one representative coordinate and optional bounds."""
         start = bounds.start if bounds is not None else None
         end = bounds.end if bounds is not None else None
         if time is None or getattr(time, "size", 0) == 0:
@@ -64,6 +64,41 @@ class TimeBatchPlanner:
                 start, end, calendar, batch_years
             )
         ]
+
+
+class SubsetBatchPlanner(BaseBatchPlanner):
+    """Plan batches for a subset request with closed requested bounds."""
+
+    def plan(self, time, bounds):
+        if bounds.start is None or bounds.end is None:
+            return []
+        return self._plan(time, bounds)
+
+
+class ConcatBatchPlanner(BaseBatchPlanner):
+    """Plan batches across the time coordinate shared by concat inputs."""
+
+    def plan(self, datasets, requested_time=None):
+        return self._plan(
+            _representative_time(datasets),
+            _requested_bounds(requested_time),
+        )
+
+
+def _representative_time(datasets):
+    for dataset in datasets:
+        if "time" in dataset.coords:
+            return dataset.time
+    return None
+
+
+def _requested_bounds(time):
+    if time is None or getattr(time, "type", None) != "interval":
+        return None
+    start, end = time.get_bounds()
+    if not start or not end:
+        return None
+    return TimeBounds(start, end)
 
 
 def calculate_batch_years(

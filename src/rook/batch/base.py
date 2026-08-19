@@ -9,26 +9,7 @@ Output = TypeVar("Output")
 
 
 class BatchProcessor:
-    """Plan and execute time batches sequentially."""
-
-    def get_planner(self):
-        """Return the time-batch planner used by this processor."""
-        raise NotImplementedError
-
-    def plan(self, time, *, bounds=None):
-        """Plan batches through the processor's shared planner."""
-        return self.get_planner().plan(time, bounds=bounds)
-
-    def process(
-        self,
-        time,
-        process_batch: Callable[[TimeBatch, int, int], Iterable[Output]],
-        *,
-        bounds=None,
-    ) -> list[Output]:
-        """Plan and execute batches, completing each callback in sequence."""
-        batches = self.plan(time, bounds=bounds)
-        return self.execute(batches, process_batch)
+    """Execute a completed batch plan sequentially."""
 
     def execute(
         self,

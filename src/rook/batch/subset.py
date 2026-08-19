@@ -12,7 +12,7 @@ from rook.operations.base import Operation
 from .base import BatchProcessor
 from .outputs import merge_batch_outputs
 from .planner import (
-    TimeBatchPlanner,
+    SubsetBatchPlanner,
     TimeBounds,
     calculate_batch_years,
     estimate_timesteps_per_year,
@@ -36,7 +36,7 @@ class SubsetBatch(BatchProcessor, Operation):
     def get_planner(self):
         """Build the planner from the established subset batching settings."""
         if not hasattr(self, "_batch_planner"):
-            self._batch_planner = TimeBatchPlanner(**self.get_batching_config())
+            self._batch_planner = SubsetBatchPlanner(**self.get_batching_config())
         return self._batch_planner
 
     def calculate(self):
@@ -92,7 +92,7 @@ class SubsetBatch(BatchProcessor, Operation):
             "min_batch_years": planner.min_batch_years,
             "max_batch_years": planner.max_batch_years,
         }
-        batches = self.plan(time, bounds=bounds)
+        batches = planner.plan(time, bounds)
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
         logger.info(
             f"Subset batching plan for {source.key}: calendar={calendar}, "

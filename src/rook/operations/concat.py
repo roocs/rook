@@ -12,7 +12,7 @@ from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
 from rook import config
-from rook.batch import ConcatBatch, TimeBatchPlanner
+from rook.batch import ConcatBatch, ConcatBatchPlanner
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     FixContext,
@@ -150,7 +150,7 @@ class Concat(Operation):
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
-        batcher = ConcatBatch(TimeBatchPlanner(**config.get_batching_config()))
+        batcher = ConcatBatch(ConcatBatchPlanner(**config.get_batching_config()))
         outputs = batcher.process(
             datasets,
             dim=dim,
