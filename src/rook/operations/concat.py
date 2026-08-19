@@ -100,36 +100,16 @@ def finalise_concat_output(ds, params, dim):
     )
 
 
-def select_concat_time_batch(datasets, batch):
-    """Lazily select one time interval from every concat input dataset."""
-    if batch.start is None or batch.end is None:
-        return datasets
-    time_slice = slice(batch.start, batch.end)
-    return [dataset.sel(time=time_slice) for dataset in datasets]
-
-
-def process_concat_time_batch(datasets, params, dim, standard_name, batch):
-    """Combine, finalize, and synchronously write one concat time batch."""
-    selected = select_concat_time_batch(datasets, batch)
-    processed_ds = combine_concat_datasets(selected, dim, standard_name)
+def combine_and_finalise_concat(datasets, params, dim, standard_name, time=None):
+    """Combine prepared datasets, finalize the result, and write it."""
+    processed_ds = combine_concat_datasets(datasets, dim, standard_name)
     batch_params = dict(params)
-    if batch.interval is not None:
-        batch_params["time"] = time_parameter.TimeParameter(batch.interval)
+    if time is not None:
+        batch_params["time"] = time_parameter.TimeParameter(time)
     try:
-        # clisops subset writes synchronously, so no delayed write survives this call.
         return finalise_concat_output(processed_ds, batch_params, dim)
     finally:
         processed_ds.close()
-
-
-def concat_time_bounds(time):
-    """Return closed requested bounds when concat received a time interval."""
-    if time is None or time.type != "interval":
-        return None, None
-    start, end = time.get_bounds()
-    if not start or not end:
-        return None, None
-    return start, end
 
 
 class Concat(Operation):
@@ -173,22 +153,17 @@ class Concat(Operation):
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
-        representative_time = (
-            datasets[0].time if datasets and "time" in datasets[0].coords else None
-        )
-        start, end = concat_time_bounds(self.params.get("time"))
         batcher = ConcatBatch(TimeBatchPlanner(**config.get_batching_config()))
         outputs = batcher.process(
-            representative_time,
-            lambda batch, _index, _total: process_concat_time_batch(
-                datasets,
+            datasets,
+            lambda selected, time, _index, _total: combine_and_finalise_concat(
+                selected,
                 self.params,
                 dim,
                 standard_name,
-                batch,
+                time,
             ),
-            start=start,
-            end=end,
+            requested_time=self.params.get("time"),
         )
         rs.add("output", outputs)
 

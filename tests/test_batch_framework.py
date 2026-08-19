@@ -69,11 +69,22 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
     )
     calls = []
 
-    outputs = processor.process(
-        time,
-        lambda batch, index, total: calls.append((batch.start, batch.end, index, total))
-        or [f"batch-{index}.nc"],
-    )
+    datasets = [xr.Dataset(coords={"time": time}) for _ in range(2)]
+
+    def process(selected, interval, index, total):
+        calls.append(
+            (
+                selected[0].time.values[0].year,
+                selected[0].sizes["time"],
+                interval,
+                index,
+                total,
+            )
+        )
+        return [f"batch-{index}.nc"]
+
+    outputs = processor.process(datasets, process)
 
     assert outputs == ["batch-1.nc", "batch-2.nc"]
-    assert [call[2:] for call in calls] == [(1, 2), (2, 2)]
+    assert [(call[0], call[1]) for call in calls] == [(2000, 12), (2001, 12)]
+    assert [call[3:] for call in calls] == [(1, 2), (2, 2)]

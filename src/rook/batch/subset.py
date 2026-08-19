@@ -25,12 +25,18 @@ if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
 
 
-class SubsetBatch(Operation):
+class SubsetBatch(BatchProcessor, Operation):
     """Operation layer that runs eligible subset requests in time batches."""
 
     def get_batching_config(self):
         """Return the established subset timestep batching configuration."""
         return config.get_batching_config()
+
+    def get_planner(self):
+        """Build the planner from the established subset batching settings."""
+        if not hasattr(self, "_batch_planner"):
+            self._batch_planner = TimeBatchPlanner(**self.get_batching_config())
+        return self._batch_planner
 
     def calculate(self):
         """Process eligible sources one time batch at a time."""
@@ -78,9 +84,13 @@ class SubsetBatch(Operation):
             )
             return source, []
 
-        batching = self.get_batching_config()
-        planner = TimeBatchPlanner(**batching)
-        batches = planner.plan(time, start=start, end=end, calendar=calendar)
+        planner = self.get_planner()
+        batching = {
+            "target_timesteps": planner.target_timesteps,
+            "min_batch_years": planner.min_batch_years,
+            "max_batch_years": planner.max_batch_years,
+        }
+        batches = self.plan(time, start=start, end=end, calendar=calendar)
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
         logger.info(
             f"Subset batching plan for {source.key}: calendar={calendar}, "
@@ -106,7 +116,7 @@ class SubsetBatch(Operation):
             return self._open_and_process(batch_source)
 
         try:
-            outputs = BatchProcessor().execute(batches, process_batch)
+            outputs = self.execute(batches, process_batch)
         finally:
             self.params["time"] = original_time
 

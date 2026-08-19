@@ -11,7 +11,7 @@ from clisops.utils.output_utils import parse_size
 _PACKAGE_FILE = Path(__file__)
 _CONFIG = _get_clisops_config(_PACKAGE_FILE)
 
-DEFAULT_SUBSET_BATCHING = {
+DEFAULT_BATCHING = {
     "target_timesteps": 2000,
     "min_batch_years": 1,
     "max_batch_years": 10,
@@ -136,11 +136,11 @@ def get_fix_backend() -> str:
 
 
 def get_batching_config() -> dict[str, int]:
-    """Return shared adaptive batching settings from the legacy config section."""
+    """Return shared adaptive batching settings from the established section."""
     section = _get_section("subset:batching")
     batching = {
         key: _parse_positive_int(section.get(key, default), f"subset:batching.{key}")
-        for key, default in DEFAULT_SUBSET_BATCHING.items()
+        for key, default in DEFAULT_BATCHING.items()
     }
     if batching["min_batch_years"] > batching["max_batch_years"]:
         raise ConfigurationError(
@@ -148,11 +148,6 @@ def get_batching_config() -> dict[str, int]:
             "'subset:batching.max_batch_years'."
         )
     return batching
-
-
-def get_subset_batching_config() -> dict[str, int]:
-    """Return batching settings under the established subset API."""
-    return get_batching_config()
 
 
 def get_subset_batch_output_config() -> dict[str, bool | int]:
