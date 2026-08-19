@@ -7,7 +7,6 @@ from clisops.utils.dataset_utils import open_xr_dataset
 from loguru import logger
 import xarray as xr
 
-from rook.diagnostics import dataset_signature, dataset_summary, memory_checkpoint
 from rook.io.datasets import open_dataset
 
 
@@ -48,31 +47,15 @@ def normalise_file_groups(
 
     for dset, file_paths in collection.items():
         file_paths = tuple(file_paths)
-        memory_checkpoint(
-            "normalise group start",
-            f"group={dset} files={len(file_paths)}",
-        )
         datasets = []
         opened_datasets = []
         try:
-            for index, file in enumerate(file_paths, start=1):
-                file_label = f"group={dset} file={index}/{len(file_paths)}"
-                memory_checkpoint("before opening file", file_label)
+            for file in file_paths:
                 opened = opener(file)
                 opened_datasets.append(opened)
-                memory_checkpoint(
-                    "after opening file",
-                    f"{file_label} {dataset_summary(opened)}",
-                )
-                memory_checkpoint("before prepare_dataset", file_label)
                 dataset = prepare_dataset(opened)
-                memory_checkpoint(
-                    "after prepare_dataset",
-                    f"{file_label} {dataset_summary(dataset)}",
-                )
                 datasets.append(dataset)
 
-            memory_checkpoint("before normalise xr.concat", f"group={dset}")
             normalized = xr.concat(
                 datasets,
                 dim=concat_dim,
@@ -91,11 +74,6 @@ def normalise_file_groups(
             )
         )
         norm_collection[dset] = normalized
-        memory_checkpoint(
-            "after normalise xr.concat",
-            f"group={dset} {dataset_summary(normalized)}",
-        )
-        dataset_signature("after normalized group concat", normalized, identity=dset)
 
     return norm_collection
 

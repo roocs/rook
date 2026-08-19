@@ -329,7 +329,6 @@ def test_concat_batch_opens_fresh_sources_and_closes_them_before_next_batch(
         dim="realization",
         open_dataset=open_dataset,
         operation=lambda _combined, _time, index, _total: [f"batch-{index}.nc"],
-        signature_dataset=lambda *_args, **_kwargs: None,
     )
 
     assert outputs == ["batch-1.nc", "batch-2.nc"]
@@ -368,7 +367,6 @@ def test_concat_batch_closes_batch_sources_after_write_exception():
             operation=lambda *_args: (_ for _ in ()).throw(
                 RuntimeError("write failed")
             ),
-            signature_dataset=lambda *_args, **_kwargs: None,
         )
 
     assert closed == [True]
@@ -401,7 +399,6 @@ def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
         dim="realization",
         open_dataset=lambda _dataset_id, _paths, _batch: dataset.copy(deep=False),
         operation=lambda *_args: ["batch.nc"],
-        signature_dataset=lambda *_args, **_kwargs: None,
     )
 
     assert any(

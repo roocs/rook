@@ -24,7 +24,7 @@ from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 
 from rook import config
 from rook.batch import ConcatBatch, ConcatBatchPlanner
-from rook.diagnostics import dataset_signature, memory_checkpoint
+from rook.diagnostics import memory_checkpoint
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     FixContext,
@@ -37,31 +37,6 @@ from .base import Operation, resolve_collection
 coord_by_standard_name = {
     "realization": "realization",
 }
-DECADAL_FIX_COORDS = ("time", "reftime", "leadtime", "realization")
-DECADAL_FIX_ATTRS = (
-    "dataset_id",
-    "project_id",
-    "startdate",
-    "sub_experiment_id",
-    "realization_index",
-)
-DECADAL_DESCRIPTION_ATTRS = (
-    "forcing_description",
-    "physics_description",
-    "initialization_description",
-)
-
-
-def decadal_dataset_signature(label, dataset, *, identity=None):
-    """Report the coordinates and metadata produced by the decadal recipe."""
-    dataset_signature(
-        label,
-        dataset,
-        identity=identity,
-        coordinate_names=DECADAL_FIX_COORDS,
-        attribute_names=DECADAL_FIX_ATTRS,
-        presence_attributes=DECADAL_DESCRIPTION_ATTRS,
-    )
 
 
 def drop_time_bnds(ds: xr.Dataset) -> xr.Dataset:
@@ -91,19 +66,8 @@ def apply_concat_calendar_fix(ds, provider):
     return provider.prepare(ds, context=context)
 
 
-def apply_concat_dataset_fixes(collection, output_dir, provider):
-    """Apply concat-specific decadal fixes to each opened dataset."""
-    datasets = []
-
-    for ds_id, ds in collection.items():
-        datasets.append(apply_concat_dataset_fix(ds_id, ds, output_dir, provider))
-
-    return datasets
-
-
 def apply_concat_dataset_fix(dataset_id, dataset, output_dir, provider):
     """Apply the dataset-id-aware concat fix to one realization."""
-    decadal_dataset_signature("before Woodpecker apply", dataset, identity=dataset_id)
     context = FixContext(
         dataset_id=dataset_id,
         operation="concat",
@@ -112,7 +76,6 @@ def apply_concat_dataset_fix(dataset_id, dataset, output_dir, provider):
         recipe_id=WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     )
     fixed = provider.apply(dataset, context=context)
-    decadal_dataset_signature("after Woodpecker apply", fixed, identity=dataset_id)
     return fixed
 
 
@@ -222,9 +185,9 @@ def finalise_concat_batch(ds, time, _index, _total, *, params, dim, standard_nam
     if time is not None:
         batch_params["time"] = time_parameter.TimeParameter(time)
     writer_label = f"batch={_index}/{_total} interval={time}"
-    memory_checkpoint("before clisops subset writer", writer_label)
+    memory_checkpoint("before clisops writer", writer_label)
     outputs = finalise_concat_output(ds, batch_params, dim)
-    memory_checkpoint("after clisops subset writer", writer_label)
+    memory_checkpoint("after clisops writer", writer_label)
     return outputs
 
 
@@ -262,29 +225,17 @@ def concat_dataset_selector(time_components, requested_time=None, area=None):
     components = parsed_time_components(time_components)
     bounds = _requested_interval_bounds(requested_time)
     area_bounds = parsed_area(area)
-    memory_checkpoint(
-        "concat selector configured",
-        f"time_components={components} requested_bounds={bounds} area={area_bounds}",
-    )
     if not components and bounds is None and area_bounds is None:
         return None
 
     def select_dataset(dataset):
         selected = dataset
-        memory_checkpoint(
-            "concat selector before selection",
-            f"time={selected.sizes.get('time', 0)}",
-        )
         if bounds is not None:
             selected = subset_time(
                 selected,
                 start_date=bounds[0],
                 end_date=bounds[1],
             )
-        memory_checkpoint(
-            "concat selector after subset_time",
-            f"time={selected.sizes.get('time', 0)} bounds={bounds}",
-        )
         if components:
             try:
                 selected = subset_time_by_components(
@@ -293,20 +244,8 @@ def concat_dataset_selector(time_components, requested_time=None, area=None):
                 )
             except KeyError:
                 selected = selected.isel(time=slice(0, 0))
-        memory_checkpoint(
-            "concat selector after subset_time_by_components",
-            f"time={selected.sizes.get('time', 0)} time_components={components}",
-        )
-        memory_checkpoint(
-            "concat selector before area selection",
-            _spatial_sizes(selected),
-        )
         if area_bounds is not None:
             selected = clisops_subset_area(selected, area_bounds)
-        memory_checkpoint(
-            "concat selector after area selection",
-            _spatial_sizes(selected),
-        )
         return selected
 
     return select_dataset
@@ -389,12 +328,6 @@ def _requested_interval_bounds(requested_time):
     return start, end
 
 
-def _spatial_sizes(dataset):
-    names = ("lat", "latitude", "y", "lon", "longitude", "x")
-    sizes = [f"{name}={dataset.sizes[name]}" for name in names if name in dataset.sizes]
-    return " ".join(sizes) or "spatial_sizes=unavailable"
-
-
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         time = time_parameter.TimeParameter(params.get("time"))
@@ -432,10 +365,6 @@ class Concat(Operation):
             collection,
             prepare_dataset=lambda ds: apply_concat_calendar_fix(ds, provider),
         )
-        memory_checkpoint(
-            "ConcatBatchPlanner input",
-            f"requested_time={_requested_interval_bounds(effective_time)}",
-        )
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
             collection,
@@ -459,9 +388,7 @@ class Concat(Operation):
                 area=area,
             ),
             include_batch=concat_batch_filter(time_components),
-            signature_dataset=decadal_dataset_signature,
         )
-        memory_checkpoint("after ConcatBatch")
         rs.add("output", outputs)
 
         return rs

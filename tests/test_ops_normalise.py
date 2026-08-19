@@ -113,7 +113,7 @@ def test_dataset_summary_reports_backing_type_and_compact_chunks():
     assert "eager[numpy:ndarray;chunks=none]" in summary
 
 
-def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path, capsys):
+def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path):
     dask_array = __import__("dask.array", fromlist=["Array"])
     paths = []
     for index, times in enumerate(([0, 1], [2, 3]), start=1):
@@ -149,13 +149,4 @@ def test_normalise_file_groups_keeps_grouped_netcdf_data_dask_backed(tmp_path, c
         [2, 2, 2],
         [3, 3, 3],
     ]
-    diagnostics = capsys.readouterr().err.splitlines()
-    assert any(
-        "after opening file" in line and "psl[dask:Array" in line
-        for line in diagnostics
-    )
-    assert any(
-        "after normalise xr.concat" in line and "psl[dask:Array" in line
-        for line in diagnostics
-    )
     dataset.close()

@@ -65,7 +65,7 @@ def test_run_step_dispatches_registered_workflow_operation(tmp_path):
     )
 
 
-def test_subset_selection_consumed_by_concat_becomes_pass_through(tmp_path, capsys):
+def test_subset_selection_consumed_by_concat_becomes_pass_through(tmp_path):
     calls = []
     wf = workflow.Workflow(output_dir=tmp_path)
 
@@ -124,13 +124,6 @@ def test_subset_selection_consumed_by_concat_becomes_pass_through(tmp_path, caps
         },
     )
     assert len(calls) == 1
-    diagnostic = capsys.readouterr().err
-    assert "[workflow] subset pass-through check step=subset" in diagnostic
-    assert "attempted=" in diagnostic
-    assert (
-        "consumed={'time': True, 'time_components': True, 'area': True}" in diagnostic
-    )
-    assert "can_pass=True" in diagnostic
 
 
 def _recording_workflow(tmp_path, document):

@@ -44,29 +44,6 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix():
     assert calls == [("input", "concat", "prepare")]
 
 
-def test_apply_concat_dataset_fixes_preserves_dataset_identity(tmp_path):
-    calls = []
-    first = xr.Dataset(attrs={"source": "first"})
-    second = xr.Dataset(attrs={"source": "second"})
-
-    class FakeProvider:
-        def apply(self, ds, *, context=None):
-            calls.append((context.dataset_id, ds.attrs["source"], context.output_dir))
-            return ds.assign_attrs(fixed=context.dataset_id)
-
-    datasets = concat_mod.apply_concat_dataset_fixes(
-        {"first.id": first, "second.id": second},
-        output_dir=tmp_path.as_posix(),
-        provider=FakeProvider(),
-    )
-
-    assert calls == [
-        ("first.id", "first", tmp_path.as_posix()),
-        ("second.id", "second", tmp_path.as_posix()),
-    ]
-    assert [ds.attrs["fixed"] for ds in datasets] == ["first.id", "second.id"]
-
-
 def test_concat_batch_paths_keeps_only_files_overlapping_batch():
     paths = (
         "psl_day_model_19610101-19611231.nc",
@@ -317,7 +294,7 @@ def test_parsed_area_uses_clisops_bbox_bounds():
     }
 
 
-def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
+def test_concat_selector_combines_requested_time_and_components_lazily():
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
     lat = np.arange(20.0, 81.0, 10.0)
@@ -349,14 +326,6 @@ def test_concat_selector_combines_requested_time_and_components_lazily(capsys):
     assert selected.sizes["lon"] == 5
     assert selected.lon.values.tolist() == [-10.0, 0.0, 10.0, 20.0, 30.0]
     assert isinstance(selected.psl.data, dask_array.Array)
-    diagnostics = capsys.readouterr().err
-    assert "concat selector configured" in diagnostics
-    assert "time_components={'year': [1962], 'month': [8]}" in diagnostics
-    assert f"concat selector before selection | time={len(time)}" in diagnostics
-    assert "concat selector after subset_time | time=365" in diagnostics
-    assert "concat selector after subset_time_by_components | time=31" in diagnostics
-    assert "concat selector before area selection | lat=7 lon=36" in diagnostics
-    assert "concat selector after area selection | lat=5 lon=5" in diagnostics
 
 
 def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(

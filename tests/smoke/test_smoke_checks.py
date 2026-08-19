@@ -85,6 +85,19 @@ C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS = (
     "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
 )
 
+C3S_CMIP6_DECADAL_DAY_COLLECTIONS = (
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r10i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r1i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r2i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r3i1p1f1.day.psl.gr.v20201215",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r4i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r5i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r6i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r7i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r8i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r9i1p1f1.day.psl.gr.v20201216",  # noqa
+)
+
 WF_C3S_CMIP5 = json.dumps(
     {
         "doc": "subset+average on cmip5",
@@ -318,6 +331,32 @@ WF_C3S_CMIP6_DECADAL_2 = json.dumps(
                 "in": {
                     "collection": "concat/output",
                     "time": "1985-01-01/1985-12-31",
+                },
+            },
+        },
+    }
+)
+
+WF_C3S_CMIP6_DECADAL_DAY_DECEMBER = json.dumps(
+    {
+        "doc": "December daily subset on c3s-cmip6-decadal",
+        "inputs": {"psl": C3S_CMIP6_DECADAL_DAY_COLLECTIONS},
+        "outputs": {"output": "subset_psl_1/output"},
+        "steps": {
+            "concat_psl_1": {
+                "run": "concat",
+                "in": {
+                    "collection": "inputs/psl",
+                    "dims": "realization",
+                },
+            },
+            "subset_psl_1": {
+                "run": "subset",
+                "in": {
+                    "collection": "concat_psl_1/output",
+                    "time": "1962/1962",
+                    "time_components": "month:dec|year:1962",
+                    "area": "-10,30,35,70",
                 },
             },
         },
@@ -889,6 +928,30 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps):
     assert len(urls) == 1
     assert "psl_Amon_EC-Earth3_dcppA-hindcast" in urls[0]
     assert "19850116-19851216.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
+    wps, tmp_path, open_dataset
+):
+    inputs = [
+        ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_DAY_DECEMBER)),
+    ]
+
+    urls = wps.execute("orchestrate", inputs)
+
+    assert len(urls) == 1
+    assert "psl_day_EC-Earth3_dcppA-hindcast" in urls[0]
+    assert "19621201-19621231.nc" in urls[0]
+
+    with open_dataset(urls[0], tmp_path) as dataset:
+        assert dataset.sizes["realization"] == 10
+        assert dataset.sizes["time"] == 31
+        assert set(dataset.time.dt.year.values) == {1962}
+        assert set(dataset.time.dt.month.values) == {12}
+        assert dataset.lat.min() >= 30
+        assert dataset.lat.max() <= 70
+        assert dataset.lon.min() >= -10
+        assert dataset.lon.max() <= 35
 
 
 def test_smoke_execute_c3s_ipcc_atlas_cmip5_subset(wps):

@@ -1,7 +1,6 @@
 import logging
 from copy import deepcopy
 from pathlib import Path
-import sys
 
 import networkx as nx
 import yaml
@@ -207,21 +206,6 @@ class Workflow(BaseWorkflow):
                     operation_inputs.pop(name, None)
 
             can_pass = _subset_can_pass_through(operation_inputs, subset_pushdown)
-            consumed = {
-                name: subset_pushdown.consumed(name) for name in _PUSHDOWN_PARAMETERS
-            }
-            print(
-                "[workflow] subset pass-through check "
-                f"step={step_id} "
-                f"inputs={operation_inputs!r} "
-                f"pushdown={dict(subset_pushdown)!r} "
-                f"attempted={subset_pushdown._state['attempted']!r} "
-                f"failed={subset_pushdown._state['failed']!r} "
-                f"consumed={consumed!r} "
-                f"can_pass={can_pass}",
-                file=sys.stderr,
-                flush=True,
-            )
             if can_pass:
                 collection = operation_inputs["collection"]
                 result = collection

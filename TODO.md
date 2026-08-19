@@ -17,6 +17,25 @@ documented in `CHANGELOG.rst`.
   clisops are routed consistently to the configured service or Slurm job logs
   without duplication.
 
+## Decadal concat batching
+
+Status: source-path-level batching is implemented.
+
+Production testing found that retaining normalized realization datasets across
+batches caused approximately linear RSS growth. Opening and closing only the
+relevant sources inside each yearly batch fixed the main problem: a seven-year,
+ten-realization daily request with a Europe area selection stayed around 1.8 GB
+RSS instead of growing toward OOM. Area pushdown reduces data before concat and
+write, and the downstream subset is skipped when concat consumed every effective
+selection. The largest transient allocation is now in the clisops NetCDF writer;
+memory after its first write behaves mostly as a reusable high-water mark.
+
+- [ ] Investigate whether the clisops writer peak can be reduced further.
+- [ ] Safely minimize source files opened for each yearly batch where possible.
+- [ ] Evaluate batch-size tuning for other variables, frequencies, and requests
+  without area constraints.
+- [ ] Reuse the diagnostics helpers for future memory and resource investigations.
+
 ## Packaging
 
 - [ ] Publish the Woodpecker packages on conda-forge. The package request is

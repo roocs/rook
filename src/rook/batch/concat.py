@@ -5,7 +5,6 @@ import gc
 import xarray as xr
 
 from rook.diagnostics import (
-    dataset_signature,
     free_memory_diagnostic_enabled,
     malloc_trim,
     memory_checkpoint,
@@ -34,7 +33,6 @@ class ConcatBatch(BatchProcessor):
         requested_time=None,
         select_dataset=None,
         include_batch=None,
-        signature_dataset=dataset_signature,
     ):
         """Execute batches sequentially with batch-local source datasets."""
         batches = self.get_planner().plan(planning_time, requested_time)
@@ -59,21 +57,15 @@ class ConcatBatch(BatchProcessor):
                 selected = [_select_time_batch(dataset, batch) for dataset in datasets]
                 if select_dataset is not None:
                     selected = [select_dataset(dataset) for dataset in selected]
-                for realization, dataset in enumerate(selected, start=1):
-                    signature_dataset(
-                        "after batch selection",
-                        dataset,
-                        identity=f"{batch_label} realization={realization}",
-                    )
+                memory_checkpoint(
+                    "after batch selection",
+                    f"{batch_label} realizations={len(selected)}",
+                )
 
                 combined = xr.concat(selected, dim=dim)
                 memory_checkpoint("after realization concat", batch_label)
-                signature_dataset(
-                    "after realization concat", combined, identity=batch_label
-                )
 
                 outputs = operation(combined, batch.interval, index, total)
-                memory_checkpoint("after write", batch_label)
                 return outputs
             finally:
                 if combined is not None:
