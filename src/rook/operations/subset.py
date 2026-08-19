@@ -8,13 +8,14 @@ from clisops.parameter import (
     time_parameter,
 )
 
+from rook.batch import SubsetBatch
+
 from .base import resolve_collection
-from .time_batching import SubsetTimeBatchingOperation
 
 __all__ = ["Subset", "subset"]
 
 
-class Subset(SubsetTimeBatchingOperation):
+class Subset(SubsetBatch):
     def _resolve_params(self, collection, **params):
         self.collection = resolve_collection(collection)
         self.params = {

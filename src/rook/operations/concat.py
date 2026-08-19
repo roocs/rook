@@ -10,6 +10,8 @@ from clisops.parameter import time_components_parameter
 from clisops.parameter import time_parameter
 from clisops.project_utils import derive_ds_id
 
+from rook import config
+from rook.batch import ConcatBatch, TimeBatchPlanner
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
     FixContext,
@@ -76,7 +78,7 @@ def concat_dimension(dims):
 
 def combine_concat_datasets(datasets, dim, standard_name):
     """Concatenate datasets and restore concat coordinate metadata."""
-    ds = xr.concat(datasets, dim)
+    ds = xr.concat(datasets, dim=dim)
     ds = ds.assign_coords({dim: (dim, np.array(ds[dim].values, dtype="int32"))})
     ds.coords[dim].attrs = {"standard_name": standard_name}
     return drop_time_bnds(ds)
@@ -96,6 +98,38 @@ def finalise_concat_output(ds, params, dim):
         split_method=params.get("split_method", "time:auto"),
         file_namer=params.get("file_namer", "standard"),
     )
+
+
+def select_concat_time_batch(datasets, batch):
+    """Lazily select one time interval from every concat input dataset."""
+    if batch.start is None or batch.end is None:
+        return datasets
+    time_slice = slice(batch.start, batch.end)
+    return [dataset.sel(time=time_slice) for dataset in datasets]
+
+
+def process_concat_time_batch(datasets, params, dim, standard_name, batch):
+    """Combine, finalize, and synchronously write one concat time batch."""
+    selected = select_concat_time_batch(datasets, batch)
+    processed_ds = combine_concat_datasets(selected, dim, standard_name)
+    batch_params = dict(params)
+    if batch.interval is not None:
+        batch_params["time"] = time_parameter.TimeParameter(batch.interval)
+    try:
+        # clisops subset writes synchronously, so no delayed write survives this call.
+        return finalise_concat_output(processed_ds, batch_params, dim)
+    finally:
+        processed_ds.close()
+
+
+def concat_time_bounds(time):
+    """Return closed requested bounds when concat received a time interval."""
+    if time is None or time.type != "interval":
+        return None, None
+    start, end = time.get_bounds()
+    if not start or not end:
+        return None, None
+    return start, end
 
 
 class Concat(Operation):
@@ -139,8 +173,23 @@ class Concat(Operation):
         )
         dims = self.params["dims"].value
         dim, standard_name = concat_dimension(dims)
-        processed_ds = combine_concat_datasets(datasets, dim, standard_name)
-        outputs = finalise_concat_output(processed_ds, self.params, dim)
+        representative_time = (
+            datasets[0].time if datasets and "time" in datasets[0].coords else None
+        )
+        start, end = concat_time_bounds(self.params.get("time"))
+        batcher = ConcatBatch(TimeBatchPlanner(**config.get_batching_config()))
+        outputs = batcher.process(
+            representative_time,
+            lambda batch, _index, _total: process_concat_time_batch(
+                datasets,
+                self.params,
+                dim,
+                standard_name,
+                batch,
+            ),
+            start=start,
+            end=end,
+        )
         rs.add("output", outputs)
 
         return rs

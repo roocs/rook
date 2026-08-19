@@ -135,8 +135,8 @@ def get_fix_backend() -> str:
     return backend
 
 
-def get_subset_batching_config() -> dict[str, int]:
-    """Return validated timestep-based subset batching configuration."""
+def get_batching_config() -> dict[str, int]:
+    """Return shared adaptive batching settings from the legacy config section."""
     section = _get_section("subset:batching")
     batching = {
         key: _parse_positive_int(section.get(key, default), f"subset:batching.{key}")
@@ -148,6 +148,11 @@ def get_subset_batching_config() -> dict[str, int]:
             "'subset:batching.max_batch_years'."
         )
     return batching
+
+
+def get_subset_batching_config() -> dict[str, int]:
+    """Return batching settings under the established subset API."""
+    return get_batching_config()
 
 
 def get_subset_batch_output_config() -> dict[str, bool | int]:

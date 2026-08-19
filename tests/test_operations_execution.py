@@ -7,7 +7,7 @@ import xarray as xr
 from rook.pflow.sources import WorkflowFiles
 from rook.io.datasets import DatasetSource
 import rook.operations.execution as execution_mod
-import rook.operations.time_batching as time_batching_mod
+import rook.batch.subset as subset_batch_mod
 from rook.operations.average import Average, AverageShape, AverageTime
 from rook.operations import Operator
 from rook.operations.base import Operation, is_prepared_dataset_collection
@@ -15,9 +15,8 @@ import rook.operations.base as operation_base
 from rook.operations.concat import Concat
 from rook.operations.regrid import Regrid
 from rook.operations.subset import Subset
-from rook.operations.time_batching import (
-    SubsetTimeBatchingOperation,
-    TimeBatchingOperation,
+from rook.batch import (
+    SubsetBatch,
     estimate_timesteps_per_year,
     time_batches,
 )
@@ -185,8 +184,8 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
 
 def test_subset_uses_base_operation_calculate():
-    assert Subset.calculate is TimeBatchingOperation.calculate
-    assert issubclass(Subset, SubsetTimeBatchingOperation)
+    assert Subset.calculate is SubsetBatch.calculate
+    assert issubclass(Subset, SubsetBatch)
 
 
 def test_timestep_estimate_extrapolates_partial_time_axes():
@@ -296,13 +295,13 @@ def make_recording_subset(
         return [f"subset-{len(calls)}.nc"]
 
     monkeypatch.setattr(operation_base, "process", fake_process)
-    monkeypatch.setattr(time_batching_mod, "open_dataset", fake_open_dataset)
+    monkeypatch.setattr(subset_batch_mod, "open_dataset", fake_open_dataset)
     monkeypatch.setattr(operation_base.normalise, "normalise", fake_normalise)
     monkeypatch.setattr(
-        time_batching_mod.config, "get_subset_batching_config", lambda: batching_config
+        subset_batch_mod.config, "get_batching_config", lambda: batching_config
     )
     monkeypatch.setattr(
-        time_batching_mod.batch_outputs,
+        subset_batch_mod,
         "merge_batch_outputs",
         lambda outputs, **_kwargs: outputs,
     )
@@ -355,7 +354,7 @@ def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
             messages.append(record.getMessage())
 
     handler = MessageHandler()
-    time_batching_mod.logger.addHandler(handler)
+    subset_batch_mod.logger.addHandler(handler)
     previous_disable_level = logging.root.manager.disable
     logging.disable(logging.NOTSET)
 
@@ -363,7 +362,7 @@ def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
         outputs = calculate_outputs(operation)
     finally:
         logging.disable(previous_disable_level)
-        time_batching_mod.logger.removeHandler(handler)
+        subset_batch_mod.logger.removeHandler(handler)
 
     assert len(outputs) == 18
     assert len(calls) == 18

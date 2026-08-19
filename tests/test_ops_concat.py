@@ -123,9 +123,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
 def test_concat_uses_synthetic_decadal_files_with_woodpecker_provider(
     monkeypatch, tmp_path, synthetic_cmip6_decadal_source
 ):
-    monkeypatch.setattr(
-        "rook.fixes.providers.get_fix_backend", lambda: "woodpecker"
-    )
+    monkeypatch.setattr("rook.fixes.providers.get_fix_backend", lambda: "woodpecker")
 
     result = concat_mod.concat(
         collection=[synthetic_cmip6_decadal_source],
@@ -197,3 +195,94 @@ def test_combine_concat_datasets_sets_realization_coordinate_metadata():
     assert result.realization.dtype == "int32"
     assert result.realization.attrs == {"standard_name": "realization"}
     assert "time_bnds" not in result.variables
+
+
+def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially(
+    monkeypatch, tmp_path
+):
+    dask_array = __import__("dask.array", fromlist=["array"])
+    time = xr.date_range("2000-01-01", periods=24, freq="MS", use_cftime=True)
+    datasets = [
+        xr.Dataset(
+            {"tas": ("time", dask_array.arange(24, chunks=6) + realization)},
+            coords={"time": time},
+        )
+        for realization in range(2)
+    ]
+    source = DatasetSource("dataset.id", ["input.nc"])
+    events = []
+    prepared = object()
+
+    class MaterializedBatch:
+        def __init__(self, index):
+            self.index = index
+
+        def close(self):
+            events.append(("closed", self.index))
+
+    monkeypatch.setattr(
+        concat_mod, "dataset_paths_by_id", lambda _collection: {"dataset.id": source}
+    )
+    monkeypatch.setattr(concat_mod, "get_dataset_fix_provider", lambda: prepared)
+    monkeypatch.setattr(
+        concat_mod.normalise,
+        "normalise_file_groups",
+        lambda _collection, prepare_dataset: events.append(("normalised",))
+        or {"dataset.id": source},
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "apply_concat_dataset_fixes",
+        lambda _collection, output_dir, provider: events.append(
+            ("fixed", output_dir, provider)
+        )
+        or datasets,
+    )
+    monkeypatch.setattr(
+        concat_mod.config,
+        "get_batching_config",
+        lambda: {
+            "target_timesteps": 12,
+            "min_batch_years": 1,
+            "max_batch_years": 1,
+        },
+    )
+
+    def combine(selected, dim, standard_name):
+        index = len([event for event in events if event[0] == "combined"]) + 1
+        if index > 1:
+            assert events[-1] == ("closed", index - 1)
+        assert dim == standard_name == "realization"
+        assert [dataset.sizes["time"] for dataset in selected] == [12, 12]
+        assert all(hasattr(dataset.tas.data, "dask") for dataset in selected)
+        events.append(("combined", index))
+        return MaterializedBatch(index)
+
+    def finalise(_dataset, params, dim):
+        index = len([event for event in events if event[0] == "written"]) + 1
+        events.append(("written", index, params["time"].get_bounds(), dim))
+        return [str(tmp_path / f"concat-{index}.nc")]
+
+    monkeypatch.setattr(concat_mod, "combine_concat_datasets", combine)
+    monkeypatch.setattr(concat_mod, "finalise_concat_output", finalise)
+
+    result = concat_mod.concat(
+        collection=[source],
+        dims=["realization"],
+        output_dir=tmp_path.as_posix(),
+    )
+
+    assert next(iter(result._results.values())) == [
+        str(tmp_path / "concat-1.nc"),
+        str(tmp_path / "concat-2.nc"),
+    ]
+    assert [event[0] for event in events] == [
+        "normalised",
+        "fixed",
+        "combined",
+        "written",
+        "closed",
+        "combined",
+        "written",
+        "closed",
+    ]

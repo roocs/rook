@@ -72,6 +72,7 @@ def test_subset_batching_uses_timestep_defaults(monkeypatch):
         "min_batch_years": 1,
         "max_batch_years": 10,
     }
+    assert config.get_batching_config() == config.get_subset_batching_config()
 
 
 def test_subset_batching_uses_config_override(monkeypatch):

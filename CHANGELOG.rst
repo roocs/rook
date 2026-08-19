@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Moved adaptive time batching into the reusable ``rook.batch`` package and
+  applied it to CMIP6-decadal realization concat so each time batch is written
+  before the next one is assembled.
 * Removed the legacy ``spec-file.txt`` alias; deployments should use the
   canonical ``linux-64.spec`` file directly.
 
