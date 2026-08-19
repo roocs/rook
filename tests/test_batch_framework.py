@@ -138,3 +138,40 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
     assert outputs == ["batch-1.nc", "batch-2.nc"]
     assert [(call[0], call[1]) for call in calls] == [(2000, 12), (2001, 12)]
     assert [call[3:] for call in calls] == [(1, 2), (2, 2)]
+
+
+def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
+    time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)
+    datasets = [
+        xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time})
+        for _ in range(2)
+    ]
+    processor = ConcatBatch(
+        ConcatBatchPlanner(
+            target_timesteps=365,
+            min_batch_years=1,
+            max_batch_years=1,
+        )
+    )
+    events = []
+    original_concat = xr.concat
+
+    def select_august(dataset):
+        events.append(("select", dataset.sizes["time"]))
+        return dataset.isel(time=dataset.time.dt.month == 8)
+
+    def concat(selected, dim):
+        events.append(("concat", [dataset.sizes["time"] for dataset in selected]))
+        return original_concat(selected, dim=dim)
+
+    monkeypatch.setattr("rook.batch.concat.xr.concat", concat)
+
+    outputs = processor.process(
+        datasets,
+        dim="realization",
+        operation=lambda combined, _time, _index, _total: [combined.sizes["time"]],
+        select_dataset=select_august,
+    )
+
+    assert outputs == [31]
+    assert events == [("select", 365), ("select", 365), ("concat", [31, 31])]

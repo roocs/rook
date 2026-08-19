@@ -5,6 +5,7 @@ import numpy as np
 import xarray as xr
 
 from clisops.core.average import average_over_dims as average
+from clisops.core.subset import subset_time_by_components
 from clisops.ops import subset
 from clisops.parameter import dimension_parameter
 from clisops.parameter import time_components_parameter
@@ -109,6 +110,14 @@ def finalise_concat_batch(ds, time, _index, _total, *, params, dim, standard_nam
     return finalise_concat_output(ds, batch_params, dim)
 
 
+def concat_dataset_selector(time_components):
+    """Return a lazy per-realization time-component selector when requested."""
+    components = getattr(time_components, "value", None)
+    if not components:
+        return None
+    return partial(subset_time_by_components, time_components=components)
+
+
 class Concat(Operation):
     def _resolve_params(self, collection, **params):
         time = time_parameter.TimeParameter(params.get("time"))
@@ -161,6 +170,7 @@ class Concat(Operation):
                 standard_name=standard_name,
             ),
             requested_time=self.params.get("time"),
+            select_dataset=concat_dataset_selector(self.params.get("time_components")),
         )
         rs.add("output", outputs)
 

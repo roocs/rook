@@ -168,6 +168,31 @@ def test_finalise_concat_output_writes_to_configured_output_dir(tmp_path):
     assert (tmp_path / "output_001.nc").is_file()
 
 
+def test_concat_dataset_selector_uses_lazy_low_level_component_subset():
+    dask_array = __import__("dask.array", fromlist=["array"])
+    time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)
+    dataset = xr.Dataset(
+        {"tas": ("time", dask_array.arange(len(time), chunks=31))},
+        coords={"time": time},
+    )
+    parameter = concat_mod.time_components_parameter.TimeComponentsParameter(
+        "month:aug|year:1962"
+    )
+
+    selector = concat_mod.concat_dataset_selector(parameter)
+    selected = selector(dataset)
+
+    assert selected.sizes["time"] == 31
+    assert set(selected.time.dt.month.values) == {8}
+    assert hasattr(selected.tas.data, "dask")
+
+
+def test_concat_dataset_selector_is_disabled_without_time_components():
+    parameter = concat_mod.time_components_parameter.TimeComponentsParameter(None)
+
+    assert concat_mod.concat_dataset_selector(parameter) is None
+
+
 def test_prepare_concat_dataset_sets_realization_coordinate_metadata():
     datasets = [
         xr.Dataset(

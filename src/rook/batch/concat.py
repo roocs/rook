@@ -21,12 +21,15 @@ class ConcatBatch(BatchProcessor):
         dim,
         operation,
         requested_time=None,
+        select_dataset=None,
     ):
         """Slice, combine, operate on, and close every batch sequentially."""
         batches = self.get_planner().plan(datasets, requested_time)
 
         def process_time_batch(batch, index, total):
             selected = _select_time_batch(datasets, batch)
+            if select_dataset is not None:
+                selected = [select_dataset(dataset) for dataset in selected]
             combined = xr.concat(selected, dim=dim)
             try:
                 return operation(combined, batch.interval, index, total)
