@@ -1,7 +1,8 @@
 import logging
 
-from clisops.utils.file_utils import FileMapper
+from clisops.parameter.time_components_parameter import TimeComponentsParameter
 from clisops.parameter.time_parameter import TimeParameter
+from clisops.utils.file_utils import FileMapper
 import xarray as xr
 
 from rook.pflow.sources import WorkflowFiles
@@ -252,6 +253,7 @@ def make_recording_subset(
     batching_config=None,
     timesteps_per_year=365,
     calendar="standard",
+    time_components="month:01,02",
 ):
     calls = []
     opened_sources = []
@@ -259,7 +261,7 @@ def make_recording_subset(
     operation.params = {
         "time": TimeParameter(time),
         "area": "0,0,10,10",
-        "time_components": "month:01,02",
+        "time_components": time_components,
         "output_dir": "test-output",
     }
     start, end = operation.params["time"].get_bounds()
@@ -403,6 +405,44 @@ def test_subset_low_frequency_data_uses_maximum_batch_years(monkeypatch):
         ("2000-01-01T00:00:00", "2009-12-31T23:59:59"),
         ("2010-01-01T00:00:00", "2019-12-31T23:59:59"),
         ("2020-01-01T00:00:00", "2025-12-31T23:59:59"),
+    ]
+
+
+def test_subset_skips_batching_when_selected_years_fit_timestep_target(monkeypatch):
+    time_components = TimeComponentsParameter("year:2040,2060,2070")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2040/2070",
+        timesteps_per_year=12,
+        calendar="noleap",
+        time_components=time_components,
+    )
+
+    outputs = calculate_outputs(operation)
+
+    assert outputs == ["subset-1.nc"]
+    assert [call[1] for call in calls] == [
+        ("2040-01-01T00:00:00", "2070-12-31T23:59:59")
+    ]
+    assert calls[0][2]["time_components"] is time_components
+
+
+def test_subset_batches_when_selected_year_estimate_exceeds_target(monkeypatch):
+    time_components = TimeComponentsParameter("year:2000,2001,2002,2003,2004,2005,2020")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000/2020",
+        timesteps_per_year=365,
+        time_components=time_components,
+    )
+
+    outputs = calculate_outputs(operation)
+
+    assert outputs == ["subset-1.nc", "subset-2.nc", "subset-3.nc"]
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2004-12-31T23:59:59"),
+        ("2005-01-01T00:00:00", "2009-12-31T23:59:59"),
+        ("2020-01-01T00:00:00", "2020-12-31T23:59:59"),
     ]
 
 

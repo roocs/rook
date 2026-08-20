@@ -1,7 +1,9 @@
 """Subset-specific processor built on the common batching framework."""
 
 import logging
+from collections.abc import Mapping
 
+from clisops.parameter import time_components_parameter
 from clisops.parameter.time_parameter import TimeParameter
 
 from rook import config
@@ -13,6 +15,7 @@ from .base import BatchProcessor
 from .outputs import merge_batch_outputs
 from .planner import (
     SubsetBatchPlanner,
+    TimeBatch,
     TimeBounds,
     calculate_batch_years,
     estimate_timesteps_per_year,
@@ -92,11 +95,35 @@ class SubsetBatch(BatchProcessor, Operation):
             "min_batch_years": planner.min_batch_years,
             "max_batch_years": planner.max_batch_years,
         }
-        batches = planner.plan(time, bounds)
+        component_years = _selected_component_years(
+            self.params.get("time_components"), bounds
+        )
+        estimated_timesteps = (
+            len(component_years) * timesteps_per_year
+            if component_years is not None
+            else None
+        )
+        if (
+            estimated_timesteps is not None
+            and estimated_timesteps <= planner.target_timesteps
+        ):
+            batches = [TimeBatch(bounds.start, bounds.end)]
+        else:
+            batches = planner.plan(time, bounds)
+            planned_batch_count = len(batches)
+            batches = _batches_matching_component_years(
+                batches, self.params.get("time_components")
+            )
+            if len(batches) != planned_batch_count:
+                logger.info(
+                    f"Subset batching omitted {planned_batch_count - len(batches)} "
+                    f"batch(es) without selected component years for {source.key}"
+                )
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
         logger.info(
             f"Subset batching plan for {source.key}: calendar={calendar}, "
             f"timesteps_per_year={timesteps_per_year}, "
+            f"estimated_selected_timesteps={estimated_timesteps}, "
             f"target_timesteps={batching['target_timesteps']}, "
             f"batch_size={batch_years} years, batches={len(batches)}"
         )
@@ -172,3 +199,44 @@ def _source_for_time(source, time):
         return source
     paths = consolidate.get_files_matching_time_range(time, list(source.paths))
     return DatasetSource(source.dataset_id, paths)
+
+
+def _batches_matching_component_years(batches, time_components):
+    """Omit batches that cannot contain an explicitly selected year."""
+    components = _parsed_time_components(time_components)
+    years = set((components or {}).get("year", ()))
+    if not years:
+        return batches
+    return [
+        batch
+        for batch in batches
+        if batch.start is None
+        or batch.end is None
+        or years.intersection(range(int(batch.start[:4]), int(batch.end[:4]) + 1))
+    ]
+
+
+def _selected_component_years(time_components, bounds):
+    """Return explicit component years within the requested interval, if any."""
+    components = _parsed_time_components(time_components)
+    years = (components or {}).get("year")
+    if not years:
+        return None
+    start_year = int(bounds.start[:4])
+    end_year = int(bounds.end[:4])
+    return {year for year in years if start_year <= year <= end_year}
+
+
+def _parsed_time_components(time_components):
+    """Return time components as a plain mapping."""
+    if time_components is None:
+        return None
+    if isinstance(time_components, time_components_parameter.TimeComponentsParameter):
+        return time_components.asdict().get("time_components")
+    if isinstance(time_components, Mapping):
+        return time_components
+    return (
+        time_components_parameter.TimeComponentsParameter(time_components)
+        .asdict()
+        .get("time_components")
+    )

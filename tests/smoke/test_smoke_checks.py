@@ -8,7 +8,6 @@ from owslib.wps import ComplexDataInput, WebProcessingService
 
 from rook.processes.wps_health import HEALTHY_RESPONSE
 
-
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
 
@@ -27,6 +26,11 @@ C3S_CMIP6_DAY_HUSS_COLLECTION = (
 
 C3S_CMIP6_MON_TASMIN_COLLECTION = (
     "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
+)
+
+C3S_CMIP6_SPARSE_YEARS_TASMIN_COLLECTION = (
+    "c3s-cmip6.ScenarioMIP.CCCma.CanESM5-CanOE."
+    "ssp245.r1i1p2f1.Amon.tasmin.gn.v20190429"
 )
 
 C3S_CMIP6_MON_LEVEL_COLLECTION = (
@@ -594,6 +598,24 @@ def test_smoke_execute_c3s_cmip6_subset_noresm2_fix_282(wps, tmp_path, open_data
     assert "tos_Omon_NorESM2-MM_ssp245_r1i1p1f1_gn_20490416-20500416" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tos" in ds.variables
+
+
+def test_smoke_execute_c3s_cmip6_subset_sparse_component_years(
+    wps, tmp_path, open_dataset
+):
+    inputs = [
+        ("collection", C3S_CMIP6_SPARSE_YEARS_TASMIN_COLLECTION),
+        ("time", "2015/2100"),
+        ("time_components", "year:2015,2030,2050,2100"),
+    ]
+
+    urls = wps.execute("subset", inputs)
+
+    assert len(urls) == 1
+    ds = open_dataset(urls[0], tmp_path)
+    assert "tasmin" in ds.variables
+    assert ds.sizes["time"] == 48
+    assert set(ds.time.dt.year.values.tolist()) == {2015, 2030, 2050, 2100}
 
 
 def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
