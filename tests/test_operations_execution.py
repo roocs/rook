@@ -330,7 +330,9 @@ def test_subset_request_fitting_one_batch_uses_existing_processing_path(monkeypa
 
 def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
     operation, calls, opened = make_recording_subset(
-        monkeypatch, "2000-01-01/2012-08-17T12:34:56"
+        monkeypatch,
+        "2000-01-01/2012-08-17T12:34:56",
+        time_components="month:01,02,03,04,05,06",
     )
 
     outputs = calculate_outputs(operation)
@@ -342,7 +344,9 @@ def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
         ("2010-01-01T00:00:00", "2012-08-17T12:34:56"),
     ]
     assert all(call[2]["area"] == "0,0,10,10" for call in calls)
-    assert all(call[2]["time_components"] == "month:01,02" for call in calls)
+    assert all(
+        call[2]["time_components"] == "month:01,02,03,04,05,06" for call in calls
+    )
     assert [len(source.paths) for source in opened[1:]] == [5, 5, 3]
     assert all(call[0].closed is True for call in calls)
 
@@ -396,7 +400,10 @@ def test_subset_higher_frequency_data_uses_shorter_batches(monkeypatch):
 
 def test_subset_low_frequency_data_uses_maximum_batch_years(monkeypatch):
     operation, calls, _opened = make_recording_subset(
-        monkeypatch, "2000-01-01/2025-12-31", timesteps_per_year=12
+        monkeypatch,
+        "2000-01-01/2025-12-31",
+        timesteps_per_year=12,
+        time_components=None,
     )
 
     calculate_outputs(operation)
@@ -446,6 +453,24 @@ def test_subset_batches_when_selected_year_estimate_exceeds_target(monkeypatch):
     ]
 
 
+def test_subset_month_component_reduces_timestep_estimate(monkeypatch):
+    time_components = TimeComponentsParameter("month:jan")
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000/2014",
+        timesteps_per_year=365,
+        time_components=time_components,
+    )
+
+    outputs = calculate_outputs(operation)
+
+    assert outputs == ["subset-1.nc"]
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2014-12-31T23:59:59")
+    ]
+    assert calls[0][2]["time_components"] is time_components
+
+
 def test_subset_timestep_batch_configuration_can_be_overridden(monkeypatch):
     operation, calls, _opened = make_recording_subset(
         monkeypatch,
@@ -455,6 +480,7 @@ def test_subset_timestep_batch_configuration_can_be_overridden(monkeypatch):
             "min_batch_years": 2,
             "max_batch_years": 4,
         },
+        time_components=None,
     )
 
     calculate_outputs(operation)
@@ -468,7 +494,10 @@ def test_subset_timestep_batch_configuration_can_be_overridden(monkeypatch):
 
 def test_subset_batches_use_dataset_calendar(monkeypatch):
     operation, calls, _opened = make_recording_subset(
-        monkeypatch, "2000-02-30/2006-02-30", calendar="360_day"
+        monkeypatch,
+        "2000-02-30/2006-02-30",
+        calendar="360_day",
+        time_components=None,
     )
 
     calculate_outputs(operation)

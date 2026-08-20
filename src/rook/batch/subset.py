@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import Mapping
+from math import ceil
 
 from clisops.parameter import time_components_parameter
 from clisops.parameter.time_parameter import TimeParameter
@@ -95,13 +96,8 @@ class SubsetBatch(BatchProcessor, Operation):
             "min_batch_years": planner.min_batch_years,
             "max_batch_years": planner.max_batch_years,
         }
-        component_years = _selected_component_years(
-            self.params.get("time_components"), bounds
-        )
-        estimated_timesteps = (
-            len(component_years) * timesteps_per_year
-            if component_years is not None
-            else None
+        estimated_timesteps = _estimated_component_timesteps(
+            self.params.get("time_components"), bounds, timesteps_per_year
         )
         if (
             estimated_timesteps is not None
@@ -225,6 +221,27 @@ def _selected_component_years(time_components, bounds):
     start_year = int(bounds.start[:4])
     end_year = int(bounds.end[:4])
     return {year for year in years if start_year <= year <= end_year}
+
+
+def _estimated_component_timesteps(time_components, bounds, timesteps_per_year):
+    """Estimate selected timesteps using explicit year and month components."""
+    components = _parsed_time_components(time_components)
+    if not components:
+        return None
+
+    start_year = int(bounds.start[:4])
+    end_year = int(bounds.end[:4])
+    years = _selected_component_years(time_components, bounds)
+    requested_year_count = end_year - start_year + 1
+    year_count = len(years) if years is not None else requested_year_count
+    estimate = year_count * timesteps_per_year
+    reduces_selection = years is not None and year_count < requested_year_count
+
+    months = set(components.get("month", ()))
+    if 0 < len(months) < 12:
+        estimate *= len(months) / 12
+        reduces_selection = True
+    return ceil(estimate) if reduces_selection else None
 
 
 def _parsed_time_components(time_components):
