@@ -223,9 +223,36 @@ def test_subset_batch_output_uses_defaults_and_clisops_size_limit(monkeypatch):
 
     assert config.get_subset_batch_output_config() == {
         "merge_outputs": True,
-        "merge_target_bytes": 200_000_000,
+        "merge_target_bytes": 2_000_000_000,
         "max_output_bytes": 2_000_000_000,
     }
+
+
+def test_concat_batch_output_defaults_to_clisops_size_limit(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"clisops:write": {"file_size_limit": "2GB"}},
+    )
+
+    assert config.get_concat_batch_output_config() == {
+        "merge_outputs": True,
+        "merge_target_bytes": 2_000_000_000,
+        "max_output_bytes": 2_000_000_000,
+    }
+
+
+def test_concat_batch_output_target_is_capped_by_clisops_limit(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "clisops:write": {"file_size_limit": "500MB"},
+            "concat:batching": {"merge_target_size": "2GB"},
+        },
+    )
+
+    assert config.get_concat_batch_output_config()["merge_target_bytes"] == 500_000_000
 
 
 def test_subset_batch_output_can_be_overridden(monkeypatch):
@@ -249,15 +276,22 @@ def test_subset_batch_output_can_be_overridden(monkeypatch):
 
 
 @pytest.mark.parametrize("value", ["invalid", "0MB"])
-def test_subset_batch_output_rejects_invalid_merge_target(monkeypatch, value):
+@pytest.mark.parametrize(
+    ("section", "getter"),
+    [
+        ("subset:batching", config.get_subset_batch_output_config),
+        ("concat:batching", config.get_concat_batch_output_config),
+    ],
+)
+def test_batch_output_rejects_invalid_merge_target(monkeypatch, value, section, getter):
     monkeypatch.setattr(
         config,
         "_CONFIG",
-        {"subset:batching": {"merge_target_size": value}},
+        {section: {"merge_target_size": value}},
     )
 
     with pytest.raises(config.ConfigurationError, match="merge_target_size"):
-        config.get_subset_batch_output_config()
+        getter()
 
 
 def test_subset_batch_output_target_is_capped_by_clisops_limit(monkeypatch):

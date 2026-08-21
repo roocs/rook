@@ -30,7 +30,12 @@ DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 
 DEFAULT_SUBSET_BATCH_OUTPUT = {
     "merge_outputs": True,
-    "merge_target_size": "200MB",
+    "merge_target_size": "2GB",
+}
+
+DEFAULT_CONCAT_BATCH_OUTPUT = {
+    "merge_outputs": True,
+    "merge_target_size": "2GB",
 }
 
 
@@ -208,7 +213,16 @@ def _parse_size(value, option_name):
 
 def get_subset_batch_output_config() -> dict[str, bool | int]:
     """Return configuration for safely merging subset batch outputs."""
-    section = _get_section("subset:batching")
+    return _get_batch_output_config("subset:batching", DEFAULT_SUBSET_BATCH_OUTPUT)
+
+
+def get_concat_batch_output_config() -> dict[str, bool | int]:
+    """Return configuration for safely merging concat batch outputs."""
+    return _get_batch_output_config("concat:batching", DEFAULT_CONCAT_BATCH_OUTPUT)
+
+
+def _get_batch_output_config(section_name, defaults):
+    section = _get_section(section_name)
     write_section = _get_section("clisops:write")
     file_size_limit = write_section.get("file_size_limit", "2GB")
     try:
@@ -224,25 +238,23 @@ def get_subset_batch_output_config() -> dict[str, bool | int]:
             "than zero."
         )
 
-    merge_target_size = section.get(
-        "merge_target_size", DEFAULT_SUBSET_BATCH_OUTPUT["merge_target_size"]
-    )
+    merge_target_size = section.get("merge_target_size", defaults["merge_target_size"])
     try:
         merge_target_bytes = int(parse_size(str(merge_target_size)))
     except (AttributeError, TypeError, ValueError):
         raise ConfigurationError(
-            "Configuration option 'subset:batching.merge_target_size' must be a "
+            f"Configuration option '{section_name}.merge_target_size' must be a "
             "size such as '200MB'."
         ) from None
     if merge_target_bytes < 1:
         raise ConfigurationError(
-            "Configuration option 'subset:batching.merge_target_size' must be "
+            f"Configuration option '{section_name}.merge_target_size' must be "
             "greater than zero."
         )
     return {
         "merge_outputs": _parse_config_bool(
-            section.get("merge_outputs", DEFAULT_SUBSET_BATCH_OUTPUT["merge_outputs"]),
-            "subset:batching.merge_outputs",
+            section.get("merge_outputs", defaults["merge_outputs"]),
+            f"{section_name}.merge_outputs",
         ),
         "merge_target_bytes": min(merge_target_bytes, max_output_bytes),
         "max_output_bytes": max_output_bytes,

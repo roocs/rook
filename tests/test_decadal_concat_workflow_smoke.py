@@ -144,7 +144,7 @@ def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
 
     outputs = workflow._run(document)
 
-    assert len(outputs) == 2
+    assert len(outputs) == 1
     assert outputs == workflow.prov.steps[-1][1]
     assert [step for step, _result in workflow.prov.steps] == ["concat", "subset"]
     assert len(operation_calls) == 1
@@ -159,20 +159,19 @@ def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
     assert sum(call[0] == "apply" for call in fix_calls) == 4
     assert any(call[0] == "prepare" for call in fix_calls)
 
-    for year, path in zip((2000, 2001), outputs, strict=True):
-        with xr.open_dataset(path) as dataset:
-            assert dataset.sizes == {
-                "realization": 2,
-                "time": 12,
-                "lat": 4,
-                "lon": 4,
-            }
-            assert set(dataset.time.dt.year.values) == {year}
-            assert dataset.realization.values.tolist() == [1, 2]
-            assert dataset.realization.attrs == {"standard_name": "realization"}
-            assert dataset.lat.min() >= -20
-            assert dataset.lat.max() <= 20
-            assert dataset.lon.min() >= 10
-            assert dataset.lon.max() <= 40
-            assert dataset.attrs["project_id"] == "CMIP6"
-            assert dataset.attrs["dataset_id"].startswith("CMIP6.DCPP.")
+    with xr.open_dataset(outputs[0]) as dataset:
+        assert dataset.sizes == {
+            "realization": 2,
+            "time": 24,
+            "lat": 4,
+            "lon": 4,
+        }
+        assert set(dataset.time.dt.year.values) == {2000, 2001}
+        assert dataset.realization.values.tolist() == [1, 2]
+        assert dataset.realization.attrs == {"standard_name": "realization"}
+        assert dataset.lat.min() >= -20
+        assert dataset.lat.max() <= 20
+        assert dataset.lon.min() >= 10
+        assert dataset.lon.max() <= 40
+        assert dataset.attrs["project_id"] == "CMIP6"
+        assert dataset.attrs["dataset_id"].startswith("CMIP6.DCPP.")

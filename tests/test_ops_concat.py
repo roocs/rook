@@ -231,6 +231,21 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
         "finalise_concat_output",
         lambda ds, params, dim: final,
     )
+    monkeypatch.setattr(
+        concat_mod.config,
+        "get_concat_batch_output_config",
+        lambda: {
+            "merge_outputs": True,
+            "merge_target_bytes": 2_000_000_000,
+            "max_output_bytes": 2_000_000_000,
+        },
+    )
+
+    def merge(outputs, **options):
+        calls.append(("merge", list(outputs), options))
+        return list(outputs)
+
+    monkeypatch.setattr(concat_mod, "merge_batch_outputs", merge)
 
     result = concat_mod.concat(
         collection=[source],
@@ -250,6 +265,17 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
             "2000-01-01T00:00:00/2000-01-02T00:00:00",
             fake_provider,
             tmp_path.as_posix(),
+        ),
+        (
+            "merge",
+            final,
+            {
+                "file_namer": "standard",
+                "output_type": "netcdf",
+                "merge_outputs": True,
+                "merge_target_bytes": 2_000_000_000,
+                "max_output_bytes": 2_000_000_000,
+            },
         ),
     ]
 

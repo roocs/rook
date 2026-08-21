@@ -1,13 +1,17 @@
-"""Merge small files produced by a time-batched subset operation."""
+"""Merge small files produced by time-batched operations."""
 
 from collections.abc import Sequence
 import logging
+from math import ceil, prod
 from pathlib import Path
 
+import dask
 from clisops.utils.dataset_utils import open_xr_dataset
 from clisops.utils.file_namers import get_file_namer
 
 logger = logging.getLogger(__name__)
+
+MERGE_CHUNK_BYTES = 64 * 1024**2
 
 
 def merge_batch_outputs(
@@ -35,12 +39,12 @@ def merge_batch_outputs(
         )
     except Exception:
         logger.exception(
-            "Subset batch output merge failed; returning the original batch outputs"
+            "Batch output merge failed; returning the original batch outputs"
         )
         return list(outputs)
 
     logger.info(
-        "Merged %d subset batch outputs into %d client-facing file(s)",
+        "Merged %d batch outputs into %d client-facing file(s)",
         len(outputs),
         len(result),
     )
@@ -57,15 +61,23 @@ def _plan_merges(
     if not enabled or len(outputs) <= 1:
         return [[output] for output in outputs]
     if output_type != "netcdf":
-        logger.info("Subset batch output merge skipped for output_type=%s", output_type)
+        logger.info("Batch output merge skipped for output_type=%s", output_type)
         return [[output] for output in outputs]
 
-    batch_size = max(1, outputs[0].stat().st_size)
-    batches_per_merge = max(1, target_size // batch_size)
-    return [
-        list(outputs[start : start + batches_per_merge])
-        for start in range(0, len(outputs), batches_per_merge)
-    ]
+    groups = []
+    group = []
+    group_size = 0
+    for output in outputs:
+        output_size = max(1, output.stat().st_size)
+        if group and group_size + output_size > target_size:
+            groups.append(group)
+            group = []
+            group_size = 0
+        group.append(output)
+        group_size += output_size
+    if group:
+        groups.append(group)
+    return groups
 
 
 def _execute_merge_plan(
@@ -82,7 +94,39 @@ def _merge_group(group: Sequence[Path], *, output_type: str, namer) -> list[str]
     if len(group) == 1:
         return [str(group[0])]
 
-    with open_xr_dataset([str(path) for path in group]) as dataset:
-        target = group[0].parent / namer.get_file_name(dataset, fmt=output_type)
-        dataset.to_netcdf(target, engine="h5netcdf", unlimited_dims=["time"])
+    # Xarray otherwise creates one Dask chunk per input file. A large compressed
+    # batch could therefore be decoded into memory as a single task. Explicit
+    # chunks also work for decoded CF-time bounds, whose object dtype prevents
+    # Dask auto-chunking.
+    chunks = _bounded_chunks(group[0])
+    with dask.config.set(scheduler="single-threaded"):
+        with open_xr_dataset([str(path) for path in group], chunks=chunks) as dataset:
+            target = group[0].parent / namer.get_file_name(dataset, fmt=output_type)
+            dataset.to_netcdf(target, engine="h5netcdf", unlimited_dims=["time"])
     return [str(target)]
+
+
+def _bounded_chunks(
+    path: Path, target_bytes: int = MERGE_CHUNK_BYTES
+) -> dict[str, int]:
+    """Plan decoded chunks no larger than the merge task target."""
+    with open_xr_dataset(str(path)) as dataset:
+        chunks = dict(dataset.sizes)
+
+        variables = sorted(
+            dataset.variables.values(),
+            key=lambda variable: variable.dtype.itemsize
+            * prod(chunks[dim] for dim in variable.dims),
+            reverse=True,
+        )
+        for variable in variables:
+            while (
+                variable.dtype.itemsize * prod(chunks[dim] for dim in variable.dims)
+                > target_bytes
+            ):
+                candidates = [dim for dim in variable.dims if chunks[dim] > 1]
+                if not candidates:
+                    break
+                dimension = max(candidates, key=chunks.__getitem__)
+                chunks[dimension] = ceil(chunks[dimension] / 2)
+    return chunks

@@ -83,7 +83,7 @@ limits in ``roocs.ini``:
    min_batch_years = 1
    max_batch_years = 10
    merge_outputs = true
-   merge_target_size = 200MB
+   merge_target_size = 2GB
 
 ``memory_limit`` defaults to ``4GB`` and can be set by deployment tooling to
 match the Slurm job allocation. The estimate reserves half of that limit for
@@ -91,12 +91,15 @@ Xarray, Dask, and NetCDF writer overhead. It is a planning aim rather than a
 hard runtime memory limit. If one minimum-size batch exceeds the aim, Rook still
 uses ``min_batch_years``.
 
-When a request produces multiple small batches, Rook merges consecutive files
-by using the first batch's on-disk size to estimate how many batches fit within
-``merge_target_size``. Rook caps this planning target at
-``clisops:write.file_size_limit`` when that limit is configured lower. Because
-the estimate is based on one compressed file, the merged file's actual size can
-vary. If merging fails, Rook returns the original batch files. Set
+When a request produces multiple batches, Rook merges consecutive files whose
+combined on-disk sizes fit within ``merge_target_size``. Rook caps this planning
+target at ``clisops:write.file_size_limit`` when that limit is configured lower.
+The merge remains lazy and plans decoded Dask chunks no larger than 64 MiB,
+including spatial chunking where needed. It uses the single-threaded scheduler
+while writing, so data chunks are processed sequentially and a larger
+client-facing file does not require loading the complete dataset into memory.
+Because compressed input and output sizes can differ, the merged file's actual
+size can vary. If merging fails, Rook returns the original batch files. Set
 ``merge_outputs = false`` to always return the individual batch files.
 
 Concat time batching
@@ -116,11 +119,19 @@ subset batching.
    memory_limit = 4GB
    min_batch_years = 1
    max_batch_years = 1
+   merge_outputs = true
+   merge_target_size = 2GB
 
 When the combined ensemble estimate cannot fit a full year, concat switches to
 coordinate-aligned subannual batches capped by the effective timestep target.
 If even one combined timestep exceeds ``memory_limit``, Rook logs a warning so
 the Slurm allocation or spatial pushdown can be adjusted.
+
+After processing, Rook merges consecutive decadal batch files up to
+``merge_target_size``, capped by ``clisops:write.file_size_limit``. With the
+defaults, a complete result smaller than 2 GB is therefore returned as one
+file. Larger results remain split into groups below the configured target. If
+merging fails, Rook returns the original batch files.
 
 Processing diagnostics
 ----------------------
