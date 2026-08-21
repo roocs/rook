@@ -7,8 +7,8 @@ from .base import (
     calculate_batch_years,
     estimate_bytes_per_timestep,
     estimate_timesteps_per_year,
-    timestep_batches,
     time_batches,
+    timestep_batches,
 )
 from .concat import ConcatBatchPlanner
 from .subset import SubsetBatchPlanner
@@ -22,6 +22,6 @@ __all__ = [
     "calculate_batch_years",
     "estimate_bytes_per_timestep",
     "estimate_timesteps_per_year",
-    "timestep_batches",
     "time_batches",
+    "timestep_batches",
 ]
