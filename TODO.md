@@ -3,6 +3,21 @@
 Only unfinished or deliberately deferred work belongs here. Completed work is
 documented in `CHANGELOG.rst`.
 
+## Urgent memory follow-ups
+
+- [ ] Patch clisops so its multi-file dataset opener explicitly uses Xarray's
+  new combine defaults (in particular ``data_vars=None``), then remove Rook's
+  temporary ``use_new_combine_kwarg_defaults`` compatibility context. The old
+  ``data_vars="all"`` behavior can broadcast static CORDEX grid and vertex
+  variables across every timestep and cause multi-gigabyte allocations.
+- [ ] Measure subset peak RSS with representative high-resolution CORDEX and
+  CMIP6 datasets under a 4 GB cgroup limit (production currently allows 6 GB).
+  If the strict timestep ceiling is not sufficient, extend subset planning with
+  a byte-based target derived from temporal variable shapes and dtypes, leaving
+  headroom for Xarray/Dask/NetCDF writer amplification.
+- [ ] Add the multi-file static-grid regression case to clisops when upstreaming
+  the opener fix, including ``lat_vertices`` and ``lon_vertices`` variables.
+
 ## Subset batching
 
 - [ ] Evaluate the performance, encoding fidelity, peak memory use, and

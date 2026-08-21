@@ -101,6 +101,19 @@ def open_netcdf(source: DatasetSource, storage_options: dict):
     kwargs = {}
     if storage_options:
         kwargs["backend_kwargs"] = {"storage_options": storage_options}
+
+    if (
+        len(source.paths) > 1
+        and "use_new_combine_kwarg_defaults" in xr.get_options()
+    ):
+        # clisops currently leaves Xarray's open_mfdataset combine defaults
+        # implicit. The legacy data_vars="all" default broadcasts static CORDEX
+        # grid variables across time, which can multiply their logical size by
+        # thousands. Keep this compatibility guard until clisops sets the new
+        # combine defaults explicitly.
+        with xr.set_options(use_new_combine_kwarg_defaults=True):
+            return open_xr_dataset(list(source.paths), **kwargs)
+
     return open_xr_dataset(list(source.paths), **kwargs)
 
 

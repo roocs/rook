@@ -1,5 +1,6 @@
 from dataclasses import FrozenInstanceError
 
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -249,6 +250,48 @@ def test_open_dataset_keeps_local_netcdf_path(tmp_path, monkeypatch):
     result = helpers.open_dataset(source("project.dataset", [str(path)]))
 
     xr.testing.assert_equal(result, expected)
+    result.close()
+
+
+def test_open_dataset_does_not_broadcast_static_grid_variables_across_time(
+    tmp_path,
+):
+    paths = []
+    for index in range(2):
+        path = tmp_path / f"part-{index}.nc"
+        dataset = xr.Dataset(
+            {
+                "rsds": (
+                    ("time", "rlat", "rlon"),
+                    np.zeros((2, 2, 3), dtype="float32"),
+                ),
+                "lat_vertices": (
+                    ("rlat", "rlon", "vertices"),
+                    np.zeros((2, 3, 4), dtype="float32"),
+                ),
+                "lon_vertices": (
+                    ("rlat", "rlon", "vertices"),
+                    np.zeros((2, 3, 4), dtype="float32"),
+                ),
+            },
+            coords={
+                "time": np.arange(index * 2, index * 2 + 2),
+                "rlat": np.arange(2),
+                "rlon": np.arange(3),
+                "vertices": np.arange(4),
+            },
+        )
+        dataset.to_netcdf(path)
+        paths.append(str(path))
+
+    result = helpers.open_dataset(source(None, paths))
+
+    assert result["rsds"].dims == ("time", "rlat", "rlon")
+    assert result["rsds"].shape == (4, 2, 3)
+    assert result["lat_vertices"].dims == ("rlat", "rlon", "vertices")
+    assert result["lat_vertices"].shape == (2, 3, 4)
+    assert result["lon_vertices"].dims == ("rlat", "rlon", "vertices")
+    assert result["lon_vertices"].shape == (2, 3, 4)
     result.close()
 
 

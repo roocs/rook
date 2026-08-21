@@ -3,6 +3,7 @@
 from collections import Counter
 from dataclasses import dataclass
 from datetime import timedelta
+from math import floor
 
 import cftime
 import numpy as np
@@ -69,8 +70,8 @@ class BaseBatchPlanner:
 def calculate_batch_years(
     timesteps_per_year, target_timesteps, min_batch_years, max_batch_years
 ):
-    """Derive a clamped batch length from an estimated annual timestep count."""
-    batch_years = round(target_timesteps / timesteps_per_year)
+    """Derive a clamped batch length that does not exceed the timestep target."""
+    batch_years = floor(target_timesteps / timesteps_per_year)
     return max(min_batch_years, min(max_batch_years, batch_years))
 
 

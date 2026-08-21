@@ -11,6 +11,7 @@ from rook.batch import (
     SubsetBatchPlanner,
     TimeBatch,
     TimeBounds,
+    calculate_batch_years,
 )
 
 
@@ -49,6 +50,24 @@ def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
     assert [batch.start[:4] for batch in daily_batches] == ["2000", "2005", "2010"]
     assert [batch.start[:4] for batch in monthly_batches] == ["2000", "2010", "2020"]
     assert isinstance(planner, BaseBatchPlanner)
+
+
+def test_batch_years_treat_target_timesteps_as_a_ceiling():
+    assert calculate_batch_years(
+        timesteps_per_year=360,
+        target_timesteps=2000,
+        min_batch_years=1,
+        max_batch_years=10,
+    ) == 5
+
+
+def test_batch_years_preserve_the_configured_minimum_for_subannual_targets():
+    assert calculate_batch_years(
+        timesteps_per_year=360,
+        target_timesteps=100,
+        min_batch_years=1,
+        max_batch_years=10,
+    ) == 1
 
 
 def test_subset_and_concat_planners_adapt_the_common_planning_mechanics():
