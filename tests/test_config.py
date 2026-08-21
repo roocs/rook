@@ -71,6 +71,7 @@ def test_batching_uses_timestep_defaults(monkeypatch):
         "target_timesteps": 2000,
         "min_batch_years": 1,
         "max_batch_years": 10,
+        "memory_limit_bytes": 4_000_000_000,
     }
 
 
@@ -81,6 +82,7 @@ def test_concat_batching_uses_independent_conservative_defaults(monkeypatch):
         "target_timesteps": 365,
         "min_batch_years": 1,
         "max_batch_years": 1,
+        "memory_limit_bytes": 4_000_000_000,
     }
 
 
@@ -91,6 +93,7 @@ def test_batching_uses_existing_config_override(monkeypatch):
         {
             "subset:batching": {
                 "target_timesteps": "1000",
+                "memory_limit": "6GB",
                 "min_batch_years": "2",
                 "max_batch_years": "4",
             }
@@ -101,6 +104,7 @@ def test_batching_uses_existing_config_override(monkeypatch):
         "target_timesteps": 1000,
         "min_batch_years": 2,
         "max_batch_years": 4,
+        "memory_limit_bytes": 6_000_000_000,
     }
 
 
@@ -112,6 +116,7 @@ def test_concat_batching_can_be_configured_independently(monkeypatch):
             "subset:batching": {"target_timesteps": "1000"},
             "concat:batching": {
                 "target_timesteps": "180",
+                "memory_limit": "6GB",
                 "min_batch_years": "1",
                 "max_batch_years": "1",
             },
@@ -122,11 +127,13 @@ def test_concat_batching_can_be_configured_independently(monkeypatch):
         "target_timesteps": 180,
         "min_batch_years": 1,
         "max_batch_years": 1,
+        "memory_limit_bytes": 6_000_000_000,
     }
     assert config.get_batching_config() == {
         "target_timesteps": 1000,
         "min_batch_years": 1,
         "max_batch_years": 10,
+        "memory_limit_bytes": 4_000_000_000,
     }
 
 
@@ -187,6 +194,24 @@ def test_batching_rejects_inverted_year_bounds(monkeypatch):
 
     with pytest.raises(config.ConfigurationError, match="min_batch_years"):
         config.get_batching_config()
+
+
+@pytest.mark.parametrize("value", ["invalid", "0GB", "-1GB", None])
+@pytest.mark.parametrize("section", ["subset:batching", "concat:batching"])
+def test_batching_requires_positive_memory_size(monkeypatch, value, section):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {section: {"memory_limit": value}},
+    )
+
+    getter = (
+        config.get_batching_config
+        if section == "subset:batching"
+        else config.get_concat_batching_config
+    )
+    with pytest.raises(config.ConfigurationError, match=rf"{section}\.memory_limit"):
+        getter()
 
 
 def test_subset_batch_output_uses_defaults_and_clisops_size_limit(monkeypatch):

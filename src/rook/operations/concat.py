@@ -23,7 +23,7 @@ from clisops.project_utils import derive_ds_id
 from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 
 from rook import config
-from rook.batch import ConcatBatch, ConcatBatchPlanner
+from rook.batch import ConcatBatch, ConcatBatchPlanner, estimate_bytes_per_timestep
 from rook.diagnostics import memory_checkpoint
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
@@ -106,6 +106,35 @@ def concat_planning_time(collection, prepare_dataset, opener=None):
     if len(coordinates) == 1:
         return coordinates[0]
     return xr.concat(coordinates, dim="time")
+
+
+def concat_realization_bytes_per_timestep(collection, prepare_dataset, opener=None):
+    """Estimate one realization's decoded temporal payload from one source file."""
+    if not collection:
+        return None
+    if opener is None:
+        opener = normalise.open_lazy_xr_dataset
+
+    paths = next(iter(collection.values()))
+    path = next(iter(paths), None)
+    if path is None:
+        return None
+    opened = opener(path)
+    prepared = opened
+    try:
+        prepared = prepare_dataset(opened)
+        return estimate_bytes_per_timestep(prepared)
+    finally:
+        prepared.close()
+        if prepared is not opened:
+            opened.close()
+
+
+def combined_concat_bytes_per_timestep(bytes_per_realization, realization_count):
+    """Scale one realization's temporal payload across the concat collection."""
+    if bytes_per_realization is None:
+        return None
+    return bytes_per_realization * realization_count
 
 
 def concat_batch_paths(paths, batch):
@@ -371,6 +400,22 @@ class Concat(Operation):
                 ds, provider, dataset_id=planning_dataset_id
             ),
         )
+        realization_bytes_per_timestep = concat_realization_bytes_per_timestep(
+            collection,
+            prepare_dataset=lambda ds: apply_concat_calendar_fix(
+                ds, provider, dataset_id=planning_dataset_id
+            ),
+        )
+        combined_bytes_per_timestep = combined_concat_bytes_per_timestep(
+            realization_bytes_per_timestep,
+            len(collection),
+        )
+        memory_checkpoint(
+            "concat planning payload",
+            f"realizations={len(collection)} "
+            f"realization_bytes_per_timestep={realization_bytes_per_timestep} "
+            f"combined_bytes_per_timestep={combined_bytes_per_timestep}",
+        )
         memory_checkpoint("before ConcatBatch")
         outputs = batcher.process(
             collection,
@@ -388,6 +433,7 @@ class Concat(Operation):
                 standard_name=standard_name,
             ),
             requested_time=effective_time,
+            bytes_per_timestep=combined_bytes_per_timestep,
             select_dataset=concat_dataset_selector(
                 time_components,
                 requested_time=requested_time,

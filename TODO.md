@@ -3,6 +3,28 @@
 Only unfinished or deliberately deferred work belongs here. Completed work is
 documented in `CHANGELOG.rst`.
 
+## Urgent memory follow-ups
+
+- [ ] Patch clisops so its multi-file dataset opener explicitly uses Xarray's
+  new combine defaults (in particular ``data_vars=None``), then remove Rook's
+  temporary ``use_new_combine_kwarg_defaults`` compatibility context. The old
+  ``data_vars="all"`` behavior can broadcast static CORDEX grid and vertex
+  variables across every timestep and cause multi-gigabyte allocations.
+- [ ] Measure subset peak RSS with representative high-resolution CORDEX and
+  CMIP6 datasets under a 4 GB cgroup limit (production currently allows 6 GB).
+  Validate and tune the byte-based planner's 2x writer amplification estimate.
+- [ ] **Evaluate the clisops Dask chunk-memory limit.** Benchmark representative
+  Rook subset and concat requests with different ``chunk_memory_limit`` values
+  (for example 128, 256, and 512 MiB). Compare runtime and peak Slurm RSS to
+  identify a performant default that retains sufficient memory headroom.
+- [ ] **Add optional Dask performance diagnostics.** Add opt-in diagnostics for
+  Rook operations that capture task scheduling, memory usage, spilling, and
+  execution time, preferably as a Dask ``performance_report`` attached to the
+  request output or logs. Keep diagnostics disabled by default with
+  configurable storage and retention.
+- [ ] Add the multi-file static-grid regression case to clisops when upstreaming
+  the opener fix, including ``lat_vertices`` and ``lon_vertices`` variables.
+
 ## Subset batching
 
 - [ ] Evaluate the performance, encoding fidelity, peak memory use, and
@@ -94,7 +116,7 @@ synchronous `status` process for operational insight.
 - [ ] Replace the hard-coded multi-site registry with configured sites and
   authentication-aware collection.
 
-## Revive storm tests
+## Reactivate storm tests
 
 Make `tests/storm` useful for repeatable real-world testing on a dedicated test
 server, while keeping expensive processing requests explicit and bounded.
@@ -113,8 +135,28 @@ server, while keeping expensive processing requests explicit and bounded.
   catalog. Keep a small known-good request per process and workflow.
 - [ ] Separate lightweight validation from data-heavy scenarios with clear tags
   and conservative defaults. Require an explicit tag/profile for costly tests.
+- [ ] Add a bounded `memory-regression` profile containing the AFR-22 multi-file
+  daily subset and ten-member CMIP6-decadal concat cases. Verify successful
+  outputs under the configured Slurm memory limit before adding concurrency.
+- [ ] Add explicit load profiles for single-request baselines, fixed low
+  concurrency, and gradual concurrency ramps. Keep request counts, spawn rates,
+  maximum concurrency, and test duration configurable, with safe defaults.
+- [ ] Correlate every request with its PyWPS and Slurm job identifiers and record
+  queue time, execution time, peak RSS/MaxRSS, exit state, timeout, and OOM
+  events. Preserve enough context to distinguish service, scheduler, and data
+  processing failures.
+- [ ] Define initial acceptance criteria from measured baselines: zero OOM kills,
+  no lost or malformed responses, bounded failure/timeout rates, and stable peak
+  RSS as concurrency increases. Keep runtime thresholds configurable until
+  representative production baselines exist.
+- [ ] Add an opt-in tuning matrix for Rook batch memory aims and clisops
+  ``chunk_memory_limit`` values without running the full Cartesian product by
+  default.
 - [ ] Validate output links and result metadata after `ProcessSucceeded`, not
   only the final WPS state.
+- [ ] Add output cleanup and retention controls so repeated stress runs do not
+  exhaust shared storage; default to preserving only reports and failed-run
+  evidence.
 - [ ] Produce a short HTML/CSV report and document how to keep it as deployment
   evidence without committing generated results.
 - [ ] Add a Make target and refresh `tests/storm/README.md` with installation,

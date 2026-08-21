@@ -70,17 +70,26 @@ Subset time batching
 --------------------
 
 After checking whether original files can be returned, Rook estimates the
-dataset's timesteps per year and sizes subset batches toward a configurable
-number of timesteps. Configure the target and year limits in ``roocs.ini``:
+dataset's timesteps per year and decoded bytes per timestep. It applies both a
+configurable timestep ceiling and an approximate process-memory ceiling; the
+stricter target determines the batch length. Configure the targets and year
+limits in ``roocs.ini``:
 
 .. code-block:: ini
 
    [subset:batching]
    target_timesteps = 2000
+   memory_limit = 4GB
    min_batch_years = 1
    max_batch_years = 10
    merge_outputs = true
    merge_target_size = 200MB
+
+``memory_limit`` defaults to ``4GB`` and can be set by deployment tooling to
+match the Slurm job allocation. The estimate reserves half of that limit for
+Xarray, Dask, and NetCDF writer overhead. It is a planning aim rather than a
+hard runtime memory limit. If one minimum-size batch exceeds the aim, Rook still
+uses ``min_batch_years``.
 
 When a request produces multiple small batches, Rook merges consecutive files
 by using the first batch's on-disk size to estimate how many batches fit within
@@ -95,14 +104,23 @@ Concat time batching
 
 CMIP6-decadal concat uses a separate, conservative adaptive batching target. By
 default, concat batches are capped at one year so full unconstrained requests
-are written incrementally. These settings do not affect subset batching.
+are written incrementally. Its memory estimate multiplies one realization's
+decoded temporal payload by the number of ensemble members before applying the
+same 2x writer-overhead estimate used for subset. These settings do not affect
+subset batching.
 
 .. code-block:: ini
 
    [concat:batching]
    target_timesteps = 365
+   memory_limit = 4GB
    min_batch_years = 1
    max_batch_years = 1
+
+When the combined ensemble estimate cannot fit a full year, concat switches to
+coordinate-aligned subannual batches capped by the effective timestep target.
+If even one combined timestep exceeds ``memory_limit``, Rook logs a warning so
+the Slurm allocation or spatial pushdown can be adjusted.
 
 Processing diagnostics
 ----------------------

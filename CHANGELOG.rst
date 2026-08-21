@@ -4,6 +4,10 @@ Changes
 Unreleased
 ==========
 
+* Added independently configurable subset and decadal-concat batching memory
+  aims, defaulting to ``4GB``. The planners now use the stricter of their
+  timestep and estimated process-memory targets; concat accounts for every
+  ensemble member.
 * Moved adaptive time batching into the reusable ``rook.batch`` package and
   applied it to CMIP6-decadal realization concat so each time batch is written
   before the next one is assembled.

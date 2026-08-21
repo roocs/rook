@@ -9,11 +9,12 @@ from .planner import (
     TimeBatch,
     TimeBounds,
     calculate_batch_years,
+    estimate_bytes_per_timestep,
     estimate_timesteps_per_year,
     time_batches,
+    timestep_batches,
 )
 from .subset import SubsetBatch
-
 
 __all__ = [
     "BaseBatchPlanner",
@@ -25,6 +26,8 @@ __all__ = [
     "TimeBatch",
     "TimeBounds",
     "calculate_batch_years",
+    "estimate_bytes_per_timestep",
     "estimate_timesteps_per_year",
     "time_batches",
+    "timestep_batches",
 ]

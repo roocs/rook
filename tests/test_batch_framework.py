@@ -11,6 +11,7 @@ from rook.batch import (
     SubsetBatchPlanner,
     TimeBatch,
     TimeBounds,
+    calculate_batch_years,
 )
 
 
@@ -49,6 +50,65 @@ def test_time_batch_planner_preserves_adaptive_one_to_ten_year_bounds():
     assert [batch.start[:4] for batch in daily_batches] == ["2000", "2005", "2010"]
     assert [batch.start[:4] for batch in monthly_batches] == ["2000", "2010", "2020"]
     assert isinstance(planner, BaseBatchPlanner)
+
+
+def test_batch_years_treat_target_timesteps_as_a_ceiling():
+    assert (
+        calculate_batch_years(
+            timesteps_per_year=360,
+            target_timesteps=2000,
+            min_batch_years=1,
+            max_batch_years=10,
+        )
+        == 5
+    )
+
+
+def test_batch_years_preserve_the_configured_minimum_for_subannual_targets():
+    assert (
+        calculate_batch_years(
+            timesteps_per_year=360,
+            target_timesteps=100,
+            min_batch_years=1,
+            max_batch_years=10,
+        )
+        == 1
+    )
+
+
+def test_subset_planner_uses_memory_target_when_stricter_than_timestep_target():
+    time = xr.DataArray(
+        xr.date_range("2000-01-01", periods=365, freq="D", use_cftime=True),
+        dims="time",
+    )
+    planner = SubsetBatchPlanner(
+        target_timesteps=2000,
+        memory_limit_bytes=4_000_000_000,
+        min_batch_years=1,
+        max_batch_years=10,
+    )
+
+    batches = planner.plan(
+        time,
+        TimeBounds("2000-01-01T00:00:00", "2006-12-31T23:59:59"),
+        bytes_per_timestep=2_000_000,
+    )
+
+    assert planner.memory_target_timesteps(2_000_000) == 1000
+    assert planner.effective_target_timesteps(2_000_000) == 1000
+    assert [batch.start[:4] for batch in batches] == ["2000", "2002", "2004", "2006"]
+
+
+def test_subset_planner_uses_timestep_target_when_stricter_than_memory_target():
+    planner = SubsetBatchPlanner(
+        target_timesteps=365,
+        memory_limit_bytes=4_000_000_000,
+        min_batch_years=1,
+        max_batch_years=10,
+    )
+
+    assert planner.memory_target_timesteps(1_000) == 2_000_000
+    assert planner.effective_target_timesteps(1_000) == 365
 
 
 def test_subset_and_concat_planners_adapt_the_common_planning_mechanics():
@@ -114,6 +174,31 @@ def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
     ]
     assert all(batch.start[:4] == batch.end[:4] for batch in bounded)
     assert all(batch.start[:4] == batch.end[:4] for batch in unconstrained)
+
+
+def test_decadal_concat_memory_target_counts_ten_members_and_uses_subannual_batches():
+    time = xr.DataArray(
+        xr.date_range("2001-01-01", "2001-12-31", freq="D", use_cftime=True),
+        dims="time",
+    )
+    planner = ConcatBatchPlanner(
+        target_timesteps=365,
+        memory_limit_bytes=4_000_000_000,
+        min_batch_years=1,
+        max_batch_years=1,
+    )
+    combined_bytes_per_timestep = 10 * 1_000_000
+
+    batches = planner.plan(
+        time,
+        bytes_per_timestep=combined_bytes_per_timestep,
+    )
+
+    assert planner.memory_target_timesteps(combined_bytes_per_timestep) == 200
+    assert batches == [
+        TimeBatch("2001-01-01T00:00:00", "2001-07-19T23:59:59"),
+        TimeBatch("2001-07-20T00:00:00", "2001-12-31T00:00:00"),
+    ]
 
 
 def test_concat_request_shorter_than_one_year_stays_in_one_batch():

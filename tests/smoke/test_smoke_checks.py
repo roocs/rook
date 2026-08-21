@@ -53,6 +53,8 @@ C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp
 
 C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
 
+C3S_CORDEX_AFR22_360DAY_RSDS_COLLECTION = "c3s-cordex.output.AFR-22.GERICS.MOHC-HadGEM2-ES.historical.r1i1p1.GERICS-REMO2015.v1.day.rsds.v20201015"  # noqa
+
 C3S_IPCC_ATLAS_CMIP5_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP5.rcp45.mon"
 
 C3S_IPCC_ATLAS_CMIP6_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP6.historical.mon"
@@ -632,6 +634,23 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
     assert "esg_c3s-cordex" not in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
+
+
+def test_smoke_execute_c3s_cordex_afr22_multifile_subset(wps):
+    """Guard against static CORDEX grid variables being broadcast across time."""
+    inputs = [
+        ("collection", C3S_CORDEX_AFR22_360DAY_RSDS_COLLECTION),
+        ("time", "1986-01-01T00:00:00/1995-12-31T23:59:59"),
+        ("area", "-20.0,2.0,17.0,22.0"),
+    ]
+
+    urls = wps.execute("subset", inputs)
+
+    assert urls
+    assert all("rsds_AFR-22_MOHC-HadGEM2-ES_historical" in url for url in urls)
+    assert "19860101" in urls[0]
+    assert "19951230" in urls[-1]
+    assert all("esg_c3s-cordex" not in url for url in urls)
 
 
 def test_smoke_execute_c3s_cmip5_subset_by_point(wps, tmp_path, open_dataset):
