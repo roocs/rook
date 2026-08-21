@@ -11,6 +11,7 @@ from rook.diagnostics import (
 )
 
 from .base import BatchProcessor
+from .planner import calculate_batch_years, estimate_timesteps_per_year
 
 
 class ConcatBatch(BatchProcessor):
@@ -31,13 +32,65 @@ class ConcatBatch(BatchProcessor):
         open_dataset,
         operation,
         requested_time=None,
+        bytes_per_timestep=None,
         select_dataset=None,
         include_batch=None,
     ):
         """Execute batches sequentially with batch-local source datasets."""
-        batches = self.get_planner().plan(planning_time, requested_time)
+        planner = self.get_planner()
+        batches = planner.plan(
+            planning_time,
+            requested_time,
+            bytes_per_timestep=bytes_per_timestep,
+        )
         if include_batch is not None:
             batches = [batch for batch in batches if include_batch(batch)]
+
+        effective_target_timesteps = planner.effective_target_timesteps(
+            bytes_per_timestep
+        )
+        if planning_time is not None and getattr(planning_time, "size", 0) > 0:
+            timesteps_per_year = estimate_timesteps_per_year(
+                planning_time, planning_time.dt.calendar
+            )
+            batch_years = calculate_batch_years(
+                timesteps_per_year,
+                target_timesteps=effective_target_timesteps,
+                min_batch_years=planner.min_batch_years,
+                max_batch_years=planner.max_batch_years,
+            )
+            planned_batch_timesteps = min(
+                batch_years * timesteps_per_year,
+                effective_target_timesteps,
+            )
+        else:
+            batch_years = None
+            planned_batch_timesteps = None
+        estimated_batch_memory_bytes = planner.estimated_process_bytes(
+            planned_batch_timesteps,
+            bytes_per_timestep,
+        )
+        memory_checkpoint(
+            "concat batching plan",
+            f"combined_bytes_per_timestep={bytes_per_timestep} "
+            f"configured_target_timesteps={planner.target_timesteps} "
+            f"memory_limit_bytes={planner.memory_limit_bytes} "
+            f"memory_target_timesteps={planner.memory_target_timesteps(bytes_per_timestep)} "
+            f"effective_target_timesteps={effective_target_timesteps} "
+            f"planned_batch_timesteps={planned_batch_timesteps} "
+            f"estimated_batch_memory_bytes={estimated_batch_memory_bytes} "
+            f"annual_batch_size={batch_years} years batches={len(batches)}",
+        )
+        if (
+            estimated_batch_memory_bytes is not None
+            and planner.memory_limit_bytes is not None
+            and estimated_batch_memory_bytes > planner.memory_limit_bytes
+        ):
+            memory_checkpoint(
+                "WARNING concat one-timestep batch exceeds memory aim",
+                f"estimated_batch_memory_bytes={estimated_batch_memory_bytes} "
+                f"memory_limit_bytes={planner.memory_limit_bytes}",
+            )
 
         def process_time_batch(batch, index, total):
             batch_label = f"batch={index}/{total} interval={batch.interval}"

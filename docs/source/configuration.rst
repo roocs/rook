@@ -104,14 +104,23 @@ Concat time batching
 
 CMIP6-decadal concat uses a separate, conservative adaptive batching target. By
 default, concat batches are capped at one year so full unconstrained requests
-are written incrementally. These settings do not affect subset batching.
+are written incrementally. Its memory estimate multiplies one realization's
+decoded temporal payload by the number of ensemble members before applying the
+same 2x writer-overhead estimate used for subset. These settings do not affect
+subset batching.
 
 .. code-block:: ini
 
    [concat:batching]
    target_timesteps = 365
+   memory_limit = 4GB
    min_batch_years = 1
    max_batch_years = 1
+
+When the combined ensemble estimate cannot fit a full year, concat switches to
+coordinate-aligned subannual batches capped by the effective timestep target.
+If even one combined timestep exceeds ``memory_limit``, Rook logs a warning so
+the Slurm allocation or spatial pushdown can be adjusted.
 
 Processing diagnostics
 ----------------------

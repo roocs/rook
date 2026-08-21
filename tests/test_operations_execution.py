@@ -19,6 +19,7 @@ from rook.operations.regrid import Regrid
 from rook.operations.subset import Subset
 from rook.batch import (
     SubsetBatch,
+    estimate_bytes_per_timestep,
     estimate_timesteps_per_year,
     time_batches,
 )
@@ -228,7 +229,7 @@ def test_subset_memory_estimate_counts_only_variables_with_time_dimension():
         coords={"time": range(10)},
     )
 
-    assert subset_batch_mod._estimate_bytes_per_timestep(dataset) == 48
+    assert estimate_bytes_per_timestep(dataset) == 48
 
 
 def test_time_batches_clamp_gregorian_year_end_to_360_day_calendar():
@@ -530,7 +531,7 @@ def test_subset_memory_limit_can_shorten_batches(monkeypatch):
     )
     monkeypatch.setattr(
         subset_batch_mod,
-        "_estimate_bytes_per_timestep",
+        "estimate_bytes_per_timestep",
         lambda _dataset: 2_000_000,
     )
 

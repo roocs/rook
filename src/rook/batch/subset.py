@@ -19,6 +19,7 @@ from .planner import (
     TimeBatch,
     TimeBounds,
     calculate_batch_years,
+    estimate_bytes_per_timestep,
     estimate_timesteps_per_year,
 )
 
@@ -213,23 +214,10 @@ def _source_time_metadata(source):
             estimate_timesteps_per_year(dataset.time, calendar),
             calendar,
             dataset.time.load() if hasattr(dataset.time, "load") else dataset.time,
-            _estimate_bytes_per_timestep(dataset),
+            estimate_bytes_per_timestep(dataset),
         )
     finally:
         dataset.close()
-
-
-def _estimate_bytes_per_timestep(dataset):
-    """Estimate decoded bytes contributed by variables containing time."""
-    time_size = dataset.sizes.get("time") if hasattr(dataset, "sizes") else None
-    variables = dataset.variables.values() if hasattr(dataset, "variables") else ()
-    if not time_size:
-        return None
-
-    temporal_bytes = sum(
-        variable.nbytes for variable in variables if "time" in variable.dims
-    )
-    return max(1, ceil(temporal_bytes / time_size)) if temporal_bytes else None
 
 
 def _source_for_time(source, time):

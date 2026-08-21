@@ -17,7 +17,7 @@ DEFAULT_BATCHING = {
     "min_batch_years": 1,
     "max_batch_years": 10,
 }
-DEFAULT_SUBSET_BATCH_MEMORY_LIMIT = "4GB"
+DEFAULT_BATCH_MEMORY_LIMIT = "4GB"
 
 DEFAULT_CONCAT_BATCHING = {
     "target_timesteps": 365,
@@ -148,18 +148,14 @@ def get_fix_backend() -> str:
 
 def get_batching_config() -> dict[str, int]:
     """Return the established subset adaptive batching settings."""
-    batching = _get_time_batching_config("subset:batching", DEFAULT_BATCHING)
-    section = _get_section("subset:batching")
-    batching["memory_limit_bytes"] = _parse_size(
-        section.get("memory_limit", DEFAULT_SUBSET_BATCH_MEMORY_LIMIT),
-        "subset:batching.memory_limit",
-    )
-    return batching
+    return _get_memory_aware_time_batching_config("subset:batching", DEFAULT_BATCHING)
 
 
 def get_concat_batching_config() -> dict[str, int]:
     """Return conservative adaptive batching settings for concat operations."""
-    return _get_time_batching_config("concat:batching", DEFAULT_CONCAT_BATCHING)
+    return _get_memory_aware_time_batching_config(
+        "concat:batching", DEFAULT_CONCAT_BATCHING
+    )
 
 
 def get_diagnostic_free_memory() -> bool:
@@ -183,6 +179,16 @@ def _get_time_batching_config(section_name, defaults):
             f"Configuration option '{section_name}.min_batch_years' must not exceed "
             f"'{section_name}.max_batch_years'."
         )
+    return batching
+
+
+def _get_memory_aware_time_batching_config(section_name, defaults):
+    batching = _get_time_batching_config(section_name, defaults)
+    section = _get_section(section_name)
+    batching["memory_limit_bytes"] = _parse_size(
+        section.get("memory_limit", DEFAULT_BATCH_MEMORY_LIMIT),
+        f"{section_name}.memory_limit",
+    )
     return batching
 
 

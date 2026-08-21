@@ -176,6 +176,31 @@ def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
     assert all(batch.start[:4] == batch.end[:4] for batch in unconstrained)
 
 
+def test_decadal_concat_memory_target_counts_ten_members_and_uses_subannual_batches():
+    time = xr.DataArray(
+        xr.date_range("2001-01-01", "2001-12-31", freq="D", use_cftime=True),
+        dims="time",
+    )
+    planner = ConcatBatchPlanner(
+        target_timesteps=365,
+        memory_limit_bytes=4_000_000_000,
+        min_batch_years=1,
+        max_batch_years=1,
+    )
+    combined_bytes_per_timestep = 10 * 1_000_000
+
+    batches = planner.plan(
+        time,
+        bytes_per_timestep=combined_bytes_per_timestep,
+    )
+
+    assert planner.memory_target_timesteps(combined_bytes_per_timestep) == 200
+    assert batches == [
+        TimeBatch("2001-01-01T00:00:00", "2001-07-19T23:59:59"),
+        TimeBatch("2001-07-20T00:00:00", "2001-12-31T00:00:00"),
+    ]
+
+
 def test_concat_request_shorter_than_one_year_stays_in_one_batch():
     time = xr.DataArray(
         xr.date_range("2000-03-01", "2000-08-31", freq="D", use_cftime=True),

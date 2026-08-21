@@ -147,6 +147,37 @@ def test_concat_planning_time_closes_metadata_datasets():
     assert closed == list(paths)
 
 
+def test_concat_realization_bytes_per_timestep_ignores_static_variables():
+    closed = []
+    dataset = xr.Dataset(
+        {
+            "tas": (
+                ("time", "lat", "lon"),
+                np.zeros((2, 3, 4), dtype="float32"),
+            ),
+            "lat_bnds": (
+                ("lat", "bnds"),
+                np.zeros((3, 2), dtype="float64"),
+            ),
+        },
+        coords={"time": range(2)},
+    )
+    dataset.set_close(lambda: closed.append("input.nc"))
+
+    bytes_per_timestep = concat_mod.concat_realization_bytes_per_timestep(
+        {"dataset.id": ("input.nc",)},
+        prepare_dataset=lambda opened: opened,
+        opener=lambda _path: dataset,
+    )
+
+    assert bytes_per_timestep == 56
+    assert closed == ["input.nc"]
+
+
+def test_combined_concat_bytes_per_timestep_counts_all_ten_realizations():
+    assert concat_mod.combined_concat_bytes_per_timestep(1_000_000, 10) == 10_000_000
+
+
 def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     calls = []
     source = DatasetSource("dataset.id", ["input.nc"])
@@ -176,6 +207,11 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
         "concat_planning_time",
         lambda collection, prepare_dataset: calls.append(("planning", collection))
         or prepare_dataset(combined).time,
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "concat_realization_bytes_per_timestep",
+        lambda collection, prepare_dataset: 16,
     )
     monkeypatch.setattr(
         concat_mod,
@@ -602,6 +638,11 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
         concat_mod,
         "concat_planning_time",
         lambda _collection, prepare_dataset: xr.DataArray(time, dims="time"),
+    )
+    monkeypatch.setattr(
+        concat_mod,
+        "concat_realization_bytes_per_timestep",
+        lambda _collection, prepare_dataset: 16,
     )
 
     opened = 0
