@@ -40,7 +40,7 @@ class BaseBatchPlanner:
         self.min_batch_years = min_batch_years
         self.max_batch_years = max_batch_years
 
-    def _plan(self, time, bounds=None):
+    def _plan(self, time, bounds=None, *, target_timesteps=None):
         """Build batches from one representative coordinate and optional bounds."""
         start = bounds.start if bounds is not None else None
         end = bounds.end if bounds is not None else None
@@ -55,7 +55,9 @@ class BaseBatchPlanner:
 
         batch_years = calculate_batch_years(
             estimate_timesteps_per_year(time, calendar),
-            target_timesteps=self.target_timesteps,
+            target_timesteps=(
+                self.target_timesteps if target_timesteps is None else target_timesteps
+            ),
             min_batch_years=self.min_batch_years,
             max_batch_years=self.max_batch_years,
         )

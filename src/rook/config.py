@@ -17,6 +17,7 @@ DEFAULT_BATCHING = {
     "min_batch_years": 1,
     "max_batch_years": 10,
 }
+DEFAULT_SUBSET_BATCH_MEMORY_LIMIT = "4GB"
 
 DEFAULT_CONCAT_BATCHING = {
     "target_timesteps": 365,
@@ -147,7 +148,13 @@ def get_fix_backend() -> str:
 
 def get_batching_config() -> dict[str, int]:
     """Return the established subset adaptive batching settings."""
-    return _get_time_batching_config("subset:batching", DEFAULT_BATCHING)
+    batching = _get_time_batching_config("subset:batching", DEFAULT_BATCHING)
+    section = _get_section("subset:batching")
+    batching["memory_limit_bytes"] = _parse_size(
+        section.get("memory_limit", DEFAULT_SUBSET_BATCH_MEMORY_LIMIT),
+        "subset:batching.memory_limit",
+    )
+    return batching
 
 
 def get_concat_batching_config() -> dict[str, int]:
@@ -177,6 +184,20 @@ def _get_time_batching_config(section_name, defaults):
             f"'{section_name}.max_batch_years'."
         )
     return batching
+
+
+def _parse_size(value, option_name):
+    try:
+        size = int(parse_size(str(value)))
+    except (AttributeError, TypeError, ValueError):
+        raise ConfigurationError(
+            f"Configuration option '{option_name}' must be a size such as '4GB'."
+        ) from None
+    if size < 1:
+        raise ConfigurationError(
+            f"Configuration option '{option_name}' must be greater than zero."
+        )
+    return size
 
 
 def get_subset_batch_output_config() -> dict[str, bool | int]:

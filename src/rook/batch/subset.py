@@ -82,7 +82,9 @@ class SubsetBatch(BatchProcessor, Operation):
         return result_set
 
     def _batch_plan(self, source, bounds):
-        timesteps_per_year, calendar, time = _source_time_metadata(source)
+        timesteps_per_year, calendar, time, bytes_per_timestep = _source_time_metadata(
+            source
+        )
         if timesteps_per_year is None or calendar is None:
             logger.info(
                 f"Subset batching unavailable for {source.key}: "
@@ -91,8 +93,12 @@ class SubsetBatch(BatchProcessor, Operation):
             return source, []
 
         planner = self.get_planner()
+        effective_target_timesteps = planner.effective_target_timesteps(
+            bytes_per_timestep
+        )
+        memory_target_timesteps = planner.memory_target_timesteps(bytes_per_timestep)
         batching = {
-            "target_timesteps": planner.target_timesteps,
+            "target_timesteps": effective_target_timesteps,
             "min_batch_years": planner.min_batch_years,
             "max_batch_years": planner.max_batch_years,
         }
@@ -101,11 +107,15 @@ class SubsetBatch(BatchProcessor, Operation):
         )
         if (
             estimated_timesteps is not None
-            and estimated_timesteps <= planner.target_timesteps
+            and estimated_timesteps <= effective_target_timesteps
         ):
             batches = [TimeBatch(bounds.start, bounds.end)]
         else:
-            batches = planner.plan(time, bounds)
+            batches = planner.plan(
+                time,
+                bounds,
+                bytes_per_timestep=bytes_per_timestep,
+            )
             planned_batch_count = len(batches)
             batches = _batches_matching_component_years(
                 batches, self.params.get("time_components")
@@ -116,13 +126,32 @@ class SubsetBatch(BatchProcessor, Operation):
                     f"batch(es) without selected component years for {source.key}"
                 )
         batch_years = calculate_batch_years(timesteps_per_year, **batching)
+        estimated_batch_memory_bytes = planner.estimated_process_bytes(
+            batch_years * timesteps_per_year,
+            bytes_per_timestep,
+        )
         logger.info(
             f"Subset batching plan for {source.key}: calendar={calendar}, "
             f"timesteps_per_year={timesteps_per_year}, "
             f"estimated_selected_timesteps={estimated_timesteps}, "
-            f"target_timesteps={batching['target_timesteps']}, "
+            f"configured_target_timesteps={planner.target_timesteps}, "
+            f"memory_limit_bytes={planner.memory_limit_bytes}, "
+            f"bytes_per_timestep={bytes_per_timestep}, "
+            f"memory_target_timesteps={memory_target_timesteps}, "
+            f"effective_target_timesteps={effective_target_timesteps}, "
+            f"estimated_batch_memory_bytes={estimated_batch_memory_bytes}, "
             f"batch_size={batch_years} years, batches={len(batches)}"
         )
+        if (
+            estimated_batch_memory_bytes is not None
+            and planner.memory_limit_bytes is not None
+            and estimated_batch_memory_bytes > planner.memory_limit_bytes
+        ):
+            logger.warning(
+                f"Subset minimum batch size exceeds the memory aim for {source.key}: "
+                f"estimated_batch_memory_bytes={estimated_batch_memory_bytes}, "
+                f"memory_limit_bytes={planner.memory_limit_bytes}"
+            )
         return source, batches
 
     def _process_source(self, source, batches, original_time):
@@ -173,20 +202,34 @@ class SubsetBatch(BatchProcessor, Operation):
 
 
 def _source_time_metadata(source):
-    """Estimate annual timesteps and read calendar from one source file."""
+    """Estimate time cadence and decoded temporal payload from one source file."""
     metadata_source = DatasetSource(source.dataset_id, source.paths[0])
     dataset = open_dataset(metadata_source)
     try:
         if not hasattr(dataset, "time") or dataset.time.size == 0:
-            return None, None, None
+            return None, None, None, None
         calendar = dataset.time.dt.calendar
         return (
             estimate_timesteps_per_year(dataset.time, calendar),
             calendar,
             dataset.time.load() if hasattr(dataset.time, "load") else dataset.time,
+            _estimate_bytes_per_timestep(dataset),
         )
     finally:
         dataset.close()
+
+
+def _estimate_bytes_per_timestep(dataset):
+    """Estimate decoded bytes contributed by variables containing time."""
+    time_size = dataset.sizes.get("time") if hasattr(dataset, "sizes") else None
+    variables = dataset.variables.values() if hasattr(dataset, "variables") else ()
+    if not time_size:
+        return None
+
+    temporal_bytes = sum(
+        variable.nbytes for variable in variables if "time" in variable.dims
+    )
+    return max(1, ceil(temporal_bytes / time_size)) if temporal_bytes else None
 
 
 def _source_for_time(source, time):

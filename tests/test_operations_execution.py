@@ -3,6 +3,7 @@ import logging
 from clisops.parameter.time_components_parameter import TimeComponentsParameter
 from clisops.parameter.time_parameter import TimeParameter
 from clisops.utils.file_utils import FileMapper
+import numpy as np
 import xarray as xr
 
 from rook.pflow.sources import WorkflowFiles
@@ -206,6 +207,28 @@ def test_timestep_estimate_extrapolates_partial_time_axes():
     assert estimate_timesteps_per_year(daily, daily.dt.calendar) == 365
     assert estimate_timesteps_per_year(three_hourly, three_hourly.dt.calendar) == 2922
     assert estimate_timesteps_per_year(monthly, monthly.dt.calendar) == 12
+
+
+def test_subset_memory_estimate_counts_only_variables_with_time_dimension():
+    dataset = xr.Dataset(
+        {
+            "rsds": (
+                ("time", "rlat", "rlon"),
+                np.zeros((10, 2, 3), dtype="float32"),
+            ),
+            "time_bnds": (
+                ("time", "bnds"),
+                np.zeros((10, 2), dtype="float64"),
+            ),
+            "lat_vertices": (
+                ("rlat", "rlon", "vertices"),
+                np.zeros((2, 3, 4), dtype="float32"),
+            ),
+        },
+        coords={"time": range(10)},
+    )
+
+    assert subset_batch_mod._estimate_bytes_per_timestep(dataset) == 48
 
 
 def test_time_batches_clamp_gregorian_year_end_to_360_day_calendar():
@@ -481,6 +504,34 @@ def test_subset_timestep_batch_configuration_can_be_overridden(monkeypatch):
             "max_batch_years": 4,
         },
         time_components=None,
+    )
+
+    calculate_outputs(operation)
+
+    assert [call[1] for call in calls] == [
+        ("2000-01-01T00:00:00", "2001-12-31T23:59:59"),
+        ("2002-01-01T00:00:00", "2003-12-31T23:59:59"),
+        ("2004-01-01T00:00:00", "2005-12-31T23:59:59"),
+        ("2006-01-01T00:00:00", "2006-12-31T23:59:59"),
+    ]
+
+
+def test_subset_memory_limit_can_shorten_batches(monkeypatch):
+    operation, calls, _opened = make_recording_subset(
+        monkeypatch,
+        "2000-01-01/2006-12-31",
+        batching_config={
+            "target_timesteps": 2000,
+            "memory_limit_bytes": 4_000_000_000,
+            "min_batch_years": 1,
+            "max_batch_years": 10,
+        },
+        time_components=None,
+    )
+    monkeypatch.setattr(
+        subset_batch_mod,
+        "_estimate_bytes_per_timestep",
+        lambda _dataset: 2_000_000,
     )
 
     calculate_outputs(operation)
