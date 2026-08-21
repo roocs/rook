@@ -641,6 +641,7 @@ def test_smoke_execute_c3s_cordex_afr22_multifile_subset(wps):
     inputs = [
         ("collection", C3S_CORDEX_AFR22_360DAY_RSDS_COLLECTION),
         ("time", "1986-01-01T00:00:00/1995-12-31T23:59:59"),
+        ("area", "-20.0,2.0,17.0,22.0"),
     ]
 
     urls = wps.execute("subset", inputs)
