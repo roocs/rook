@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Added a memory-bounded post-processing step that merges consecutive subset
+  and CMIP6-decadal concat batches up to the 2 GB output limit, returning one
+  file when the complete result fits within that limit.
 * Added independently configurable subset and decadal-concat batching memory
   aims, defaulting to ``4GB``. The planners now use the stricter of their
   timestep and estimated process-memory targets; concat accounts for every

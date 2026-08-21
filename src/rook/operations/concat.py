@@ -24,6 +24,7 @@ from clisops.utils.dataset_utils import cf_convert_between_lon_frames
 
 from rook import config
 from rook.batch import ConcatBatch, ConcatBatchPlanner, estimate_bytes_per_timestep
+from rook.batch.outputs import merge_batch_outputs
 from rook.diagnostics import memory_checkpoint
 from rook.fixes import (
     WOODPECKER_CMIP6_DECADAL_RECIPE_ID,
@@ -440,6 +441,13 @@ class Concat(Operation):
                 area=area,
             ),
             include_batch=concat_batch_filter(time_components),
+        )
+        output_config = config.get_concat_batch_output_config()
+        outputs = merge_batch_outputs(
+            outputs,
+            file_namer=self._file_namer,
+            output_type=self._output_type,
+            **output_config,
         )
         rs.add("output", outputs)
 
