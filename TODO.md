@@ -127,6 +127,70 @@ available 1 TB SSD for durable fixed Atlas outputs.
   used bytes, entry count, hits, misses, evictions, corruptions, and publish
   failures through logs and the future status report.
 
+## Explicit project behavior
+
+CMIP6, CORDEX, Atlas, CMIP6-decadal, and the other data projects do not yet
+follow one processing policy. Their differences are currently expressed inline
+across catalog resolution, processing-flow decisions, operators, fixes, and
+configuration. This makes a project exception easy to add but difficult to
+discover or explain. Ideally projects should share the same behavior; where
+that is not possible, the exception and its reason must be obvious.
+
+- [ ] Inventory the behavior of every supported project in one documented
+  matrix. Include catalog lookup, original-file eligibility, spatial and
+  temporal alignment, required fixes and their phases, concat requirements,
+  batching, and relevant configuration. Give the reason for every divergence,
+  not only its implementation.
+- [ ] Introduce one explicit project-policy or capability model with a common
+  default. Select it at the request boundary and pass it through the processing
+  flow, instead of comparing project IDs inline in resolvers and operators.
+- [ ] Keep policy declarations readable and colocated so a developer can see
+  how CMIP6, CORDEX, CICA Atlas, IPCC Atlas, and CMIP6-decadal differ without
+  tracing several call paths. Distinguish inherent data-model constraints from
+  temporary compatibility or performance workarounds.
+- [ ] Make each exceptional behavior carry a short rationale, its configuration
+  controls, and focused tests. Add a structural test or lint rule that prevents
+  new project-name conditionals outside the policy layer unless explicitly
+  justified.
+- [ ] Move existing inline exceptions incrementally into the policy model,
+  beginning with original-file/fix handling for Atlas and operation-specific
+  CMIP6-decadal fixes. Preserve behavior while migrating, then remove project
+  differences that are no longer necessary.
+- [ ] Expose the selected project policy and the reason for its processing-flow
+  decision in diagnostic logs, so production behavior can be understood
+  without reading the code.
+
+## Explicit failure model
+
+Rook currently turns many failures into a generic ``ProcessError``. Clients and
+operators therefore cannot reliably distinguish an invalid spatial request from
+a catalog lookup failure, an unavailable source, a dataset-format problem, a
+fix failure, or an execution/resource failure.
+
+- [ ] Define a small Rook exception hierarchy with stable categories such as
+  request validation, spatial selection, temporal selection, catalog lookup,
+  source access, dataset decoding, dataset fixes, processing, resource limits,
+  and output publication. Avoid creating one exception type for every call
+  site.
+- [ ] Give every public failure a stable machine-readable code and a concise,
+  user-safe message. Include actionable context such as the parameter, dataset
+  ID, requested bounds, or processing phase where appropriate, without exposing
+  private paths, credentials, or internal tracebacks.
+- [ ] Map typed Rook exceptions deliberately onto WPS/OGC exception codes and
+  locators. Preserve the original exception as the Python cause and retain the
+  detailed traceback in service logs instead of flattening every failure to a
+  string at the processing-flow boundary.
+- [ ] Translate known clisops, catalog, Xarray, filesystem, fix-provider, and
+  writer failures at the boundary where their meaning is still known. Unknown
+  exceptions should remain an explicit internal-processing category.
+- [ ] Return the same failure classification through synchronous WPS responses,
+  asynchronous status documents, workflows, smoke-test helpers, and future
+  status/metrics reporting.
+- [ ] Add contract tests for each category, including the disjoint spatial case,
+  empty catalog results, inaccessible sources, invalid datasets, failed fixes,
+  memory/output limits, and unexpected internal errors. Assert both the public
+  code/message and the preserved logged cause.
+
 ## Subset batching
 
 - [ ] Evaluate the performance, encoding fidelity, peak memory use, and
