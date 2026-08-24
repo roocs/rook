@@ -27,6 +27,7 @@ DEFAULT_CONCAT_BATCHING = {
 
 DEFAULT_DIAGNOSTIC_FREE_MEMORY = False
 DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
+DEFAULT_APPLY_FIXES_TO_FULL_FILES = False
 
 DEFAULT_SUBSET_BATCH_OUTPUT = {
     "merge_outputs": True,
@@ -149,6 +150,18 @@ def get_fix_backend() -> str:
             f"Configuration option 'fixes.backend' must be one of: {allowed_values}."
         )
     return backend
+
+
+def get_apply_fixes_to_full_files(project: str) -> bool:
+    """Return whether aligned full files for a project must be rewritten with fixes."""
+    section = get_project_config(project)
+    return _parse_config_bool(
+        section.get(
+            "apply_fixes_to_full_files",
+            DEFAULT_APPLY_FIXES_TO_FULL_FILES,
+        ),
+        f"project:{project}.apply_fixes_to_full_files",
+    )
 
 
 def get_batching_config() -> dict[str, int]:

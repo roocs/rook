@@ -254,7 +254,12 @@ def download_file(url, tmp_path):
 @pytest.fixture
 def open_dataset():
     def _open_dataset(url, tmp_path):
-        ds = xr.open_dataset(download_file(url, tmp_path), use_cftime=True)
+        time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
+        ds = xr.open_dataset(
+            download_file(url, tmp_path),
+            decode_times=time_coder,
+            decode_timedelta=True,
+        )
         return ds
 
     return _open_dataset

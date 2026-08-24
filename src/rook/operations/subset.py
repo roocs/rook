@@ -9,6 +9,7 @@ from clisops.parameter import (
 )
 
 from rook.batch import SubsetBatch
+from rook.utils.input_utils import is_global_area
 
 from .base import resolve_collection
 
@@ -17,9 +18,13 @@ __all__ = ["Subset", "subset"]
 
 class Subset(SubsetBatch):
     def _resolve_params(self, collection, **params):
+        area = params.get("area")
+        if is_global_area(area):
+            area = None
+
         self.collection = resolve_collection(collection)
         self.params = {
-            "area": area_parameter.AreaParameter(params.get("area")),
+            "area": area_parameter.AreaParameter(area),
             "level": level_parameter.LevelParameter(params.get("level")),
             "time": time_parameter.TimeParameter(params.get("time")),
             "time_components": time_components_parameter.TimeComponentsParameter(

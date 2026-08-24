@@ -64,6 +64,36 @@ def test_get_fix_backend_rejects_unknown_backend(monkeypatch):
         config.get_fix_backend()
 
 
+def test_full_cica_atlas_fixes_default_to_false(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_apply_fixes_to_full_files("c3s-cica-atlas") is False
+
+
+def test_full_cica_atlas_fixes_can_be_enabled(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"project:c3s-cica-atlas": {"apply_fixes_to_full_files": "true"}},
+    )
+
+    assert config.get_apply_fixes_to_full_files("c3s-cica-atlas") is True
+
+
+def test_full_cica_atlas_fixes_reject_invalid_value(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {"project:c3s-cica-atlas": {"apply_fixes_to_full_files": "sometimes"}},
+    )
+
+    with pytest.raises(
+        config.ConfigurationError,
+        match=r"project:c3s-cica-atlas\.apply_fixes_to_full_files",
+    ):
+        config.get_apply_fixes_to_full_files("c3s-cica-atlas")
+
+
 def test_batching_uses_timestep_defaults(monkeypatch):
     monkeypatch.setattr(config, "_CONFIG", {})
 

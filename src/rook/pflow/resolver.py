@@ -12,6 +12,8 @@ from .decisions import ReturnOriginalFiles, RunOperation
 from .policies import may_return_original_files, requires_processing
 from .sources import CatalogCollection, DirectDataset
 
+CICA_ATLAS_PROJECT = "c3s-cica-atlas"
+
 
 def resolve_request_decision(collection, inputs, allow_aligned_original_files=False):
     """Return the decision for a request."""
@@ -92,6 +94,11 @@ def subset_original_files_decision(project, search_result, inputs):
     original_file_urls = aligned_original_file_urls(search_result, inputs)
 
     if original_file_urls is not None:
+        if (
+            project == CICA_ATLAS_PROJECT
+            and config.get_apply_fixes_to_full_files(project)
+        ):
+            return operation_decision(project, search_result)
         return original_files_decision(project, search_result, original_file_urls)
 
     return operation_decision(project, search_result)
@@ -104,8 +111,6 @@ def aligned_original_file_urls(search_result, inputs):
     for ds_id, urls in search_result.download_urls().items():
         alignment = SubsetAlignmentChecker(urls, inputs)
 
-        # TODO: don't use original files for atlas data ... need to apply a fix
-        # if not alignment.is_aligned or "c3s-cica-atlas" in ds_id:
         if not alignment.is_aligned:
             return None
 

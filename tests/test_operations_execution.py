@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from clisops.parameter.time_components_parameter import TimeComponentsParameter
 from clisops.parameter.time_parameter import TimeParameter
 from clisops.utils.file_utils import FileMapper
@@ -77,6 +78,38 @@ def test_run_regrid_normalizes_custom_grid(monkeypatch):
     assert result == ["regridded.nc"]
     assert calls["kwargs"]["grid"] == (0.5, 0.25)
     assert "custom_grid" not in calls["kwargs"]
+
+
+@pytest.mark.parametrize(
+    ("runner", "operation_name"),
+    [
+        (execution_mod.run_subset, "subset"),
+        (execution_mod.run_concat, "concat"),
+    ],
+)
+def test_subset_capable_runners_remove_global_area(
+    monkeypatch, runner, operation_name
+):
+    calls = {}
+
+    class Result:
+        file_uris = ["result.nc"]
+
+    def fake_operation(**kwargs):
+        calls["kwargs"] = kwargs
+        return Result()
+
+    monkeypatch.setattr(execution_mod, operation_name, fake_operation)
+
+    result = runner(
+        {
+            "collection": ["input.nc"],
+            "area": "-180,-90,180,90",
+        }
+    )
+
+    assert result == ["result.nc"]
+    assert "area" not in calls["kwargs"]
 
 
 def test_direct_file_collection_is_processed_without_request_resolution(
@@ -184,6 +217,29 @@ def test_operation_wrappers_accept_prepared_dataset_sources(monkeypatch):
 
     for operation in operations:
         assert operation.collection == (prepared,)
+
+
+def test_subset_and_concat_operations_normalize_global_area(monkeypatch):
+    prepared = DatasetSource(
+        dataset_id="c3s-cmip6.example.dataset",
+        paths="/data/c3s-cmip6.example.dataset.nc",
+    )
+    monkeypatch.setattr(
+        "rook.operations.base.consolidate.consolidate",
+        lambda collection, **_kwargs: collection.value,
+    )
+
+    operations = [
+        Subset(collection=[prepared], area="-180,-90,180,90"),
+        Concat(
+            collection=[prepared],
+            dims="realization",
+            area="-180,-90,180,90",
+        ),
+    ]
+
+    for operation in operations:
+        assert operation.params["area"].value is None
 
 
 def test_subset_uses_base_operation_calculate():

@@ -25,6 +25,130 @@ documented in `CHANGELOG.rst`.
 - [ ] Add the multi-file static-grid regression case to clisops when upstreaming
   the opener fix, including ``lat_vertices`` and ``lon_vertices`` variables.
 
+## Operator performance
+
+Establish representative runtime and I/O baselines before changing execution.
+Long daily and hourly requests, especially CORDEX, CMIP6, and CMIP6-decadal,
+currently take up to an hour or more. Spatial subsetting often reduces this to a
+few minutes, which suggests that source reads and NetCDF writes are important
+parts of the bottleneck.
+
+- [ ] Profile representative long-range Atlas, CORDEX daily/hourly, CMIP6
+  daily/hourly, and CMIP6-decadal requests, both with and without an area. Record
+  wall time per phase and batch, bytes read and written, storage throughput and
+  wait, CPU utilization, peak RSS, Dask task time, and output merging time.
+- [ ] Add per-phase timing around catalog resolution, source opening, fixes,
+  selection, concat, writing, and batch merging so production logs identify the
+  dominant phase without enabling a full diagnostic report.
+- [ ] Benchmark sequential batches against two concurrent batches on the
+  production storage path. Include subset and decadal concat, area-constrained
+  and unconstrained requests, and daily and hourly data; verify that concurrency
+  improves wall time rather than merely contending for the same storage.
+- [ ] If the benchmark is positive, add bounded, configurable batch concurrency
+  using a standard-library thread pool. Default conservatively (initially one
+  worker), keep output order deterministic, and allow separate deployment
+  settings for subset and concat if their resource profiles differ.
+- [ ] Make concurrent execution respect a request-level memory budget instead
+  of letting every worker independently consume the full batch memory aim.
+  Define how worker count and batch size are reduced when their combined
+  estimated memory, writer amplification, or open-file count would exceed the
+  configured limits.
+- [ ] Ensure each concurrent batch has isolated mutable parameters, datasets,
+  and output paths. Do not share the current operation object's mutable
+  ``params`` between workers; audit clisops, Xarray/Dask configuration, the
+  fix provider, NetCDF/HDF5, and file naming for thread safety.
+- [ ] Keep final batch merging serialized initially. Add tests for deterministic
+  ordering, unique filenames, partial failure and cancellation, cleanup of
+  completed/temporary outputs, exception propagation, and datasets being closed
+  before considering concurrent writes production-ready.
+- [ ] Define an acceptance threshold from the benchmark (wall-time improvement,
+  peak/aggregate RSS, I/O saturation, and failure rate) and retain the
+  sequential path when two workers do not provide a material benefit.
+
+### Optional processed-artifact cache
+
+Aligned Atlas pass-through requests return their original files and do not need
+a cache. The full Atlas collection also exceeds the available cache storage, so
+caching is not part of the current Atlas performance solution. It may still be
+useful later for demonstrably repetitive, expensive processing results.
+
+- [ ] Reconsider a cache only after production metrics identify repeated
+  identical work, a useful expected hit rate, and a working set that fits the
+  available storage. Compare the measured benefit with operational complexity
+  before selecting a backend.
+- [ ] If justified, design a small backend-neutral, disabled-by-default artifact
+  cache with canonical versioned keys, atomic publication, bounded capacity and
+  eviction, corruption recovery, safe materialization, and observable hit/miss
+  and byte statistics. Keep it independent of Atlas-specific control flow.
+- [ ] Cover cache correctness and failure behavior with backend contract tests,
+  including concurrent misses, source or fix-version changes, incomplete
+  entries, eviction, and disk-full fallback. Do not pre-warm the complete Atlas
+  collection.
+
+## Explicit project behavior
+
+CMIP6, CORDEX, Atlas, CMIP6-decadal, and the other data projects do not yet
+follow one processing policy. Their differences are currently expressed inline
+across catalog resolution, processing-flow decisions, operators, fixes, and
+configuration. This makes a project exception easy to add but difficult to
+discover or explain. Ideally projects should share the same behavior; where
+that is not possible, the exception and its reason must be obvious.
+
+- [ ] Inventory the behavior of every supported project in one documented
+  matrix. Include catalog lookup, original-file eligibility, spatial and
+  temporal alignment, required fixes and their phases, concat requirements,
+  batching, and relevant configuration. Give the reason for every divergence,
+  not only its implementation.
+- [ ] Introduce one explicit project-policy or capability model with a common
+  default. Select it at the request boundary and pass it through the processing
+  flow, instead of comparing project IDs inline in resolvers and operators.
+- [ ] Keep policy declarations readable and colocated so a developer can see
+  how CMIP6, CORDEX, CICA Atlas, IPCC Atlas, and CMIP6-decadal differ without
+  tracing several call paths. Distinguish inherent data-model constraints from
+  temporary compatibility or performance workarounds.
+- [ ] Make each exceptional behavior carry a short rationale, its configuration
+  controls, and focused tests. Add a structural test or lint rule that prevents
+  new project-name conditionals outside the policy layer unless explicitly
+  justified.
+- [ ] Move existing inline exceptions incrementally into the policy model,
+  beginning with original-file/fix handling for Atlas and operation-specific
+  CMIP6-decadal fixes. Preserve behavior while migrating, then remove project
+  differences that are no longer necessary.
+- [ ] Expose the selected project policy and the reason for its processing-flow
+  decision in diagnostic logs, so production behavior can be understood
+  without reading the code.
+
+## Explicit failure model
+
+Rook currently turns many failures into a generic ``ProcessError``. Clients and
+operators therefore cannot reliably distinguish an invalid spatial request from
+a catalog lookup failure, an unavailable source, a dataset-format problem, a
+fix failure, or an execution/resource failure.
+
+- [ ] Define a small Rook exception hierarchy with stable categories such as
+  request validation, spatial selection, temporal selection, catalog lookup,
+  source access, dataset decoding, dataset fixes, processing, resource limits,
+  and output publication. Avoid creating one exception type for every call
+  site.
+- [ ] Give every public failure a stable machine-readable code and a concise,
+  user-safe message. Include actionable context such as the parameter, dataset
+  ID, requested bounds, or processing phase where appropriate, without exposing
+  private paths, credentials, or internal tracebacks.
+- [ ] Map typed Rook exceptions deliberately onto WPS/OGC exception codes and
+  locators. Preserve the original exception as the Python cause and retain the
+  detailed traceback in service logs instead of flattening every failure to a
+  string at the processing-flow boundary.
+- [ ] Translate known clisops, catalog, Xarray, filesystem, fix-provider, and
+  writer failures at the boundary where their meaning is still known. Unknown
+  exceptions should remain an explicit internal-processing category.
+- [ ] Return the same failure classification through synchronous WPS responses,
+  asynchronous status documents, workflows, smoke-test helpers, and future
+  status/metrics reporting.
+- [ ] Add contract tests for each category, including the disjoint spatial case,
+  empty catalog results, inaccessible sources, invalid datasets, failed fixes,
+  memory/output limits, and unexpected internal errors. Assert both the public
+  code/message and the preserved logged cause.
+
 ## Subset batching
 
 - [ ] Evaluate the performance, encoding fidelity, peak memory use, and
@@ -38,6 +162,29 @@ documented in `CHANGELOG.rst`.
   handler with centralized Rook/PyWPS logging. Ensure messages from Rook and
   clisops are routed consistently to the configured service or Slurm job logs
   without duplication.
+
+## Multi-dataset workflow inputs
+
+Workflow references such as ``collection: inputs/pr`` currently substitute the
+entire input value. A request containing many dataset identifiers can therefore
+invoke one operator with all datasets even when the request producer intended
+one independent operation per dataset. This creates large, difficult-to-diagnose
+failure reports and unclear retry semantics.
+
+- [ ] Define and document whether workflow operators support multi-dataset
+  collections, implicit mapping, or singleton inputs only. Keep the behavior
+  explicit rather than interpreting a list differently according to its size.
+- [ ] As a minimum safeguard, detect a multi-dataset collection during workflow
+  validation for operators that require a single dataset and reject it before
+  catalog resolution or processing. Return a concise error containing the step
+  ID, operator name, number of datasets received, expected cardinality, and
+  guidance to submit one workflow per dataset.
+- [ ] If multi-dataset workflows are supported, add explicit map/scatter
+  semantics with per-dataset results and failures, bounded execution, stable
+  output ordering, and an intentional fail-fast or partial-success policy.
+- [ ] Add regression tests using a workflow input containing several CMIP6
+  dataset IDs. Cover the validation error and, if mapping is implemented, prove
+  that datasets are never combined into one logical source operation.
 
 ## Decadal concat batching
 
