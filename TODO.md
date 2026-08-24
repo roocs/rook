@@ -25,6 +25,108 @@ documented in `CHANGELOG.rst`.
 - [ ] Add the multi-file static-grid regression case to clisops when upstreaming
   the opener fix, including ``lat_vertices`` and ``lon_vertices`` variables.
 
+## Operator performance
+
+Establish representative runtime and I/O baselines before changing execution.
+Long daily and hourly requests, especially CORDEX, CMIP6, and CMIP6-decadal,
+currently take up to an hour or more. Spatial subsetting often reduces this to a
+few minutes, which suggests that source reads and NetCDF writes are important
+parts of the bottleneck.
+
+- [ ] Profile representative long-range Atlas, CORDEX daily/hourly, CMIP6
+  daily/hourly, and CMIP6-decadal requests, both with and without an area. Record
+  wall time per phase and batch, bytes read and written, storage throughput and
+  wait, CPU utilization, peak RSS, Dask task time, and output merging time.
+- [ ] Add per-phase timing around catalog resolution, source opening, fixes,
+  selection, concat, writing, and batch merging so production logs identify the
+  dominant phase without enabling a full diagnostic report.
+- [ ] Benchmark sequential batches against two concurrent batches on the
+  production storage path. Include subset and decadal concat, area-constrained
+  and unconstrained requests, and daily and hourly data; verify that concurrency
+  improves wall time rather than merely contending for the same storage.
+- [ ] If the benchmark is positive, add bounded, configurable batch concurrency
+  using a standard-library thread pool. Default conservatively (initially one
+  worker), keep output order deterministic, and allow separate deployment
+  settings for subset and concat if their resource profiles differ.
+- [ ] Make concurrent execution respect a request-level memory budget instead
+  of letting every worker independently consume the full batch memory aim.
+  Define how worker count and batch size are reduced when their combined
+  estimated memory, writer amplification, or open-file count would exceed the
+  configured limits.
+- [ ] Ensure each concurrent batch has isolated mutable parameters, datasets,
+  and output paths. Do not share the current operation object's mutable
+  ``params`` between workers; audit clisops, Xarray/Dask configuration, the
+  fix provider, NetCDF/HDF5, and file naming for thread safety.
+- [ ] Keep final batch merging serialized initially. Add tests for deterministic
+  ordering, unique filenames, partial failure and cancellation, cleanup of
+  completed/temporary outputs, exception propagation, and datasets being closed
+  before considering concurrent writes production-ready.
+- [ ] Define an acceptance threshold from the benchmark (wall-time improvement,
+  peak/aggregate RSS, I/O saturation, and failure rate) and retain the
+  sequential path when two workers do not provide a material benefit.
+
+### Atlas fix-only path and persistent cache
+
+Atlas catalog resolution can yield the complete source time range because fixes
+must be applied before files can be returned. Avoid running clisops subset when
+the effective request is otherwise a semantic pass-through, and use the
+available 1 TB SSD for durable fixed Atlas outputs.
+
+- [ ] Measure Atlas requests separately to confirm the time spent opening,
+  applying Woodpecker fixes, running a no-op subset, and writing. Cover full-time
+  requests with no area as well as real time, level, component, and area
+  selections.
+- [ ] Add an explicit processing-flow decision for "fix and write" that bypasses
+  clisops subset only when every requested selection is already aligned with the
+  resolved source. Treat the absence of an area alone as insufficient: time,
+  time components, level, output type, split method, and any future subset
+  parameter must also be proven to be no-ops.
+- [ ] Verify that fix-only output is byte/metadata/encoding-equivalent to the
+  current fixed subset output for pass-through requests, including provenance,
+  filenames, file-size splitting, calendars, bounds, and Atlas variants.
+- [ ] Define a small backend-neutral artifact-cache abstraction before adding a
+  cache dependency. Keep Atlas and processing-flow code limited to operations
+  such as lookup/materialize, publish, invalidate, cull, and statistics; do not
+  expose DiskCache keys, internal paths, locks, or file handles outside the
+  adapter.
+- [ ] Provide a disabled/no-op backend and select cache backends by configuration
+  so caching remains optional. Make unavailable optional dependencies produce a
+  clear configuration error, while runtime cache failures fall back safely to
+  uncached processing where possible.
+- [ ] Implement DiskCache as the first optional backend and pin its dependency.
+  Configure a byte-based size limit and least-recently-used eviction, store the
+  actual artifact bytes rather than unaccounted external path strings, and run a
+  complete cull after publishing large entries.
+- [ ] Design canonical backend-independent cache keys from dataset/source
+  identity and freshness plus the Woodpecker recipe, plugin/package versions,
+  and output-affecting settings so stale fixes cannot be served after source or
+  recipe changes.
+- [ ] Populate entries with a per-key lock and atomic publish so concurrent
+  misses perform the work once and readers never observe partial files. On a
+  hit, validate and materialize the entry into the request output directory by
+  hard link when safe, otherwise copy it, so later eviction cannot break a
+  published download.
+- [ ] Use cached fixed Atlas files as inputs to real spatial, temporal, or level
+  subsets, so the cache avoids repeated fixes even when the subset itself cannot
+  be skipped.
+- [ ] Define cache capacity, free-space reserve, permissions, corruption
+  recovery, explicit invalidation, and least-recently-used cleanup for the 1 TB
+  disk. Record hit/miss, bytes, build time, last access, and eviction metrics.
+- [ ] Estimate the complete fixed Atlas footprint and decide whether to pre-warm
+  all current datasets or fill on demand. If pre-warming, make it resumable,
+  bounded, and safe alongside live requests.
+- [ ] Add unit and integration coverage for cache hit, miss, concurrent miss,
+  invalidation after source/recipe changes, corrupt/incomplete entries, disk-full
+  fallback, and equivalence with uncached processing.
+- [ ] Add backend contract tests covering lookup, access-time refresh,
+  publication, materialization, invalidation, byte accounting, eviction,
+  concurrency, and failure semantics. Run the same suite against the no-op and
+  DiskCache adapters so another optional backend can be evaluated or introduced
+  without changing Atlas processing.
+- [ ] Keep cache observability backend-neutral and expose backend name, capacity,
+  used bytes, entry count, hits, misses, evictions, corruptions, and publish
+  failures through logs and the future status report.
+
 ## Subset batching
 
 - [ ] Evaluate the performance, encoding fidelity, peak memory use, and
