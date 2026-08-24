@@ -141,6 +141,29 @@ available 1 TB SSD for durable fixed Atlas outputs.
   clisops are routed consistently to the configured service or Slurm job logs
   without duplication.
 
+## Multi-dataset workflow inputs
+
+Workflow references such as ``collection: inputs/pr`` currently substitute the
+entire input value. A request containing many dataset identifiers can therefore
+invoke one operator with all datasets even when the request producer intended
+one independent operation per dataset. This creates large, difficult-to-diagnose
+failure reports and unclear retry semantics.
+
+- [ ] Define and document whether workflow operators support multi-dataset
+  collections, implicit mapping, or singleton inputs only. Keep the behavior
+  explicit rather than interpreting a list differently according to its size.
+- [ ] As a minimum safeguard, detect a multi-dataset collection during workflow
+  validation for operators that require a single dataset and reject it before
+  catalog resolution or processing. Return a concise error containing the step
+  ID, operator name, number of datasets received, expected cardinality, and
+  guidance to submit one workflow per dataset.
+- [ ] If multi-dataset workflows are supported, add explicit map/scatter
+  semantics with per-dataset results and failures, bounded execution, stable
+  output ordering, and an intentional fail-fast or partial-success policy.
+- [ ] Add regression tests using a workflow input containing several CMIP6
+  dataset IDs. Cover the validation error and, if mapping is implemented, prove
+  that datasets are never combined into one logical source operation.
+
 ## Decadal concat batching
 
 Status: source-path-level batching is implemented.
