@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 import requests
-from owslib.wps import WebProcessingService, monitorExecution
 from owslib.util import ServiceException
+from owslib.wps import WebProcessingService, monitorExecution
 from pywps import configuration as config
 
 from rook.utils.metalink_utils import parse_metalink
@@ -35,7 +35,26 @@ class RookWPS:
         outputs = [("output", True, None)]
         execution = self.wps.execute(identifier, inputs, output=outputs)
         monitorExecution(execution)
-        errors = [
+        errors = self._execution_errors(execution)
+        assert execution.isSucceded() is True, errors
+        assert len(execution.processOutputs) > 0
+        ml_url = execution.processOutputs[0].reference
+        xml = requests.get(ml_url, timeout=30).text
+        urls = parse_metalink(xml)
+        return urls
+
+    def execute_expect_failure(self, identifier, inputs):
+        outputs = [("output", True, None)]
+        execution = self.wps.execute(identifier, inputs, output=outputs)
+        monitorExecution(execution)
+        errors = self._execution_errors(execution)
+        assert execution.isSucceded() is False
+        assert errors
+        return errors
+
+    @staticmethod
+    def _execution_errors(execution):
+        return [
             {
                 "code": error.code,
                 "locator": error.locator,
@@ -43,12 +62,6 @@ class RookWPS:
             }
             for error in execution.errors
         ]
-        assert execution.isSucceded() is True, errors
-        assert len(execution.processOutputs) > 0
-        ml_url = execution.processOutputs[0].reference
-        xml = requests.get(ml_url, timeout=30).text
-        urls = parse_metalink(xml)
-        return urls
 
 
 @pytest.fixture

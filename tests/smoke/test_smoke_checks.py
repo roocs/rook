@@ -1135,3 +1135,18 @@ def test_smoke_execute_c3s_cica_atlas_containing_area_returns_original(wps):
     assert "data.mips.climate.copernicus.eu" in urls[0]
     assert "esg_c3s-cica-atlas" in urls[0]
     assert "sfcwind_E-OBS_mon_" in urls[0]
+
+
+def test_smoke_execute_c3s_cica_atlas_disjoint_area_fails_early(wps):
+    inputs = subset_inputs(
+        C3S_CICA_ATLAS_EOBS_SFCWIND_COLLECTION,
+        time="1950/2024",
+        area="100,-20,120,0",
+    )
+
+    errors = wps.execute_expect_failure("subset", inputs)
+
+    assert any(
+        "does not overlap the dataset's spatial extent" in str(error["text"])
+        for error in errors
+    )
