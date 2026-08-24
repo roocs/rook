@@ -174,6 +174,13 @@ The rule is intentionally small:
 * workflow outputs are treated like direct files unless a future workflow model
   gives them an explicit source identity.
 
+Aligned full-file ``c3s-cica-atlas`` subset requests return the catalog's
+original files without opening them, so no fixes are applied. Set
+``project:c3s-cica-atlas.apply_fixes_to_full_files = true`` to force those
+requests through normal subset processing and the configured fix backend.
+Requests that make a real spatial, temporal, component, or level selection are
+always processed.
+
 Decadal concat fixes remain an operation-specific rule for now. They are applied
 inside concat because they prepare multiple forecast files for concatenation, not
 because the generic dataset opener can infer the whole operation context.

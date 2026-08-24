@@ -4,6 +4,10 @@ Changes
 Unreleased
 ==========
 
+* Made aligned full-file CICA Atlas subset requests explicitly return original
+  files without applying dataset fixes by default. Deployments can set
+  ``project:c3s-cica-atlas.apply_fixes_to_full_files = true`` to force those
+  requests through normal processing and the configured fix backend.
 * Added a memory-bounded post-processing step that merges consecutive subset
   and CMIP6-decadal concat batches up to the 2 GB output limit, returning one
   file when the complete result fits within that limit.

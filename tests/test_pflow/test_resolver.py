@@ -300,6 +300,71 @@ def test_catalog_aligned_subset_returns_matching_original_files(catalog_resolver
     assert result.output_uris == aligned_urls
 
 
+def test_aligned_full_cica_atlas_returns_original_without_fixes(
+    catalog_resolver, monkeypatch
+):
+    collection = ["c3s-cica-atlas.example.dataset"]
+    download_url = "https://example.test/data/cica-atlas-input.nc"
+    catalog_resolver(
+        FakeSearchResult(
+            {collection[0]: ["/data/cica-atlas-input.nc"]},
+            download_records={collection[0]: [download_url]},
+        )
+    )
+
+    class AlignedFakeAlignment(FakeAlignment):
+        is_aligned = True
+        aligned_files = [download_url]
+
+    monkeypatch.setattr(resolver_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
+    monkeypatch.setattr(
+        resolver_mod.config,
+        "get_apply_fixes_to_full_files",
+        lambda _project: False,
+    )
+
+    result = execute_resolved_request(
+        collection,
+        {"time": "1950/2025"},
+        lambda _inputs: pytest.fail("runner should not be called"),
+        allow_aligned_original_files=True,
+    )
+
+    assert result.use_original_files is True
+    assert result.output_uris == [download_url]
+
+
+def test_aligned_full_cica_atlas_can_be_rewritten_with_fixes(
+    catalog_resolver, monkeypatch
+):
+    collection = ["c3s-cica-atlas.example.dataset"]
+    source = "/data/cica-atlas-input.nc"
+    catalog_resolver(FakeSearchResult({collection[0]: [source]}))
+
+    class AlignedFakeAlignment(FakeAlignment):
+        is_aligned = True
+        aligned_files = [source]
+
+    monkeypatch.setattr(resolver_mod, "SubsetAlignmentChecker", AlignedFakeAlignment)
+    monkeypatch.setattr(
+        resolver_mod.config,
+        "get_apply_fixes_to_full_files",
+        lambda _project: True,
+    )
+
+    result = execute_resolved_request(
+        collection,
+        {"time": "1950/2025"},
+        lambda inputs: ["fixed.nc"]
+        if inputs["collection"][0].dataset_id == collection[0]
+        else pytest.fail("catalog identity must be preserved for Woodpecker"),
+        allow_aligned_original_files=True,
+    )
+
+    assert result.use_original_files is False
+    assert result.output_uris == ["fixed.nc"]
+
+
 def test_long_daily_aligned_subset_returns_original_files_before_processing(
     catalog_resolver, monkeypatch
 ):

@@ -63,6 +63,8 @@ C3S_IPCC_ATLAS_CORDEX_COLLECTION = "c3s-ipcc-atlas.tnn.CORDEX-AFR.historical.mon
 
 C3S_CICA_ATLAS_ERA5_COLLECTION = "c3s-cica-atlas.cd.ERA5-Land.yr.v25"
 
+C3S_CICA_ATLAS_EOBS_SFCWIND_COLLECTION = "c3s-cica-atlas.sfcwind.E-OBS.mon.v25"
+
 C3S_CICA_ATLAS_CORDEX_COLLECTION = "c3s-cica-atlas.cdd.CORDEX-CORE.historical.yr.v25"
 
 C3S_CICA_ATLAS_CMIP6_COLLECTION = "c3s-cica-atlas.cd.CMIP6.historical.yr.v25"
@@ -1100,3 +1102,18 @@ def test_smoke_execute_c3s_cica_atlas_era5_subset_no_time_param(wps):
     assert "data.mips.climate.copernicus.eu" in urls[0]
     assert "esg_c3s-cica-atlas" in urls[0]
     assert "cd_ERA5-Land_yr_1950-2025_v025.nc" in urls[0]
+
+
+def test_smoke_execute_c3s_cica_atlas_aligned_range_returns_original(wps):
+    # This small E-OBS source ends in 2021 in mini-ESGF and 2024 in the current
+    # production Atlas. The requested outer bound covers both complete files.
+    inputs = subset_inputs(
+        C3S_CICA_ATLAS_EOBS_SFCWIND_COLLECTION,
+        time="1950/2024",
+    )
+    urls = wps.execute("subset", inputs)
+
+    assert len(urls) == 1
+    assert "data.mips.climate.copernicus.eu" in urls[0]
+    assert "esg_c3s-cica-atlas" in urls[0]
+    assert "sfcwind_E-OBS_mon_" in urls[0]
