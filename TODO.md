@@ -65,67 +65,25 @@ parts of the bottleneck.
   peak/aggregate RSS, I/O saturation, and failure rate) and retain the
   sequential path when two workers do not provide a material benefit.
 
-### Atlas fix-only path and persistent cache
+### Optional processed-artifact cache
 
-Atlas catalog resolution can yield the complete source time range because fixes
-must be applied before files can be returned. Avoid running clisops subset when
-the effective request is otherwise a semantic pass-through, and use the
-available 1 TB SSD for durable fixed Atlas outputs.
+Aligned Atlas pass-through requests return their original files and do not need
+a cache. The full Atlas collection also exceeds the available cache storage, so
+caching is not part of the current Atlas performance solution. It may still be
+useful later for demonstrably repetitive, expensive processing results.
 
-- [ ] Measure Atlas requests separately to confirm the time spent opening,
-  applying Woodpecker fixes, running a no-op subset, and writing. Cover full-time
-  requests with no area as well as real time, level, component, and area
-  selections.
-- [ ] Add an explicit processing-flow decision for "fix and write" that bypasses
-  clisops subset only when every requested selection is already aligned with the
-  resolved source. Treat the absence of an area alone as insufficient: time,
-  time components, level, output type, split method, and any future subset
-  parameter must also be proven to be no-ops.
-- [ ] Verify that fix-only output is byte/metadata/encoding-equivalent to the
-  current fixed subset output for pass-through requests, including provenance,
-  filenames, file-size splitting, calendars, bounds, and Atlas variants.
-- [ ] Define a small backend-neutral artifact-cache abstraction before adding a
-  cache dependency. Keep Atlas and processing-flow code limited to operations
-  such as lookup/materialize, publish, invalidate, cull, and statistics; do not
-  expose DiskCache keys, internal paths, locks, or file handles outside the
-  adapter.
-- [ ] Provide a disabled/no-op backend and select cache backends by configuration
-  so caching remains optional. Make unavailable optional dependencies produce a
-  clear configuration error, while runtime cache failures fall back safely to
-  uncached processing where possible.
-- [ ] Implement DiskCache as the first optional backend and pin its dependency.
-  Configure a byte-based size limit and least-recently-used eviction, store the
-  actual artifact bytes rather than unaccounted external path strings, and run a
-  complete cull after publishing large entries.
-- [ ] Design canonical backend-independent cache keys from dataset/source
-  identity and freshness plus the Woodpecker recipe, plugin/package versions,
-  and output-affecting settings so stale fixes cannot be served after source or
-  recipe changes.
-- [ ] Populate entries with a per-key lock and atomic publish so concurrent
-  misses perform the work once and readers never observe partial files. On a
-  hit, validate and materialize the entry into the request output directory by
-  hard link when safe, otherwise copy it, so later eviction cannot break a
-  published download.
-- [ ] Use cached fixed Atlas files as inputs to real spatial, temporal, or level
-  subsets, so the cache avoids repeated fixes even when the subset itself cannot
-  be skipped.
-- [ ] Define cache capacity, free-space reserve, permissions, corruption
-  recovery, explicit invalidation, and least-recently-used cleanup for the 1 TB
-  disk. Record hit/miss, bytes, build time, last access, and eviction metrics.
-- [ ] Estimate the complete fixed Atlas footprint and decide whether to pre-warm
-  all current datasets or fill on demand. If pre-warming, make it resumable,
-  bounded, and safe alongside live requests.
-- [ ] Add unit and integration coverage for cache hit, miss, concurrent miss,
-  invalidation after source/recipe changes, corrupt/incomplete entries, disk-full
-  fallback, and equivalence with uncached processing.
-- [ ] Add backend contract tests covering lookup, access-time refresh,
-  publication, materialization, invalidation, byte accounting, eviction,
-  concurrency, and failure semantics. Run the same suite against the no-op and
-  DiskCache adapters so another optional backend can be evaluated or introduced
-  without changing Atlas processing.
-- [ ] Keep cache observability backend-neutral and expose backend name, capacity,
-  used bytes, entry count, hits, misses, evictions, corruptions, and publish
-  failures through logs and the future status report.
+- [ ] Reconsider a cache only after production metrics identify repeated
+  identical work, a useful expected hit rate, and a working set that fits the
+  available storage. Compare the measured benefit with operational complexity
+  before selecting a backend.
+- [ ] If justified, design a small backend-neutral, disabled-by-default artifact
+  cache with canonical versioned keys, atomic publication, bounded capacity and
+  eviction, corruption recovery, safe materialization, and observable hit/miss
+  and byte statistics. Keep it independent of Atlas-specific control flow.
+- [ ] Cover cache correctness and failure behavior with backend contract tests,
+  including concurrent misses, source or fix-version changes, incomplete
+  entries, eviction, and disk-full fallback. Do not pre-warm the complete Atlas
+  collection.
 
 ## Explicit project behavior
 
