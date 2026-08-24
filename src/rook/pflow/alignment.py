@@ -29,7 +29,7 @@ class SubsetAlignmentChecker:
             relation = dataset_area_relation(self.input_files[0], area)
             if relation is SpatialRelation.DISJOINT:
                 raise ValueError(
-                    "The requested area does not overlap the dataset's spatial extent."
+                    "The requested area does not overlap the spatial extent of the dataset."
                 )
             if relation is not SpatialRelation.CONTAINS:
                 return

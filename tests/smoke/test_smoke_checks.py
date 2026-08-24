@@ -1147,6 +1147,6 @@ def test_smoke_execute_c3s_cica_atlas_disjoint_area_fails_early(wps):
     errors = wps.execute_expect_failure("subset", inputs)
 
     assert any(
-        "does not overlap the dataset's spatial extent" in str(error["text"])
+        "does not overlap the spatial extent of the dataset" in str(error["text"])
         for error in errors
-    )
+    ), errors

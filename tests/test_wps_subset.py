@@ -6,6 +6,7 @@ import xarray as xr
 from pywps import Service
 from pywps.tests import assert_process_exception, assert_response_success, client_for
 
+from rook.pflow.spatial import SpatialRelation
 from rook.processes.wps_subset import Subset
 from rook.utils.metalink_utils import extract_paths_from_metalink, parse_metalink
 
@@ -207,6 +208,24 @@ def test_wps_subset_missing_collection(pywps_cfg):
         f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
     )
     assert_process_exception(resp, code="MissingParameterValue")
+
+
+@pytest.mark.mini_esgf_data
+@pytest.mark.usefixtures("load_test_data")
+def test_wps_subset_disjoint_area_reports_spatial_error(monkeypatch, pywps_cfg):
+    monkeypatch.setattr(
+        "rook.pflow.alignment.dataset_area_relation",
+        lambda _path, _area: SpatialRelation.DISJOINT,
+    )
+    client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
+    datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
+    datainputs += ";area=0,0,10,10"
+
+    resp = client.get(
+        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
+    )
+
+    assert b"does not overlap the spatial extent of the dataset" in resp.data
 
 
 @pytest.mark.mini_esgf_data
