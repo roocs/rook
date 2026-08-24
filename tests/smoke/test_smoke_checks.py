@@ -1118,3 +1118,20 @@ def test_smoke_execute_c3s_cica_atlas_aligned_range_returns_original(wps):
     assert "data.mips.climate.copernicus.eu" in urls[0]
     assert "esg_c3s-cica-atlas" in urls[0]
     assert "sfcwind_E-OBS_mon_" in urls[0]
+
+
+def test_smoke_execute_c3s_cica_atlas_containing_area_returns_original(wps):
+    # This is not a whole-globe bbox, but it contains the complete E-OBS grid.
+    # It therefore exercises dataset-aware spatial alignment rather than the
+    # zero-I/O global-area shortcut.
+    inputs = subset_inputs(
+        C3S_CICA_ATLAS_EOBS_SFCWIND_COLLECTION,
+        time="1950/2024",
+        area="-30,20,50,75",
+    )
+    urls = wps.execute("subset", inputs)
+
+    assert len(urls) == 1
+    assert "data.mips.climate.copernicus.eu" in urls[0]
+    assert "esg_c3s-cica-atlas" in urls[0]
+    assert "sfcwind_E-OBS_mon_" in urls[0]

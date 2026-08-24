@@ -1,4 +1,7 @@
+import pytest
+
 from rook.pflow.alignment import SubsetAlignmentChecker
+from rook.pflow.spatial import SpatialRelation
 from rook.utils.input_utils import is_global_area
 
 
@@ -9,6 +12,39 @@ def test_global_area_is_a_noop():
 
 def test_partial_area_is_not_a_noop():
     assert is_global_area("-10,35,30,70") is False
+
+
+def test_area_containing_dataset_preserves_alignment(monkeypatch):
+    monkeypatch.setattr(
+        "rook.pflow.alignment.dataset_area_relation",
+        lambda _path, _area: SpatialRelation.CONTAINS,
+    )
+
+    alignment = SubsetAlignmentChecker(["regional.nc"], {"area": "-20,30,20,70"})
+
+    assert alignment.is_aligned is True
+    assert alignment.aligned_files == ["regional.nc"]
+
+
+def test_partial_area_still_requires_subsetting(monkeypatch):
+    monkeypatch.setattr(
+        "rook.pflow.alignment.dataset_area_relation",
+        lambda _path, _area: SpatialRelation.PARTIAL,
+    )
+
+    alignment = SubsetAlignmentChecker(["regional.nc"], {"area": "0,50,20,70"})
+
+    assert alignment.is_aligned is False
+
+
+def test_disjoint_area_raises_spatial_error(monkeypatch):
+    monkeypatch.setattr(
+        "rook.pflow.alignment.dataset_area_relation",
+        lambda _path, _area: SpatialRelation.DISJOINT,
+    )
+
+    with pytest.raises(ValueError, match="does not overlap"):
+        SubsetAlignmentChecker(["regional.nc"], {"area": "30,-20,50,20"})
 
 
 def test_global_area_preserves_full_file_alignment(monkeypatch):

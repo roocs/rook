@@ -8,7 +8,9 @@ Unreleased
   files without applying dataset fixes by default. Deployments can set
   ``project:c3s-cica-atlas.apply_fixes_to_full_files = true`` to force those
   requests through normal processing and the configured fix backend. Whole-globe
-  area parameters are treated as no-ops when checking file alignment.
+  area parameters, and areas containing a dataset's complete spatial extent,
+  are treated as no-ops when checking file alignment. Spatially disjoint areas
+  now fail before subset processing starts.
 * Added a memory-bounded post-processing step that merges consecutive subset
   and CMIP6-decadal concat batches up to the 2 GB output limit, returning one
   file when the complete result fits within that limit.

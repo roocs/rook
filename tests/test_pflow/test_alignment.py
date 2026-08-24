@@ -25,9 +25,8 @@ class TestYearMonth:
 
     def test_area_subset(self, get_files):
         inputs = {"area": "0.,49.,10.,65"}
-        sac = SubsetAlignmentChecker(get_files, inputs)
-        assert sac.is_aligned is False
-        assert sac.aligned_files == []
+        with pytest.raises(ValueError, match="does not overlap"):
+            SubsetAlignmentChecker(get_files, inputs)
 
     def test_time_subset_no_match(self, get_files):
         inputs = {"time": "1886-01/1930-11"}
@@ -71,9 +70,8 @@ class TestYearMonthDay1200:
 
     def test_area_subset(self, get_files):
         inputs = {"area": "0.,49.,10.,65"}
-        sac = SubsetAlignmentChecker(get_files, inputs)
-        assert sac.is_aligned is False
-        assert sac.aligned_files == []
+        with pytest.raises(ValueError, match="does not overlap"):
+            SubsetAlignmentChecker(get_files, inputs)
 
     def test_time_subset_no_match(self, get_files):
         inputs = {"time": "1886-01-01/1930-11-01"}

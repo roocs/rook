@@ -2,13 +2,14 @@
 
 from pathlib import Path
 
+import xarray as xr
 from clisops.parameter import time_components_parameter, time_parameter
 from clisops.project_utils import url_to_file_path
 from clisops.utils.time_utils import to_isoformat
 
-import xarray as xr
-
 from rook.utils.input_utils import is_global_area
+
+from .spatial import SpatialRelation, dataset_area_relation
 
 
 class SubsetAlignmentChecker:
@@ -25,7 +26,13 @@ class SubsetAlignmentChecker:
 
         area = inputs.get("area")
         if area and not is_global_area(area):
-            return
+            relation = dataset_area_relation(self.input_files[0], area)
+            if relation is SpatialRelation.DISJOINT:
+                raise ValueError(
+                    "The requested area does not overlap the dataset's spatial extent."
+                )
+            if relation is not SpatialRelation.CONTAINS:
+                return
 
         time = inputs.get("time", None)
         time_components = inputs.get("time_components", None)
