@@ -1110,6 +1110,7 @@ def test_smoke_execute_c3s_cica_atlas_aligned_range_returns_original(wps):
     inputs = subset_inputs(
         C3S_CICA_ATLAS_EOBS_SFCWIND_COLLECTION,
         time="1950/2024",
+        area="-180,-90,180,90",
     )
     urls = wps.execute("subset", inputs)
 

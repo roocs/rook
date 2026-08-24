@@ -1,4 +1,5 @@
 from pywps.app.exceptions import ProcessError
+from clisops.parameter.area_parameter import AreaParameter
 from clisops.parameter.time_parameter import TimeParameter
 from clisops.project_utils import url_to_file_path
 from clisops.exceptions import InvalidProject
@@ -33,6 +34,9 @@ def get_grid_param(grid: str, custom_grid: str | None):
 
 
 def fix_parameters(parameters):
+    if is_global_area(parameters.get("area")):
+        parameters.pop("area")
+
     if "time_components" in parameters:
         time_components = fix_time_components(
             parameters["time_components"], time=parameters.get("time")
@@ -42,6 +46,25 @@ def fix_parameters(parameters):
         else:
             parameters["time_components"] = time_components
     return parameters
+
+
+def is_global_area(value):
+    """Return whether a clisops-order bbox covers the complete globe."""
+    if not value:
+        return False
+
+    try:
+        bounds = AreaParameter(value).asdict()
+        lon_bounds = bounds["lon_bnds"]
+        lat_bounds = bounds["lat_bnds"]
+    except (KeyError, TypeError, ValueError):
+        return False
+
+    return (
+        min(lat_bounds) <= -90
+        and max(lat_bounds) >= 90
+        and abs(lon_bounds[1] - lon_bounds[0]) >= 360
+    )
 
 
 def fix_time_components(tc, time=None):

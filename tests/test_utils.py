@@ -2,7 +2,9 @@ import pytest
 from pywps.app import WPSRequest
 
 from rook.utils.input_utils import (
+    fix_parameters,
     fix_time_components,
+    is_global_area,
     parse_wps_input,
     resolve_to_file_paths,
 )
@@ -172,3 +174,20 @@ def test_fix_time_components_keeps_year_subset():
         )
         == "year:2000,2002|month:jan,feb"
     )
+
+
+def test_fix_parameters_removes_global_area():
+    parameters = {"area": "-180,-90,180,90", "time": "1950/2024"}
+
+    assert fix_parameters(parameters) == {"time": "1950/2024"}
+
+
+def test_fix_parameters_keeps_partial_area():
+    parameters = {"area": "-10,35,30,70"}
+
+    assert fix_parameters(parameters) == {"area": "-10,35,30,70"}
+
+
+def test_global_area_recognizes_common_longitude_frames():
+    assert is_global_area("-180,-90,180,90") is True
+    assert is_global_area("0,-90,360,90") is True

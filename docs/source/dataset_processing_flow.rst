@@ -179,7 +179,8 @@ original files without opening them, so no fixes are applied. Set
 ``project:c3s-cica-atlas.apply_fixes_to_full_files = true`` to force those
 requests through normal subset processing and the configured fix backend.
 Requests that make a real spatial, temporal, component, or level selection are
-always processed.
+always processed. A whole-globe area is treated as a no-op rather than forcing
+an otherwise aligned request through subset processing.
 
 Decadal concat fixes remain an operation-specific rule for now. They are applied
 inside concat because they prepare multiple forecast files for concatenation, not

@@ -1,4 +1,37 @@
 from rook.pflow.alignment import SubsetAlignmentChecker
+from rook.utils.input_utils import is_global_area
+
+
+def test_global_area_is_a_noop():
+    assert is_global_area("-180,-90,180,90") is True
+    assert is_global_area("0,-90,360,90") is True
+
+
+def test_partial_area_is_not_a_noop():
+    assert is_global_area("-10,35,30,70") is False
+
+
+def test_global_area_preserves_full_file_alignment(monkeypatch):
+    input_file = "atlas-1950-2024.nc"
+    monkeypatch.setattr(
+        SubsetAlignmentChecker,
+        "_get_file_times",
+        lambda _self, _path: (
+            "1950-01-01T00:00:00",
+            "2024-12-01T00:00:00",
+        ),
+    )
+
+    alignment = SubsetAlignmentChecker(
+        [input_file],
+        {
+            "time": "1950/2024",
+            "area": "-180,-90,180,90",
+        },
+    )
+
+    assert alignment.is_aligned is True
+    assert alignment.aligned_files == [input_file]
 
 
 def test_long_three_hour_full_file_range_is_aligned(monkeypatch):

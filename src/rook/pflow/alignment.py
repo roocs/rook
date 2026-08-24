@@ -8,6 +8,8 @@ from clisops.utils.time_utils import to_isoformat
 
 import xarray as xr
 
+from rook.utils.input_utils import is_global_area
+
 
 class SubsetAlignmentChecker:
     def __init__(self, input_files, inputs):
@@ -18,7 +20,11 @@ class SubsetAlignmentChecker:
         self._deduce_alignment(inputs)
 
     def _deduce_alignment(self, inputs):
-        if any(inputs.get(key) for key in ("area", "level", "shape")):
+        if any(inputs.get(key) for key in ("level", "shape")):
+            return
+
+        area = inputs.get("area")
+        if area and not is_global_area(area):
             return
 
         time = inputs.get("time", None)

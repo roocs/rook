@@ -31,6 +31,7 @@ from rook.fixes import (
     FixContext,
     get_dataset_fix_provider,
 )
+from rook.utils.input_utils import is_global_area
 
 from . import consolidate, normalise
 from .base import Operation, resolve_collection
@@ -367,7 +368,10 @@ class Concat(Operation):
         time_components = time_components_parameter.TimeComponentsParameter(
             params.get("time_components")
         )
-        area = area_parameter.AreaParameter(params.get("area"))
+        area_value = params.get("area")
+        if is_global_area(area_value):
+            area_value = None
+        area = area_parameter.AreaParameter(area_value)
         dims = dimension_parameter.DimensionParameter(params.get("dims"))
         collection = resolve_collection(collection)
 
