@@ -163,28 +163,44 @@ fix failure, or an execution/resource failure.
   clisops are routed consistently to the configured service or Slurm job logs
   without duplication.
 
-## Multi-dataset workflow inputs
+## Pre-execution request validation
 
-Workflow references such as ``collection: inputs/pr`` currently substitute the
-entire input value. A request containing many dataset identifiers can therefore
-invoke one operator with all datasets even when the request producer intended
-one independent operation per dataset. This creates large, difficult-to-diagnose
-failure reports and unclear retry semantics.
+Requests submitted outside the CDS portal, in particular through the CDS API,
+can pass several dataset identifiers to an operator such as subset even though
+Rook normally supports one dataset per operation. Workflow references such as
+``collection: inputs/pr`` can have the same effect because they currently
+substitute the entire input value. These invalid requests may be accepted as
+jobs and fail only after catalog resolution or processing has begun, producing
+large, difficult-to-diagnose failure reports and wasting worker resources.
 
-- [ ] Define and document whether workflow operators support multi-dataset
-  collections, implicit mapping, or singleton inputs only. Keep the behavior
-  explicit rather than interpreting a list differently according to its size.
-- [ ] As a minimum safeguard, detect a multi-dataset collection during workflow
-  validation for operators that require a single dataset and reject it before
-  catalog resolution or processing. Return a concise error containing the step
-  ID, operator name, number of datasets received, expected cardinality, and
-  guidance to submit one workflow per dataset.
+- [ ] Add a dedicated request-validation module that runs after request parsing
+  but before a job is queued or an operator begins processing. Give it a small,
+  explicit interface shared by direct WPS/CDS API requests and workflow steps,
+  and keep validation independent from catalog access and data processing.
+- [ ] Make validation rules easy to extend and test without adding conditionals
+  to request handlers. Rules should declare the operators or request types they
+  apply to and return structured validation failures with stable codes,
+  messages, and parameter locators.
+- [ ] Define and document the accepted dataset cardinality for every operator
+  and request path, including direct WPS/CDS API requests and workflow steps.
+  Keep singleton-only behavior explicit rather than interpreting a list
+  differently according to its size or source.
+- [ ] Implement dataset cardinality as the first validation rule. In
+  particular, reject subset requests containing more than one dataset before
+  job submission, catalog resolution, source opening, or clisops execution.
+- [ ] Return a concise, user-safe validation error with a stable code and useful
+  context: operator name, number of datasets received, expected cardinality,
+  and guidance to submit one request per dataset. For workflows, also include
+  the failing step ID. Expose the same classification through synchronous and
+  asynchronous API responses.
 - [ ] If multi-dataset workflows are supported, add explicit map/scatter
   semantics with per-dataset results and failures, bounded execution, stable
   output ordering, and an intentional fail-fast or partial-success policy.
-- [ ] Add regression tests using a workflow input containing several CMIP6
-  dataset IDs. Cover the validation error and, if mapping is implemented, prove
-  that datasets are never combined into one logical source operation.
+- [ ] Add regression tests for direct CDS API/WPS subset requests and workflow
+  inputs containing several CMIP6 dataset IDs. Assert that rejection happens
+  before job execution and catalog access, verify the public error code and
+  message, and, if mapping is implemented, prove that datasets are never
+  combined into one logical source operation.
 
 ## Decadal concat batching
 
