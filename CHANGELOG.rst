@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+1.4.0 (2026-08-26)
+==================
+
 * Made aligned full-file CICA Atlas subset requests explicitly return original
   files without applying dataset fixes by default. Deployments can set
   ``project:c3s-cica-atlas.apply_fixes_to_full_files = true`` to force those
