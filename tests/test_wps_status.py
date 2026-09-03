@@ -43,13 +43,14 @@ def test_status_process_is_synchronous():
 
     assert process.status_supported == "false"
     assert process.store_supported == "false"
+    assert [output.identifier for output in process.outputs] == ["json", "html"]
 
 
 def test_wps_status_returns_raw_json(monkeypatch):
     monkeypatch.setattr(wps_status_module, "collect_status", lambda: REPORT)
     client = client_for(Service(processes=[Status()]))
 
-    response = execute_status(client, "report")
+    response = execute_status(client, "json")
 
     assert response.status_code == 200
     assert response.content_type == "application/json"
@@ -60,7 +61,7 @@ def test_wps_status_returns_html_from_same_report(monkeypatch):
     monkeypatch.setattr(wps_status_module, "collect_status", lambda: REPORT)
     client = client_for(Service(processes=[Status()]))
 
-    response = execute_status(client, "overview")
+    response = execute_status(client, "html")
 
     assert response.status_code == 200
     assert response.content_type == "text/html; charset=utf-8"

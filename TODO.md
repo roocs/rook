@@ -340,9 +340,6 @@ synchronous `status` process for operational insight.
 - [ ] Define one versioned status-report model used by every output. Give the
   overall service and each check a `green`, `yellow`, or `red` state, a short
   public message, measurement time, and optional non-sensitive details.
-- [ ] Return the report as JSON for monitoring and render the same report as a
-  small, user-friendly HTML overview. Do not duplicate check logic in the HTML
-  renderer.
 - [ ] Report PyWPS database connectivity and job-state counts, including queued,
   running, succeeded, failed, and stale jobs. Include recent failure and timing
   summaries where they are cheap to calculate.

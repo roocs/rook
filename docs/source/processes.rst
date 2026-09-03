@@ -64,13 +64,13 @@ Use the versioned JSON report for monitoring:
 
 .. code-block:: text
 
-   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=report
+   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=json
 
-For a small human-readable view of the same report, request ``overview``:
+For a small human-readable view of the same report, request ``html``:
 
 .. code-block:: text
 
-   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=overview
+   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=html
 
 The ``[status]`` section of ``roocs.ini`` configures warning and failure
 percentages for CPU, memory, and disk, plus ``stale_job_seconds``. Load is

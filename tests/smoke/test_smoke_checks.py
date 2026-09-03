@@ -477,7 +477,7 @@ def test_smoke_execute_status(wps):
             "version": "1.0.0",
             "request": "Execute",
             "identifier": "status",
-            "RawDataOutput": "report",
+            "RawDataOutput": "json",
         },
         timeout=30,
     )

@@ -13,8 +13,8 @@ HTML_FORMAT = Format("text/html", extension=".html")
 class Status(Process):
     """Return the current Rook operational status synchronously.
 
-    The ``report`` output is a versioned JSON document intended for monitoring.
-    The ``overview`` output renders that same document as a small HTML page.
+    The ``json`` output is a versioned document intended for monitoring. The
+    ``html`` output renders that same document as a small human-readable page.
     Individual check failures are represented in the report and do not prevent
     the remaining checks from being returned.
     """
@@ -22,14 +22,14 @@ class Status(Process):
     def __init__(self):
         outputs = [
             ComplexOutput(
-                "report",
-                "Status report",
+                "json",
+                "JSON status report",
                 abstract="Versioned Rook operational status report.",
                 supported_formats=[FORMATS.JSON],
             ),
             ComplexOutput(
-                "overview",
-                "Status overview",
+                "html",
+                "HTML status overview",
                 abstract="Human-readable Rook operational status overview.",
                 supported_formats=[HTML_FORMAT],
             ),
@@ -50,6 +50,6 @@ class Status(Process):
 
     def _handler(self, _request, response):
         report = collect_status()
-        response.outputs["report"].data = json.dumps(report, sort_keys=True)
-        response.outputs["overview"].data = render_html(report)
+        response.outputs["json"].data = json.dumps(report, sort_keys=True)
+        response.outputs["html"].data = render_html(report)
         return response
