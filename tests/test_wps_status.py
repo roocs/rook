@@ -73,30 +73,27 @@ def test_collect_status_preserves_results_when_a_check_fails(monkeypatch):
     monkeypatch.setattr(
         status_module, "get_status_config", lambda: status_module.DEFAULT_STATUS
     )
-    monkeypatch.setattr(
-        status_module,
-        "_service_checks",
-        lambda measured_at, thresholds: [
-            status_module._check("service", "green", "Available.", measured_at)
-        ],
-    )
-    monkeypatch.setattr(
-        status_module,
-        "_job_checks",
-        lambda measured_at, thresholds: (_ for _ in ()).throw(
-            RuntimeError("secret database location")
-        ),
-    )
-    monkeypatch.setattr(status_module, "_server_checks", lambda *_: [])
-    monkeypatch.setattr(status_module, "_disk_checks", lambda *_: [])
-    monkeypatch.setattr(status_module, "_filesystem_checks", lambda *_: [])
 
-    report = status_module.collect_status()
+    class AvailableCheck(status_module.StatusCheck):
+        identifier = "service"
+
+        def collect(self, measured_at, _thresholds):
+            return [
+                status_module._check("service", "green", "Available.", measured_at)
+            ]
+
+    class BrokenCheck(status_module.StatusCheck):
+        identifier = "processes"
+
+        def collect(self, _measured_at, _thresholds):
+            raise RuntimeError("secret database location")
+
+    report = status_module.collect_status([AvailableCheck(), BrokenCheck()])
 
     assert report["schema_version"] == "1.0"
     assert report["state"] == "red"
     assert report["checks"][0]["state"] == "green"
-    assert report["checks"][1]["id"] == "jobs"
+    assert report["checks"][1]["id"] == "processes"
     assert report["checks"][1]["state"] == "red"
     assert "secret database location" not in json.dumps(report)
 
@@ -125,7 +122,7 @@ def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch)
         session.commit()
     monkeypatch.setattr(status_module, "get_session", session_factory)
 
-    [check] = status_module._job_checks(
+    [check] = status_module.ProcessDatabaseStatusCheck().collect(
         "2026-09-03T10:00:00Z", {"stale_job_seconds": 3600}
     )
 
@@ -159,10 +156,10 @@ def test_server_and_disk_checks_apply_thresholds(monkeypatch):
         lambda section, option: "/output",
     )
 
-    [server] = status_module._server_checks(
+    [server] = status_module.ServerStatusCheck().collect(
         "2026-09-03T10:00:00Z", status_module.DEFAULT_STATUS
     )
-    [disk] = status_module._disk_checks(
+    [disk] = status_module.DiskStatusCheck().collect(
         "2026-09-03T10:00:00Z", status_module.DEFAULT_STATUS
     )
 

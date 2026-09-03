@@ -5,7 +5,9 @@ Unreleased
 ==========
 
 * Added the synchronous ``status`` WPS process with a versioned ``json`` output
-  for monitoring and an ``html`` output for its human-readable overview.
+  for monitoring and an ``html`` output for its human-readable overview. Status
+  signals are implemented as independent, failure-isolated ``StatusCheck``
+  classes registered with the report collector.
 
 1.4.0 (2026-08-26)
 ==================
