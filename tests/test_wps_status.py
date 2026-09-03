@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from threading import Event
 from types import SimpleNamespace
 
 import pytest
@@ -102,6 +103,41 @@ def test_collect_status_preserves_results_when_a_check_fails(monkeypatch):
     assert report["checks"][1]["id"] == "processes"
     assert report["checks"][1]["state"] == "red"
     assert "secret database location" not in json.dumps(report)
+
+
+def test_collect_status_marks_timeout_red_and_continues(monkeypatch):
+    release = Event()
+    config = {**DEFAULT_STATUS, "check_timeout_seconds": 0.01}
+    monkeypatch.setattr(report_module, "get_status_config", lambda: config)
+
+    class SlowCheck(StatusCheck):
+        identifier = "slow"
+
+        def collect(self, measured_at, _thresholds):
+            release.wait()
+            return [make_check(self.identifier, "green", "Late.", measured_at)]
+
+    class AvailableCheck(StatusCheck):
+        identifier = "available"
+
+        def collect(self, measured_at, _thresholds):
+            return [make_check(self.identifier, "green", "Available.", measured_at)]
+
+    try:
+        report = collect_status([SlowCheck(), AvailableCheck()])
+    finally:
+        release.set()
+
+    assert report["state"] == "red"
+    assert report["checks"][0] == {
+        "id": "slow",
+        "state": "red",
+        "message": "Check timed out.",
+        "measured_at": report["measured_at"],
+        "details": {"timeout_seconds": 0.01},
+    }
+    assert report["checks"][1]["id"] == "available"
+    assert report["checks"][1]["state"] == "green"
 
 
 def test_state_aggregation_uses_most_severe_state():

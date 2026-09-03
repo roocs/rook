@@ -7,7 +7,9 @@ Unreleased
 * Added the synchronous ``status`` WPS process with a versioned ``json`` output
   for monitoring and an ``html`` output for its human-readable overview. Status
   signals are implemented as independent, failure-isolated ``StatusCheck``
-  classes registered with the report collector.
+  classes registered with the report collector. Each check has a configurable
+  timeout and reports red without blocking the remaining report when it fails
+  or exceeds that timeout.
 
 1.4.0 (2026-08-26)
 ==================

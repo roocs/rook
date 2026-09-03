@@ -47,7 +47,13 @@ def collect_status(
     if status_checks is None:
         status_checks = STATUS_CHECKS
     for status_check in status_checks:
-        checks.extend(status_check.run(measured_at, thresholds))
+        checks.extend(
+            status_check.run(
+                measured_at,
+                thresholds,
+                timeout_seconds=thresholds["check_timeout_seconds"],
+            )
+        )
 
     return {
         "schema_version": SCHEMA_VERSION,

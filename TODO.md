@@ -352,8 +352,6 @@ synchronous `status` process for operational insight.
   collapsing all projects into one OK/not-OK result.
 - [ ] Report nginx access-log availability and freshness without making the
   whole report fail when logs are unavailable.
-- [ ] Preserve partial results when a check times out or fails. Apply short
-  per-check timeouts so the status page itself remains responsive.
 - [ ] Avoid exposing filesystem paths, commands, credentials, internal error
   traces, or private job data in either public representation.
 - [ ] Add nginx shortcuts for the HTML overview and JSON document (for example,

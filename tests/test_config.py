@@ -412,6 +412,7 @@ def test_status_config_accepts_custom_thresholds(monkeypatch):
                 "warning_cpu_percent": "60",
                 "failure_cpu_percent": "90",
                 "stale_job_seconds": "3600",
+                "check_timeout_seconds": "3",
             }
         },
     )
@@ -421,6 +422,7 @@ def test_status_config_accepts_custom_thresholds(monkeypatch):
     assert result["warning_cpu_percent"] == pytest.approx(60.0)
     assert result["failure_cpu_percent"] == pytest.approx(90.0)
     assert result["stale_job_seconds"] == 3600
+    assert result["check_timeout_seconds"] == 3
 
 
 @pytest.mark.parametrize(
@@ -429,6 +431,7 @@ def test_status_config_accepts_custom_thresholds(monkeypatch):
         {"warning_disk_percent": "101"},
         {"warning_memory_percent": "90", "failure_memory_percent": "80"},
         {"stale_job_seconds": "0"},
+        {"check_timeout_seconds": "0"},
     ],
 )
 def test_status_config_rejects_invalid_thresholds(monkeypatch, settings):

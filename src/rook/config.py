@@ -30,6 +30,7 @@ DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 DEFAULT_APPLY_FIXES_TO_FULL_FILES = False
 
 DEFAULT_STATUS = {
+    "check_timeout_seconds": 2,
     "warning_cpu_percent": 80.0,
     "failure_cpu_percent": 95.0,
     "warning_memory_percent": 80.0,
@@ -175,6 +176,12 @@ def get_status_config() -> dict[str, float | int]:
     result["stale_job_seconds"] = _parse_positive_int(
         section.get("stale_job_seconds", DEFAULT_STATUS["stale_job_seconds"]),
         "status.stale_job_seconds",
+    )
+    result["check_timeout_seconds"] = _parse_positive_int(
+        section.get(
+            "check_timeout_seconds", DEFAULT_STATUS["check_timeout_seconds"]
+        ),
+        "status.check_timeout_seconds",
     )
     return result
 

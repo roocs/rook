@@ -73,8 +73,10 @@ For a small human-readable view of the same report, request ``html``:
    /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=html
 
 The ``[status]`` section of ``roocs.ini`` configures warning and failure
-percentages for CPU, memory, and disk, plus ``stale_job_seconds``. Load is
-normalized by the logical CPU count before applying the CPU thresholds.
+percentages for CPU, memory, and disk, plus ``stale_job_seconds`` and
+``check_timeout_seconds``. Each check is isolated; a failure or timeout is
+reported as red without preventing the other results from being returned. Load
+is normalized by the logical CPU count before applying the CPU thresholds.
 
 Subset
 ------
