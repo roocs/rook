@@ -46,6 +46,36 @@ projects must be readable. Failure messages identify the project without
 exposing the filesystem path. If no projects are configured, only process
 execution is checked.
 
+Status
+------
+
+.. autoprocess:: rook.processes.wps_status.Status
+    :docstring:
+    :skiplines: 1
+    :noindex:
+
+The process has no inputs and runs synchronously. It reports the Rook version
+and uptime, configured worker capacity, PyWPS process counts, server CPU/load
+and memory, output-disk usage, and each filesystem sentinel configured for the
+health process. A failed check is included in the report without hiding the
+other results.
+
+Use the versioned JSON report for monitoring:
+
+.. code-block:: text
+
+   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=report
+
+For a small human-readable view of the same report, request ``overview``:
+
+.. code-block:: text
+
+   /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=overview
+
+The ``[status]`` section of ``roocs.ini`` configures warning and failure
+percentages for CPU, memory, and disk, plus ``stale_job_seconds``. Load is
+normalized by the logical CPU count before applying the CPU thresholds.
+
 Subset
 ------
 

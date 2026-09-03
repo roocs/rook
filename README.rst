@@ -93,7 +93,22 @@ actual read access to mounts such as Lustre without duplicating paths, loading
 a dataset, or searching large directory trees. All selected projects must be
 readable. Public failure messages use project names but do not expose
 filesystem paths. With no projects configured, the process only checks that
-Rook can execute it.
+the WPS handler can run.
+
+Service Status
+--------------
+
+For operational detail, Rook also provides a synchronous ``status`` process.
+Its versioned JSON report includes service uptime, WPS process counts, server
+load and memory, output-disk usage, and configured filesystem sentinels:
+
+.. code-block:: text
+
+        /wps?service=WPS&version=1.0.0&request=Execute&identifier=status&RawDataOutput=report
+
+Request ``RawDataOutput=overview`` for an HTML rendering of the same report.
+Resource warning/failure percentages and the stale-process age are configurable
+in the ``[status]`` section of ``roocs.ini``.
 
 Documentation
 -------------

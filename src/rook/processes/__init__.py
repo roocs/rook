@@ -9,11 +9,13 @@ from .wps_dashboard import DashboardProcess
 from .wps_health import Health
 from .wps_orchestrate import Orchestrate
 from .wps_regrid import Regrid
+from .wps_status import Status
 from .wps_subset import Subset
 from .wps_usage import Usage
 
 processes = [
     Health(),
+    Status(),
     Usage(),
     DashboardProcess(),
     Subset(),
