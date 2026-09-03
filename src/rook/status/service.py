@@ -1,6 +1,6 @@
 """Rook service status check."""
 
-from datetime import datetime
+import time
 
 import psutil
 from pywps import configuration as pywps_configuration
@@ -10,15 +10,16 @@ from .helpers import make_check
 
 
 class ServiceStatusCheck(StatusCheck):
-    """Report service uptime and configured worker capacity."""
+    """Report host/worker uptime and configured worker capacity."""
 
     identifier = "service"
 
     def collect(self, measured_at, _thresholds):
         process = psutil.Process()
-        uptime = max(0, round(datetime.now().timestamp() - process.create_time()))
+        now = time.time()
         details = {
-            "uptime_seconds": uptime,
+            "host_uptime_seconds": max(0, round(now - psutil.boot_time())),
+            "worker_uptime_seconds": max(0, round(now - process.create_time())),
             "max_processes": int(
                 pywps_configuration.get_config_value("server", "maxprocesses")
             ),

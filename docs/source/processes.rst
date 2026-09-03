@@ -54,11 +54,11 @@ Status
     :skiplines: 1
     :noindex:
 
-The process has no inputs and runs synchronously. It reports the Rook version
-and uptime, configured worker capacity, PyWPS process counts, server CPU/load
-and memory, output-disk usage, and each filesystem sentinel configured for the
-health process. A failed check is included in the report without hiding the
-other results.
+The process has no inputs and runs synchronously. It reports the Rook version,
+host uptime, current WPS worker uptime, configured worker capacity, PyWPS
+process counts, server CPU/load and memory, output-disk usage, and each
+filesystem sentinel configured for the health process. A failed check is
+included in the report without hiding the other results.
 
 Both representations include public provider and contact identification from
 the existing PyWPS ``[metadata:main]`` configuration. For example:

@@ -99,9 +99,9 @@ Service Status
 --------------
 
 For operational detail, Rook also provides a synchronous ``status`` process.
-Its versioned JSON report includes service uptime, WPS process counts, server
-load and memory, output-disk usage, configured filesystem sentinels, and the
-provider/contact identification from PyWPS ``[metadata:main]``:
+Its versioned JSON report includes host and current WPS worker uptime, WPS
+process counts, server load and memory, output-disk usage, configured filesystem
+sentinels, and provider/contact identification from PyWPS ``[metadata:main]``:
 
 .. code-block:: text
 

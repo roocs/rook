@@ -17,6 +17,7 @@ import rook.status.identification as identification_module
 import rook.status.processes as processes_module
 import rook.status.report as report_module
 import rook.status.server as server_module
+import rook.status.service as service_module
 from rook.config import DEFAULT_STATUS
 from rook.processes.wps_status import Status
 from rook.status import collect_status, render_html
@@ -26,6 +27,7 @@ from rook.status.helpers import aggregate_state, make_check
 from rook.status.identification import get_service_identification
 from rook.status.processes import ProcessDatabaseStatusCheck
 from rook.status.server import ServerStatusCheck
+from rook.status.service import ServiceStatusCheck
 
 REPORT = {
     "schema_version": "1.0",
@@ -218,6 +220,32 @@ def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch)
         "stale": 1,
         "succeeded_24h": 1,
         "failed_24h": 1,
+    }
+
+
+def test_service_check_distinguishes_host_and_worker_uptime(monkeypatch):
+    monkeypatch.setattr(service_module.time, "time", lambda: 50_000)
+    monkeypatch.setattr(service_module.psutil, "boot_time", lambda: 5_000)
+    monkeypatch.setattr(
+        service_module.psutil,
+        "Process",
+        lambda: SimpleNamespace(create_time=lambda: 49_800),
+    )
+    monkeypatch.setattr(
+        service_module.pywps_configuration,
+        "get_config_value",
+        lambda section, option: {"maxprocesses": "10", "parallelprocesses": "2"}[
+            option
+        ],
+    )
+
+    [check] = ServiceStatusCheck().collect("2026-09-03T10:00:00Z", DEFAULT_STATUS)
+
+    assert check["details"] == {
+        "host_uptime_seconds": 45_000,
+        "worker_uptime_seconds": 200,
+        "max_processes": 10,
+        "parallel_processes": 2,
     }
 
 
