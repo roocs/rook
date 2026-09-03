@@ -11,8 +11,18 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import rook.processes.wps_status as wps_status_module
-import rook.status as status_module
+import rook.status.disk as disk_module
+import rook.status.processes as processes_module
+import rook.status.report as report_module
+import rook.status.server as server_module
+from rook.config import DEFAULT_STATUS
 from rook.processes.wps_status import Status
+from rook.status import collect_status, render_html
+from rook.status.base import StatusCheck
+from rook.status.disk import DiskStatusCheck
+from rook.status.helpers import aggregate_state, make_check
+from rook.status.processes import ProcessDatabaseStatusCheck
+from rook.status.server import ServerStatusCheck
 
 REPORT = {
     "schema_version": "1.0",
@@ -70,25 +80,21 @@ def test_wps_status_returns_html_from_same_report(monkeypatch):
 
 
 def test_collect_status_preserves_results_when_a_check_fails(monkeypatch):
-    monkeypatch.setattr(
-        status_module, "get_status_config", lambda: status_module.DEFAULT_STATUS
-    )
+    monkeypatch.setattr(report_module, "get_status_config", lambda: DEFAULT_STATUS)
 
-    class AvailableCheck(status_module.StatusCheck):
+    class AvailableCheck(StatusCheck):
         identifier = "service"
 
         def collect(self, measured_at, _thresholds):
-            return [
-                status_module._check("service", "green", "Available.", measured_at)
-            ]
+            return [make_check("service", "green", "Available.", measured_at)]
 
-    class BrokenCheck(status_module.StatusCheck):
+    class BrokenCheck(StatusCheck):
         identifier = "processes"
 
         def collect(self, _measured_at, _thresholds):
             raise RuntimeError("secret database location")
 
-    report = status_module.collect_status([AvailableCheck(), BrokenCheck()])
+    report = collect_status([AvailableCheck(), BrokenCheck()])
 
     assert report["schema_version"] == "1.0"
     assert report["state"] == "red"
@@ -99,8 +105,8 @@ def test_collect_status_preserves_results_when_a_check_fails(monkeypatch):
 
 
 def test_state_aggregation_uses_most_severe_state():
-    assert status_module.aggregate_state(["green", "yellow", "green"]) == "yellow"
-    assert status_module.aggregate_state(["yellow", "red"]) == "red"
+    assert aggregate_state(["green", "yellow", "green"]) == "yellow"
+    assert aggregate_state(["yellow", "red"]) == "red"
 
 
 def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch):
@@ -120,9 +126,9 @@ def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch)
             ]
         )
         session.commit()
-    monkeypatch.setattr(status_module, "get_session", session_factory)
+    monkeypatch.setattr(processes_module, "get_session", session_factory)
 
-    [check] = status_module.ProcessDatabaseStatusCheck().collect(
+    [check] = ProcessDatabaseStatusCheck().collect(
         "2026-09-03T10:00:00Z", {"stale_job_seconds": 3600}
     )
 
@@ -137,31 +143,31 @@ def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch)
 
 
 def test_server_and_disk_checks_apply_thresholds(monkeypatch):
-    monkeypatch.setattr(status_module.psutil, "cpu_count", lambda: 4)
-    monkeypatch.setattr(status_module.psutil, "getloadavg", lambda: (3.6, 2.0, 1.0))
-    monkeypatch.setattr(status_module.psutil, "cpu_percent", lambda interval: 20.0)
+    monkeypatch.setattr(server_module.psutil, "cpu_count", lambda: 4)
     monkeypatch.setattr(
-        status_module.psutil,
+        server_module.psutil, "getloadavg", lambda: (3.6, 2.0, 1.0)
+    )
+    monkeypatch.setattr(server_module.psutil, "cpu_percent", lambda interval: 20.0)
+    monkeypatch.setattr(
+        server_module.psutil,
         "virtual_memory",
         lambda: SimpleNamespace(percent=70.0, available=1_000_000),
     )
     monkeypatch.setattr(
-        status_module.psutil,
+        disk_module.psutil,
         "disk_usage",
         lambda path: SimpleNamespace(percent=96.0, free=10, total=100),
     )
     monkeypatch.setattr(
-        status_module.pywps_configuration,
+        disk_module.pywps_configuration,
         "get_config_value",
         lambda section, option: "/output",
     )
 
-    [server] = status_module.ServerStatusCheck().collect(
-        "2026-09-03T10:00:00Z", status_module.DEFAULT_STATUS
+    [server] = ServerStatusCheck().collect(
+        "2026-09-03T10:00:00Z", DEFAULT_STATUS
     )
-    [disk] = status_module.DiskStatusCheck().collect(
-        "2026-09-03T10:00:00Z", status_module.DEFAULT_STATUS
-    )
+    [disk] = DiskStatusCheck().collect("2026-09-03T10:00:00Z", DEFAULT_STATUS)
 
     assert server["state"] == "yellow"
     assert server["details"]["load_1m_percent"] == pytest.approx(90.0)
@@ -171,7 +177,7 @@ def test_server_and_disk_checks_apply_thresholds(monkeypatch):
 def test_html_renderer_escapes_public_values():
     report = {**REPORT, "checks": [{**REPORT["checks"][0], "message": "<script>"}]}
 
-    rendered = status_module.render_html(report)
+    rendered = render_html(report)
 
     assert "<script>" not in rendered
     assert "&lt;script&gt;" in rendered
