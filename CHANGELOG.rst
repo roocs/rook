@@ -9,7 +9,8 @@ Unreleased
   signals are implemented as independent, failure-isolated ``StatusCheck``
   classes registered with the report collector. Each check has a configurable
   timeout and reports red without blocking the remaining report when it fails
-  or exceeds that timeout.
+  or exceeds that timeout. The JSON and HTML representations include public
+  provider and contact identification from PyWPS metadata.
 
 1.4.0 (2026-08-26)
 ==================

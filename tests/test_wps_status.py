@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 
 import rook.processes.wps_status as wps_status_module
 import rook.status.disk as disk_module
+import rook.status.identification as identification_module
 import rook.status.processes as processes_module
 import rook.status.report as report_module
 import rook.status.server as server_module
@@ -22,6 +23,7 @@ from rook.status import collect_status, render_html
 from rook.status.base import StatusCheck
 from rook.status.disk import DiskStatusCheck
 from rook.status.helpers import aggregate_state, make_check
+from rook.status.identification import get_service_identification
 from rook.status.processes import ProcessDatabaseStatusCheck
 from rook.status.server import ServerStatusCheck
 
@@ -29,7 +31,17 @@ REPORT = {
     "schema_version": "1.0",
     "state": "yellow",
     "measured_at": "2026-09-03T10:00:00Z",
-    "service": {"name": "rook", "version": "1.4.0"},
+    "service": {
+        "name": "rook",
+        "version": "1.4.0",
+        "provider": {"name": "rook7 (DKRZ)", "url": "http://rook.dkrz.de"},
+        "contact": {
+            "name": "DKRZ",
+            "city": "Hamburg",
+            "country": "Germany",
+            "url": "https://roocs.github.io/",
+        },
+    },
     "checks": [
         {
             "id": "server",
@@ -77,7 +89,38 @@ def test_wps_status_returns_html_from_same_report(monkeypatch):
     assert response.status_code == 200
     assert response.content_type == "text/html; charset=utf-8"
     assert b"Rook 1.4.0 status" in response.data
+    assert b"rook7 (DKRZ)" in response.data
+    assert b'href="https://roocs.github.io/"' in response.data
     assert b"cpu percent: 82.5" in response.data
+
+
+def test_service_identification_uses_pywps_metadata(monkeypatch):
+    metadata = {
+        "provider_name": "rook7 (DKRZ)",
+        "provider_url": "http://rook.dkrz.de",
+        "contact_name": "DKRZ",
+        "contact_city": "Hamburg",
+        "contact_country": "Germany",
+        "contact_url": "https://roocs.github.io/",
+    }
+    monkeypatch.setattr(
+        identification_module.pywps_configuration,
+        "get_config_value",
+        lambda section, option: metadata[option],
+    )
+
+    assert get_service_identification() == {
+        "provider": {
+            "name": "rook7 (DKRZ)",
+            "url": "http://rook.dkrz.de",
+        },
+        "contact": {
+            "name": "DKRZ",
+            "city": "Hamburg",
+            "country": "Germany",
+            "url": "https://roocs.github.io/",
+        },
+    }
 
 
 def test_collect_status_preserves_results_when_a_check_fails(monkeypatch):
@@ -217,6 +260,21 @@ def test_html_renderer_escapes_public_values():
 
     assert "<script>" not in rendered
     assert "&lt;script&gt;" in rendered
+
+
+def test_html_renderer_does_not_link_unsafe_identification_url():
+    report = {
+        **REPORT,
+        "service": {
+            **REPORT["service"],
+            "provider": {"name": "provider", "url": "javascript:alert(1)"},
+        },
+    }
+
+    rendered = render_html(report)
+
+    assert 'href="javascript:alert(1)"' not in rendered
+    assert "javascript:alert(1)" in rendered
 
 
 def _process(uuid, status, started, identifier="subset"):

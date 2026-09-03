@@ -10,6 +10,7 @@ from .base import StatusCheck
 from .disk import DiskStatusCheck
 from .filesystem import FilesystemStatusCheck
 from .helpers import aggregate_state, make_check, utc_now
+from .identification import get_service_identification
 from .processes import ProcessDatabaseStatusCheck
 from .server import ServerStatusCheck
 from .service import ServiceStatusCheck
@@ -55,10 +56,15 @@ def collect_status(
             )
         )
 
+    service = {
+        "name": "rook",
+        "version": __version__,
+        **get_service_identification(),
+    }
     return {
         "schema_version": SCHEMA_VERSION,
         "state": aggregate_state(check["state"] for check in checks),
         "measured_at": measured_at,
-        "service": {"name": "rook", "version": __version__},
+        "service": service,
         "checks": checks,
     }

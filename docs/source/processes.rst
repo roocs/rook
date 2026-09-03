@@ -60,6 +60,19 @@ and memory, output-disk usage, and each filesystem sentinel configured for the
 health process. A failed check is included in the report without hiding the
 other results.
 
+Both representations include public provider and contact identification from
+the existing PyWPS ``[metadata:main]`` configuration. For example:
+
+.. code-block:: ini
+
+   [metadata:main]
+   provider_name = rook7 (DKRZ)
+   provider_url = http://rook.dkrz.de
+   contact_name = DKRZ
+   contact_city = Hamburg
+   contact_country = Germany
+   contact_url = https://roocs.github.io/
+
 Use the versioned JSON report for monitoring:
 
 .. code-block:: text
