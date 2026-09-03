@@ -424,6 +424,7 @@ def test_smoke_get_capabilities(wps):
     assert "average" in processes
     assert "average_time" in processes
     assert "health" in processes
+    assert "status" in processes
     assert "orchestrate" in processes
 
 
@@ -463,6 +464,36 @@ def test_smoke_nginx_health2_execute_health(wps):
 
     response.raise_for_status()
     assert response.text == HEALTHY_RESPONSE
+
+
+@pytest.mark.xfail(
+    reason="Production access restrictions may block direct WPS execution."
+)
+def test_smoke_execute_status(wps):
+    response = requests.get(
+        wps.wps.url,
+        params={
+            "service": "WPS",
+            "version": "1.0.0",
+            "request": "Execute",
+            "identifier": "status",
+            "RawDataOutput": "report",
+        },
+        timeout=30,
+    )
+
+    response.raise_for_status()
+    report = response.json()
+    assert report["schema_version"] == "1.0"
+    assert report["state"] in {"green", "yellow", "red"}
+    assert report["service"]["name"] == "rook"
+    assert report["service"]["version"]
+
+    checks = {check["id"]: check for check in report["checks"]}
+    assert {"service", "processes", "server", "disk"} <= checks.keys()
+    assert all(
+        check["state"] in {"green", "yellow", "red"} for check in checks.values()
+    )
 
 
 def test_smoke_describe_process_subset(wps):
