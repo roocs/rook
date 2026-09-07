@@ -18,6 +18,7 @@ def test_wps_caps(client_for):
         "health",
         "orchestrate",
         "regrid",
+        "status",
         "subset",
         "usage",
         "weighted_average",

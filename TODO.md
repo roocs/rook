@@ -85,7 +85,7 @@ useful later for demonstrably repetitive, expensive processing results.
   entries, eviction, and disk-full fallback. Do not pre-warm the complete Atlas
   collection.
 
-## Explicit project behavior
+## Job lifecycle controller and explicit project behavior
 
 CMIP6, CORDEX, Atlas, CMIP6-decadal, and the other data projects do not yet
 follow one processing policy. Their differences are currently expressed inline
@@ -94,27 +94,102 @@ configuration. This makes a project exception easy to add but difficult to
 discover or explain. Ideally projects should share the same behavior; where
 that is not possible, the exception and its reason must be obvious.
 
+Introduce exactly one application-level job controller between the WPS/workflow
+adapters and the processing implementation. This controller owns the complete
+Rook job lifecycle for every operation and dataset project. Project flavors may
+adapt defined parts of its default behavior when necessary, but they do not
+create alternative controllers or lifecycles. In the ideal/common case, a
+project flavor adds only a name and documentation and inherits all default
+behavior. The controller does not replace PyWPS job persistence, the scheduler,
+or the individual clisops operations.
+
+### Controller boundary and lifecycle
+
+- [ ] Define one normalized, immutable job request containing the operation,
+  inputs, selected dataset project, request/job identifiers, output location,
+  and safe diagnostic context. WPS processes and workflow steps should build
+  the same request model.
+- [ ] Give the controller explicit lifecycle phases: normalize, validate, plan,
+  execute, publish results, and finalize/clean up. Represent phase transitions
+  and outcomes so logging, status reporting, provenance, and failure mapping do
+  not depend on individual process handlers.
+- [ ] Enforce one lifecycle implementation for all direct processes, workflow
+  operations, and project flavors. A flavor may customize declared hooks, but
+  must not bypass, reorder, or reimplement the controller lifecycle.
+- [ ] Keep the controller an orchestrator of small components rather than the
+  implementation of every operation. Inject or register validators, project
+  flavor, resolver/planner, operation runner, result publisher, and cleanup;
+  keep subset, regrid, concat, averaging, and workflow execution independently
+  testable.
+- [ ] Move duplicated control flow from direct WPS handlers and workflow
+  operators behind this boundary incrementally. Leave protocol parsing and WPS
+  response rendering in thin adapters, and preserve existing public inputs,
+  outputs, Metalink documents, and provenance while migrating.
+- [ ] Define cancellation, timeout, retry, partial-output, and cleanup behavior
+  for every phase. Make finalization idempotent so failed publication or a
+  repeated callback cannot leak temporary files or publish a result twice.
+- [ ] Emit structured lifecycle events with operation, project-flavor name,
+  phase, timing, and stable failure code. Use these events for the future
+  service-status view instead of teaching the controller about HTML or
+  monitoring backends.
+
+### Generic and project-specific behavior
+
+- [ ] Introduce a named project-flavor strategy selected from normalized
+  collection metadata. A flavor is executable behavior, not only configuration:
+  it may validate project rules, influence planning and source resolution,
+  prepare operation inputs, select fixes/batching, and adapt result publication
+  through explicit lifecycle hooks.
+- [ ] Provide a well-tested default flavor implementing the common behavior.
+  Make the zero-code path the normal one: a conventional project registers its
+  name and documentation and inherits the complete default behavior. Only add
+  configuration, reusable capabilities, or narrow hook overrides when its data
+  model or processing requirements demonstrably differ.
+- [ ] Keep operation behavior and project behavior as separate dimensions: the
+  controller selects both an operation runner (subset, regrid, concat, and so
+  on) and a project flavor. Avoid a growing class for every operation/project
+  combination.
+- [ ] Initially implement and document flavors for generic CMIP6/CORDEX, Atlas,
+  and CMIP6-decadal. Cover the Atlas original-file/fix path and the decadal
+  realization/concat lifecycle without overriding the complete controller.
+- [ ] Give flavor hooks typed inputs and outputs, documented pre/postconditions,
+  and safe defaults. A hook must not silently skip validation, publication,
+  cleanup, lifecycle events, or other controller invariants.
+- [ ] Fail clearly on an unknown or ambiguous project and record the selected
+  flavor plus its rationale in the job plan. Do not infer behavior from
+  scattered collection-name checks after planning.
+- [ ] Document the generic lifecycle, flavor interface, reusable capabilities,
+  configuration options, and a short recipe for adding a conventional project
+  versus a project requiring custom behavior.
+- [ ] Add controller contract tests that run the same lifecycle suite for
+  generic CMIP6/CORDEX jobs, Atlas, CMIP6-decadal, and workflow steps. Assert
+  phase ordering, validation timing, selected flavor, failure mapping, cleanup,
+  and unchanged public WPS results.
+
+### Project-flavor migration
+
 - [ ] Inventory the behavior of every supported project in one documented
   matrix. Include catalog lookup, original-file eligibility, spatial and
   temporal alignment, required fixes and their phases, concat requirements,
   batching, and relevant configuration. Give the reason for every divergence,
   not only its implementation.
-- [ ] Introduce one explicit project-policy or capability model with a common
-  default. Select it at the request boundary and pass it through the processing
-  flow, instead of comparing project IDs inline in resolvers and operators.
-- [ ] Keep policy declarations readable and colocated so a developer can see
+- [ ] Introduce one explicit project-flavor interface and capability model with
+  a common default. Select it at the request boundary and pass it through the
+  processing flow, instead of comparing project IDs inline in resolvers and
+  operators.
+- [ ] Keep flavor definitions readable and colocated so a developer can see
   how CMIP6, CORDEX, CICA Atlas, IPCC Atlas, and CMIP6-decadal differ without
   tracing several call paths. Distinguish inherent data-model constraints from
   temporary compatibility or performance workarounds.
 - [ ] Make each exceptional behavior carry a short rationale, its configuration
   controls, and focused tests. Add a structural test or lint rule that prevents
-  new project-name conditionals outside the policy layer unless explicitly
+  new project-name conditionals outside the flavor layer unless explicitly
   justified.
-- [ ] Move existing inline exceptions incrementally into the policy model,
+- [ ] Move existing inline exceptions incrementally into flavor strategies,
   beginning with original-file/fix handling for Atlas and operation-specific
   CMIP6-decadal fixes. Preserve behavior while migrating, then remove project
   differences that are no longer necessary.
-- [ ] Expose the selected project policy and the reason for its processing-flow
+- [ ] Expose the selected project flavor and the reason for its processing-flow
   decision in diagnostic logs, so production behavior can be understood
   without reading the code.
 
@@ -173,10 +248,19 @@ substitute the entire input value. These invalid requests may be accepted as
 jobs and fail only after catalog resolution or processing has begun, producing
 large, difficult-to-diagnose failure reports and wasting worker resources.
 
-- [ ] Add a dedicated request-validation module that runs after request parsing
-  but before a job is queued or an operator begins processing. Give it a small,
-  explicit interface shared by direct WPS/CDS API requests and workflow steps,
-  and keep validation independent from catalog access and data processing.
+- [ ] Add a dedicated request-validation module invoked by the job controller
+  after request parsing but before a job is queued or an operator begins
+  processing. Give it a small, explicit interface shared by direct WPS/CDS API
+  requests and workflow steps, and keep its first validation phase independent
+  from catalog access and data processing.
+- [ ] Identify and test the PyWPS ingress/dispatch integration point required to
+  run structural validation before asynchronous job creation. Calling
+  `validate` only from a process `_handler` does not count as early rejection if
+  PyWPS has already accepted and persisted the job.
+- [ ] Split validation deliberately into cheap structural/policy checks before
+  queueing and semantic checks after catalog resolution but before source
+  opening or compute. Document which phase owns each rule so `validate` cannot
+  accidentally become an expensive execution path.
 - [ ] Make validation rules easy to extend and test without adding conditionals
   to request handlers. Rules should declare the operators or request types they
   apply to and return structured validation failures with stable codes,
@@ -236,14 +320,26 @@ The existing `health` process is a deliberately small OK/not-OK probe for load
 balancers. Keep its `ROOK_HEALTH_OK` contract stable and add a separate,
 synchronous `status` process for operational insight.
 
+### Health probe improvements
+
+- [ ] Define and document exactly what the lightweight `health` process proves
+  (process execution and configured filesystem readability), which failures
+  make it unhealthy, and how it differs from the richer `status` report.
+- [ ] Review the default-empty `health.projects` configuration so a deployment
+  cannot unintentionally report healthy without checking its required storage.
+  Provide an explicit, validated configuration and useful startup diagnostics.
+- [ ] Keep the probe fast and dependency-light, apply a short execution timeout,
+  and return concise failure reasons without exposing paths or other sensitive
+  deployment details.
+- [ ] Retain the exact `ROOK_HEALTH_OK` success body and existing nginx endpoint
+  for load-balancer compatibility. Add tests for timeouts, invalid
+  configuration, partial filesystem failure, and response stability.
+
 ### First useful status report
 
 - [ ] Define one versioned status-report model used by every output. Give the
   overall service and each check a `green`, `yellow`, or `red` state, a short
   public message, measurement time, and optional non-sensitive details.
-- [ ] Return the report as JSON for monitoring and render the same report as a
-  small, user-friendly HTML overview. Do not duplicate check logic in the HTML
-  renderer.
 - [ ] Report PyWPS database connectivity and job-state counts, including queued,
   running, succeeded, failed, and stale jobs. Include recent failure and timing
   summaries where they are cheap to calculate.
@@ -256,8 +352,6 @@ synchronous `status` process for operational insight.
   collapsing all projects into one OK/not-OK result.
 - [ ] Report nginx access-log availability and freshness without making the
   whole report fail when logs are unavailable.
-- [ ] Preserve partial results when a check times out or fails. Apply short
-  per-check timeouts so the status page itself remains responsive.
 - [ ] Avoid exposing filesystem paths, commands, credentials, internal error
   traces, or private job data in either public representation.
 - [ ] Add nginx shortcuts for the HTML overview and JSON document (for example,

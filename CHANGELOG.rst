@@ -4,6 +4,16 @@ Changes
 Unreleased
 ==========
 
+* Added the synchronous ``status`` WPS process with a versioned ``json`` output
+  for monitoring and an ``html`` output for its human-readable overview. Status
+  signals are implemented as independent, failure-isolated ``StatusCheck``
+  classes registered with the report collector. Each check has a configurable
+  timeout and reports red without blocking the remaining report when it fails
+  or exceeds that timeout. The JSON and HTML representations include public
+  provider and contact identification from PyWPS metadata. Host and current
+  WPS worker uptime are reported separately to avoid presenting a recently
+  started worker's age as server uptime.
+
 1.4.0 (2026-08-26)
 ==================
 

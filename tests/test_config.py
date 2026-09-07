@@ -397,6 +397,50 @@ def test_health_readable_files_require_project_base_dir(monkeypatch):
         config.get_health_readable_files()
 
 
+def test_status_config_uses_operational_defaults(monkeypatch):
+    monkeypatch.setattr(config, "_CONFIG", {})
+
+    assert config.get_status_config() == config.DEFAULT_STATUS
+
+
+def test_status_config_accepts_custom_thresholds(monkeypatch):
+    monkeypatch.setattr(
+        config,
+        "_CONFIG",
+        {
+            "status": {
+                "warning_cpu_percent": "60",
+                "failure_cpu_percent": "90",
+                "stale_job_seconds": "3600",
+                "check_timeout_seconds": "3",
+            }
+        },
+    )
+
+    result = config.get_status_config()
+
+    assert result["warning_cpu_percent"] == pytest.approx(60.0)
+    assert result["failure_cpu_percent"] == pytest.approx(90.0)
+    assert result["stale_job_seconds"] == 3600
+    assert result["check_timeout_seconds"] == 3
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"warning_disk_percent": "101"},
+        {"warning_memory_percent": "90", "failure_memory_percent": "80"},
+        {"stale_job_seconds": "0"},
+        {"check_timeout_seconds": "0"},
+    ],
+)
+def test_status_config_rejects_invalid_thresholds(monkeypatch, settings):
+    monkeypatch.setattr(config, "_CONFIG", {"status": settings})
+
+    with pytest.raises(config.ConfigurationError, match=r"status\."):
+        config.get_status_config()
+
+
 def test_s3_options_reject_malformed_optional_json_without_exposing_value(monkeypatch):
     malformed_value = "not-json-private-value"
     monkeypatch.setattr(

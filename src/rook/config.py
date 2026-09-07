@@ -29,6 +29,17 @@ DEFAULT_DIAGNOSTIC_FREE_MEMORY = False
 DIAGNOSTIC_FREE_MEMORY_ENV = "ROOK_DIAGNOSTIC_MALLOC_TRIM"
 DEFAULT_APPLY_FIXES_TO_FULL_FILES = False
 
+DEFAULT_STATUS = {
+    "check_timeout_seconds": 2,
+    "warning_cpu_percent": 80.0,
+    "failure_cpu_percent": 95.0,
+    "warning_memory_percent": 80.0,
+    "failure_memory_percent": 95.0,
+    "warning_disk_percent": 80.0,
+    "failure_disk_percent": 95.0,
+    "stale_job_seconds": 86400,
+}
+
 DEFAULT_SUBSET_BATCH_OUTPUT = {
     "merge_outputs": True,
     "merge_target_size": "2GB",
@@ -137,6 +148,42 @@ def get_health_readable_files() -> dict[str, str]:
             )
         files[project] = str(Path(base_dir) / ".health-check.txt")
     return files
+
+
+def get_status_config() -> dict[str, float | int]:
+    """Return thresholds used by the operational status report."""
+    section = _get_section("status")
+    result: dict[str, float | int] = {}
+    for resource in ("cpu", "memory", "disk"):
+        warning_key = f"warning_{resource}_percent"
+        failure_key = f"failure_{resource}_percent"
+        warning = _parse_percent(
+            section.get(warning_key, DEFAULT_STATUS[warning_key]),
+            f"status.{warning_key}",
+        )
+        failure = _parse_percent(
+            section.get(failure_key, DEFAULT_STATUS[failure_key]),
+            f"status.{failure_key}",
+        )
+        if warning >= failure:
+            raise ConfigurationError(
+                f"Configuration option 'status.{warning_key}' must be less than "
+                f"'status.{failure_key}'."
+            )
+        result[warning_key] = warning
+        result[failure_key] = failure
+
+    result["stale_job_seconds"] = _parse_positive_int(
+        section.get("stale_job_seconds", DEFAULT_STATUS["stale_job_seconds"]),
+        "status.stale_job_seconds",
+    )
+    result["check_timeout_seconds"] = _parse_positive_int(
+        section.get(
+            "check_timeout_seconds", DEFAULT_STATUS["check_timeout_seconds"]
+        ),
+        "status.check_timeout_seconds",
+    )
+    return result
 
 
 def get_fix_backend() -> str:
@@ -338,5 +385,23 @@ def _parse_positive_int(value: Any, option: str) -> int:
     if parsed < 1 or str(parsed) != str(value).strip():
         raise ConfigurationError(
             f"Configuration option '{option}' must be a positive integer."
+        )
+    return parsed
+
+
+def _parse_percent(value: Any, option: str) -> float:
+    if isinstance(value, bool):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be between 0 and 100."
+        )
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be between 0 and 100."
+        ) from None
+    if not 0 <= parsed <= 100:
+        raise ConfigurationError(
+            f"Configuration option '{option}' must be between 0 and 100."
         )
     return parsed
