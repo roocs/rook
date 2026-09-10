@@ -111,7 +111,7 @@ A reminder for the maintainers on how to deploy a new version.
 
 GitHub Workflow automation should then prepare a deployment to Docker Hub and to `TestPyPI`.
 Once the version has been published, the next deployment will then be to the official `PyPI`.
- 
+
 See the bump-my-version_ documentation for details.
 
 .. _bump-my-version: https://pypi.org/project/bump-my-version/
