@@ -14,31 +14,31 @@ Check out code from the rook GitHub repo and start the installation:
 
 .. code-block:: console
 
-   $ git clone https://github.com/roocs/rook.git
-   $ cd rook
+    $ git clone https://github.com/roocs/rook.git
+    $ cd rook
 
 Create Conda environment named `rook`:
 
 .. code-block:: console
 
-   $ conda env create -f environment.yml
-   $ conda activate rook
+    $ conda env create -f environment.yml
+    $ conda activate rook
 
 Install rook app:
 
 .. code-block:: console
 
-   $ pip install -e .
-   OR
-   $ make install
+    $ pip install -e .
+    # or
+    $ make install
 
 For development you can use this command:
 
 .. code-block:: console
 
-   $ pip install -e .[dev]
-   OR
-   $ make develop
+    $ pip install -e .[dev]
+    # or
+    $ make develop
 
 Start rook PyWPS service
 ------------------------
@@ -47,14 +47,14 @@ After successful installation you can start the service using the ``rook`` comma
 
 .. code-block:: console
 
-   $ rook --help # show help
-   $ rook start  # start service with default configuration
+    $ rook --help # show help
+    $ rook start  # start service with default configuration
 
-   OR
+    # or
 
-   $ rook start --daemon # start service as daemon
-   loading configuration
-   forked process id: 42
+    $ rook start --daemon # start service as daemon
+    loading configuration
+    forked process id: 42
 
 The deployed WPS service is by default available on:
 
@@ -66,14 +66,13 @@ You can find which process uses a given port using the following command (here f
 
 .. code-block:: console
 
-   $ lsof -i :5000
-
+    $ lsof -i :5000
 
 Check the log files for errors:
 
 .. code-block:: console
 
-   $ tail -f  pywps.log
+    $ tail -f  pywps.log
 
 ... or do it the lazy way
 +++++++++++++++++++++++++
@@ -82,11 +81,10 @@ You can also use the ``Makefile`` to start and stop the service:
 
 .. code-block:: console
 
-   $ make start
-   $ make status
-   $ tail -f pywps.log
-   $ make stop
-
+    $ make start
+    $ make status
+    $ tail -f pywps.log
+    $ make stop
 
 Run rook as Docker container
 ----------------------------
@@ -97,26 +95,25 @@ Build and run the image directly:
 
 .. code-block:: console
 
-   $ docker build -t roocs/rook .
-   $ docker run --rm -p 5000:5000 roocs/rook
+    $ docker build -t roocs/rook .
+    $ docker run --rm -p 5000:5000 roocs/rook
 
 Or use Docker Compose:
 
 .. code-block:: console
 
-   $ docker compose build
-   $ docker compose up
+    $ docker compose build
+    $ docker compose up
 
 Stop the service with ``Ctrl+C``, then remove the stack with:
 
 .. code-block:: console
 
-   $ docker compose down
+    $ docker compose down
 
 Use Ansible to deploy rook on your System
 -----------------------------------------
 
 Use the `Ansible playbook`_ for PyWPS to deploy rook on your system.
-
 
 .. _Ansible playbook: https://ansible-wps-playbook.readthedocs.io/en/latest/index.html

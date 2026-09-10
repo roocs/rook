@@ -1,11 +1,12 @@
 {
   "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-  "commit": "3320c68367f8e88839a21a331cb5c75e65162f4a",
+  "commit": "3ee7c9d17dfeb516333ae113d2aa9fc31466f854",
   "context": {
     "cookiecutter": {
       "full_name": "Carsten Ehbrecht",
       "email": "ehbrecht@dkrz.de",
       "github_username": "roocs",
+      "orcid_id": "N/A",
       "project_name": "rook",
       "project_slug": "rook",
       "project_repo_name": "rook",
@@ -22,8 +23,8 @@
       ],
       "__gh_slug": "https://github.com/roocs/rook",
       "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
-      "_commit": "3320c68367f8e88839a21a331cb5c75e65162f4a"
+      "_commit": "3ee7c9d17dfeb516333ae113d2aa9fc31466f854"
     }
   },
-  "checkout": "v2.0.0"
+  "checkout": null
 }

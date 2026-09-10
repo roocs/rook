@@ -1,0 +1,79 @@
+name: Dependabot CI Updates
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/**/*.yml"
+      - ".github/requirements_ci.*"
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  dependabot-auto-approve:
+    name: Auto-approve and set auto-merge safe Dependabot updates
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Generate GitHub App token
+        id: token_generator
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID }}
+          private-key: ${{ secrets.BIRDHOUSE_HELPER_BOT_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Fetch Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ steps.token_generator.outputs.token }}
+
+      - name: Stop workflow if not minor update or patch update
+        id: skip-condition
+        if: >
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "Not a minor or patch update; Skipping auto-approval."
+          echo "skip=true" >> $GITHUB_OUTPUT
+
+      - name: Checkout Repository
+        if: steps.skip-condition.outputs.skip != 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.token_generator.outputs.token }}
+          persist-credentials: false
+
+      - name: Approve Changes
+        if: >
+          steps.skip-condition.outputs.skip != 'true' &&
+          !contains(github.event.pull_request.labels.*.name, 'approved')
+        run: |
+          gh pr review --approve "$PR_URL"
+        env:
+          GITHUB_TOKEN: ${{ steps.token_generator.outputs.token }}
+          PR_URL: ${{github.event.pull_request.html_url}}
+
+      - name: Enable auto-merge on Pull Request
+        if: steps.skip-condition.outputs.skip != 'true'
+        run: |
+          gh pr merge --auto --merge "$PR_URL"
+        env:
+          GITHUB_TOKEN: ${{ steps.token_generator.outputs.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}

@@ -36,7 +36,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 .DEFAULT_GOAL := help
 
-help: ## print this help message. (Default)
+help: ## print this help message (Default)
 	@echo "Please use 'make <target>' where <target> is one of:"
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
@@ -105,7 +105,7 @@ clean-docs: ## remove documentation artifacts
 	@-rm -f docs/modules.rst
 	$(MAKE) -C docs clean
 
-install-dev:
+install-dev: ## install dependencies needed for development (all)
 	@echo "Installing development requirements for tests and docs ..."
 	@python -m pip install --editable ".[dev]"
 
@@ -154,7 +154,7 @@ coverage: ## check code coverage quickly with the default Python
 
 ## Sphinx targets:
 
-autodoc: install-docs clean-docs ## create sphinx-apidoc files:
+autodoc: install-docs clean-docs ## create sphinx-apidoc files
 	@bash -c 'sphinx-apidoc --force -o docs/source/apidoc --private --module-first src/rook'
 
 build-docs: autodoc ## generate Sphinx HTML documentation, including API docs
