@@ -6,6 +6,8 @@ on:
 permissions:
   contents: read
 
+# FIXME: This needs to be reconfigured
+
 jobs:
   skip_without_bot_secrets:
     name: Skip version bump
