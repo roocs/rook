@@ -58,7 +58,7 @@ jobs:
 
   bump_patch_version:
     name: Bump build/patch version
-    needs: skip_without_bot_secrets
+    needs: check_bot_secrets
     if: needs.check_bot_secrets.outputs.configured == 'true'
     runs-on: ubuntu-latest
     permissions:
