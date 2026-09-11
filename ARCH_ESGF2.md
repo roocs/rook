@@ -1,17 +1,169 @@
 # Rook Federation for ESGF-NG
 
+## What is Rook?
+
+**Rook** is a server-side processing service for climate data.
+
+* It provides processing operations through WPS / OGC interfaces.
+* Users work with **datasets**, rather than downloading all source files first.
+* Typical operations include **subset, regrid and other climate-data transformations**.
+* `orchestrate` accepts a simple JSON workflow and executes the requested processing chain.
+* Processing runs close to the large data pools.
+
+```mermaid
+flowchart LR
+    User[User / Service]
+    Rook[Rook]
+    Data[Climate Data Pool]
+
+    User -->|dataset + workflow| Rook
+    Rook -->|local access| Data
+    Rook -->|result| User
+```
+
+> **Move the processing to the data instead of moving the data to the user.**
+
+---
+
+# Rook for Copernicus CDS
+
+Rook is already used to provide server-side processing for the **Copernicus Climate Data Store (CDS)**.
+
+* CDS sends a workflow describing the requested processing.
+* Rook resolves CDS dataset IDs through an **Intake catalog backed by PostgreSQL**.
+* DKRZ and IPSL provide equivalent data and processing capabilities.
+* An AWS load balancer can therefore distribute requests between them.
+* `orchestrate` executes the workflow at the selected site.
+
+```mermaid
+flowchart LR
+    CDS[Copernicus CDS]
+    LB[AWS Load Balancer]
+
+    DE[Rook<br/>DKRZ]
+    FR[Rook<br/>IPSL]
+
+    DEData[CDS Data]
+    FRData[CDS Data]
+
+    CDS -->|workflow| LB
+
+    LB --> DE
+    LB --> FR
+
+    DE --> DEData
+    FR --> FRData
+```
+
+This works well because the two sites are effectively **interchangeable processing backends**.
+
+**Links**
+
+* [Copernicus Climate Data Store](https://cds.climate.copernicus.eu/)
+* [ROOCS usage dashboard – all years](https://roocs.github.io/dashboard/summary-all-years/)
+
+The ROOCS dashboard shows the operational use of the service over the years.
+
+---
+
+## Example: Rook from a notebook
+
+Rook can also be used interactively from Python with **rooki**, the Python client for Rook.
+
+This example uses a real C3S-CORDEX dataset and creates a small processing workflow:
+
+```python
+from rooki import operators as ops
+
+tas = ops.Input(
+    "tas",
+    [
+        "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85."
+        "r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"
+    ],
+)
+
+subset = ops.Subset(
+    tas,
+    time="2006/2006",
+    time_components="month:jan,feb,mar",
+)
+
+workflow = ops.Average(subset, dims="time")
+
+response = workflow.orchestrate()
+```
+
+The workflow:
+
+* selects a logical C3S-CORDEX dataset;
+* subsets January–March 2006;
+* calculates the average over time;
+* sends the workflow to Rook using `orchestrate()`.
+
+```mermaid
+flowchart LR
+    Notebook[rooki Notebook]
+    Workflow[JSON Workflow]
+    Rook[Rook orchestrate]
+    Subset[Subset]
+    Average[Average]
+    Result[Result]
+
+    Notebook --> Workflow
+    Workflow --> Rook
+    Rook --> Subset
+    Subset --> Average
+    Average --> Result
+```
+
+The user works with a **logical dataset ID and processing workflow**. Rook resolves and processes the underlying files close to the data.
+
+**Complete example**
+
+[Rendered C3S-CORDEX rooki notebook on GitHub](https://github.com/roocs/rooki/blob/master/notebooks/demo/demo-rooki-c3s-cordex.ipynb)
+
+---
+
+# From CDS to ESGF-NG
+
+ESGF-NG introduces a different situation.
+
+* DKRZ, IPSL and CEDA provide ESGF data pools.
+* The pools **overlap, but are not identical**.
+* A normal round-robin load balancer cannot know which Rook can process a particular dataset.
+* Restricting processing to a fully replicated core would reduce ESGF data coverage.
+
+```mermaid
+flowchart LR
+    DE[DKRZ<br/>Data Pool]
+    FR[IPSL<br/>Data Pool]
+    UK[CEDA<br/>Data Pool]
+
+    DE <-. overlap .-> FR
+    FR <-. overlap .-> UK
+    DE <-. overlap .-> UK
+```
+
+The proposed solution adds **dataset-aware delegation to Rook itself**.
+
+---
+
+# ESGF-NG Rook Federation
+
 ## Design idea
 
-Rook remains **one software deployment** serving different use cases such as CDS and ESGF-NG.
+Rook remains **one software deployment** serving CDS, ESGF-NG and potentially other use cases.
 
 For ESGF-NG:
 
 * DKRZ, IPSL and CEDA run identical Rook services.
-* Their ESGF data pools overlap, but are not identical.
 * Every Rook can act as the entry point for a request.
 * A lightweight `broker` WPS process chooses the appropriate Rook site.
-* The existing AWS load balancer provides a stable and highly available public endpoint.
-* No additional central broker service is required.
+* The existing AWS load balancer provides the stable public endpoint.
+* No additional central broker or cloud service is required.
+
+---
 
 ## 1. High-level architecture
 
@@ -37,7 +189,7 @@ flowchart LR
 
 The load balancer only needs to select an **available Rook**.
 
-It does not need to know which datasets are available at which site. The selected Rook handles this through its `broker` process.
+It does not need to understand dataset placement. The selected Rook handles this through its `broker` process.
 
 ---
 
@@ -63,17 +215,17 @@ flowchart LR
     DB --> Assets
 ```
 
-The Kafka STAC stream keeps the index synchronized with ESGF-NG publication.
-
-The broker normally uses the **local database**, rather than querying the global STAC API for every request.
+* The existing ESGF-NG Kafka publication stream keeps the index synchronized.
+* Rook becomes another direct consumer of the ESGF-NG publication infrastructure.
+* Broker lookups normally use the local PostgreSQL database instead of querying STAC for every request.
 
 ---
 
 ## 3. STAC as fallback
 
-The local index can occasionally be incomplete or out of sync.
+The local index may occasionally be incomplete or out of sync.
 
-The global ESGF-NG STAC catalog therefore provides a fallback.
+The global ESGF-NG STAC catalog provides a fallback.
 
 ```mermaid
 flowchart LR
@@ -89,18 +241,18 @@ flowchart LR
     Rook -. repair .-> DB
 ```
 
-* The local PostgreSQL index is the normal lookup path.
-* STAC is queried when information is missing or suspected to be stale.
+* PostgreSQL is the normal lookup path.
+* STAC can recover missing information.
 * Information obtained from STAC can optionally repair the local index.
-* A remote HTTP asset is **not** silently used just because the local asset is missing.
+* Missing local data does **not** silently turn into remote HTTP processing.
 
 ---
 
 ## 4. Broker and orchestrate
 
-The new `broker` process uses the **same parameters and JSON workflow document as `orchestrate`**.
+`broker` uses the **same parameters and JSON workflow document as `orchestrate`**.
 
-Their responsibilities are deliberately different:
+Their responsibilities are different:
 
 ```mermaid
 flowchart LR
@@ -117,27 +269,70 @@ flowchart LR
 
 ### `broker`
 
-* inspects the workflow;
-* identifies the dataset;
-* determines where the dataset is available;
-* chooses a suitable Rook site;
-* submits `orchestrate` asynchronously at that site.
+* inspects the workflow and identifies the dataset;
+* determines where the dataset can be processed;
+* selects a local or remote Rook;
+* submits `orchestrate` asynchronously at the selected site.
 
 ### `orchestrate`
 
 * interprets the workflow;
-* runs the requested processing;
-* does not make federation/routing decisions.
-
-In short:
+* executes `subset`, `regrid`, etc.;
+* does not make federation decisions.
 
 > **broker decides WHERE — orchestrate decides HOW.**
 
 ---
 
-## 5. Site selection
+## 5. From the existing workflow to federation
 
-The broker combines **dataset placement** with the current **Rook service availability**.
+The important part is that the **workflow itself does not have to change**.
+
+```mermaid
+flowchart LR
+    Client[rooki / Service]
+    Workflow[Same JSON Workflow]
+
+    subgraph CDS["Current CDS"]
+        OrchestrateCDS[orchestrate]
+        ProcessingCDS[Processing]
+        OrchestrateCDS --> ProcessingCDS
+    end
+
+    subgraph ESGF["ESGF-NG"]
+        Broker[broker]
+        OrchestrateESGF[orchestrate<br/>selected site]
+        ProcessingESGF[Processing]
+
+        Broker --> OrchestrateESGF
+        OrchestrateESGF --> ProcessingESGF
+    end
+
+    Client --> Workflow
+
+    Workflow --> OrchestrateCDS
+    Workflow --> Broker
+```
+
+For CDS today:
+
+```text
+workflow → orchestrate
+```
+
+For federated ESGF-NG processing:
+
+```text
+same workflow → broker → orchestrate @ selected site
+```
+
+This keeps the client-facing processing model simple.
+
+---
+
+## 6. Site selection
+
+The broker combines **dataset placement** with current **Rook availability**.
 
 ```mermaid
 flowchart TD
@@ -156,6 +351,7 @@ flowchart TD
     Request --> Local
 
     Local -- Yes --> LocalRun
+
     Local -- No --> Sites
     Sites --> Health
     Health --> Candidate
@@ -164,19 +360,19 @@ flowchart TD
     Candidate -- No --> Fail
 ```
 
-STAC/index information and service health have different purposes:
+Three pieces of information have separate responsibilities:
 
-* **dataset index:** where does the data exist?
-* **health/status:** which of those Rook sites can currently accept work?
+* **Dataset index:** where does the data exist?
+* **health/status:** which Rook sites can currently accept work?
 * **broker:** which site should execute this request?
 
-Temporary Rook downtime does not change the dataset placement information.
+Temporary downtime does not change the dataset placement metadata.
 
 ---
 
-## 6. Local execution
+## 7. Local execution
 
-If the receiving Rook has the dataset locally, the broker submits the workflow to its own `orchestrate` process.
+If the receiving Rook has the dataset, the broker submits the workflow to its local `orchestrate`.
 
 ```mermaid
 sequenceDiagram
@@ -186,18 +382,18 @@ sequenceDiagram
 
     C->>B: JSON workflow
     B->>B: Dataset is local
-    B->>O: Submit workflow async
+    B->>O: Submit async
     O-->>B: Job / status URL
     B-->>C: Job / status response
 ```
 
-The broker itself does not perform the processing.
+The broker performs delegation only. The actual processing remains with `orchestrate`.
 
 ---
 
-## 7. Remote execution
+## 8. Remote execution
 
-If the dataset is not local, the broker chooses another healthy site that provides it.
+If the dataset is not local, the broker selects another available site.
 
 ```mermaid
 sequenceDiagram
@@ -207,30 +403,20 @@ sequenceDiagram
 
     C->>B: JSON workflow
     B->>B: Select CEDA
-    B->>O: Submit workflow async
+    B->>O: Submit async
     O-->>B: Job / status URL
     B-->>C: Job / status response
 ```
 
-The remote call goes **directly to `orchestrate`**, not to the remote broker.
-
-This prevents delegation loops such as:
-
-```text
-DKRZ broker → CEDA broker → IPSL broker → ...
-```
+* The remote request goes directly to `orchestrate`.
+* It does **not** call the remote broker again.
+* This prevents delegation loops.
 
 ---
 
-## 8. Asynchronous jobs
+## 9. Asynchronous processing
 
-The broker only needs to remain active long enough to:
-
-1. inspect the workflow;
-2. select a Rook site;
-3. submit `orchestrate` asynchronously;
-4. receive the accepted/running job response;
-5. return it to the client.
+The broker only needs to remain active long enough to delegate the job.
 
 ```mermaid
 flowchart LR
@@ -248,22 +434,89 @@ flowchart LR
     Job -. updates .-> Status
 ```
 
-The broker does **not** maintain a second copy of the job state.
+The broker:
 
-The client receives the status information for the actual `orchestrate` job, whether that job runs locally or remotely.
+1. inspects the workflow;
+2. selects a site;
+3. submits `orchestrate`;
+4. returns the actual job/status response.
+
+It does **not** maintain a second broker-side copy of the job state.
+
+The returned status URL belongs to the real processing job, regardless of whether it runs locally or remotely.
 
 ---
 
-## Summary
+# Future improvement: advertise processing in STAC
 
-The federation adds only a small amount of functionality to the existing Rook architecture:
+The federation can work with the **existing ESGF-NG STAC catalog**.
 
-* **AWS LB** — highly available public entry point.
-* **broker** — chooses the execution site.
-* **orchestrate** — executes the workflow.
-* **local PostgreSQL ESGF index** — fast dataset placement and local asset lookup.
-* **Kafka** — keeps the local ESGF indexes synchronized.
-* **global STAC** — authoritative fallback when the local index is missing or stale.
-* **health/status** — identifies Rook sites currently able to accept jobs.
+> **No STAC changes are required to implement Rook federation.**
 
-There is no dedicated central broker or additional cloud service. Every site runs the same Rook software and can independently receive and delegate ESGF-NG processing requests.
+As a future improvement, STAC could explicitly advertise that processing is supported for a dataset.
+
+```mermaid
+flowchart LR
+    Item[STAC Dataset]
+    Capability[Processing Available]
+    Service[Global Rook Endpoint]
+    Broker[Rook Broker]
+
+    Item --> Capability
+    Capability --> Service
+    Service --> Broker
+```
+
+This would mainly improve **discovery and user experience**:
+
+* An ESGF portal could immediately offer a **Process** action.
+* STAC advertises processing capability, not current runtime availability.
+* This is similar to advertising a data-node URL without guaranteeing that the node is currently online.
+* Runtime availability remains the responsibility of Rook `health/status` and the broker.
+* The global load-balanced Rook endpoint can be advertised as the ESGF processing service.
+
+A first version could be as simple as:
+
+```json
+{
+  "esgf:processing": true
+}
+```
+
+Alternatively, the processing service could be advertised through an appropriate STAC service link.
+
+The representation can later evolve into richer processing/service metadata.
+
+The important point remains:
+
+> **Processing metadata in STAC is an optional discovery and UX improvement, not a requirement for Rook federation.**
+
+---
+
+# Summary
+
+```mermaid
+flowchart LR
+    Publish[ESGF Publication]
+    Kafka[Kafka]
+    Index[Local ESGF Index]
+    Broker[Rook Broker]
+    Process[Rook Processing]
+
+    Publish --> Kafka
+    Kafka --> Index
+    Index --> Broker
+    Broker --> Process
+```
+
+The proposal builds largely on infrastructure that already exists:
+
+* **Rook** provides server-side climate-data processing.
+* **orchestrate** already executes JSON workflows.
+* **AWS LB** already provides a highly available entry point.
+* **Kafka** already distributes ESGF-NG publication events.
+* **STAC** already describes datasets and their locations.
+* **PostgreSQL** provides fast local dataset resolution.
+* The new **broker** adds dataset-aware federation and delegation.
+
+The result is a decentralized processing service that can use the **full distributed ESGF-NG data holdings** without requiring identical replicas at every processing site.
