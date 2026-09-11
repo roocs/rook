@@ -14,8 +14,6 @@ on:
 permissions:
   contents: read
 
-# FIXME: Roocs Helper Bot must be configured
-
 jobs:
   dependabot-auto-approve:
     name: Auto-approve and set auto-merge safe Dependabot updates

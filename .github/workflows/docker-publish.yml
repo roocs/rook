@@ -10,6 +10,7 @@ on:
     tags:
       - "v*"
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   # For a given workflow, if we push to the same branch, cancel all previous builds on that branch except on master.
@@ -73,12 +74,11 @@ jobs:
 
       - name: Run Docker image
         run: |
-          docker run --rm ${{ env.IMAGE_NAME }}:test sh -c '
-            rook start -d
-            sleep 2s
-            rook status
-            rook stop
-          '
+          docker run -d --name rook-test -p 5000:5000 ${{ env.IMAGE_NAME }}:test
+          sleep 5
+          curl -fsS "http://localhost:5000/wps?service=WPS&version=1.0.0&request=GetCapabilities" > /dev/null
+          docker logs rook-test
+          docker rm -f rook-test
 
       - name: Publish image to Docker Hub
         if: ${{ github.event_name != 'pull_request' }}  # Never push image for pull requests
