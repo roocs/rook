@@ -42,10 +42,6 @@ jobs:
           post-cleanup: none
           environment-file: environment-docs.yml
 
-      - name: Install rook
-        run: |
-          python -m pip install --no-user --editable .
-
-      - name: Build docs
+      - name: Install rook and build docs
         run: |
           make build-docs
