@@ -510,11 +510,15 @@ If the receiving Rook has the dataset, the broker submits the workflow to its lo
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant B as broker@IPSL
-    participant O as orchestrate@IPSL
+
+    box rgb(183, 228, 199) IPSL
+        participant B as broker@IPSL
+        participant O as orchestrate@IPSL
+    end
+
+    C->>B: JSON workflow
 
     rect rgb(183, 228, 199)
-        C->>B: JSON workflow
         B->>B: Dataset is local
         B->>O: Submit async
         O-->>B: Job / status URL
@@ -525,7 +529,7 @@ sequenceDiagram
 
 The broker performs delegation only. The actual processing remains with `orchestrate`.
 
-The green area represents processing at the **IPSL Rook site**.
+The green box represents the **IPSL Rook site**.
 
 ---
 
@@ -536,11 +540,18 @@ If the dataset is not available locally, the broker selects another available si
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant B as broker@IPSL
-    participant O as orchestrate@CEDA
+
+    box rgb(183, 228, 199) IPSL
+        participant B as broker@IPSL
+    end
+
+    box rgb(255, 214, 165) CEDA
+        participant O as orchestrate@CEDA
+    end
+
+    C->>B: JSON workflow
 
     rect rgb(183, 228, 199)
-        C->>B: JSON workflow
         B->>B: Dataset not local
         B->>B: Select CEDA
     end
@@ -785,3 +796,76 @@ The main components are:
 * **Independent data pools** — can overlap without having to be identical.
 
 > **One processing entry point, distributed data, processing close to the data.**
+
+---
+
+# In one picture
+
+## Rook today: Copernicus CDS
+
+```mermaid
+flowchart LR
+    CDS["Copernicus CDS"]
+    LB["Load Balancer"]
+    Rook["Identical Rook Sites"]
+    Data["Replicated CDS Data"]
+
+    CDS -->|workflow| LB
+    LB --> Rook
+    Rook --> Data
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+```
+
+* **One access point**
+* **Identical Rook installations**
+* **Equivalent replicated data**
+* Load balancing can choose any available site
+* Rook executes the workflow close to the data
+
+---
+
+## Rook for ESGF-NG
+
+```mermaid
+flowchart LR
+    ESGF["ESGF Client"]
+    LB["Load Balancer"]
+    Rook["Identical Rook Sites"]
+    Broker["NEW: broker"]
+    Index[("Local PostgreSQL Index")]
+    Data["Independent ESGF Data Pools"]
+    Kafka["Kafka"]
+    STAC["Global STAC"]
+
+    ESGF -->|same workflow model| LB
+    LB --> Rook
+    Rook --> Broker
+
+    Kafka --> Index
+    Index --> Broker
+    Broker -. fallback .-> STAC
+
+    Broker -->|choose site| Data
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+    style Index fill:#fff3bf,stroke:#d69e00,color:#000
+    style Kafka fill:#fff3bf,stroke:#d69e00,color:#000
+```
+
+The Rook processing model stays essentially the same.
+
+The ESGF-NG extension adds only the pieces needed for **data-aware site selection**:
+
+* **NEW: `broker`** — decides where the workflow runs.
+* **NEW: local PostgreSQL index** — provides fast dataset-to-site lookup.
+* **REUSE: Kafka** — keeps the local index synchronized.
+* **FALLBACK: global STAC** — provides authoritative dataset placement when needed.
+
+The ESGF data pools can remain **independently managed and different**.
+
+> **CDS: choose any Rook.**
+> **ESGF-NG: choose the Rook that has the data.**
+
+> **Solution: add a broker — reuse the existing Kafka consumer.**
