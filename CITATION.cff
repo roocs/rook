@@ -1,0 +1,22 @@
+# This CITATION.cff file was generated with cffinit and templated with cookiecutter.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: "1.2.0"
+title: "rook"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: "software"
+authors:
+  - given-names: 'Carsten'
+    family-names: 'Ehbrecht'
+    email: 'ehbrecht@dkrz.de'
+contact:
+  - given-names: 'Carsten'
+    family-names: 'Ehbrecht'
+    email: 'ehbrecht@dkrz.de'
+repository-code: "https://github.com/roocs/rook"
+# doi: "ADD-THIS-INFORMATION-LATER/zenodo.XYZ"
+abstract: "A WPS service for roocs."
+license: "Apache-2.0"
+version: "1.4.0"

@@ -57,10 +57,7 @@ REPORT = {
 
 
 def execute_status(client, output):
-    return client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=status"
-        f"&RawDataOutput={output}"
-    )
+    return client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=status&RawDataOutput={output}")
 
 
 def test_status_process_is_synchronous():
@@ -209,9 +206,7 @@ def test_process_check_counts_queue_active_stale_and_recent_results(monkeypatch)
         session.commit()
     monkeypatch.setattr(processes_module, "get_session", session_factory)
 
-    [check] = ProcessDatabaseStatusCheck().collect(
-        "2026-09-03T10:00:00Z", {"stale_job_seconds": 3600}
-    )
+    [check] = ProcessDatabaseStatusCheck().collect("2026-09-03T10:00:00Z", {"stale_job_seconds": 3600})
 
     assert check["state"] == "yellow"
     assert check["details"] == {
@@ -234,9 +229,7 @@ def test_service_check_distinguishes_host_and_worker_uptime(monkeypatch):
     monkeypatch.setattr(
         service_module.pywps_configuration,
         "get_config_value",
-        lambda section, option: {"maxprocesses": "10", "parallelprocesses": "2"}[
-            option
-        ],
+        lambda section, option: {"maxprocesses": "10", "parallelprocesses": "2"}[option],
     )
 
     [check] = ServiceStatusCheck().collect("2026-09-03T10:00:00Z", DEFAULT_STATUS)
@@ -251,9 +244,7 @@ def test_service_check_distinguishes_host_and_worker_uptime(monkeypatch):
 
 def test_server_and_disk_checks_apply_thresholds(monkeypatch):
     monkeypatch.setattr(server_module.psutil, "cpu_count", lambda: 4)
-    monkeypatch.setattr(
-        server_module.psutil, "getloadavg", lambda: (3.6, 2.0, 1.0)
-    )
+    monkeypatch.setattr(server_module.psutil, "getloadavg", lambda: (3.6, 2.0, 1.0))
     monkeypatch.setattr(server_module.psutil, "cpu_percent", lambda interval: 20.0)
     monkeypatch.setattr(
         server_module.psutil,
@@ -271,9 +262,7 @@ def test_server_and_disk_checks_apply_thresholds(monkeypatch):
         lambda section, option: "/output",
     )
 
-    [server] = ServerStatusCheck().collect(
-        "2026-09-03T10:00:00Z", DEFAULT_STATUS
-    )
+    [server] = ServerStatusCheck().collect("2026-09-03T10:00:00Z", DEFAULT_STATUS)
     [disk] = DiskStatusCheck().collect("2026-09-03T10:00:00Z", DEFAULT_STATUS)
 
     assert server["state"] == "yellow"

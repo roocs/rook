@@ -23,22 +23,14 @@ def first_output_name(output_metalink):
 
 def derived_relations(provn):
     """Return provenance derivation relations in document order."""
-    return [
-        line.strip()
-        for line in provn.splitlines()
-        if line.strip().startswith("wasDerivedFrom(")
-    ]
+    return [line.strip() for line in provn.splitlines() if line.strip().startswith("wasDerivedFrom(")]
 
 
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_cmip6_subset_average.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_cmip6_subset_average.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -47,12 +39,8 @@ def test_wps_orchestrate(resource_file, get_output, pywps_cfg):
 def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps_cfg):
     # This integration path remains slower than the other orchestrate scenarios.
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_c3s_cmip6_subset_collection_only.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_c3s_cmip6_subset_collection_only.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
 
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
@@ -61,12 +49,8 @@ def test_wps_orchestrate_subset_collection_only(resource_file, get_output, pywps
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_cmip6_subset_average.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_cmip6_subset_average.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
     assert_response_success(resp)
     outputs = get_output(resp.xml)
     file_uri = outputs["prov"]
@@ -75,14 +59,10 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
     assert 'roocs:time="1985-01-01/2014-12-30"' in provn
     assert 'roocs:freq="year"' in provn
 
-    dataset = (
-        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
-    )
+    dataset = "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     relations = derived_relations(provn)
     assert len(relations) == 2
-    subset_relation = next(
-        relation for relation in relations if f", roocs:{dataset}," in relation
-    )
+    subset_relation = next(relation for relation in relations if f", roocs:{dataset}," in relation)
     subset_output = subset_relation.removeprefix("wasDerivedFrom(roocs:").split(",")[0]
     average_output = first_output_name(outputs["output"])
     assert any(
@@ -95,12 +75,8 @@ def test_wps_orchestrate_prov(resource_file, get_output, pywps_cfg):
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_prov_with_fixes(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_cmip6_subset_average_with_fixes.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_cmip6_subset_average_with_fixes.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
     assert_response_success(resp)
     file_uri = get_output(resp.xml)["prov"]
     doc = prov.read(file_uri[len("file://") :])
@@ -111,12 +87,8 @@ def test_wps_orchestrate_prov_with_fixes(resource_file, get_output, pywps_cfg):
 @pytest.mark.xfail(ESMPY_MISSING, reason="esmpy is not installed")
 def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_average_latlon_cmip6.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_average_latlon_cmip6.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
     assert_response_success(resp)
     file_uri = get_output(resp.xml)["prov"]
     doc = prov.read(file_uri[len("file://") :])
@@ -125,16 +97,10 @@ def test_wps_orchestrate_average_latlon_cmip6(resource_file, get_output, pywps_c
 
 
 @pytest.mark.xfail(reason="no cmip6 data in /pool/data")
-def test_wps_orchestrate_c3s_cmip6_subset_metadata(
-    resource_file, get_output, pywps_cfg
-):
+def test_wps_orchestrate_c3s_cmip6_subset_metadata(resource_file, get_output, pywps_cfg):
     client = client_for(Service(processes=[Orchestrate()], cfgfiles=[pywps_cfg]))
-    datainputs = "workflow=@xlink:href=file://{}".format(
-        resource_file("wf_c3s_cmip6_subset.json")
-    )
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}"
-    )
+    datainputs = "workflow=@xlink:href=file://{}".format(resource_file("wf_c3s_cmip6_subset.json"))
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=orchestrate&datainputs={datainputs}")
     assert_response_success(resp)
     m_path = get_output(resp.xml)["output"]
     # parse metalink

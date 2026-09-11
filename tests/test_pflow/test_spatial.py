@@ -5,9 +5,7 @@ from rook.pflow.spatial import SpatialRelation, area_relation, dataset_area_rela
 
 
 def rectilinear_dataset(longitudes=(-10, 0, 10), latitudes=(40, 50, 60)):
-    return xr.Dataset(
-        coords={"lon": np.asarray(longitudes), "lat": np.asarray(latitudes)}
-    )
+    return xr.Dataset(coords={"lon": np.asarray(longitudes), "lat": np.asarray(latitudes)})
 
 
 def test_area_contains_dataset_extent():

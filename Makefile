@@ -36,7 +36,7 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 .DEFAULT_GOAL := help
 
-help: ## print this help message. (Default)
+help: ## print this help message (Default)
 	@echo "Please use 'make <target>' where <target> is one of:"
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
@@ -61,11 +61,14 @@ status: ## show status of rook service
 
 install: ## install rook application
 	@echo "Installing application ..."
-	@-bash -c 'pip install -e .'
-	@echo "\nStart service with \`make start\` and stop with \`make stop\`."
+	@python -m pip install --editable .
+	@echo "Start service with \`make start\` and stop with \`make stop\`."
+
+install-dev: install ## install rook interactively and all dependencies needed for development
+	@echo "Installing development requirements for tests and docs ..."
+	@python -m pip install --group dev
 
 develop: install-dev ## install rook application with development libraries
-	@python -m pip install .
 	@prek install
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
@@ -105,37 +108,33 @@ clean-docs: ## remove documentation artifacts
 	@-rm -f docs/modules.rst
 	$(MAKE) -C docs clean
 
-install-dev:
-	@echo "Installing development requirements for tests and docs ..."
-	@python -m pip install --editable ".[dev]"
-
 install-lint: ## install dependencies needed for linting
-	@python -m pip install --quiet --editable ".[dev]"
+	@python -m pip install --quiet --group lint
 
-install-docs: ## install dependencies needed for building the docs
-	@python -m pip install --quiet --editable ".[docs]"
+install-docs: install ## install dependencies needed for building the docs
+	@python -m pip install --quiet --group docs
 
-install-test: ## install dependencies needed for standard testing
-	@python -m pip install --quiet --editable ".[dev]"
+install-test: install ## install dependencies needed for standard testing
+	@python -m pip install --quiet --group test
 
 install-tox: ## install base dependencies needed for running tox
-	@python -m pip install --quiet --editable ".[dev]"
+	@python -m pip install --quiet --group tox
 
-lint: ## check style
+lint: install-lint ## check style
 	@echo "Running flake8 code style checks ..."
 	@bash -c 'ruff check src/rook tests'
 
 ## Testing targets:
 
-test: ## run tests quickly with the default Python
+test: install-test ## run tests quickly with the default Python
 	@echo "Running tests excluding smoke/online checks ..."
 	@bash -c 'pytest -v -m "not smoke and not online"'
 
-smoke: ## run production service smoke tests only
+smoke: install-test ## run production service smoke tests only
 	@echo "Running smoke tests (intended for production service checks) ..."
 	@bash -c 'pytest -v -m "smoke" tests/smoke'
 
-test-tox: ## run tests on every available Python version with tox
+test-tox: install-tox ## run tests on every available Python version with tox
 	@bash -c 'tox'
 
 test-notebooks: notebook-sanitizer ## run notebook-based tests
@@ -146,7 +145,7 @@ test-notebooks-lax: notebook-sanitizer ## run tests on notebooks but don't be so
 	@echo "Running notebook-based tests"
 	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval-lax --rootdir tests/ --verbose $(CURDIR)/docs/source/notebooks/ --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
-coverage: ## check code coverage quickly with the default Python
+coverage: install-test ## check code coverage quickly with the default Python
 	@bash -c 'coverage run --source rook -m pytest'
 	@bash -c 'coverage report -m'
 	@bash -c 'coverage html'
@@ -154,7 +153,7 @@ coverage: ## check code coverage quickly with the default Python
 
 ## Sphinx targets:
 
-autodoc: install-docs clean-docs ## create sphinx-apidoc files:
+autodoc: install-docs clean-docs ## create sphinx-apidoc files
 	@bash -c 'sphinx-apidoc --force -o docs/source/apidoc --private --module-first src/rook'
 
 build-docs: autodoc ## generate Sphinx HTML documentation, including API docs

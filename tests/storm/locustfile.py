@@ -26,25 +26,17 @@ class RookUser(HttpUser):
     def capabilities(self):
         query = "/wps?service=WPS&request=GetCapabilities"
 
-        with self.client.get(
-            query, catch_response=True, name="capabilities"
-        ) as response:
+        with self.client.get(query, catch_response=True, name="capabilities") as response:
             if "<ows:Title>rook</ows:Title>" not in response.text:
                 response.failure("Capabilities does not match expected XML")
 
     @tag("meta")
     @task
     def describe_process_subset(self):
-        query = (
-            "/wps?service=WPS&version=1.0.0&request=DescribeProcess&identifier=subset"
-        )
-        with self.client.get(
-            query, catch_response=True, name="describe_process"
-        ) as response:
+        query = "/wps?service=WPS&version=1.0.0&request=DescribeProcess&identifier=subset"
+        with self.client.get(query, catch_response=True, name="describe_process") as response:
             if "<ows:Identifier>subset</ows:Identifier>" not in response.text:
-                response.failure(
-                    "Process description for subset does not match expected XML"
-                )
+                response.failure("Process description for subset does not match expected XML")
 
     @tag("subset")
     @task

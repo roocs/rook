@@ -11,49 +11,29 @@ from rook.processes.wps_health import HEALTHY_RESPONSE
 pytestmark = [pytest.mark.smoke, pytest.mark.online]
 
 
-C3S_CMIP6_MON_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-)
+C3S_CMIP6_MON_COLLECTION = "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 
-C3S_CMIP6_DAY_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
-)
+C3S_CMIP6_DAY_COLLECTION = "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.tas.gn.v20190908"
 
-C3S_CMIP6_DAY_HUSS_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.EC-Earth-Consortium.EC-Earth3-CC.ssp245."
-    "r1i1p1f1.day.huss.gr.v20210113"
-)
+C3S_CMIP6_DAY_HUSS_COLLECTION = "c3s-cmip6.ScenarioMIP.EC-Earth-Consortium.EC-Earth3-CC.ssp245.r1i1p1f1.day.huss.gr.v20210113"  # ruff: ignore[line-too-long]
 
-C3S_CMIP6_MON_TASMIN_COLLECTION = (
-    "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
-)
+C3S_CMIP6_MON_TASMIN_COLLECTION = "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 
-C3S_CMIP6_SPARSE_YEARS_TASMIN_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.CCCma.CanESM5-CanOE."
-    "ssp245.r1i1p2f1.Amon.tasmin.gn.v20190429"
-)
+C3S_CMIP6_SPARSE_YEARS_TASMIN_COLLECTION = "c3s-cmip6.ScenarioMIP.CCCma.CanESM5-CanOE.ssp245.r1i1p2f1.Amon.tasmin.gn.v20190429"  # ruff: ignore[line-too-long]
 
-C3S_CMIP6_MON_LEVEL_COLLECTION = (
-    "c3s-cmip6.CMIP.CSIRO-ARCCSS.ACCESS-CM2.historical.r1i1p1f1.Amon.ta.gn.v20191108"
-)
+C3S_CMIP6_MON_LEVEL_COLLECTION = "c3s-cmip6.CMIP.CSIRO-ARCCSS.ACCESS-CM2.historical.r1i1p1f1.Amon.ta.gn.v20191108"
 
-C3S_CMIP6_360DAY_CALENDAR_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.pr.gn.v20190908"
-)
+C3S_CMIP6_360DAY_CALENDAR_COLLECTION = "c3s-cmip6.ScenarioMIP.MOHC.HadGEM3-GC31-LL.ssp245.r1i1p1f3.day.pr.gn.v20190908"
 
-C3S_CMIP5_DAY_COLLECTION = (
-    "c3s-cmip5.output1.IPSL.IPSL-CM5B-LR.historical.day.atmos.day.r1i1p1.tas.v20120718"
-)
+C3S_CMIP5_DAY_COLLECTION = "c3s-cmip5.output1.IPSL.IPSL-CM5B-LR.historical.day.atmos.day.r1i1p1.tas.v20120718"
 
-C3S_CMIP5_MON_COLLECTION = (
-    "c3s-cmip5.output1.MPI-M.MPI-ESM-LR.historical.mon.atmos.Amon.r1i1p1.tas.v20120315"
-)
+C3S_CMIP5_MON_COLLECTION = "c3s-cmip5.output1.MPI-M.MPI-ESM-LR.historical.mon.atmos.Amon.r1i1p1.tas.v20120315"
 
-C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # noqa
+C3S_CORDEX_DAY_COLLECTION = "c3s-cordex.output.EUR-11.IPSL.IPSL-IPSL-CM5A-MR.rcp85.r1i1p1.IPSL-WRF381P.v1.day.tas.v20190919"  # ruff: ignore[line-too-long]
 
-C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # noqa
+C3S_CORDEX_MON_COLLECTION = "c3s-cordex.output.EUR-11.CLMcom.MOHC-HadGEM2-ES.rcp85.r1i1p1.CLMcom-CCLM4-8-17.v1.mon.tas.v20150320"  # ruff: ignore[line-too-long]
 
-C3S_CORDEX_AFR22_360DAY_RSDS_COLLECTION = "c3s-cordex.output.AFR-22.GERICS.MOHC-HadGEM2-ES.historical.r1i1p1.GERICS-REMO2015.v1.day.rsds.v20201015"  # noqa
+C3S_CORDEX_AFR22_360DAY_RSDS_COLLECTION = "c3s-cordex.output.AFR-22.GERICS.MOHC-HadGEM2-ES.historical.r1i1p1.GERICS-REMO2015.v1.day.rsds.v20201015"  # ruff: ignore[line-too-long]
 
 C3S_IPCC_ATLAS_CMIP5_COLLECTION = "c3s-ipcc-atlas.tnn.CMIP5.rcp45.mon"
 
@@ -83,29 +63,29 @@ C3S_CMIP6_DECADAL_COLLECTIONS = (
 )
 
 C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS = (
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r10i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r1i1p1f1.Amon.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r2i1p1f1.Amon.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r3i1p1f1.Amon.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r4i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r5i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r6i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r10i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r1i1p1f1.Amon.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r2i1p1f1.Amon.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r3i1p1f1.Amon.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r4i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r5i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r6i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r7i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r8i1p1f1.Amon.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1976-r9i1p1f1.Amon.psl.gr.v20201216",
 )
 
 C3S_CMIP6_DECADAL_DAY_COLLECTIONS = (
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r10i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r1i1p1f1.day.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r2i1p1f1.day.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r3i1p1f1.day.psl.gr.v20201215",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r4i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r5i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r6i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r7i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r8i1p1f1.day.psl.gr.v20201216",  # noqa
-    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r9i1p1f1.day.psl.gr.v20201216",  # noqa
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r10i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r1i1p1f1.day.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r2i1p1f1.day.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r3i1p1f1.day.psl.gr.v20201215",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r4i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r5i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r6i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r7i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r8i1p1f1.day.psl.gr.v20201216",
+    "c3s-cmip6-decadal.DCPP.EC-Earth-Consortium.EC-Earth3.dcppA-hindcast.s1961-r9i1p1f1.day.psl.gr.v20201216",
 )
 
 WF_C3S_CMIP5 = json.dumps(
@@ -388,9 +368,7 @@ def subset_inputs(collection, **params):
     return inputs
 
 
-def assert_decadal_fixes(
-    dataset, *, expected_startdate, realizations=10, calendar=None
-):
+def assert_decadal_fixes(dataset, *, expected_startdate, realizations=10, calendar=None):
     """Check the observable output contract of the decadal Woodpecker recipe."""
     assert dataset.time.attrs["long_name"] == "valid_time"
     if calendar is not None:
@@ -403,9 +381,7 @@ def assert_decadal_fixes(
     assert dataset.reftime.attrs["long_name"] == "Start date of the forecast"
     assert dataset.reftime.attrs["standard_name"] == "forecast_reference_time"
     assert "leadtime" in dataset.coords
-    assert dataset.leadtime.attrs["long_name"] == (
-        "Time elapsed since the start of the forecast"
-    )
+    assert dataset.leadtime.attrs["long_name"] == ("Time elapsed since the start of the forecast")
     assert dataset.leadtime.attrs["standard_name"] == "forecast_period"
 
     assert dataset.attrs["startdate"] == expected_startdate
@@ -466,9 +442,7 @@ def test_smoke_nginx_health2_execute_health(wps):
     assert response.text == HEALTHY_RESPONSE
 
 
-@pytest.mark.xfail(
-    reason="Production access restrictions may block direct WPS execution."
-)
+@pytest.mark.xfail(reason="Production access restrictions may block direct WPS execution.")
 def test_smoke_execute_status(wps):
     response = requests.get(
         wps.wps.url,
@@ -491,9 +465,7 @@ def test_smoke_execute_status(wps):
 
     checks = {check["id"]: check for check in report["checks"]}
     assert {"service", "processes", "server", "disk"} <= checks.keys()
-    assert all(
-        check["state"] in {"green", "yellow", "red"} for check in checks.values()
-    )
+    assert all(check["state"] in {"green", "yellow", "red"} for check in checks.values())
 
 
 def test_smoke_describe_process_subset(wps):
@@ -584,10 +556,7 @@ def test_smoke_execute_c3s_cmip6_subset_metadata(wps, tmp_path, open_dataset):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert (
-        "tasmin_Amon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_20100116-20101216.nc"
-        in urls[0]
-    )
+    assert "tasmin_Amon_MPI-ESM1-2-HR_historical_r1i1p1f1_gn_20100116-20101216.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tasmin" in ds.variables
     # check fill value in bounds
@@ -635,9 +604,7 @@ def test_smoke_execute_c3s_cmip6_subset_noresm2_fix_282(wps, tmp_path, open_data
     assert "tos" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_subset_sparse_component_years(
-    wps, tmp_path, open_dataset
-):
+def test_smoke_execute_c3s_cmip6_subset_sparse_component_years(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_SPARSE_YEARS_TASMIN_COLLECTION),
         ("time", "2015/2100"),
@@ -660,10 +627,7 @@ def test_smoke_execute_c3s_cordex_subset(wps, tmp_path, open_dataset):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20201216.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20201216.nc" in urls[0]
     assert "esg_c3s-cordex" not in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
@@ -712,9 +676,7 @@ def test_smoke_execute_c3s_cmip6_subset_by_point(wps, tmp_path, open_dataset):
     assert "rlds" in ds.variables
 
 
-def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(
-    wps, tmp_path, open_dataset
-):
+def test_smoke_execute_c3s_cmip6_360calendar_subset_by_point(wps, tmp_path, open_dataset):
     inputs = [
         ("collection", C3S_CMIP6_360DAY_CALENDAR_COLLECTION),
         ("time", "2015/2015"),
@@ -735,10 +697,7 @@ def test_smoke_execute_c3s_cordex_subset_by_point(wps, tmp_path, open_dataset):
     ]
     urls = wps.execute("subset", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20200316.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20200116-20200316.nc" in urls[0]
     ds = open_dataset(urls[0], tmp_path)
     assert "tas" in ds.variables
 
@@ -760,10 +719,7 @@ def test_smoke_execute_c3s_cmip6_subset_collection_only(wps):
     urls = wps.execute("subset", inputs)
     print(urls)
     assert len(urls) == 2
-    assert (
-        "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6"
-        in urls[0]
-    )
+    assert "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6" in urls[0]
 
 
 def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
@@ -773,10 +729,7 @@ def test_smoke_execute_c3s_cordex_subset_collection_only(wps):
     assert len(urls) == 10
     assert "data.mips.climate.copernicus.eu" in urls[0]
     assert "esg_c3s-cordex" in urls[0]
-    assert (
-        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_200601-201012.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_200601-201012.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip5_subset_time_and_area_cross_meridian(wps):
@@ -812,9 +765,7 @@ def test_smoke_execute_c3s_cmip5_average_time(wps):
     inputs = [("collection", C3S_CMIP5_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500101-20050101_avg-year.nc" in urls[0]
-    )
+    assert "tas_mon_MPI-ESM-LR_historical_r1i1p1_18500101-20050101_avg-year.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_average_dim(wps):
@@ -828,10 +779,7 @@ def test_smoke_execute_c3s_cmip6_average_time(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION), ("freq", "year")]
     urls = wps.execute("average_time", inputs)
     assert len(urls) == 1
-    assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150101-21000101_avg-year.nc"
-        in urls[0]
-    )
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150101-21000101_avg-year.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cordex_average_dim(wps):
@@ -839,10 +787,7 @@ def test_smoke_execute_c3s_cordex_average_dim(wps):
     urls = wps.execute("average", inputs)
     # print(urls)
     assert len(urls) == 1
-    assert (
-        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_avg-t.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cordex_average_time(wps):
@@ -850,19 +795,14 @@ def test_smoke_execute_c3s_cordex_average_time(wps):
     urls = wps.execute("average_time", inputs)
     # print(urls)
     assert len(urls) == 1
-    assert (
-        "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20060101-20990101_avg-year.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_MOHC-HadGEM2-ES_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_mon_20060101-20990101_avg-year.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_weighted_average(wps):
     inputs = [("collection", C3S_CMIP6_MON_COLLECTION)]
     urls = wps.execute("weighted_average", inputs)
     assert len(urls) == 1
-    assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150116-21001216_w-avg.nc" in urls[0]
-    )
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20150116-21001216_w-avg.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_regrid(wps):
@@ -918,9 +858,7 @@ def test_smoke_execute_c3s_cmip6_weighted_average_orchestrate(wps):
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
-    assert (
-        "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216_w-avg.nc" in urls[0]
-    )
+    assert "rlds_Amon_INM-CM5-0_ssp245_r1i1p1f1_gr1_20200116-20201216_w-avg.nc" in urls[0]
 
 
 def test_smoke_execute_c3s_cmip6_regrid_orchestrate(wps):
@@ -995,10 +933,7 @@ def test_smoke_execute_c3s_cordex_orchestrate(wps):
     ]
     urls = wps.execute("orchestrate", inputs)
     assert len(urls) == 1
-    assert (
-        "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc"
-        in urls[0]
-    )
+    assert "tas_EUR-11_IPSL-IPSL-CM5A-MR_rcp85_r1i1p1_IPSL-WRF381P_v1_day_avg-t.nc" in urls[0]
 
 
 def test_smoke_execute_aligned_daily_cordex_subset_returns_original_file(wps):
@@ -1026,9 +961,7 @@ def test_smoke_execute_c3s_cmip6_decadal_concat(wps, tmp_path, open_dataset):
         assert_decadal_fixes(dataset, expected_startdate="s199511")
 
 
-def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
-    wps, tmp_path, open_dataset
-):
+def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(wps, tmp_path, open_dataset):
     inputs = concat_inputs(
         C3S_CMIP6_DECADAL_CALENDAR_COLLECTIONS,
         time="1985-01-01/1985-12-31",
@@ -1046,9 +979,7 @@ def test_smoke_execute_c3s_cmip6_decadal_fix_calendar_concat(
         )
 
 
-def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(
-    wps, tmp_path, open_dataset
-):
+def test_smoke_execute_c3s_cmip6_decadal_daily_december_workflow(wps, tmp_path, open_dataset):
     inputs = [
         ("workflow", ComplexDataInput(WF_C3S_CMIP6_DECADAL_DAY_DECEMBER)),
     ]
@@ -1177,7 +1108,4 @@ def test_smoke_execute_c3s_cica_atlas_disjoint_area_fails_early(wps):
 
     errors = wps.execute_expect_failure("subset", inputs)
 
-    assert any(
-        "does not overlap the spatial extent of the dataset" in str(error["text"])
-        for error in errors
-    ), errors
+    assert any("does not overlap the spatial extent of the dataset" in str(error["text"]) for error in errors), errors

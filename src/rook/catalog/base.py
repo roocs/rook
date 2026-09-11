@@ -14,8 +14,8 @@ def make_list(value):
     return val
 
 
-class Catalog:  # noqa: D101
-    def __init__(self, project):  # noqa: D107
+class Catalog:
+    def __init__(self, project):
         self.project = project
 
     def _query(self, collection, time=None, time_components=None):
@@ -49,7 +49,7 @@ class Result:
         """Return number of matched records."""
         return len(self.records)
 
-    def __len__(self):  # noqa: D105
+    def __len__(self):  # ruff: ignore[undocumented-magic-method]
         return self.matches
 
     def _records(self, prefix):

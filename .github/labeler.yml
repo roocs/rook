@@ -13,7 +13,7 @@
       - 'tox.toml'
 
 'dependencies':
-  - changes-files:
+  - changed-files:
     - any-glob-to-any-file:
       - 'requirements*.txt'
       - 'environment*.yml'

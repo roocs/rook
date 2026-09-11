@@ -128,9 +128,7 @@ def test_consolidate_catalog_files_can_use_s3_base_dir(monkeypatch):
     assert result == (
         DatasetSource(
             dataset_id="c3s-cmip6.dataset",
-            paths=(
-                "s3://example-bucket/data/CMIP6/ScenarioMIP/Model/file_201501-210012.nc",
-            ),
+            paths=("s3://example-bucket/data/CMIP6/ScenarioMIP/Model/file_201501-210012.nc",),
         ),
     )
 
@@ -161,9 +159,7 @@ def test_consolidate_resolves_mixed_sources_independently(monkeypatch):
     monkeypatch.setattr(consolidate, "derive_ds_id", lambda dset: dset)
     monkeypatch.setattr(consolidate, "get_catalog", fake_get_catalog)
 
-    collection = DummyCollection(
-        ["s3://bucket/direct.nc", "project.one", "project.two"]
-    )
+    collection = DummyCollection(["s3://bucket/direct.nc", "project.one", "project.two"])
 
     assert consolidate.consolidate(collection) == (
         DatasetSource(dataset_id=None, paths="s3://bucket/direct.nc"),

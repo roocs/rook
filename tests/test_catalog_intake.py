@@ -3,15 +3,9 @@ import types
 
 from rook.catalog.intake import IntakeCatalog
 
-C3S_CMIP6_DAY_COLLECTION = (
-    "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"
-)
-C3S_CMIP6_MON_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-)
-C3S_CMIP6_FX_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.MRI.MRI-ESM2-0.ssp370.r1i1p1f1.fx.orog.gn.v20190603"
-)
+C3S_CMIP6_DAY_COLLECTION = "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"
+C3S_CMIP6_MON_COLLECTION = "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
+C3S_CMIP6_FX_COLLECTION = "c3s-cmip6.ScenarioMIP.MRI.MRI-ESM2-0.ssp370.r1i1p1f1.fx.orog.gn.v20190603"
 
 
 @pytest.mark.mini_esgf_data
