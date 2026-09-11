@@ -31,30 +31,35 @@ permissions:
   contents: read
 
 jobs:
-  skip_without_bot_secrets:
-    name: Skip version bump
-    if: >-
-      ${{
-        secrets.ROOCS_HELPER_BOT_ID == '' ||
-        secrets.ROOCS_HELPER_BOT_KEY == '' ||
-        secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY == '' ||
-        secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD == ''
-      }}
+  check_bot_secrets:
+    name: Check helper bot secrets
     runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
     steps:
-      - name: Explain skipped bump
+      - name: Check required secrets
+        id: check
+        env:
+          BOT_ID: ${{ secrets.ROOCS_HELPER_BOT_ID }}
+          BOT_KEY: ${{ secrets.ROOCS_HELPER_BOT_KEY }}
+          GPG_KEY: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
         run: |
-          echo "Version bump skipped because one or more ROOCS helper bot secrets are not configured."
+          if [[ -n "$BOT_ID" &&
+                -n "$BOT_KEY" &&
+                -n "$GPG_KEY" &&
+                -n "$GPG_PASSWORD" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "All helper bot secrets are configured."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "One or more helper bot secrets are missing."
+          fi
 
   bump_patch_version:
     name: Bump build/patch version
-    if: >-
-      ${{
-        secrets.ROOCS_HELPER_BOT_ID != '' && 
-        secrets.ROOCS_HELPER_BOT_KEY != '' && 
-        secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY != '' && 
-        secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD != ''
-      }}
+    needs: skip_without_bot_secrets
+    if: needs.check_bot_secrets.outputs.configured == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
