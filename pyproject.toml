@@ -92,15 +92,16 @@ docs = [
   "sphinx-autobuild >=2024.4.16",
   "sphinx-click",
   "sphinx-codeautolink >=0.16.2",
-  "sphinxcontrib-mermaid",
-  "sphinx-copybutton >=0.5.2"
+  "sphinx-copybutton >=0.5.2",
+  "sphinxcontrib-mermaid"
 ]
 test = [
   "coverage >=7.5.0",
   "nbval >=0.11.0",
   "pytest >=9.0.0",
   "pytest-cov >=7.1.0",
-  "pytest-xdist[psutil] >=3.2"
+  "pytest-timeout >=2.4.0",
+  "pytest-xdist >=3.2"
 ]
 tox = [
   "tox >=4.52.0",
@@ -260,7 +261,8 @@ module = "tests.*"
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
 
-[tool.pytest.ini_options]
+[tool.pytest]
+min_version = "9.0"
 addopts = [
   "--color=yes",
   "--cov=rook",
