@@ -4,9 +4,7 @@ from rook.diagnostics import dataset_summary
 from rook.operations import normalise
 
 
-def test_lazy_group_opener_uses_storage_chunks_without_auto_rechunking(
-    monkeypatch, tmp_path
-):
+def test_lazy_group_opener_uses_storage_chunks_without_auto_rechunking(monkeypatch, tmp_path):
     calls = []
     expected = object()
 

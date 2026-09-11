@@ -25,9 +25,7 @@ def make_representative_atlas_sample():
 
     for var in list(dataset.coords) + list(dataset.data_vars):
         dataset[var].encoding["_FillValue"] = "missing"
-    dataset["member_id"].encoding.update(
-        {"zlib": True, "shuffle": True, "complevel": 5}
-    )
+    dataset["member_id"].encoding.update({"zlib": True, "shuffle": True, "complevel": 5})
     dataset["tas"].encoding.update({"zlib": True, "shuffle": True, "complevel": 5})
     return dataset
 
@@ -39,9 +37,7 @@ def encoding_difference_report(left, right):
             differences.append(f"{name}: variable missing from one dataset")
             continue
         if left[name].encoding != right[name].encoding:
-            differences.append(
-                f"{name}.encoding: {left[name].encoding!r} != {right[name].encoding!r}"
-            )
+            differences.append(f"{name}.encoding: {left[name].encoding!r} != {right[name].encoding!r}")
     return "\n".join(differences)
 
 

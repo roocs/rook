@@ -4,7 +4,6 @@ from rook import workflow
 
 
 class TestWorkflowTree:
-
     TREE_WF = "subset_wf_1.json"
 
     def test_validate_tree_wf(self, tmp_path, resource_file):
@@ -392,9 +391,7 @@ def test_unsupported_temporal_pushdown_keeps_subset_time(tmp_path):
         def add_operator(self, *_args):
             pass
 
-    wf.operations = {
-        name: FakeOperation(name) for name in ("concat", "average", "subset")
-    }
+    wf.operations = {name: FakeOperation(name) for name in ("concat", "average", "subset")}
     wf.prov = FakeProvenance()
     document = _concat_subset_document({"time": "1962/1962"})
     document["steps"]["subset"]["in"]["collection"] = "average/output"
@@ -475,10 +472,7 @@ def test_run_wf_cmip6_subset_average(tmp_path, resource_file):
     wfdoc = resource_file("wf_cmip6_subset_average.json")
     wf = workflow.WorkflowRunner(output_dir=tmp_path)
     output = wf.run(wfdoc)
-    assert (
-        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850101-20140101_avg-year.nc"
-        in output[0]
-    )
+    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850101-20140101_avg-year.nc" in output[0]
 
 
 def test_wf_average_latlon_cmip6(tmp_path, resource_file):
@@ -486,10 +480,7 @@ def test_wf_average_latlon_cmip6(tmp_path, resource_file):
     wf = workflow.WorkflowRunner(output_dir=tmp_path)
     output = wf.run(wfdoc)
     # print(output)
-    assert (
-        "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216_avg-xy.nc"
-        in output[0]
-    )
+    assert "rlds_Amon_IPSL-CM6A-LR_historical_r1i1p1f1_gr_19850116-20141216_avg-xy.nc" in output[0]
 
 
 def test_wf_c3s_cmip6_collection_only(tmp_path, resource_file):

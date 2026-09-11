@@ -11,10 +11,7 @@ from rook.processes.wps_health import HEALTHY_RESPONSE, Health
 
 
 def execute_health(client):
-    return client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=health"
-        "&RawDataOutput=status"
-    )
+    return client.get("?service=WPS&request=Execute&version=1.0.0&identifier=health&RawDataOutput=status")
 
 
 def test_wps_health_returns_raw_success_marker():

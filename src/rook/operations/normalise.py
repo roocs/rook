@@ -92,7 +92,7 @@ def _close_datasets(*groups):
 class ResultSet:
     """A class to hold the results from an operation."""
 
-    def __init__(self, inputs=None):  # noqa: D107
+    def __init__(self, inputs=None):
         self._results = OrderedDict()
         self.metadata = {"inputs": inputs, "process": "something", "version": 0.1}
         self.file_uris = []

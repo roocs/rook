@@ -71,9 +71,7 @@ def test_run_regrid_normalizes_custom_grid(monkeypatch):
 
     monkeypatch.setattr(execution_mod, "regrid", fake_regrid)
 
-    result = execution_mod.run_regrid(
-        {"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"}
-    )
+    result = execution_mod.run_regrid({"collection": ["input.nc"], "grid": "custom", "custom_grid": "0.5 0.25"})
 
     assert result == ["regridded.nc"]
     assert calls["kwargs"]["grid"] == (0.5, 0.25)
@@ -87,9 +85,7 @@ def test_run_regrid_normalizes_custom_grid(monkeypatch):
         (execution_mod.run_concat, "concat"),
     ],
 )
-def test_subset_capable_runners_remove_global_area(
-    monkeypatch, runner, operation_name
-):
+def test_subset_capable_runners_remove_global_area(monkeypatch, runner, operation_name):
     calls = {}
 
     class Result:
@@ -112,15 +108,11 @@ def test_subset_capable_runners_remove_global_area(
     assert "area" not in calls["kwargs"]
 
 
-def test_direct_file_collection_is_processed_without_request_resolution(
-    tmp_path, monkeypatch
-):
+def test_direct_file_collection_is_processed_without_request_resolution(tmp_path, monkeypatch):
     source = tmp_path / "source.nc"
     source.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(
-        execution_mod, "execute_resolved_request", fail_request_decision_executor
-    )
+    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
 
     output_uris = operator.call(
         {
@@ -146,9 +138,7 @@ def test_later_workflow_step_receives_previous_step_files(tmp_path, monkeypatch)
     first.touch()
     second.touch()
     operator = recording_operator(tmp_path)
-    monkeypatch.setattr(
-        execution_mod, "execute_resolved_request", fail_request_decision_executor
-    )
+    monkeypatch.setattr(execution_mod, "execute_resolved_request", fail_request_decision_executor)
 
     output_uris = operator.call({"collection": [first.as_posix(), second.as_posix()]})
 
@@ -345,9 +335,7 @@ def make_recording_subset(
         "output_dir": "test-output",
     }
     start, end = operation.params["time"].get_bounds()
-    paths = [
-        f"/data/input_{year}.nc" for year in range(int(start[:4]), int(end[:4]) + 1)
-    ]
+    paths = [f"/data/input_{year}.nc" for year in range(int(start[:4]), int(end[:4]) + 1)]
     operation.collection = (DatasetSource("project.dataset", paths),)
     operation._file_namer = "standard"
     operation._split_method = "time:auto"
@@ -379,9 +367,7 @@ def make_recording_subset(
     monkeypatch.setattr(operation_base, "process", fake_process)
     monkeypatch.setattr(subset_batch_mod, "open_dataset", fake_open_dataset)
     monkeypatch.setattr(operation_base.normalise, "normalise", fake_normalise)
-    monkeypatch.setattr(
-        subset_batch_mod.config, "get_batching_config", lambda: batching_config
-    )
+    monkeypatch.setattr(subset_batch_mod.config, "get_batching_config", lambda: batching_config)
     monkeypatch.setattr(
         subset_batch_mod,
         "merge_batch_outputs",
@@ -396,9 +382,7 @@ def calculate_outputs(operation):
 
 
 def test_subset_request_fitting_one_batch_uses_existing_processing_path(monkeypatch):
-    operation, calls, _opened = make_recording_subset(
-        monkeypatch, "2000-01-01/2004-12-31"
-    )
+    operation, calls, _opened = make_recording_subset(monkeypatch, "2000-01-01/2004-12-31")
     original_time = operation.params["time"]
 
     outputs = calculate_outputs(operation)
@@ -424,9 +408,7 @@ def test_subset_long_daily_request_runs_consecutive_batches(monkeypatch):
         ("2010-01-01T00:00:00", "2012-08-17T12:34:56"),
     ]
     assert all(call[2]["area"] == "0,0,10,10" for call in calls)
-    assert all(
-        call[2]["time_components"] == "month:01,02,03,04,05,06" for call in calls
-    )
+    assert all(call[2]["time_components"] == "month:01,02,03,04,05,06" for call in calls)
     assert [len(source.paths) for source in opened[1:]] == [5, 5, 3]
     assert all(call[0].closed is True for call in calls)
 
@@ -454,13 +436,8 @@ def test_subset_century_request_opens_only_each_batch_files(monkeypatch):
     assert len(calls) == 18
     assert len(opened[0].paths) == 1
     assert [len(source.paths) for source in opened[1:]] == [5] * 17 + [1]
-    assert any(
-        "batching plan" in message and "batches=18" in message for message in messages
-    )
-    assert any(
-        "batch 18/18" in message and "1 source file(s)" in message
-        for message in messages
-    )
+    assert any("batching plan" in message and "batches=18" in message for message in messages)
+    assert any("batch 18/18" in message and "1 source file(s)" in message for message in messages)
 
 
 def test_subset_higher_frequency_data_uses_shorter_batches(monkeypatch):
@@ -508,9 +485,7 @@ def test_subset_skips_batching_when_selected_years_fit_timestep_target(monkeypat
     outputs = calculate_outputs(operation)
 
     assert outputs == ["subset-1.nc"]
-    assert [call[1] for call in calls] == [
-        ("2040-01-01T00:00:00", "2070-12-31T23:59:59")
-    ]
+    assert [call[1] for call in calls] == [("2040-01-01T00:00:00", "2070-12-31T23:59:59")]
     assert calls[0][2]["time_components"] is time_components
 
 
@@ -545,9 +520,7 @@ def test_subset_month_component_reduces_timestep_estimate(monkeypatch):
     outputs = calculate_outputs(operation)
 
     assert outputs == ["subset-1.nc"]
-    assert [call[1] for call in calls] == [
-        ("2000-01-01T00:00:00", "2014-12-31T23:59:59")
-    ]
+    assert [call[1] for call in calls] == [("2000-01-01T00:00:00", "2014-12-31T23:59:59")]
     assert calls[0][2]["time_components"] is time_components
 
 
@@ -630,14 +603,12 @@ def test_base_operation_uses_configured_fix_provider_during_dataset_opening(
     monkeypatch.setattr(
         operation_base.normalise,
         "normalise",
-        lambda collection: calls.append(("normalise", collection))
-        or {"dataset": operation_dataset},
+        lambda collection: calls.append(("normalise", collection)) or {"dataset": operation_dataset},
     )
     monkeypatch.setattr(
         operation_base,
         "process",
-        lambda func, collection, **params: calls.append(("process", collection, params))
-        or ["result.nc"],
+        lambda func, collection, **params: calls.append(("process", collection, params)) or ["result.nc"],
     )
 
     source = DatasetSource("dataset.id", "input.nc")

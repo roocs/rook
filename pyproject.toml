@@ -289,7 +289,7 @@ filterwarnings = [
 
 [tool.ruff]
 src = ["rook"]
-line-length = 150
+line-length = 120
 exclude = [
   ".eggs",
   ".git",
@@ -309,6 +309,7 @@ ignore = [
   "blind-except", # Do not catch blind exception: `Exception`
   "logging-f-string", # Logging statement uses f-string
   "non-empty-init-module", # `__init__` module should only contain docstrings and re-exports
+  "property-docstring-starts-with-verb", # Property docstring should not start with a verb ("Return")
   "raise-without-from-inside-except", # raise exceptions with `raise ... from err`
   "try-except-continue", # `try`-`except`-`continue` detected, consider logging the exception
   "try-except-in-loop", # `try`-`except` within a loop incurs performance overhead

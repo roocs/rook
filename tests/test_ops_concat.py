@@ -45,9 +45,7 @@ def test_apply_concat_calendar_fix_applies_decadal_calendar_fix():
             )
             return ds
 
-    result = concat_mod.apply_concat_calendar_fix(
-        source, FakeProvider(), dataset_id="decadal.dataset"
-    )
+    result = concat_mod.apply_concat_calendar_fix(source, FakeProvider(), dataset_id="decadal.dataset")
 
     assert result is source
     assert calls == [("input", "decadal.dataset", "concat", "prepare")]
@@ -68,9 +66,7 @@ def test_concat_batch_paths_keeps_only_files_overlapping_batch():
     assert selected == ("psl_day_model_19620101-19621231.nc",)
 
 
-def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(
-    monkeypatch, tmp_path
-):
+def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(monkeypatch, tmp_path):
     calls = []
     normalized = xr.Dataset(
         {"psl": ("time", [1.0])},
@@ -80,9 +76,7 @@ def test_open_concat_batch_dataset_normalizes_and_fixes_one_realization(
 
     class FakeProvider:
         def prepare(self, dataset, *, context=None):
-            calls.append(
-                ("prepare", context.dataset_id, context.operation, context.phase)
-            )
+            calls.append(("prepare", context.dataset_id, context.operation, context.phase))
             return dataset
 
         def apply(self, dataset, *, context=None):
@@ -205,8 +199,7 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "concat_planning_time",
-        lambda collection, prepare_dataset: calls.append(("planning", collection))
-        or prepare_dataset(combined).time,
+        lambda collection, prepare_dataset: calls.append(("planning", collection)) or prepare_dataset(combined).time,
     )
     monkeypatch.setattr(
         concat_mod,
@@ -216,10 +209,9 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
     monkeypatch.setattr(
         concat_mod,
         "open_concat_batch_dataset",
-        lambda dataset_id, paths, batch, provider, output_dir: calls.append(
-            ("open", dataset_id, paths, batch.interval, provider, output_dir)
-        )
-        or combined.copy(deep=False),
+        lambda dataset_id, paths, batch, provider, output_dir: (
+            calls.append(("open", dataset_id, paths, batch.interval, provider, output_dir)) or combined.copy(deep=False)
+        ),
     )
     monkeypatch.setattr(
         concat_mod,
@@ -281,8 +273,10 @@ def test_concat_reuses_configured_fix_provider(monkeypatch, tmp_path):
 
 
 def test_concat_uses_synthetic_decadal_files_with_woodpecker_provider(
-    monkeypatch, tmp_path, synthetic_cmip6_decadal_source
-):
+    monkeypatch,
+    tmp_path,
+    synthetic_cmip6_decadal_source
+    ):
     monkeypatch.setattr("rook.fixes.providers.get_fix_backend", lambda: "woodpecker")
 
     result = concat_mod.concat(
@@ -335,9 +329,7 @@ def test_concat_dataset_selector_uses_lazy_low_level_component_subset():
         {"tas": ("time", dask_array.arange(len(time), chunks=31))},
         coords={"time": time},
     )
-    parameter = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1962"
-    )
+    parameter = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1962")
 
     selector = concat_mod.concat_dataset_selector(parameter)
     selected = selector(dataset)
@@ -348,9 +340,7 @@ def test_concat_dataset_selector_uses_lazy_low_level_component_subset():
 
 
 def test_parsed_time_components_are_plain_lists_for_low_level_clisops():
-    parameter = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1962"
-    )
+    parameter = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1962")
 
     assert concat_mod.parsed_time_components(parameter) == {
         "year": [1962],
@@ -372,9 +362,7 @@ def test_concat_selector_combines_requested_time_and_components_lazily():
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
     lat = np.arange(20.0, 81.0, 10.0)
     lon = np.arange(0.0, 360.0, 10.0)
-    values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
-        (len(time), len(lat), len(lon))
-    )
+    values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape((len(time), len(lat), len(lon)))
     dataset = xr.Dataset(
         {"psl": (("time", "lat", "lon"), values.rechunk((365, 7, 36)))},
         coords={"time": time, "lat": lat, "lon": lon},
@@ -382,9 +370,7 @@ def test_concat_selector_combines_requested_time_and_components_lazily():
     dataset.lat.attrs = {"standard_name": "latitude", "units": "degrees_north"}
     dataset.lon.attrs = {"standard_name": "longitude", "units": "degrees_east"}
     requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
-    components = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1962"
-    )
+    components = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1962")
 
     selected = concat_mod.concat_dataset_selector(
         components,
@@ -410,9 +396,7 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
     lon = np.arange(0.0, 360.0, 10.0)
     datasets = []
     for realization in range(2):
-        values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape(
-            (len(time), len(lat), len(lon))
-        )
+        values = dask_array.arange(len(time) * len(lat) * len(lon)).reshape((len(time), len(lat), len(lon)))
         datasets.append(
             xr.Dataset(
                 {
@@ -442,9 +426,7 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
     seen_by_concat = []
 
     def record_concat(selected, dim):
-        seen_by_concat.append(
-            [(dataset.sizes["lat"], dataset.sizes["lon"]) for dataset in selected]
-        )
+        seen_by_concat.append([(dataset.sizes["lat"], dataset.sizes["lon"]) for dataset in selected])
         return original_concat(selected, dim=dim)
 
     monkeypatch.setattr("rook.batch.concat.xr.concat", record_concat)
@@ -462,9 +444,7 @@ def test_area_pushdown_reduces_realizations_before_concat_and_is_equivalent(
         planning_time=xr.DataArray(time, dims="time"),
         dim="realization",
         open_dataset=open_dataset,
-        operation=lambda combined, _time, _index, _total: [
-            xr.testing.assert_equal(combined, expected)
-        ],
+        operation=lambda combined, _time, _index, _total: [xr.testing.assert_equal(combined, expected)],
         select_dataset=concat_mod.concat_dataset_selector(
             None,
             area="-10,30,35,70",
@@ -496,14 +476,9 @@ def test_area_pushdown_accepts_dataset_longitude_convention():
 
 def test_concat_batch_sees_only_requested_component_days(monkeypatch):
     time = xr.date_range("1960-01-01", "1964-12-31", freq="D", use_cftime=True)
-    datasets = [
-        xr.Dataset({"psl": ("time", range(len(time)))}, coords={"time": time})
-        for _ in range(2)
-    ]
+    datasets = [xr.Dataset({"psl": ("time", range(len(time)))}, coords={"time": time}) for _ in range(2)]
     requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
-    components = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1962"
-    )
+    components = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1962")
     seen_by_concat = []
     original_concat = xr.concat
 
@@ -543,9 +518,7 @@ def test_concat_planner_uses_effective_requested_interval():
     time = xr.date_range("1955-01-01", "1969-12-31", freq="D", use_cftime=True)
     dataset = xr.Dataset(coords={"time": time})
     requested_time = concat_mod.time_parameter.TimeParameter("1962/1962")
-    components = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1962"
-    )
+    components = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1962")
 
     batches = ConcatBatchPlanner(
         target_timesteps=1826,
@@ -560,9 +533,7 @@ def test_concat_planner_uses_effective_requested_interval():
 
 
 def test_concat_temporal_plan_excludes_unrequested_component_years(capsys):
-    components = concat_mod.time_components_parameter.TimeComponentsParameter(
-        "month:aug|year:1961,1963"
-    )
+    components = concat_mod.time_components_parameter.TimeComponentsParameter("month:aug|year:1961,1963")
 
     effective_time = concat_mod.effective_concat_time(None, components)
     include_batch = concat_mod.concat_batch_filter(components)
@@ -632,9 +603,7 @@ def test_prepare_concat_dataset_sets_realization_coordinate_metadata():
     assert "time_bnds" not in result.variables
 
 
-def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially(
-    monkeypatch, tmp_path
-):
+def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially(monkeypatch, tmp_path):
     dask_array = __import__("dask.array", fromlist=["array"])
     time = xr.date_range("2000-01-01", periods=24, freq="MS", use_cftime=True)
     datasets = [
@@ -704,9 +673,7 @@ def test_concat_batches_lazy_realization_slices_and_finishes_writes_sequentially
     def combine(selected, dim):
         index = len([event for event in events if event[0] == "combined"]) + 1
         if index > 1:
-            assert any(
-                event[:3] == ("source-closed", "2000", "second.id") for event in events
-            )
+            assert any(event[:3] == ("source-closed", "2000", "second.id") for event in events)
         assert dim == "realization"
         assert [dataset.sizes["time"] for dataset in selected] == [12, 12]
         assert all(hasattr(dataset.tas.data, "dask") for dataset in selected)

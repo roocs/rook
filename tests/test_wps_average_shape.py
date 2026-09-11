@@ -39,9 +39,7 @@ def test_wps_average_shape_cmip6(tmp_path, get_output, pywps_cfg):
     client = client_for(Service(processes=[AverageByShape()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
     datainputs += f";shape={tmp_poly_path}"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}")
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
     assert_geom_created(get_output(resp.xml)["output"])
@@ -58,7 +56,5 @@ def assert_geom_created(path):
 def test_wps_average_no_shape(pywps_cfg):
     client = client_for(Service(processes=[AverageByShape()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=average_shape&datainputs={datainputs}")
     assert_process_exception(resp, code="MissingParameterValue")

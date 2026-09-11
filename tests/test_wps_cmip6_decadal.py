@@ -26,8 +26,6 @@ def test_wps_subset_c3s_cmip6_decadal(get_output, pywps_cfg):
     collection = "c3s-cmip6.DCPP.MOHC.HadGEM3-GC31-MM.dcppA-hindcast.s2004-r3i1p1f2.Amon.pr.gn.v20200417"
     datainputs = f"collection={collection}"
     # datainputs += ";time=1960-01-01/1961-01-01"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert_decadal_fix_applied(get_output(resp.xml)["output"])

@@ -4,10 +4,7 @@ import pytest
 
 from rook.io.datasets import DatasetSource
 
-SYNTHETIC_CMIP6_DECADAL_DATASET_ID = (
-    "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast."
-    "s1960-r1i1p1f1.Omon.tos.gn.v20200101"
-)
+SYNTHETIC_CMIP6_DECADAL_DATASET_ID = "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r1i1p1f1.Omon.tos.gn.v20200101"  # ruff: ignore[line-too-long]
 
 
 def make_synthetic_cmip6_decadal_source(tmp_path):

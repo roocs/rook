@@ -40,9 +40,7 @@ def write_batch(
             np.array([[value, value + timedelta(days=1)] for value in time]),
         )
         dataset.time.attrs["bounds"] = "time_bnds"
-    encoding = (
-        {"tas": {"zlib": True, "complevel": 1, "shuffle": True}} if compressed else None
-    )
+    encoding = {"tas": {"zlib": True, "complevel": 1, "shuffle": True}} if compressed else None
     dataset.to_netcdf(path, engine="h5netcdf", encoding=encoding)
     return path
 
@@ -257,9 +255,7 @@ def test_merge_opens_outputs_with_bounded_chunks(tmp_path, monkeypatch):
     original_open = batch_outputs.open_xr_dataset
 
     def recording_open(paths, **kwargs):
-        opened_with.append(
-            (paths, kwargs, batch_outputs.dask.config.get("scheduler", None))
-        )
+        opened_with.append((paths, kwargs, batch_outputs.dask.config.get("scheduler", None)))
         return original_open(paths, **kwargs)
 
     monkeypatch.setattr(batch_outputs, "open_xr_dataset", recording_open)

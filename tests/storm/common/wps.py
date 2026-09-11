@@ -26,9 +26,7 @@ def execute_async(client, name, identifier, inputs=None, complex_inputs=None):
 
 def build_execute_request(identifier, inputs, complex_inputs):
     execute_template = template_env.get_template("execute.xml")
-    return execute_template.render(
-        identifier=identifier, inputs=inputs, complex_inputs=complex_inputs
-    )
+    return execute_template.render(identifier=identifier, inputs=inputs, complex_inputs=complex_inputs)
 
 
 def async_success(name, start_time, resp):

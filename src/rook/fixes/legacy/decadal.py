@@ -10,28 +10,28 @@ from rook.fixes.legacy.utils.var_utils import add_data_var
 model_specific_global_attrs = {
     "CMCC-CM2-SR5": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # ruff: ignore[line-too-long]
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",
     },
     "EC-Earth3": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # ruff: ignore[line-too-long]
         "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # ruff: ignore[line-too-long]
     },
     "HadGEM3-GC31-MM": {
         "forcing_description": "f2, CMIP6 v6.2.0 forcings; no ozone remapping",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # ruff: ignore[line-too-long]
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",
     },
     "MPI-ESM1-2-HR": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # ruff: ignore[line-too-long]
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",
     },
     "MPI-ESM1-2-LR": {
         "forcing_description": "f1, CMIP6 historical forcings",
-        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
-        "initialization_description": "hindcast initialized based on observations and using historical forcing",  # noqa: E501
+        "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # ruff: ignore[line-too-long]
+        "initialization_description": "hindcast initialized based on observations and using historical forcing",
     },
 }
 
@@ -65,13 +65,13 @@ def decadal_fix_2(ds_id, ds):
         "attrs": {
             "forcing_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "forcing_description"
-            ),  # noqa: E501
+            ),
             "physics_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "physics_description"
-            ),  # noqa: E501
+            ),
             "initialization_description": get_decadal_model_attr_from_dict(
                 ds_id, ds, "initialization_description"
-            ),  # noqa: E501
+            ),
             "startdate": "derive: rook.fixes.legacy.utils.decadal_utils.get_sub_experiment_id",
             "sub_experiment_id": "derive: rook.fixes.legacy.utils.decadal_utils.get_sub_experiment_id",
         }
