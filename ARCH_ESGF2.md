@@ -190,9 +190,7 @@ flowchart LR
 
 The user works with a **logical dataset ID and processing workflow**. Rook resolves and processes the underlying files close to the data.
 
-**Complete example**
-
-[Rendered C3S-CORDEX rooki notebook on GitHub](https://github.com/roocs/rooki/blob/master/notebooks/demo/demo-rooki-c3s-cordex.ipynb)
+**Complete example:** [Rendered C3S-CORDEX rooki notebook on GitHub](https://github.com/roocs/rooki/blob/master/notebooks/demo/demo-rooki-c3s-cordex.ipynb)
 
 ---
 
@@ -202,21 +200,28 @@ ESGF-NG introduces a different situation.
 
 * DKRZ, IPSL and CEDA provide ESGF data pools.
 * The pools **overlap, but are not identical**.
+* Some datasets exist at several sites, while others are available at only one site.
 * A normal round-robin load balancer cannot know which Rook can process a particular dataset.
 * Restricting processing to a fully replicated core would reduce ESGF data coverage.
 
 ```mermaid
 flowchart LR
-    DE[DKRZ<br/>Data Pool]
-    FR[IPSL<br/>Data Pool]
-    UK[CEDA<br/>Data Pool]
+    DE((DKRZ<br/>Data Pool))
+    FR((IPSL<br/>Data Pool))
+    UK((CEDA<br/>Data Pool))
 
-    DE <-. overlap .-> FR
-    FR <-. overlap .-> UK
-    DE <-. overlap .-> UK
+    DE <-. shared data .-> FR
+    FR <-. shared data .-> UK
+    DE <-. shared data .-> UK
+
+    style DE fill:#8ecae6,stroke:#457b9d,color:#000
+    style FR fill:#b7e4c7,stroke:#40916c,color:#000
+    style UK fill:#ffd6a5,stroke:#e09f3e,color:#000
 ```
 
-The proposed solution adds **dataset-aware delegation to Rook itself**.
+The three pools share substantial parts of ESGF, but they remain **independently managed data holdings with different coverage**.
+
+The proposed solution therefore adds **dataset-aware delegation to Rook itself**.
 
 ---
 
@@ -599,31 +604,34 @@ This is an option to investigate rather than a requirement for federation.
 
 ---
 
-# Summary
+# Complete proposed solution
+
+The complete design combines existing ESGF-NG infrastructure with identical Rook deployments at the three processing sites.
 
 ```mermaid
-flowchart LR
-    Publish[ESGF Publication]
-    Kafka[Kafka]
-    Index[Local ESGF Index]
-    Broker[Rook Broker]
-    Process[Rook Processing]
+flowchart TB
+    Client[ESGF Portal / Client]
+    LB[AWS Load Balancer]
 
-    Publish --> Kafka
-    Kafka --> Index
-    Index --> Broker
-    Broker --> Process
+    Kafka[ESGF-NG Kafka]
+    STAC[Global STAC Catalog]
+
+    Client -->|workflow| LB
+
+    subgraph Sites["Federated Rook Sites"]
+        direction LR
+
+        subgraph DKRZ["DKRZ"]
+            RookDE[Rook<br/>broker + orchestrate]
+            IndexDE[(Local ESGF Index)]
+            NodeDE[NGINX Data Node]
+            PoolDE[(Data Pool)]
+
+            RookDE --> IndexDE
+            RookDE --> PoolDE
+            NodeDE --> PoolDE
+        end
+
+        subgraph IPSL["IPSL"]
+            RookFR[Rook<br/>broker]()
 ```
-
-The proposal builds largely on infrastructure that already exists:
-
-* **Rook** provides server-side climate-data access and processing.
-* **orchestrate** already executes JSON workflows.
-* **AWS LB** already provides a highly available entry point.
-* **Kafka** already distributes ESGF-NG publication events.
-* **STAC** already describes datasets and their locations.
-* **PostgreSQL** provides fast local dataset resolution.
-* **NGINX data nodes** remain the efficient data-delivery layer.
-* The new **broker** adds dataset-aware federation and delegation.
-
-The result is a decentralized processing service that can use the **full distributed ESGF-NG data holdings** without requiring identical replicas at every processing site.
