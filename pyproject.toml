@@ -60,39 +60,6 @@ dependencies = [
   "zarr >=2.13.0,<3.0"
 ]
 
-[project.optional-dependencies]
-dev = [
-  "pip >=24.2.0",
-  "black >=24.10.0",
-  "bump-my-version >=0.26.0",
-  "coverage >=7.5.0",
-  "cruft >=2.15.0",
-  "flit >=3.9.0,<4.0",
-  "flit_core >=3.9,<4",
-  "ipython>=8.13.0",
-  "nbconvert >=7.10.0",
-  "nbsphinx >=0.9.5",
-  "nbval >=0.10.0",
-  "prek",
-  "pytest >=8.0.0",
-  "pytest-cov >=5.0.0",
-  "pytest-xdist[psutil] >=3.2",
-  "ruff >=0.5.7",
-  "sphinx >=7.0.0",
-  "sphinxcontrib-mermaid",
-  "tox >=4.18.0",
-  "watchdog >=4.0.0",
-  "wheel >=0.40.0"
-]
-docs = [
-  "ipython >=8.13.0",
-  "nbsphinx >=0.9.5",
-  "sphinx >=7.0.0",
-  "sphinx-codeautolink",
-  "sphinx-copybutton",
-  "sphinxcontrib-mermaid"
-]
-
 [project.scripts]
 rook = "rook.cli:cli"
 
@@ -118,20 +85,22 @@ docs = [
   # Documentation and example support
   "alabaster >=1.0.0",
   "ipykernel",
-  "ipython >=8.10.0",
+  "ipython >=8.13.0",
   "jupyter_client",
   "nbsphinx >=0.9.8",
   "sphinx >=9.0.2",
   "sphinx-autobuild >=2024.4.16",
   "sphinx-click",
   "sphinx-codeautolink >=0.16.2",
+  "sphinxcontrib-mermaid",
   "sphinx-copybutton >=0.5.2"
 ]
 test = [
   "coverage >=7.5.0",
   "nbval >=0.11.0",
   "pytest >=9.0.0",
-  "pytest-cov >=7.1.0"
+  "pytest-cov >=7.1.0",
+  "pytest-xdist[psutil] >=3.2",
 ]
 tox = [
   "tox >=4.52.0",
@@ -152,12 +121,6 @@ dev = [
 ]
 
 [tool]
-
-[tool.black]
-target-version = [
-  "py311",
-  "py312"
-]
 
 [tool.bumpversion]
 current_version = "1.4.0"
@@ -343,16 +306,16 @@ line-ending = "auto"
 [tool.ruff.lint]
 preview = true
 ignore = [
-  "BLE001", # Do not catch blind exception: `Exception`
-  "RUF100", # Unused blanket `noqa` directive
-  "B904", # raise exceptions with `raise ... from err`
-  "PERF203", # `try`-`except` within a loop incurs performance overhead
-  "G004", # Logging statement uses f-string
-  "S110", # `try`-`except`-`pass` detected, consider logging the exception
-  "S112", # `try`-`except`-`continue` detected, consider logging the exception
-  "C408", # Unnecessary `dict()` call (rewrite as a literal)
-  "C419", # Unnecessary list comprehension
-  "RUF067" # `__init__` module should only contain docstrings and re-exports
+  "blind-except", # Do not catch blind exception: `Exception`
+  "logging-f-string", # Logging statement uses f-string
+  "non-empty-init-module", # `__init__` module should only contain docstrings and re-exports
+  "raise-without-from-inside-except", # raise exceptions with `raise ... from err`
+  "try-except-continue", # `try`-`except`-`continue` detected, consider logging the exception
+  "try-except-in-loop", # `try`-`except` within a loop incurs performance overhead
+  "try-except-pass", # `try`-`except`-`pass` detected, consider logging the exception
+  "unnecessary-collection-call", # Unnecessary `dict()` call (rewrite as a literal)
+  "unnecessary-comprehension-in-call", # Unnecessary list comprehension
+  "unused-noqa" # Unused blanket `noqa` directive
 ]
 select = [
   "BLE", # blind-except
