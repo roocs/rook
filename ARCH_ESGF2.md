@@ -23,17 +23,61 @@ flowchart LR
 
 > **Move the processing to the data instead of moving the data to the user.**
 
+**Documentation:** [Rook WPS documentation](https://rook-wps.readthedocs.io/en/latest/)
+
+---
+
+## Rook capabilities
+
+Rook combines **service-level processes** with the actual **climate-data processing operators**.
+
+```mermaid
+flowchart TD
+    Rook[Rook WPS]
+
+    Broker[broker<br/>delegate to a Rook site]
+    Orchestrate[orchestrate<br/>execute a workflow]
+    Health[health<br/>service availability]
+    Status[status<br/>service information]
+
+    Processing[Climate Data Processing]
+
+    Subset[subset]
+    Regrid[regrid]
+    Average[average]
+
+    Rook --> Broker
+    Rook --> Orchestrate
+    Rook --> Health
+    Rook --> Status
+    Rook --> Processing
+
+    Processing --> Subset
+    Processing --> Regrid
+    Processing --> Average
+```
+
+* **`broker`** — selects the Rook site and delegates the workflow.
+* **`orchestrate`** — executes a JSON processing workflow.
+* **`health` / `status`** — provide lightweight service and availability information.
+* **`subset`, `regrid`, `average`, ...** — perform the actual climate-data processing.
+
+This is a useful property of the WPS model: Rook can expose both **data-processing operations** and small **service functions** through the same interface.
+
+`broker` therefore fits naturally into Rook without introducing a separate routing service.
+
 ---
 
 # Rook for Copernicus CDS
 
-Rook is already used to provide server-side processing for the **Copernicus Climate Data Store (CDS)**.
+Rook is already used to provide server-side data access and processing for the **Copernicus Climate Data Store (CDS)**.
 
-* CDS sends a workflow describing the requested processing.
+* CDS is moving towards **Rook as the single access point** for supported datasets.
 * Rook resolves CDS dataset IDs through an **Intake catalog backed by PostgreSQL**.
 * DKRZ and IPSL provide equivalent data and processing capabilities.
 * An AWS load balancer can therefore distribute requests between them.
-* `orchestrate` executes the workflow at the selected site.
+* Direct CDS access to the NGINX data nodes is being phased out.
+* The data nodes remain the actual storage and data-delivery layer.
 
 ```mermaid
 flowchart LR
@@ -63,6 +107,35 @@ This works well because the two sites are effectively **interchangeable processi
 * [ROOCS usage dashboard – all years](https://roocs.github.io/dashboard/summary-all-years/)
 
 The ROOCS dashboard shows the operational use of the service over the years.
+
+---
+
+## Processing only when needed
+
+Using Rook as the access point does **not** mean that every request has to generate new data.
+
+```mermaid
+flowchart LR
+    CDS[Copernicus CDS]
+    Rook[Rook]
+
+    Rook --> Decision{Processing needed?}
+
+    Decision -- Yes --> Process[subset / regrid / ...]
+    Decision -- No --> Node[NGINX Data Node]
+
+    Process --> Result[Result + file links]
+    Node --> Result
+
+    Result --> CDS
+```
+
+* Rook checks whether the requested data can be returned directly.
+* If the requested complete NetCDF file already exists, Rook can simply return its **data-node URL**.
+* Otherwise Rook performs the requested processing and returns links to the generated files.
+* Currently these links are represented using a **Metalink XML response**.
+
+Rook therefore acts as the access and processing layer while the existing data nodes remain the efficient delivery layer.
 
 ---
 
@@ -106,15 +179,13 @@ flowchart LR
     Notebook[rooki Notebook]
     Workflow[JSON Workflow]
     Rook[Rook orchestrate]
-    Subset[Subset]
-    Average[Average]
-    Result[Result]
+    Process[subset / average / ...]
+    Result[Result + file links]
 
     Notebook --> Workflow
     Workflow --> Rook
-    Rook --> Subset
-    Subset --> Average
-    Average --> Result
+    Rook --> Process
+    Process --> Result
 ```
 
 The user works with a **logical dataset ID and processing workflow**. Rook resolves and processes the underlying files close to the data.
@@ -416,30 +487,30 @@ sequenceDiagram
 
 ## 9. Asynchronous processing
 
-The broker only needs to remain active long enough to delegate the job.
+The broker only participates in the initial job submission.
 
 ```mermaid
-flowchart LR
-    Client[Client]
-    Broker[broker]
-    Job[orchestrate job]
-    Status[Job Status / Result]
+sequenceDiagram
+    participant C as Client
+    participant B as broker
+    participant O as orchestrate
+    participant S as Job Status
 
-    Client -->|workflow| Broker
-    Broker -->|async submit| Job
-    Job -->|status URL| Broker
-    Broker -->|status URL| Client
+    C->>B: JSON workflow
+    B->>O: Submit async workflow
+    O-->>B: Job / status URL
+    B-->>C: Job / status response
 
-    Client -. later .-> Status
-    Job -. updates .-> Status
+    C->>S: Check status later
+    S-->>C: Running / finished / result
 ```
 
 The broker:
 
-1. inspects the workflow;
-2. selects a site;
-3. submits `orchestrate`;
-4. returns the actual job/status response.
+* inspects the workflow;
+* selects a site;
+* submits `orchestrate`;
+* returns the actual job/status response.
 
 It does **not** maintain a second broker-side copy of the job state.
 
@@ -447,9 +518,11 @@ The returned status URL belongs to the real processing job, regardless of whethe
 
 ---
 
-# Future improvement: advertise processing in STAC
+# Future improvements
 
-The federation can work with the **existing ESGF-NG STAC catalog**.
+The federation itself can work with the **existing ESGF-NG infrastructure**. The following changes are useful improvements, but are not prerequisites for the initial implementation.
+
+## Advertise processing in STAC
 
 > **No STAC changes are required to implement Rook federation.**
 
@@ -487,9 +560,42 @@ Alternatively, the processing service could be advertised through an appropriate
 
 The representation can later evolve into richer processing/service metadata.
 
-The important point remains:
-
 > **Processing metadata in STAC is an optional discovery and UX improvement, not a requirement for Rook federation.**
+
+---
+
+## Modernize processing results
+
+Rook currently returns links to processing results using a **Metalink XML document**.
+
+Metalink works, but a future Rook version could investigate a more modern result representation.
+
+```mermaid
+flowchart LR
+    Dataset[Input Dataset]
+    Rook[Rook Processing]
+    Result[Processing Result]
+    Assets[Result Assets]
+
+    Dataset --> Rook
+    Rook --> Result
+    Result --> Assets
+```
+
+Possible improvements:
+
+* keep the result representation simple and machine-readable;
+* describe all generated files and their media types;
+* support provenance and temporary output lifetime where useful;
+* investigate using a **STAC Item with result assets**.
+
+For ESGF-NG, STAC could provide an interesting common model:
+
+```text
+STAC dataset → Rook processing → STAC result
+```
+
+This is an option to investigate rather than a requirement for federation.
 
 ---
 
@@ -511,12 +617,13 @@ flowchart LR
 
 The proposal builds largely on infrastructure that already exists:
 
-* **Rook** provides server-side climate-data processing.
+* **Rook** provides server-side climate-data access and processing.
 * **orchestrate** already executes JSON workflows.
 * **AWS LB** already provides a highly available entry point.
 * **Kafka** already distributes ESGF-NG publication events.
 * **STAC** already describes datasets and their locations.
 * **PostgreSQL** provides fast local dataset resolution.
+* **NGINX data nodes** remain the efficient data-delivery layer.
 * The new **broker** adds dataset-aware federation and delegation.
 
 The result is a decentralized processing service that can use the **full distributed ESGF-NG data holdings** without requiring identical replicas at every processing site.
