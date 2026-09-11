@@ -2,13 +2,13 @@
 FROM condaforge/miniforge3:26.5.3-0
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
-LABEL org.opencontainers.image.authors="Birdhouse"
+LABEL org.opencontainers.image.authors="Carsten Ehbrecht <ehbrecht@dkrz.de>, Trevor James Smith <smith.trevorj@ouranos.ca>"
 LABEL org.opencontainers.image.created="2000-01-02T03:04:05Z"
 LABEL org.opencontainers.image.description="rook WPS"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.source="https://github.com/roocs/rook"
 LABEL org.opencontainers.image.title="rookWPS"
-LABEL org.opencontainers.image.vendor="Birdhouse"
+LABEL org.opencontainers.image.vendor="roocs"
 LABEL org.opencontainers.image.version="1.4.0"
 
 # Set the working directory to /code
