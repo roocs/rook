@@ -16,7 +16,7 @@ model_specific_global_attrs = {
     "EC-Earth3": {
         "forcing_description": "f1, CMIP6 historical forcings",
         "physics_description": "physics from the standard model configuration, with no additional tuning or different parametrization",  # noqa: E501
-        "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # noqa: E501
+        "initialization_description": "Atmosphere initialization based on full-fields from ERA-Interim (s1979-s2018) or ERA-40 (s1960-s1978); ocean/sea-ice initialization based on full-fields from NEMO/LIM assimilation run nudged towards ORA-S4 (s1960-s2018)",  # ruff: ignore[line-too-long]
     },
     "HadGEM3-GC31-MM": {
         "forcing_description": "f2, CMIP6 v6.2.0 forcings; no ozone remapping",
@@ -126,7 +126,7 @@ def decadal_fix_5(ds_id, ds):
         "dtype": "int32",
         "attrs": {
             "long_name": "realization",
-            "comment": "For more information on the ripf, refer to the variant_label, initialization_description, physics_description and forcing_description global attributes",  # noqa: E501
+            "comment": "For more information on the ripf, refer to the variant_label, initialization_description, physics_description and forcing_description global attributes",  # ruff: ignore[line-too-long]
         },
     }
 

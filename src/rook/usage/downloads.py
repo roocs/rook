@@ -1,6 +1,6 @@
 import ipaddress
 import logging
-import subprocess  # noqa: S404
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
@@ -38,7 +38,7 @@ def dot2longip(ip):
 def parse_record(line):
     """Parse a log record into a dictionary."""
     tokens = line.strip().split()
-    MIN_EXPECTED_TOKENS = 12  # noqa: N806
+    MIN_EXPECTED_TOKENS = 12  # ruff: ignore[non-lowercase-variable-in-function]
 
     if len(tokens) < MIN_EXPECTED_TOKENS:
         LOGGER.warning("Line does not contain the expected apache record format")
@@ -101,8 +101,8 @@ class Downloads(Usage):
             try:
                 # FIXME: This is very insecure, as it allows for command injection
                 # Use zgrep to pre-filter logs based on the output path
-                p = subprocess.run(  # noqa: S603
-                    ["zgrep", search_pattern, log_file],  # noqa: S607
+                p = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
+                    ["zgrep", search_pattern, log_file],  # ruff: ignore[start-process-with-partial-path]
                     stdout=subprocess.PIPE,
                     text=True,
                     check=True,

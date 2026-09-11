@@ -100,7 +100,7 @@ test = [
   "nbval >=0.11.0",
   "pytest >=9.0.0",
   "pytest-cov >=7.1.0",
-  "pytest-xdist[psutil] >=3.2",
+  "pytest-xdist[psutil] >=3.2"
 ]
 tox = [
   "tox >=4.52.0",
