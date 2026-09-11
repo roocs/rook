@@ -228,23 +228,68 @@ flowchart TB
 
 Federation allows Rook to use the **full distributed ESGF holdings**, rather than limiting processing to the common core.
 
-The proposed solution therefore adds **dataset-aware delegation to Rook itself**.
-
 ---
 
 # ESGF-NG Rook Federation
 
 ## Design idea
 
-Rook remains **one software deployment** serving CDS, ESGF-NG and potentially other use cases.
+The ESGF-NG extension keeps the existing Rook architecture as simple as possible.
 
-For ESGF-NG:
+```mermaid
+flowchart LR
+    Client["ESGF Client"]
+    LB["AWS Load Balancer"]
 
-* DKRZ, IPSL and CEDA run identical Rook services.
-* Every Rook can act as the entry point for a request.
-* A lightweight `broker` WPS process chooses the appropriate Rook site.
-* The existing AWS load balancer provides the stable public endpoint.
-* No additional central broker or cloud service is required.
+    IPSL["Rook @ IPSL"]
+    CEDA["Rook @ CEDA"]
+    DKRZ["Rook @ DKRZ"]
+
+    Broker["New broker process"]
+    DB[("Local PostgreSQL index")]
+    Kafka["ESGF-NG Kafka"]
+    STAC["Global STAC catalog"]
+
+    Client --> LB
+
+    LB --> IPSL
+    LB --> CEDA
+    LB --> DKRZ
+
+    IPSL --> Broker
+    CEDA --> Broker
+    DKRZ --> Broker
+
+    Kafka --> DB
+    DB --> Broker
+    Broker -. fallback .-> STAC
+```
+
+The key ideas are:
+
+* Run **identical Rook installations** at DKRZ, IPSL and CEDA.
+* Put them behind the existing **load balancer**.
+* Add one new Rook process: **`broker`**.
+* `broker` decides **where the workflow should run**, based on dataset-site information from ESGF-NG.
+* Keep a **local PostgreSQL index** so the broker does not have to query the global STAC catalog for every request.
+* Maintain this index from the existing **ESGF-NG Kafka publication stream**.
+* Use the global STAC catalog as the authoritative fallback when local information is missing or stale.
+
+> **Solution: add a broker — reuse the existing Kafka consumer.**
+
+The rest of the Rook processing model stays unchanged:
+
+```text
+workflow
+   ↓
+broker decides WHERE
+   ↓
+orchestrate decides HOW
+   ↓
+subset / regrid / average / ...
+```
+
+This keeps the federation logic small and reuses infrastructure that ESGF-NG and Rook already have.
 
 ---
 
@@ -303,7 +348,7 @@ flowchart LR
 ```
 
 * The existing ESGF-NG Kafka publication stream keeps this local database synchronized.
-* Rook therefore becomes another direct consumer of the ESGF-NG publication infrastructure.
+* Rook therefore becomes another consumer of the ESGF-NG publication infrastructure.
 * Each Rook has knowledge of the **global dataset placement**, while keeping detailed asset information for its own local holdings.
 * Broker lookups normally use this local PostgreSQL database instead of querying the global STAC service for every request.
 
@@ -465,40 +510,70 @@ If the receiving Rook has the dataset, the broker submits the workflow to its lo
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant B as broker@DKRZ
-    participant O as orchestrate@DKRZ
+
+    box rgb(183, 228, 199) IPSL
+        participant B as broker@IPSL
+        participant O as orchestrate@IPSL
+    end
 
     C->>B: JSON workflow
-    B->>B: Dataset is local
-    B->>O: Submit async
-    O-->>B: Job / status URL
+
+    rect rgb(183, 228, 199)
+        B->>B: Dataset is local
+        B->>O: Submit async
+        O-->>B: Job / status URL
+    end
+
     B-->>C: Job / status response
 ```
 
 The broker performs delegation only. The actual processing remains with `orchestrate`.
 
+The green box represents the **IPSL Rook site**.
+
 ---
 
 ## 8. Remote execution
 
-If the dataset is not local, the broker selects another available site.
+If the dataset is not available locally, the broker selects another available site that provides it.
 
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant B as broker@DKRZ
-    participant O as orchestrate@CEDA
+
+    box rgb(183, 228, 199) IPSL
+        participant B as broker@IPSL
+    end
+
+    box rgb(255, 214, 165) CEDA
+        participant O as orchestrate@CEDA
+    end
 
     C->>B: JSON workflow
-    B->>B: Select CEDA
-    B->>O: Submit async
-    O-->>B: Job / status URL
+
+    rect rgb(183, 228, 199)
+        B->>B: Dataset not local
+        B->>B: Select CEDA
+    end
+
+    rect rgb(255, 214, 165)
+        B->>O: Submit async
+        O-->>B: Job / status URL
+    end
+
     B-->>C: Job / status response
 ```
 
-* The remote request goes directly to `orchestrate`.
-* It does **not** call the remote broker again.
+* **IPSL** receives the request and performs the federation decision.
+* The dataset is available at **CEDA**, so the workflow is delegated there.
+* The remote request goes directly to `orchestrate@CEDA`.
+* It does **not** call the CEDA broker again.
 * This prevents delegation loops.
+
+The colors follow the data-pool diagrams:
+
+* **green — IPSL**
+* **orange — CEDA**
 
 ---
 
@@ -532,6 +607,41 @@ The broker:
 It does **not** maintain a second broker-side copy of the job state.
 
 The returned status URL belongs to the real processing job, regardless of whether it runs locally or remotely.
+
+---
+
+# Implementation details
+
+## Reuse the existing Kafka consumer
+
+The local Rook PostgreSQL index does not require a new Kafka-consumer service.
+
+An existing plugin-based Kafka consumer can be extended to maintain the Rook index:
+
+```mermaid
+flowchart LR
+    Kafka["ESGF-NG Kafka"]
+    Consumer["Existing Kafka consumer"]
+    Plugin["Rook plugin"]
+    DB[("Local Rook PostgreSQL DB")]
+    Broker["Rook broker"]
+
+    Kafka --> Consumer
+    Consumer --> Plugin
+    Plugin --> DB
+    DB --> Broker
+```
+
+In the current implementation, this role can be provided by **piddiplatsch**:
+
+* piddiplatsch already consumes the ESGF-NG Kafka stream;
+* its plugin architecture can feed different services or databases;
+* a new **Rook plugin** can update the local PostgreSQL index;
+* only limited tuning should be needed for the Rook use case.
+
+**Repository:** [ESGF/piddiplatsch on GitHub](https://github.com/ESGF/piddiplatsch)
+
+This keeps Kafka handling outside Rook itself and avoids introducing another dedicated service.
 
 ---
 
@@ -686,3 +796,76 @@ The main components are:
 * **Independent data pools** — can overlap without having to be identical.
 
 > **One processing entry point, distributed data, processing close to the data.**
+
+---
+
+# In one picture
+
+## Rook today: Copernicus CDS
+
+```mermaid
+flowchart LR
+    CDS["Copernicus CDS"]
+    LB["Load Balancer"]
+    Rook["Identical Rook Sites"]
+    Data["Replicated CDS Data"]
+
+    CDS -->|workflow| LB
+    LB --> Rook
+    Rook --> Data
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+```
+
+* **One access point**
+* **Identical Rook installations**
+* **Equivalent replicated data**
+* Load balancing can choose any available site
+* Rook executes the workflow close to the data
+
+---
+
+## Rook for ESGF-NG
+
+```mermaid
+flowchart LR
+    ESGF["ESGF Client"]
+    LB["Load Balancer"]
+    Rook["Identical Rook Sites"]
+    Broker["NEW: broker"]
+    Index[("Local PostgreSQL Index")]
+    Data["Independent ESGF Data Pools"]
+    Kafka["Kafka"]
+    STAC["Global STAC"]
+
+    ESGF -->|same workflow model| LB
+    LB --> Rook
+    Rook --> Broker
+
+    Kafka --> Index
+    Index --> Broker
+    Broker -. fallback .-> STAC
+
+    Broker -->|choose site| Data
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+    style Index fill:#fff3bf,stroke:#d69e00,color:#000
+    style Kafka fill:#fff3bf,stroke:#d69e00,color:#000
+```
+
+The Rook processing model stays essentially the same.
+
+The ESGF-NG extension adds only the pieces needed for **data-aware site selection**:
+
+* **NEW: `broker`** — decides where the workflow runs.
+* **NEW: local PostgreSQL index** — provides fast dataset-to-site lookup.
+* **REUSE: Kafka** — keeps the local index synchronized.
+* **FALLBACK: global STAC** — provides authoritative dataset placement when needed.
+
+The ESGF data pools can remain **independently managed and different**.
+
+> **CDS: choose any Rook.**
+> **ESGF-NG: choose the Rook that has the data.**
+
+> **Solution: add a broker — reuse the existing Kafka consumer.**
