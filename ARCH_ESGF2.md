@@ -198,28 +198,35 @@ The user works with a **logical dataset ID and processing workflow**. Rook resol
 
 ESGF-NG introduces a different situation.
 
-* DKRZ, IPSL and CEDA provide ESGF data pools.
-* The pools **overlap, but are not identical**.
-* Some datasets exist at several sites, while others are available at only one site.
+* DKRZ, IPSL and CEDA **independently manage their ESGF data holdings**.
+* A **common core** is available at all three sites.
+* Beyond this core, datasets may be available at only one or two sites.
 * A normal round-robin load balancer cannot know which Rook can process a particular dataset.
-* Restricting processing to a fully replicated core would reduce ESGF data coverage.
+* Restricting processing to the common core would unnecessarily reduce ESGF data coverage.
 
 ```mermaid
-flowchart LR
-    DE((DKRZ<br/>Data Pool))
-    FR((IPSL<br/>Data Pool))
-    UK((CEDA<br/>Data Pool))
+flowchart TB
+    subgraph Pools["Independently managed ESGF-NG data pools"]
+        direction LR
 
-    DE <-. shared data .-> FR
-    FR <-. shared data .-> UK
-    DE <-. shared data .-> UK
+        DE((DKRZ<br/>independent<br/>data pool))
+        FR((IPSL<br/>independent<br/>data pool))
+        UK((CEDA<br/>independent<br/>data pool))
+    end
+
+    CORE((Common Core<br/>available at all 3 sites))
+
+    DE --> CORE
+    FR --> CORE
+    UK --> CORE
 
     style DE fill:#8ecae6,stroke:#457b9d,color:#000
     style FR fill:#b7e4c7,stroke:#40916c,color:#000
     style UK fill:#ffd6a5,stroke:#e09f3e,color:#000
+    style CORE fill:#e5e5e5,stroke:#666,color:#000
 ```
 
-The three pools share substantial parts of ESGF, but they remain **independently managed data holdings with different coverage**.
+Federation allows Rook to use the **full distributed ESGF holdings**, rather than limiting processing to the common core.
 
 The proposed solution therefore adds **dataset-aware delegation to Rook itself**.
 
@@ -269,9 +276,13 @@ It does not need to understand dataset placement. The selected Rook handles this
 
 ---
 
-## 2. Dataset knowledge at every site
+## 2. Local Rook PostgreSQL index
 
-Each Rook site maintains a PostgreSQL index with two kinds of information:
+Each Rook site maintains its own **Rook-specific PostgreSQL database**.
+
+This is **not** the global STAC/Elasticsearch index.
+
+The database contains two kinds of information:
 
 * **global dataset placement:** which ESGF sites provide a dataset;
 * **local assets:** the actual files or aggregations available to the local Rook.
@@ -280,7 +291,7 @@ Each Rook site maintains a PostgreSQL index with two kinds of information:
 flowchart LR
     Kafka[ESGF-NG Kafka<br/>STAC records + patches]
 
-    DB[Local PostgreSQL<br/>ESGF Index]
+    DB[(Local Rook<br/>PostgreSQL DB)]
 
     Placement[Dataset Placement<br/>dataset → sites]
     Assets[Local Assets<br/>dataset → files]
@@ -291,22 +302,23 @@ flowchart LR
     DB --> Assets
 ```
 
-* The existing ESGF-NG Kafka publication stream keeps the index synchronized.
-* Rook becomes another direct consumer of the ESGF-NG publication infrastructure.
-* Broker lookups normally use the local PostgreSQL database instead of querying STAC for every request.
+* The existing ESGF-NG Kafka publication stream keeps this local database synchronized.
+* Rook therefore becomes another direct consumer of the ESGF-NG publication infrastructure.
+* Each Rook has knowledge of the **global dataset placement**, while keeping detailed asset information for its own local holdings.
+* Broker lookups normally use this local PostgreSQL database instead of querying the global STAC service for every request.
 
 ---
 
 ## 3. STAC as fallback
 
-The local index may occasionally be incomplete or out of sync.
+The local Rook PostgreSQL database may occasionally be incomplete or out of sync.
 
 The global ESGF-NG STAC catalog provides a fallback.
 
 ```mermaid
 flowchart LR
     Rook[Rook Dataset Resolver]
-    DB[Local PostgreSQL Index]
+    DB[(Local Rook<br/>PostgreSQL DB)]
     STAC[Global ESGF-NG STAC]
 
     Rook --> DB
@@ -319,7 +331,7 @@ flowchart LR
 
 * PostgreSQL is the normal lookup path.
 * STAC can recover missing information.
-* Information obtained from STAC can optionally repair the local index.
+* Information obtained from STAC can optionally repair the local PostgreSQL database.
 * Missing local data does **not** silently turn into remote HTTP processing.
 
 ---
@@ -438,9 +450,9 @@ flowchart TD
 
 Three pieces of information have separate responsibilities:
 
-* **Dataset index:** where does the data exist?
-* **health/status:** which Rook sites can currently accept work?
-* **broker:** which site should execute this request?
+* **Local Rook PostgreSQL DB:** where does the data exist?
+* **`health` / `status`:** which Rook sites can currently accept work?
+* **`broker`:** which site should execute this request?
 
 Temporary downtime does not change the dataset placement metadata.
 
@@ -608,30 +620,69 @@ This is an option to investigate rather than a requirement for federation.
 
 The complete design combines existing ESGF-NG infrastructure with identical Rook deployments at the three processing sites.
 
+CEDA is shown in detail as an example. DKRZ and IPSL use the same Rook, local PostgreSQL database, data-node and data-pool pattern.
+
 ```mermaid
 flowchart TB
-    Client[ESGF Portal / Client]
-    LB[AWS Load Balancer]
+    Client["ESGF Portal / Client"]
+    LB["AWS Load Balancer"]
 
-    Kafka[ESGF-NG Kafka]
-    STAC[Global STAC Catalog]
+    Kafka["ESGF-NG Kafka"]
+    STAC["Global STAC Catalog"]
 
     Client -->|workflow| LB
 
-    subgraph Sites["Federated Rook Sites"]
+    subgraph Federation["Federated Rook Sites"]
         direction LR
 
-        subgraph DKRZ["DKRZ"]
-            RookDE[Rook<br/>broker + orchestrate]
-            IndexDE[(Local ESGF Index)]
-            NodeDE[NGINX Data Node]
-            PoolDE[(Data Pool)]
+        DKRZ["DKRZ Rook Site"]
+        IPSL["IPSL Rook Site"]
 
-            RookDE --> IndexDE
-            RookDE --> PoolDE
-            NodeDE --> PoolDE
+        subgraph CEDA["CEDA"]
+            Rook["Rook: broker + orchestrate"]
+            Index[("Local Rook PostgreSQL DB")]
+            Node["NGINX Data Node"]
+            Pool[("Data Pool")]
+
+            Rook --> Index
+            Rook --> Pool
+            Node --> Pool
         end
+    end
 
-        subgraph IPSL["IPSL"]
-            RookFR[Rook<br/>broker]()
+    LB --> DKRZ
+    LB --> IPSL
+    LB --> Rook
+
+    Kafka --> Index
+    Kafka --> STAC
+
+    Rook -. fallback .-> STAC
+
+    Rook <-. delegate .-> DKRZ
+    Rook <-. delegate .-> IPSL
+    DKRZ <-. delegate .-> IPSL
+
+    style DKRZ fill:#8ecae6,stroke:#457b9d,color:#000
+    style IPSL fill:#b7e4c7,stroke:#40916c,color:#000
+
+    style Rook fill:#ffd6a5,stroke:#e09f3e,color:#000
+    style Index fill:#fff0d9,stroke:#e09f3e,color:#000
+    style Node fill:#fff0d9,stroke:#e09f3e,color:#000
+    style Pool fill:#fff0d9,stroke:#e09f3e,color:#000
 ```
+
+The **Local Rook PostgreSQL DB** is a Rook-specific materialized view populated from the Kafka publication stream. It is **not** the global STAC/Elasticsearch index.
+
+The main components are:
+
+* **AWS Load Balancer** — provides one highly available processing entry point.
+* **Rook broker** — decides which site should execute the workflow.
+* **Rook orchestrate** — performs the requested workflow at the selected site.
+* **Local Rook PostgreSQL DB** — provides fast dataset-placement and local-asset lookup.
+* **Kafka** — keeps the local Rook databases synchronized with ESGF-NG publication.
+* **Global STAC catalog** — remains the global reference and fallback.
+* **NGINX data nodes** — continue to provide efficient delivery of existing data.
+* **Independent data pools** — can overlap without having to be identical.
+
+> **One processing entry point, distributed data, processing close to the data.**
