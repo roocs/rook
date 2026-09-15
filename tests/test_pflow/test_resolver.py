@@ -87,9 +87,7 @@ class TestPflowCMIP6:
                 download_records={self.collection[0]: [url]},
             )
         )
-        decision = resolver_mod.resolve_request_decision(
-            self.collection, inputs, allow_aligned_original_files=True
-        )
+        decision = resolver_mod.resolve_request_decision(self.collection, inputs, allow_aligned_original_files=True)
         assert decision.returns_original_files is True
         assert isinstance(decision, resolver_mod.ReturnOriginalFiles)
         assert list(decision.original_file_urls.items())[0][1] == [url]
@@ -100,18 +98,14 @@ class TestPflowCMIP6:
         source = tmp_path / "input.nc"
         source.touch()
         catalog_resolver(FakeSearchResult({self.collection[0]: [source.as_posix()]}))
-        decision = resolver_mod.resolve_request_decision(
-            self.collection, inputs, allow_aligned_original_files=True
-        )
+        decision = resolver_mod.resolve_request_decision(self.collection, inputs, allow_aligned_original_files=True)
         assert decision.returns_original_files is False
 
     @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_time_subset_aligned(self):
         # original files
         inputs = {"time": "2015-01-01/2100-12-31"}
-        decision = resolver_mod.resolve_request_decision(
-            self.collection, inputs, allow_aligned_original_files=True
-        )
+        decision = resolver_mod.resolve_request_decision(self.collection, inputs, allow_aligned_original_files=True)
         assert decision.returns_original_files is True
         assert list(decision.original_file_urls.items())[0][1] == [
             "https://data.mips.climate.copernicus.eu/thredds/fileServer"
@@ -123,9 +117,7 @@ class TestPflowCMIP6:
     @pytest.mark.xfail(reason="no CMIP6 test data in /pool/data")
     def test_only_time_no_match(self):
         inputs = {"time": "2015-01-01/2100-11-30"}
-        decision = resolver_mod.resolve_request_decision(
-            self.collection, inputs, allow_aligned_original_files=True
-        )
+        decision = resolver_mod.resolve_request_decision(self.collection, inputs, allow_aligned_original_files=True)
         assert decision.returns_original_files is False
 
     def test_invalid_collection(self, catalog_resolver):
@@ -300,9 +292,7 @@ def test_catalog_aligned_subset_returns_matching_original_files(catalog_resolver
     assert result.output_uris == aligned_urls
 
 
-def test_aligned_full_cica_atlas_returns_original_without_fixes(
-    catalog_resolver, monkeypatch
-):
+def test_aligned_full_cica_atlas_returns_original_without_fixes(catalog_resolver, monkeypatch):
     collection = ["c3s-cica-atlas.example.dataset"]
     download_url = "https://example.test/data/cica-atlas-input.nc"
     catalog_resolver(
@@ -334,9 +324,7 @@ def test_aligned_full_cica_atlas_returns_original_without_fixes(
     assert result.output_uris == [download_url]
 
 
-def test_aligned_full_cica_atlas_can_be_rewritten_with_fixes(
-    catalog_resolver, monkeypatch
-):
+def test_aligned_full_cica_atlas_can_be_rewritten_with_fixes(catalog_resolver, monkeypatch):
     collection = ["c3s-cica-atlas.example.dataset"]
     source = "/data/cica-atlas-input.nc"
     catalog_resolver(FakeSearchResult({collection[0]: [source]}))
@@ -365,13 +353,9 @@ def test_aligned_full_cica_atlas_can_be_rewritten_with_fixes(
     assert result.output_uris == ["fixed.nc"]
 
 
-def test_long_daily_aligned_subset_returns_original_files_before_processing(
-    catalog_resolver, monkeypatch
-):
+def test_long_daily_aligned_subset_returns_original_files_before_processing(catalog_resolver, monkeypatch):
     collection = ["c3s-cmip6.example.model.day.tas"]
-    aligned_urls = [
-        f"https://example.test/data/input-{year}.nc" for year in range(1980, 2001)
-    ]
+    aligned_urls = [f"https://example.test/data/input-{year}.nc" for year in range(1980, 2001)]
     catalog_resolver(
         FakeSearchResult(
             {collection[0]: [f"/data/input-{year}.nc" for year in range(1980, 2001)]},
@@ -396,9 +380,7 @@ def test_long_daily_aligned_subset_returns_original_files_before_processing(
     assert result.output_uris == aligned_urls
 
 
-def test_redundant_time_components_allow_aligned_original_files(
-    catalog_resolver, monkeypatch
-):
+def test_redundant_time_components_allow_aligned_original_files(catalog_resolver, monkeypatch):
     collection = ["c3s-cordex.example.dataset"]
     aligned_urls = ["https://example.test/data/input-2001.nc"]
     result = FakeSearchResult(
@@ -434,9 +416,7 @@ def test_redundant_time_components_allow_aligned_original_files(
     assert result.output_uris == aligned_urls
 
 
-def test_year_components_select_aligned_files_within_longer_time_range(
-    catalog_resolver, monkeypatch
-):
+def test_year_components_select_aligned_files_within_longer_time_range(catalog_resolver, monkeypatch):
     collection = ["c3s-cmip6.example.day.huss.dataset"]
     years = range(2015, 2021)
     urls = [f"https://example.test/data/huss-{year}.nc" for year in years]
@@ -463,10 +443,7 @@ def test_year_components_select_aligned_files_within_longer_time_range(
         collection,
         {
             "time": "2015/2020",
-            "time_components": (
-                "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|"
-                "year:2015,2016"
-            ),
+            "time_components": ("month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec|year:2015,2016"),
         },
         lambda _inputs: pytest.fail("runner should not be called"),
         allow_aligned_original_files=True,
@@ -482,19 +459,13 @@ def test_year_components_select_aligned_files_within_longer_time_range(
 
 
 @pytest.mark.parametrize("frequency", ["day", "3hr", "mon", "yr"])
-def test_catalog_non_aligned_temporal_subset_is_processed(
-    frequency, tmp_path, catalog_resolver, monkeypatch
-):
-    collection = [
-        f"c3s-cordex.output.EUR-11.Example.Model.historical.r1i1p1.Model.v1.{frequency}.tas.v1"
-    ]
+def test_catalog_non_aligned_temporal_subset_is_processed(frequency, tmp_path, catalog_resolver, monkeypatch):
+    collection = [f"c3s-cordex.output.EUR-11.Example.Model.historical.r1i1p1.Model.v1.{frequency}.tas.v1"]
     source = tmp_path / "input-2000-2009.nc"
     source.touch()
     result = FakeSearchResult(
         {collection[0]: [source.as_posix()]},
-        download_records={
-            collection[0]: ["https://example.test/data/input-2000-2009.nc"]
-        },
+        download_records={collection[0]: ["https://example.test/data/input-2000-2009.nc"]},
     )
     catalog_resolver(result)
 
@@ -516,9 +487,7 @@ def test_catalog_non_aligned_temporal_subset_is_processed(
 
 
 @pytest.mark.parametrize("frequency", ["mon", "Amon", "yr"])
-def test_catalog_non_aligned_low_frequency_subset_is_processed(
-    frequency, tmp_path, catalog_resolver, monkeypatch
-):
+def test_catalog_non_aligned_low_frequency_subset_is_processed(frequency, tmp_path, catalog_resolver, monkeypatch):
     collection = [f"c3s-cordex.example.model.{frequency}.tas.v1"]
     source = tmp_path / "input-2000-2009.nc"
     source.touch()
@@ -541,9 +510,7 @@ def test_catalog_non_aligned_low_frequency_subset_is_processed(
     assert result.output_uris == ["subset.nc"]
 
 
-def test_catalog_non_aligned_spatial_subset_is_processed(
-    tmp_path, catalog_resolver, monkeypatch
-):
+def test_catalog_non_aligned_spatial_subset_is_processed(tmp_path, catalog_resolver, monkeypatch):
     collection = ["c3s-cmip6.example.dataset"]
     source = tmp_path / "input.nc"
     source.touch()
@@ -570,9 +537,7 @@ def test_catalog_non_aligned_spatial_subset_is_processed(
     assert result.output_uris == ["subset.nc"]
 
 
-def test_non_subset_operation_does_not_check_alignment(
-    tmp_path, catalog_resolver, monkeypatch
-):
+def test_non_subset_operation_does_not_check_alignment(tmp_path, catalog_resolver, monkeypatch):
     collection = ["c3s-cmip6-decadal.example.dataset"]
     source = tmp_path / "input.nc"
     source.touch()
@@ -590,7 +555,12 @@ def test_non_subset_operation_does_not_check_alignment(
 
 
 @pytest.mark.parametrize("operation_input", [{"dims": "time"}, {"freq": "year"}, {"grid": "1x1"}])
-def test_catalog_operations_that_change_data_are_always_processed(tmp_path, catalog_resolver, monkeypatch, operation_input):
+def test_catalog_operations_that_change_data_are_always_processed(
+    tmp_path,
+    catalog_resolver,
+    monkeypatch,
+    operation_input
+    ):
     collection = ["c3s-cmip6.example.dataset"]
     source = tmp_path / "input.nc"
     source.touch()

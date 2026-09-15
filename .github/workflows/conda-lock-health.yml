@@ -12,6 +12,9 @@ jobs:
   lock-health:
     name: Lock Refresh Health Check
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.12" ]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -26,7 +29,8 @@ jobs:
           post-cleanup: none
           environment-name: lockcheck
           create-args: >-
-            python=3.12 conda-lock=4.0.0
+            conda-lock=4.0.0
+            python=${{ matrix.python-version }}
           channels: conda-forge
 
       - name: Try lock/spec generation

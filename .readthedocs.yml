@@ -21,6 +21,8 @@ build:
   tools:
     python: "miniforge3-25.11"
   jobs:
+    post_install:
+      - pip install --group docs
     pre_build:
       - sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook
 
@@ -32,5 +34,3 @@ python:
   install:
     - method: pip
       path: .
-      extra_requirements:
-        - docs

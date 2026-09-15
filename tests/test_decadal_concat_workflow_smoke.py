@@ -12,10 +12,7 @@ from rook.workflow import Workflow
 woodpecker_testing = pytest.importorskip("woodpecker.testing")
 pytest.importorskip("woodpecker_cmip6_decadal_plugin")
 
-DATASET_ID = (
-    "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast."
-    "s1960-{variant}.Omon.tos.gn.v20200101"
-)
+DATASET_ID = "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-{variant}.Omon.tos.gn.v20200101"
 
 
 def _make_sources(tmp_path):
@@ -25,14 +22,9 @@ def _make_sources(tmp_path):
         dataset_id = DATASET_ID.format(variant=variant)
         paths = []
         for year in (2000, 2001):
-            filename = (
-                "tos_Omon_MPI-ESM1-2-HR_dcppA-hindcast_"
-                f"s1960-{variant}_gn_{year}0101-{year}1201.nc"
-            )
+            filename = f"tos_Omon_MPI-ESM1-2-HR_dcppA-hindcast_s1960-{variant}_gn_{year}0101-{year}1201.nc"
             dataset = woodpecker_testing.make_cmip6_decadal(seed=realization)
-            dataset = dataset.assign_coords(
-                time=xr.date_range(f"{year}-01-01", periods=12, freq="MS")
-            )
+            dataset = dataset.assign_coords(time=xr.date_range(f"{year}-01-01", periods=12, freq="MS"))
             dataset.attrs.update(
                 dataset_id=dataset_id.replace("c3s-cmip6-decadal.", "CMIP6."),
                 source_file=filename,
@@ -47,9 +39,7 @@ def _make_sources(tmp_path):
     return sources
 
 
-def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
-    monkeypatch, tmp_path
-):
+def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(monkeypatch, tmp_path):
     sources = _make_sources(tmp_path)
     output_dir = tmp_path / "concat_smoke"
     output_dir.mkdir()
@@ -76,9 +66,7 @@ def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
     def tracked_normalise(collection, **kwargs):
         return original_normalise(collection, opener=tracked_opener, **kwargs)
 
-    monkeypatch.setattr(
-        concat_mod.normalise, "normalise_file_groups", tracked_normalise
-    )
+    monkeypatch.setattr(concat_mod.normalise, "normalise_file_groups", tracked_normalise)
 
     provider = concat_mod.get_dataset_fix_provider()
 
@@ -91,9 +79,7 @@ def test_decadal_concat_workflow_batches_sources_and_bypasses_subset(
             fix_calls.append(("apply", context.phase, context.dataset_id))
             return provider.apply(dataset, context=context)
 
-    monkeypatch.setattr(
-        concat_mod, "get_dataset_fix_provider", lambda: TrackingProvider()
-    )
+    monkeypatch.setattr(concat_mod, "get_dataset_fix_provider", lambda: TrackingProvider())
 
     operation_calls = []
 

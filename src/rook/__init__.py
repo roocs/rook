@@ -18,6 +18,6 @@
 # limitations under the License.
 ###################################################################################
 
-from .__version__ import __author__, __email__, __version__  # noqa: F401
+from .__version__ import __author__, __email__, __version__  # ruff: ignore[unused-import]
 
-from .wsgi import application  # noqa
+from .wsgi import application  # ruff: ignore[unused-import]

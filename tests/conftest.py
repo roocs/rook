@@ -48,20 +48,12 @@ def required_test_data_files():
         branch=ESGF_TEST_DATA_VERSION,
         repo=ESGF_TEST_DATA_REPO_URL,
     )
-    files = {
-        filename
-        for filename in registry
-        if filename.startswith(TEST_DATA_FILE_PATTERNS)
-    }
+    files = {filename for filename in registry if filename.startswith(TEST_DATA_FILE_PATTERNS)}
     return sorted(files)
 
 
 def missing_test_data_files(base_dir):
-    return [
-        filename
-        for filename in required_test_data_files()
-        if not base_dir.joinpath(filename).exists()
-    ]
+    return [filename for filename in required_test_data_files() if not base_dir.joinpath(filename).exists()]
 
 
 @pytest.fixture()
@@ -116,18 +108,12 @@ def write_roocs_cfg(stratus):
 
     [project:c3s-cica-atlas]
     base_dir = {{ base_dir }}/pool/data/c3s-cica-atlas
-    """  # noqa
+    """
     cfg = Template(cfg_templ).render(base_dir=stratus.path)
     with ROOCS_CFG.open("w") as fp:
         fp.write(cfg)
 
-    health_sentinel = (
-        Path(stratus.path)
-        / "pool"
-        / "data"
-        / "c3s-cica-atlas"
-        / ".health-check.txt"
-    )
+    health_sentinel = Path(stratus.path) / "pool" / "data" / "c3s-cica-atlas" / ".health-check.txt"
     health_sentinel.parent.mkdir(parents=True, exist_ok=True)
     health_sentinel.write_text("rook test health sentinel\n")
 
@@ -186,9 +172,7 @@ def get_output():
 
     def _get_output(doc):
         output = {}
-        for output_el in xpath_ns(
-            doc, "/wps:ExecuteResponse" "/wps:ProcessOutputs/wps:Output"
-        ):
+        for output_el in xpath_ns(doc, "/wps:ExecuteResponse/wps:ProcessOutputs/wps:Output"):
             [identifier_el] = xpath_ns(output_el, "./ows:Identifier")
 
             lit_el = xpath_ns(output_el, "./wps:Data/wps:LiteralData")
@@ -210,7 +194,7 @@ def get_output():
 
 @pytest.fixture(scope="session")
 def load_test_data(stratus, write_roocs_cfg):
-    """Ensure that the required test data repository has been cloned to the cache directory within the home directory."""
+    """Ensure that the required test data repository has been cloned to the cache within the home directory."""
     cache_dir = Path(ESGF_TEST_DATA_CACHE_DIR)
     marker = cache_dir.joinpath(ESGF_TEST_DATA_VERSION, ".rook_data_ready")
     lock = FileLock(cache_dir.joinpath(".rook_data.lock"))
@@ -231,10 +215,7 @@ def load_test_data(stratus, write_roocs_cfg):
         missing_files = missing_test_data_files(stratus.path)
         if failed_files or missing_files:
             problem_files = sorted(set(failed_files + missing_files))
-            raise RuntimeError(
-                "Could not prepare required mini ESGF test data: "
-                f"{problem_files}"
-            )
+            raise RuntimeError(f"Could not prepare required mini ESGF test data: {problem_files}")
 
         marker.parent.mkdir(exist_ok=True, parents=True)
         marker.touch()

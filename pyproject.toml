@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.9,<4"]
+requires = ["flit_core >=4.0,<5.0"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -31,66 +31,33 @@ classifiers = [
 ]
 dynamic = ["description", "version"]
 dependencies = [
+  "aiohttp",
+  "beautifulsoup4 >4.12.3",
+  "bokeh >=3.7.0",
   "click >=8.1.7",
-  "jinja2 >=3.1.4",
-  "psutil >=6.0.0",
-  "pywps >=4.5.2,<4.8",
   "clisops >=0.17.0",
+  "fsspec",
   "h5netcdf >=1.5.0",
   "h5py",
-  "xesmf >=0.9.2",
-  "xarray >=2025.6.0",
-  "roocs_grids >=0.1.2",
-  "networkx",
-  "prov >=2.0.0",
-  "rdflib",
-  "pydot",
-  "intake <2.0",
-  "fsspec",
-  "s3fs",
-  "zarr >=2.13.0,<3.0",
-  "pandas >=2.0",
-  "SQLAlchemy >=2.0",
-  "aiohttp",
-  "bokeh >=3.7.0",
   "humanize",
-  "beautifulsoup4 >4.12.3",
+  "intake <2.0",
+  "jinja2 >=3.1.4",
+  "networkx",
+  "pandas >=2.0",
+  "prov >=2.0.0",
+  "psutil >=6.0.0",
+  "pydot",
+  "pywps >=4.5.2,<4.8",
+  "rdflib",
+  "roocs_grids >=0.1.2",
   "roocs-woodpecker >=0.7.1,<0.8",
   "roocs-woodpecker-atlas-plugin >=0.7.1,<0.8",
-  "roocs-woodpecker-cmip6-decadal-plugin >=0.7.1,<0.8"
-]
-
-[project.optional-dependencies]
-dev = [
-  "pip >=24.2.0",
-  "black >=24.10.0",
-  "bump-my-version >=0.26.0",
-  "coverage >=7.5.0",
-  "cruft >=2.15.0",
-  "flit >=3.9.0,<4.0",
-  "flit_core >=3.9,<4",
-  "ipython>=8.13.0",
-  "nbconvert >=7.10.0",
-  "nbsphinx >=0.9.5",
-  "nbval >=0.10.0",
-  "prek",
-  "pytest >=8.0.0",
-  "pytest-cov >=5.0.0",
-  "pytest-xdist[psutil] >=3.2",
-  "ruff >=0.5.7",
-  "sphinx >=7.0.0",
-  "sphinxcontrib-mermaid",
-  "tox >=4.18.0",
-  "watchdog >=4.0.0",
-  "wheel >=0.40.0"
-]
-docs = [
-  "ipython >=8.13.0",
-  "nbsphinx >=0.9.5",
-  "sphinx >=7.0.0",
-  "sphinx-codeautolink",
-  "sphinx-copybutton",
-  "sphinxcontrib-mermaid"
+  "roocs-woodpecker-cmip6-decadal-plugin >=0.7.1,<0.8",
+  "s3fs",
+  "SQLAlchemy >=2.0",
+  "xarray >=2025.6.0",
+  "xesmf >=0.9.2",
+  "zarr >=2.13.0,<3.0"
 ]
 
 [project.scripts]
@@ -101,13 +68,60 @@ rook = "rook.cli:cli"
 "Changelog" = "https://github.com/roocs/rook/blob/main/changelog.rst"
 "Homepage" = "https://github.com/roocs/rook"
 
-[tool]
-
-[tool.black]
-target-version = [
-  "py311",
-  "py312"
+[dependency-groups]
+lint = [
+  # Linting tools
+  "codespell >=2.4.2",
+  "deptry >=0.25.1",
+  "flake8 >=7.3.0",
+  "flake8-rst-docstrings >=0.4.0",
+  "mypy >=1.20.0",
+  "numpydoc >=1.10.0",
+  "ruff >=0.15.0",
+  "vulture >=2.14",
+  "yamllint >=1.38.0"
 ]
+docs = [
+  # Documentation and example support
+  "alabaster >=1.0.0",
+  "ipykernel",
+  "ipython >=8.13.0",
+  "jupyter_client",
+  "nbsphinx >=0.9.8",
+  "sphinx >=9.0.2",
+  "sphinx-autobuild >=2024.4.16",
+  "sphinx-click",
+  "sphinx-codeautolink >=0.16.2",
+  "sphinx-copybutton >=0.5.2",
+  "sphinxcontrib-mermaid"
+]
+test = [
+  "coverage >=7.5.0",
+  "nbval >=0.11.0",
+  "pytest >=9.0.0",
+  "pytest-cov >=7.1.0",
+  "pytest-timeout >=2.4.0",
+  "pytest-xdist >=3.2"
+]
+tox = [
+  "tox >=4.52.0",
+  "tox-gh >=1.7.1"
+]
+dev = [
+  # Development and testing tools
+  "bump-my-version >=1.5.1",
+  "cruft >=2.16.0",
+  "flit >=4.0,<5.0",
+  "pip >=26.1",
+  "prek >=0.5.0",
+  "watchdog >=6.0.0",
+  {include-group = "docs"},
+  {include-group = "lint"},
+  {include-group = "test"},
+  {include-group = "tox"}
+]
+
+[tool]
 
 [tool.bumpversion]
 current_version = "1.4.0"
@@ -135,6 +149,24 @@ Unreleased
 {new_version} ({now:%Y-%m-%d})
 ==================
 """
+
+[[tool.bumpversion.files]]
+filename = "CITATION.cff"
+include_bumps = ["release"]
+search = "^version: \"[0-9]+\\.[0-9]+\\.[0-9]\""
+replace = "version: \"{new_version}\""
+regex = true
+
+[[tool.bumpversion.files]]
+filename = "Dockerfile"
+search = "LABEL org.opencontainers.image.version=\"{current_version}\""
+replace = "LABEL org.opencontainers.image.version=\"{new_version}\""
+
+[[tool.bumpversion.files]]
+filename = 'Dockerfile'
+search = "LABEL org.opencontainers.image.created=\"\\d4-\\d2-\\d2T\\d2:\\d2:\\d2Z\""
+replace = "LABEL org.opencontainers.image.created=\"{utcnow:%Y-%m-%dT%H:%M:%SZ}\""
+regex = true
 
 [[tool.bumpversion.files]]
 filename = "src/rook/__version__.py"
@@ -211,9 +243,9 @@ exclude = [
   ".yamllint.yaml",
   "Dockerfile",
   "docker-compose.yml",
-  "docs/_*",
-  "docs/apidoc/modules.rst",
-  "docs/apidoc/rook*.rst"
+  "docs/source/_*",
+  "docs/source/apidoc/modules.rst",
+  "docs/source/apidoc/rook*.rst"
 ]
 
 [tool.mypy]
@@ -229,7 +261,8 @@ module = "tests.*"
 allow_untyped_defs = true
 disable_error_code = "attr-defined"
 
-[tool.pytest.ini_options]
+[tool.pytest]
+min_version = "9.0"
 addopts = [
   "--color=yes",
   "--cov=rook",
@@ -258,7 +291,7 @@ filterwarnings = [
 
 [tool.ruff]
 src = ["rook"]
-line-length = 150
+line-length = 120
 exclude = [
   ".eggs",
   ".git",
@@ -275,16 +308,17 @@ line-ending = "auto"
 [tool.ruff.lint]
 preview = true
 ignore = [
-  "BLE001", # Do not catch blind exception: `Exception`
-  "RUF100", # Unused blanket `noqa` directive
-  "B904", # raise exceptions with `raise ... from err`
-  "PERF203", # `try`-`except` within a loop incurs performance overhead
-  "G004", # Logging statement uses f-string
-  "S110", # `try`-`except`-`pass` detected, consider logging the exception
-  "S112", # `try`-`except`-`continue` detected, consider logging the exception
-  "C408", # Unnecessary `dict()` call (rewrite as a literal)
-  "C419", # Unnecessary list comprehension
-  "RUF067" # `__init__` module should only contain docstrings and re-exports
+  "blind-except", # Do not catch blind exception: `Exception`
+  "logging-f-string", # Logging statement uses f-string
+  "non-empty-init-module", # `__init__` module should only contain docstrings and re-exports
+  "property-docstring-starts-with-verb", # Property docstring should not start with a verb ("Return")
+  "raise-without-from-inside-except", # raise exceptions with `raise ... from err`
+  "try-except-continue", # `try`-`except`-`continue` detected, consider logging the exception
+  "try-except-in-loop", # `try`-`except` within a loop incurs performance overhead
+  "try-except-pass", # `try`-`except`-`pass` detected, consider logging the exception
+  "unnecessary-collection-call", # Unnecessary `dict()` call (rewrite as a literal)
+  "unnecessary-comprehension-in-call", # Unnecessary list comprehension
+  "unused-noqa" # Unused blanket `noqa` directive
 ]
 select = [
   "BLE", # blind-except
@@ -303,8 +337,7 @@ select = [
   "PERF", # iterator performance
   "S" # bandit security
 ]
-extend-select = [
-]
+extend-select = []
 
 [tool.ruff.lint.flake8-bandit]
 check-typed-exception = true
@@ -322,13 +355,16 @@ max-complexity = 15
 [tool.ruff.lint.per-file-ignores]
 "docs/**" = ["D100", "PTH100"]
 "src/rook/**" = ["D100", "D101", "D102", "D103", "D104"]
-"tests/**" = ["D100", "D101", "D102", "D103", "D104", "RUF012", "RUF015", "RUF076", "S101"]
+"tests/**" = ["D100", "D101", "D102", "D103", "D104", "RUF012", "RUF015", "S101"]
 
 [tool.ruff.lint.pycodestyle]
 max-doc-length = 180
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.tomlsort]
+sort_first = ["build-system", "project"]
 
 [tool.vulture]
 exclude = []

@@ -42,6 +42,6 @@ jobs:
           post-cleanup: none
           environment-file: environment-docs.yml
 
-      - name: Build docs
+      - name: Install rook and build docs
         run: |
           make build-docs

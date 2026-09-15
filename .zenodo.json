@@ -1,0 +1,21 @@
+{
+  "title": "rook",
+  "creators": [
+    {
+      "name": "Ehbrecht, Carsten"
+    }
+  ],
+  "keywords": [
+    "rook",
+    "pywps"
+  ],
+  "license": "Apache-2.0",
+  "language": "eng",
+  "communities": [
+    {
+      "identifier": "birdhouse"
+    }
+  ],
+  "upload_type": "software",
+  "access_right": "open"
+}

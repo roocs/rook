@@ -26,7 +26,7 @@ class Dashboard:
     See dashboard examples:
     * https://engineertodeveloper.com/big-bay-dam-monitoring-dashboard-part-5-bokeh-plots/
     * https://towardsdatascience.com/https-medium-com-radecicdario-next-level-data-visualization-dashboard-app-with-bokeh-flask-c588c9398f98
-    """  # noqa
+    """  # ruff: ignore[missing-blank-line-after-summary, missing-trailing-period]
 
     def __init__(self, output_dir=None):
         self.df = None

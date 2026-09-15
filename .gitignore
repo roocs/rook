@@ -100,8 +100,9 @@ docs/_build
 docs/_html/
 docs/doctrees/
 docs/make.bat
+docs/source/apidoc/rook*.rst
+docs/source/apidoc/modules.rst
 docs/source/output-sanitize.cfg
-docs/source/apidoc/
 
 # External Sources
 #src/external

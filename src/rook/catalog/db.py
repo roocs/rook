@@ -59,7 +59,7 @@ class DBCatalog(Catalog):
                 if len(collection) > 1:
                     # FIXME: This is vulnerable to SQL injection
                     query_ = text(
-                        f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "  # noqa: S608
+                        f"SELECT * FROM {self.table_name} WHERE ds_id IN {tuple(collection)} "  # ruff: ignore[hardcoded-sql-expression]
                         f"AND end_time >= :start AND start_time <= :end"
                     )
                     result = session.execute(query_, {
@@ -71,7 +71,7 @@ class DBCatalog(Catalog):
                 else:
                     # FIXME: This is vulnerable to SQL injection
                     query_ = text(
-                        f"SELECT * FROM {self.table_name} WHERE ds_id = :ds_id "  # noqa: S608
+                        f"SELECT * FROM {self.table_name} WHERE ds_id = :ds_id "  # ruff: ignore[hardcoded-sql-expression]
                         f"AND end_time >= :start AND start_time <= :end"
                     )
                     result = session.execute(query_, {

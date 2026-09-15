@@ -32,22 +32,22 @@ For example change the hostname (*demo.org*) and logging level:
 
 .. code-block:: console
 
-   $ cd rook
-   $ vim etc/custom.cfg
-   $ cat etc/custom.cfg
-   [server]
-   url = http://demo.org:5000/wps
-   outputurl = http://demo.org:5000/outputs
+    $ cd rook
+    $ vim etc/custom.cfg
+    $ cat etc/custom.cfg
+    [server]
+    url = http://demo.org:5000/wps
+    outputurl = http://demo.org:5000/outputs
 
-   [logging]
-   level = DEBUG
+    [logging]
+    level = DEBUG
 
 Start the service with your custom configuration:
 
 .. code-block:: console
 
-   # start the service with this configuration
-   $ rook start -c etc/custom.cfg
+    # start the service with this configuration
+    $ rook start -c etc/custom.cfg
 
 
 Fix provider backend
@@ -60,8 +60,8 @@ To use the legacy fixes, set:
 
 .. code-block:: ini
 
-   [fixes]
-   backend = legacy
+    [fixes]
+    backend = legacy
 
 Supported values are ``legacy`` and ``woodpecker``.
 
@@ -77,13 +77,13 @@ limits in ``roocs.ini``:
 
 .. code-block:: ini
 
-   [subset:batching]
-   target_timesteps = 2000
-   memory_limit = 4GB
-   min_batch_years = 1
-   max_batch_years = 10
-   merge_outputs = true
-   merge_target_size = 2GB
+    [subset:batching]
+    target_timesteps = 2000
+    memory_limit = 4GB
+    min_batch_years = 1
+    max_batch_years = 10
+    merge_outputs = true
+    merge_target_size = 2GB
 
 ``memory_limit`` defaults to ``4GB`` and can be set by deployment tooling to
 match the Slurm job allocation. The estimate reserves half of that limit for
@@ -114,13 +114,13 @@ subset batching.
 
 .. code-block:: ini
 
-   [concat:batching]
-   target_timesteps = 365
-   memory_limit = 4GB
-   min_batch_years = 1
-   max_batch_years = 1
-   merge_outputs = true
-   merge_target_size = 2GB
+    [concat:batching]
+    target_timesteps = 365
+    memory_limit = 4GB
+    min_batch_years = 1
+    max_batch_years = 1
+    merge_outputs = true
+    merge_target_size = 2GB
 
 When the combined ensemble estimate cannot fit a full year, concat switches to
 coordinate-aligned subannual batches capped by the effective timestep target.
@@ -141,8 +141,8 @@ section:
 
 .. code-block:: ini
 
-   [diagnostics]
-   free_memory = false
+    [diagnostics]
+    free_memory = false
 
 Set ``free_memory = true`` to run both ``gc.collect()`` and ``malloc_trim(0)``
 after each concat batch. Explicit cleanup remains disabled by default because it

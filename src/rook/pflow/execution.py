@@ -37,7 +37,12 @@ def collect_original_file_uris(original_file_urls):
     file_uris = []
 
     for file_urls in original_file_urls.values():
-        file_uris.extend(item for item in file_urls if isinstance(item, str) and (pathlib.Path(item).is_file() or item.startswith("https")))
+        file_uris.extend(
+            item for item in file_urls
+            if isinstance(item, str) and (
+                pathlib.Path(item).is_file() or item.startswith("https")
+            )
+        )
 
     return file_uris
 

@@ -25,10 +25,10 @@ def test_build_metalink(tmpdir, stratus):
         [
             "https://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6"
             "/CMIP/NCC/NorESM1-F/piControl/r1i1p1f1/Amon/rsdt/gn/v20190920"
-            "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",  # noqa
+            "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",
             "http://data.mips.climate.copernicus.eu/thredds/fileServer/esg_c3s-cmip6"
             "/CMIP/NCC/NorESM1-F/piControl/r1i1p1f1/Amon/rsdt/gn/v20190920"
-            "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",  # noqa
+            "/rsdt_Amon_NorESM1-F_piControl_r1i1p1f1_gn_150101-151012.nc",
             cmip6_nc,
         ],
     )
@@ -59,10 +59,7 @@ def test_resolve_to_file_paths_mixed():
 
     with pytest.raises(Exception) as exc:
         resolve_to_file_paths(coll)
-        assert (
-            str(exc.value)
-            == "Collections containing file paths and URLs are not accepted."
-        )
+        assert str(exc.value) == "Collections containing file paths and URLs are not accepted."
 
 
 @pytest.mark.mini_esgf_data
@@ -123,34 +120,20 @@ def test_parse_wps_input():
     request.json = obj
 
     assert parse_wps_input(request.inputs, "time", default=None) == "1970/1980"
-    assert (
-        parse_wps_input(request.inputs, "time_components", default=None)
-        == "year:1970,1980|month=01,02,03"
-    )
+    assert parse_wps_input(request.inputs, "time_components", default=None) == "year:1970,1980|month=01,02,03"
 
 
 def test_fix_time_components():
-    assert (
-        fix_time_components("year:2000|month=01|day=01") == "year:2000|month=01|day=01"
-    )
+    assert fix_time_components("year:2000|month=01|day=01") == "year:2000|month=01|day=01"
 
     all_days = "day:01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
-    assert (
-        fix_time_components(f"year:2001,2002|month=02|{all_days}")
-        == "year:2001,2002|month=02"
-    )
+    assert fix_time_components(f"year:2001,2002|month=02|{all_days}") == "year:2001,2002|month=02"
 
     all_months = "month:jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec"
-    assert (
-        fix_time_components(f"year:2001,2002|{all_months}|{all_days}")
-        == "year:2001,2002"
-    )
+    assert fix_time_components(f"year:2001,2002|{all_months}|{all_days}") == "year:2001,2002"
 
     all_months_2 = "month:01,02,03,04,05,06,07,08,09,10,11,12"
-    assert (
-        fix_time_components(f"year:2001,2002|{all_months_2}|day:01,31")
-        == "year:2001,2002|day:01,31"
-    )
+    assert fix_time_components(f"year:2001,2002|{all_months_2}|day:01,31") == "year:2001,2002|day:01,31"
 
     assert fix_time_components("") is None
     assert fix_time_components(None) is None

@@ -33,9 +33,7 @@ def test_wps_regrid_cmip6(assert_regrid, get_output, pywps_cfg):
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";method=nearest_s2d"
     datainputs += ";grid=auto"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=regrid&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=regrid&datainputs={datainputs}")
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
     assert_regrid(path=get_output(resp.xml)["output"])
@@ -48,9 +46,7 @@ def test_wps_regrid_cmip6_custom(assert_regrid, get_output, pywps_cfg):
     datainputs += ";method=nearest_s2d"
     datainputs += ";grid=custom"
     datainputs += ";custom_grid=0.5"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=regrid&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=regrid&datainputs={datainputs}")
     assert_response_success(resp)
     assert "output" in get_output(resp.xml)
     assert_regrid(path=get_output(resp.xml)["output"])

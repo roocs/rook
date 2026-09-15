@@ -28,7 +28,7 @@ def calc_weighted_mean(ds):
     return ds_weighted_mean
 
 
-class WeightedAverage_(ClisopsAverage):  # noqa: N801
+class WeightedAverage_(ClisopsAverage):  # ruff: ignore[invalid-class-name]
     def _get_file_namer(self):
         extra = "_w-avg"
 

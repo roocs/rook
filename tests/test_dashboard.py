@@ -10,8 +10,6 @@ def test_dashboard(tmpdir):
         "http://rook4.cloud.dkrz.de/outputs/rook/64413a5a-bbda-11ec-9cfa-fa163ed6c06f/wps_requests.csv",
         filter="orchestrate",
     )
-    dash.load_downloads(
-        "http://rook4.cloud.dkrz.de/outputs/rook/64413a5a-bbda-11ec-9cfa-fa163ed6c06f/downloads.csv"
-    )
+    dash.load_downloads("http://rook4.cloud.dkrz.de/outputs/rook/64413a5a-bbda-11ec-9cfa-fa163ed6c06f/downloads.csv")
     print(dash.write())
     # assert False

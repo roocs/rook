@@ -36,8 +36,9 @@ First activate the ``rook`` Conda environment and install ``pytest``.
 .. code-block:: console
 
     $ source activate rook
-    $ pip install -r requirements_dev.txt  # if not already installed
-    OR
+    $ python -m pip install --group dev
+    $ python -m pip install --editable .
+    # or
     $ make develop
 
 Run default local tests (skip smoke and online):
@@ -93,23 +94,23 @@ Deployment configuration should use ``linux-64.spec`` directly.
 .. _environments: https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#building-identical-conda-environments
 
 
-Bump a new version
-------------------
+Deploying
+---------
 
-Make a new version of rook in the following steps:
+A reminder for the maintainers on how to deploy a new version.
 
-* Prepare the change on a release branch.
-* Update ``CHANGELOG.rst`` with the next version.
-* Dry run: ``bump-my-version bump --dry-run --verbose --new-version 1.2.4 patch``.
-* Create the release commit: ``bump-my-version bump --new-version 1.2.4 patch``.
-* Push the branch and merge the release commit through the normal review flow.
-* Update local ``main``: ``git switch main && git pull --ff-only``.
-* Tag the merged commit: ``git tag -a v1.2.4 -m "Release v1.2.4"``.
-* Push the tag: ``git push origin v1.2.4``.
+* Make sure all code changes have been committed and pushed to `main` (including an entry in CHANGELOG.rst).
+* Create a new branch and Pull Request (`prepare-release-vX.Y.Z`).
+* Update ``CHANGELOG.rst`` history under `unreleased`.
+* Dry run: ``bump-my-version bump major|minor|patch|build --dry-run --verbose``
+* Do it for real: ``bump-my-version bump major|minor|patch``
+* Prepare release version: ``bump-my-version bump release``
+* Push it: ``git push``
+* Merge your Pull Request to `main`.
+* Tag the last commit on `main`.
 
-``bump-my-version`` updates and commits the version metadata but deliberately
-does not create the tag. Creating it after the merge ensures the release tag
-identifies the exact commit deployed from ``main``.
+GitHub Workflow automation should then prepare a deployment to Docker Hub and to `TestPyPI`.
+Once the version has been published, the next deployment will then be to the official `PyPI`.
 
 See the bump-my-version_ documentation for details.
 

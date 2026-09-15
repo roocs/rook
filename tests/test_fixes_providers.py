@@ -146,9 +146,7 @@ def test_woodpecker_provider_prepares_decadal_concat_dataset(monkeypatch):
     class FakeWoodpecker:
         recipe = FakeRecipe
 
-    monkeypatch.setattr(
-        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
-    )
+    monkeypatch.setattr(WoodpeckerDatasetFixProvider, "require_available", lambda self: None)
     monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
 
     result = WoodpeckerDatasetFixProvider().prepare(
@@ -184,9 +182,7 @@ def test_woodpecker_provider_applies_decadal_recipe_without_check(monkeypatch):
     class FakeWoodpecker:
         recipe = FakeRecipe
 
-    monkeypatch.setattr(
-        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
-    )
+    monkeypatch.setattr(WoodpeckerDatasetFixProvider, "require_available", lambda self: None)
     monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
 
     result = WoodpeckerDatasetFixProvider().apply(
@@ -220,9 +216,7 @@ def test_woodpecker_provider_reports_applied_fix_stats(monkeypatch):
     class FakeWoodpecker:
         recipe = FakeRecipe
 
-    monkeypatch.setattr(
-        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
-    )
+    monkeypatch.setattr(WoodpeckerDatasetFixProvider, "require_available", lambda self: None)
     monkeypatch.setattr(
         woodpecker_provider,
         "memory_checkpoint",
@@ -238,8 +232,7 @@ def test_woodpecker_provider_reports_applied_fix_stats(monkeypatch):
     assert checkpoints == [
         (
             "Woodpecker fixes applied",
-            "dataset=c3s-cmip6-decadal.example.dataset "
-            "recipe=c3s.cmip6_decadal phase=apply attempted=3 changed=2",
+            "dataset=c3s-cmip6-decadal.example.dataset recipe=c3s.cmip6_decadal phase=apply attempted=3 changed=2",
         )
     ]
 
@@ -271,9 +264,7 @@ def test_woodpecker_provider_applies_atlas_recipe(monkeypatch):
     class FakeWoodpecker:
         recipe = FakeRecipe
 
-    monkeypatch.setattr(
-        WoodpeckerDatasetFixProvider, "require_available", lambda self: None
-    )
+    monkeypatch.setattr(WoodpeckerDatasetFixProvider, "require_available", lambda self: None)
     monkeypatch.setattr("importlib.import_module", lambda name: FakeWoodpecker)
 
     result = WoodpeckerDatasetFixProvider().apply(

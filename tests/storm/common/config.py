@@ -1,11 +1,7 @@
 import json
 
-C3S_CMIP6_DAY_COLLECTION = (
-    "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"
-)
-C3S_CMIP6_MON_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-)
+C3S_CMIP6_DAY_COLLECTION = "c3s-cmip6.CMIP.SNU.SAM0-UNICON.historical.r1i1p1f1.day.pr.gn.v20190323"
+C3S_CMIP6_MON_COLLECTION = "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 
 WF_C3S_CMIP6_SUBSET_AVERAGE = json.dumps(
     {

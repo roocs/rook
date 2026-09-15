@@ -10,13 +10,9 @@ from rook.pflow.spatial import SpatialRelation
 from rook.processes.wps_subset import Subset
 from rook.utils.metalink_utils import extract_paths_from_metalink, parse_metalink
 
-C3S_CMIP6_MON_COLLECTION = (
-    "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
-)
+C3S_CMIP6_MON_COLLECTION = "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245.r1i1p1f1.Amon.rlds.gr1.v20190619"
 
-C3S_CMIP6_MON_TASMIN_COLLECTION = (
-    "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
-)
+C3S_CMIP6_MON_TASMIN_COLLECTION = "c3s-cmip6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.Amon.tasmin.gn.v20190710"
 
 C3S_ATLAS_V25_CMIP5_COLLECTION = "c3s-cica-atlas.pr.CMIP5.rcp26.mon.v25"
 
@@ -59,9 +55,7 @@ def test_wps_subset_c3s_cmip6(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     datainputs += ";time=2015-01-01/2015-12-30;area=1,1,300,89"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -73,9 +67,7 @@ def test_wps_subset_c3s_cmip6_time_series(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     datainputs += ";time=2015-01-16T12:00:00,2016-01-16T12:00:00"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -136,19 +128,13 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;area=1,1,300,89"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     outputs = get_output(resp.xml)
     doc = prov.read(outputs["prov"][len("file://") :])
-    assert (
-        'roocs:time="1860-01-01/1900-12-30", roocs:area="1,1,300,89"' in doc.get_provn()
-    )
+    assert 'roocs:time="1860-01-01/1900-12-30", roocs:area="1,1,300,89"' in doc.get_provn()
     provn = doc.get_provn()
-    dataset = (
-        "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"
-    )
+    dataset = "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     output = first_output_name(outputs["output"])
     assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
     assert provn.count("wasDerivedFrom(") == 1
@@ -160,17 +146,13 @@ def test_wps_subset_cmip6_multiple_files_prov(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
     datainputs += ";time=1850-01-01/2013-12-30"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     outputs = get_output(resp.xml)
     doc = prov.read(outputs["prov"][len("file://") :])
     provn = doc.get_provn()
     assert 'roocs:time="1850-01-01/2013-12-30"' in provn
-    dataset = (
-        "CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical." "r1i1p1f1.SImon.siconc.gn.latest"
-    )
+    dataset = "CMIP6.CMIP.MPI-M.MPI-ESM1-2-HR.historical.r1i1p1f1.SImon.siconc.gn.latest"
     output = first_output_name(outputs["output"])
     assert f"wasDerivedFrom(roocs:{output}, roocs:{dataset}" in provn
     assert provn.count("wasDerivedFrom(") == 1
@@ -182,9 +164,7 @@ def test_wps_subset_cmip6_original_files(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical.r1i1p1f1.Amon.rlds.gr.v20180803"
     datainputs += ";time=1860-01-01/1900-12-30;original_files=1"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -194,9 +174,7 @@ def test_wps_subset_cmip6_original_files(get_output, pywps_cfg):
 def test_wps_subset_c3s_cmip6_collection_only(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -204,9 +182,7 @@ def test_wps_subset_c3s_cmip6_collection_only(get_output, pywps_cfg):
 def test_wps_subset_missing_collection(pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = ""
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_process_exception(resp, code="MissingParameterValue")
 
 
@@ -221,9 +197,7 @@ def test_wps_subset_disjoint_area_reports_spatial_error(monkeypatch, pywps_cfg):
     datainputs = f"collection={C3S_CMIP6_MON_COLLECTION}"
     datainputs += ";area=0,0,10,10"
 
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
 
     assert b"does not overlap the spatial extent of the dataset" in resp.data
 
@@ -235,9 +209,7 @@ def test_wps_subset_time_invariant_dataset(get_output, pywps_cfg):
     client = client_for(Service(processes=[Subset()], cfgfiles=[pywps_cfg]))
     datainputs = "collection=c3s-cmip6.ScenarioMIP.IPSL.IPSL-CM6A-LR.ssp119.r1i1p1f1.fx.mrsofc.gr.v20190410"
     datainputs += ";area=1,1,300,89"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
 
@@ -250,9 +222,7 @@ def test_wps_subset_c3s_atlas_v25_cmip5(get_output, pywps_cfg):
     datainputs = f"collection={C3S_ATLAS_V25_CMIP5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
     doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])
@@ -269,9 +239,7 @@ def test_wps_subset_c3s_atlas_v25_era5(get_output, pywps_cfg):
     datainputs = f"collection={C3S_ATLAS_V25_ERA5_COLLECTION}"
     datainputs += ";time=2020/2020"
     datainputs += ";time_components=month:jan,feb,mar"
-    resp = client.get(
-        f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}"
-    )
+    resp = client.get(f"?service=WPS&request=Execute&version=1.0.0&identifier=subset&datainputs={datainputs}")
     assert_response_success(resp)
     assert "meta4" in get_output(resp.xml)["output"]
     doc = prov.read(get_output(resp.xml)["prov"][len("file://") :])

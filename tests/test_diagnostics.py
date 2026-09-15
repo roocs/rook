@@ -14,9 +14,7 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
     calls = []
 
     monkeypatch.setattr(memory_diagnostics, "_STATUS_PATH", status)
-    monkeypatch.setattr(
-        memory_diagnostics, "current_timestamp", lambda: "2026-08-19T12:34:56Z"
-    )
+    monkeypatch.setattr(memory_diagnostics, "current_timestamp", lambda: "2026-08-19T12:34:56Z")
     monkeypatch.setattr(
         "builtins.print",
         lambda message, **kwargs: calls.append((message, kwargs)),
@@ -26,8 +24,7 @@ def test_memory_checkpoint_reads_proc_status_and_flushes_stderr(monkeypatch, tmp
 
     assert calls == [
         (
-            f"[diagnostic] 2026-08-19T12:34:56Z pid={os.getpid()} VmRSS: 123456 kB "
-            "before test stage | group=example",
+            f"[diagnostic] 2026-08-19T12:34:56Z pid={os.getpid()} VmRSS: 123456 kB before test stage | group=example",
             {"file": sys.stderr, "flush": True},
         )
     ]
@@ -62,9 +59,7 @@ def test_malloc_trim_reports_unavailable_off_linux(monkeypatch):
 
 
 def test_dataset_signature_reports_decadal_fix_markers(monkeypatch, capsys):
-    monkeypatch.setattr(
-        memory_diagnostics, "_STATUS_PATH", Path("/missing/proc/status")
-    )
+    monkeypatch.setattr(memory_diagnostics, "_STATUS_PATH", Path("/missing/proc/status"))
     dataset = xr.Dataset(
         {
             "tas": ("time", [280.0, 281.0]),

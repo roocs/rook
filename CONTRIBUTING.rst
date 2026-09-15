@@ -56,33 +56,43 @@ Get Started!
 Ready to contribute? Here's how to set up `rook` for local development.
 
 1. Fork the `rook` repo on GitHub.
-2. Clone your fork locally::
+2. Clone your fork locally:
+
+.. code-block:: console
 
     $ git clone git@github.com:your_name_here/rook.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
+
+.. code-block:: console
 
     $ mkvirtualenv rook
     $ cd rook/
     $ python setup.py develop
 
-4. Create a branch for local development::
+4. Create a branch for local development:
+
+.. code-block:: console
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
-   Now you can make your changes locally.
+Now you can make your changes locally.
 
 5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+   tests, including testing other Python versions with tox:
+
+.. code-block:: console
 
     $ make lint
     $ make test
-    Or
+    # or
     $ make test-all
 
    To get flake8 and tox, just pip install them into your virtualenv.
 
-6. Commit your changes and push your branch to GitHub::
+6. Commit your changes and push your branch to GitHub:
+
+.. code-block:: console
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
@@ -113,16 +123,22 @@ To run a subset of tests:
 Deploying
 ---------
 
-A reminder for the maintainers on how to deploy. Make sure the release branch
-includes the changelog, refreshed Conda artifacts, and version metadata. Push
-and merge that release commit, then tag the merged commit on ``main``:
+A reminder for the maintainers on how to deploy a new version.
+Make sure the release branch includes the changelog, refreshed Conda artifacts, and version metadata.
+Push and merge that release commit, then tag the merged commit on ``main``:
 
-.. code-block:: console
+  * Make sure all code changes have been committed and pushed to `main` (including an entry in CHANGELOG.rst).
+  * Create a new branch and Pull Request (`prepare-release-vX.Y.Z`).
+  * Update ``CHANGELOG.rst`` history under `unreleased`.
+  * Dry run: ``bump-my-version bump major|minor|patch|build --dry-run --verbose``
+  * Do it for real: ``bump-my-version bump major|minor|patch``
+  * Prepare release version: ``bump-my-version bump release``
+  * Push it: ``git push``
+  * Merge your Pull Request to `main`.
+  * Tag the last commit on `main`.
 
-    $ git switch main
-    $ git pull --ff-only
-    $ git tag -a v1.2.4 -m "Release v1.2.4"
-    $ git push origin v1.2.4
+GitHub Workflow automation should then prepare a deployment to Docker Hub and to `TestPyPI`.
+Once the version has been published, the next deployment will then be to the official `PyPI`.
 
 Code of Conduct
 ---------------

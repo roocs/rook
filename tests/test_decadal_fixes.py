@@ -15,10 +15,7 @@ cftime = pytest.importorskip("cftime")
 woodpecker_testing = pytest.importorskip("woodpecker.testing")
 pytest.importorskip("woodpecker_cmip6_decadal_plugin")
 
-DECADAL_DS_ID = (
-    "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast."
-    "s1960-r1i1p1f1.Omon.tos.gn.v20200101"
-)
+DECADAL_DS_ID = "c3s-cmip6-decadal.DCPP.MPI-M.MPI-ESM1-2-HR.dcppA-hindcast.s1960-r1i1p1f1.Omon.tos.gn.v20200101"
 
 
 def make_representative_decadal_sample():
@@ -77,13 +74,9 @@ def dataset_difference_report(left, right):
     if set(left.dims) != set(right.dims):
         differences.append(f"dims differ: {dict(left.dims)!r} != {dict(right.dims)!r}")
     if set(left.coords) != set(right.coords):
-        differences.append(
-            f"coords differ: {sorted(left.coords)!r} != {sorted(right.coords)!r}"
-        )
+        differences.append(f"coords differ: {sorted(left.coords)!r} != {sorted(right.coords)!r}")
     if set(left.data_vars) != set(right.data_vars):
-        differences.append(
-            f"data_vars differ: {sorted(left.data_vars)!r} != {sorted(right.data_vars)!r}"
-        )
+        differences.append(f"data_vars differ: {sorted(left.data_vars)!r} != {sorted(right.data_vars)!r}")
 
     for name in sorted(set(left.variables) & set(right.variables)):
         left_var = left[name]
@@ -91,13 +84,9 @@ def dataset_difference_report(left, right):
         if left_var.dims != right_var.dims:
             differences.append(f"{name}.dims: {left_var.dims!r} != {right_var.dims!r}")
         if left_var.dtype != right_var.dtype:
-            differences.append(
-                f"{name}.dtype: {left_var.dtype!r} != {right_var.dtype!r}"
-            )
+            differences.append(f"{name}.dtype: {left_var.dtype!r} != {right_var.dtype!r}")
         if left_var.attrs != right_var.attrs:
-            differences.append(
-                f"{name}.attrs: {left_var.attrs!r} != {right_var.attrs!r}"
-            )
+            differences.append(f"{name}.attrs: {left_var.attrs!r} != {right_var.attrs!r}")
         try:
             xr.testing.assert_equal(left_var, right_var)
         except AssertionError as exc:

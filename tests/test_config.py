@@ -204,9 +204,7 @@ def test_batching_requires_positive_integers(monkeypatch, value):
         {"subset:batching": {"target_timesteps": value}},
     )
 
-    with pytest.raises(
-        config.ConfigurationError, match=r"subset:batching\.target_timesteps"
-    ):
+    with pytest.raises(config.ConfigurationError, match=r"subset:batching\.target_timesteps"):
         config.get_batching_config()
 
 
@@ -235,11 +233,7 @@ def test_batching_requires_positive_memory_size(monkeypatch, value, section):
         {section: {"memory_limit": value}},
     )
 
-    getter = (
-        config.get_batching_config
-        if section == "subset:batching"
-        else config.get_concat_batching_config
-    )
+    getter = config.get_batching_config if section == "subset:batching" else config.get_concat_batching_config
     with pytest.raises(config.ConfigurationError, match=rf"{section}\.memory_limit"):
         getter()
 

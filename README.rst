@@ -4,12 +4,13 @@ rook
 
 
 +----------------------------+-----------------------------------------------------+
-| Versions                   | |conda| |versions|                                  |
+| Versions                   | |pypi| |conda| |versions|                           |
 +----------------------------+-----------------------------------------------------+
 | Documentation and Support  | |docs| |gitter|                                     |
 +----------------------------+-----------------------------------------------------+
 | Open Source                | |license|                                           |
-| Coding Standards           | |ruff| |prek| |pre-commit-ci|                       |
++----------------------------+-----------------------------------------------------+
+| Coding Standards           | |ruff| |prek| |pre-commit-ci| |zizmor|              |
 +----------------------------+-----------------------------------------------------+
 | Development Status         | |status| |build|                                    |
 +----------------------------+-----------------------------------------------------+
@@ -212,6 +213,10 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :target: https://github.com/j178/prek
         :alt: prek
 
+.. |pypi| image:: https://img.shields.io/pypi/v/birdhouse-rook.svg
+        :target: https://pypi.python.org/pypi/birdhouse-rook
+        :alt: PyPI Version
+
 .. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
         :target: https://github.com/astral-sh/ruff
         :alt: Ruff
@@ -220,6 +225,10 @@ This package was created with Cookiecutter_ and the `bird-house/cookiecutter-bir
         :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
         :target: https://www.repostatus.org/#active
 
-.. |versions| image:: https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg
-        :target: https://github.com/roocs/rook/blob/main/.github/workflows/main.yml
+.. |versions| image:: https://img.shields.io/pypi/status/birdhouse-rook.svg
+        :target: https://pypi.python.org/pypi/birdhouse-rook
         :alt: Supported Python Versions
+
+.. |zizmor| image:: https://img.shields.io/badge/%F0%9F%8C%88-zizmor-white?labelColor=white
+        :target: https://zizmor.sh/
+        :alt: zizmor

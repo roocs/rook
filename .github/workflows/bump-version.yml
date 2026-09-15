@@ -1,24 +1,65 @@
 name: Conditional Bump Version
 
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - .*
+      - .github/*.in
+      - .github/*.txt
+      - .github/*/*.md
+      - .github/*/*.yml
+      - AUTHORS.rst
+      - CHANGELOG.rst
+      - Dockerfile
+      - Makefile
+      - docs/*/*.ipynb
+      - docs/*/*.py
+      - docs/*/*.rst
+      - docs/Makefile
+      - docs/source/_images/*
+      - docs/source/_static/*
+      - environment-dev.yml
+      - environment-docs.yml
+      - environment.yml
+      - pyproject.toml
+      - src/rook/__version__.py
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  skip_without_bot_secrets:
-    name: Skip version bump
-    if: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID == '' || secrets.BIRDHOUSE_HELPER_BOT_KEY == '' || secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY == '' || secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD == '' }}
+  check_bot_secrets:
+    name: Check helper bot secrets
     runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
     steps:
-      - name: Explain skipped bump
+      - name: Check required secrets
+        id: check
+        env:
+          BOT_ID: ${{ secrets.ROOCS_HELPER_BOT_ID }}
+          BOT_KEY: ${{ secrets.ROOCS_HELPER_BOT_KEY }}
+          GPG_KEY: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
         run: |
-          echo "Version bump skipped because one or more Birdhouse helper bot secrets are not configured."
+          if [[ -n "$BOT_ID" &&
+                -n "$BOT_KEY" &&
+                -n "$GPG_KEY" &&
+                -n "$GPG_PASSWORD" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "All helper bot secrets are configured."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "One or more helper bot secrets are missing."
+          fi
 
   bump_patch_version:
     name: Bump build/patch version
-    if: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID != '' && secrets.BIRDHOUSE_HELPER_BOT_KEY != '' && secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY != '' && secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD != '' }}
+    needs: check_bot_secrets
+    if: needs.check_bot_secrets.outputs.configured == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -41,8 +82,8 @@ jobs:
         id: token_generator
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ secrets.BIRDHOUSE_HELPER_BOT_ID }}
-          private-key: ${{ secrets.BIRDHOUSE_HELPER_BOT_KEY }}
+          app-id: ${{ secrets.ROOCS_HELPER_BOT_ID }}
+          private-key: ${{ secrets.ROOCS_HELPER_BOT_KEY }}
           permission-contents: write
 
       - name: Checkout Repository
@@ -59,15 +100,15 @@ jobs:
       - name: Import GPG Key
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
-          gpg_private_key: ${{ secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.BIRDHOUSE_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
+          gpg_private_key: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.ROOCS_HELPER_BOT_GPG_PRIVATE_KEY_PASSWORD }}
           git_user_signingkey: true
           git_commit_gpgsign: true
           trust_level: 5
 
       - name: Install CI libraries
         run: |
-          python -m pip install --require-hashes -r CI/requirements_ci.txt
+          python -m pip install --require-hashes -r .github/requirements_ci.txt
 
       - name: Conditional Bump
         run: |

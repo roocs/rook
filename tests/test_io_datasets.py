@@ -121,9 +121,7 @@ def test_open_dataset_skips_fixes_without_catalog_dataset_id(monkeypatch):
 
 def test_dataset_fix_policy_requires_catalog_identity():
     assert helpers.should_apply_dataset_fixes(source("project.dataset", "a.nc")) is True
-    assert (
-        helpers.should_apply_dataset_fixes(source(None, "workflow-output.nc")) is False
-    )
+    assert helpers.should_apply_dataset_fixes(source(None, "workflow-output.nc")) is False
 
 
 def test_apply_dataset_fix_policy_uses_dataset_id(monkeypatch):
@@ -153,12 +151,7 @@ def test_is_kerchunk_file_local_json():
 
 
 def test_is_kerchunk_file_url_with_query():
-    assert (
-        helpers.is_kerchunk_file(
-            "https://example.org/path/catalog.parquet?token=abc123"
-        )
-        is True
-    )
+    assert helpers.is_kerchunk_file("https://example.org/path/catalog.parquet?token=abc123") is True
 
 
 def test_is_kerchunk_file_reference_scheme():
@@ -170,9 +163,7 @@ def test_is_kerchunk_file_non_kerchunk_path():
 
 
 def test_detect_format_netcdf():
-    assert (
-        helpers.detect_format(source(None, "file.nc")) is helpers.DatasetFormat.NETCDF
-    )
+    assert helpers.detect_format(source(None, "file.nc")) is helpers.DatasetFormat.NETCDF
 
 
 def test_detect_format_kerchunk_url_with_query():
@@ -194,25 +185,13 @@ def test_is_zarr_store_netcdf_path():
 
 
 def test_detect_format_zarr_from_catalog_paths():
-    assert (
-        helpers.detect_format(source("project.dataset", ["s3://bucket/example.zarr"]))
-        is helpers.DatasetFormat.ZARR
-    )
+    assert helpers.detect_format(source("project.dataset", ["s3://bucket/example.zarr"])) is helpers.DatasetFormat.ZARR
 
 
 def test_detect_transport_is_independent_of_format():
-    assert (
-        helpers.detect_transport(source(None, "s3://bucket/file.nc"))
-        is helpers.Transport.S3
-    )
-    assert (
-        helpers.detect_transport(source(None, "s3://bucket/example.zarr"))
-        is helpers.Transport.S3
-    )
-    assert (
-        helpers.detect_transport(source(None, "https://example.org/ref.json"))
-        is helpers.Transport.HTTP
-    )
+    assert helpers.detect_transport(source(None, "s3://bucket/file.nc")) is helpers.Transport.S3
+    assert helpers.detect_transport(source(None, "s3://bucket/example.zarr")) is helpers.Transport.S3
+    assert helpers.detect_transport(source(None, "https://example.org/ref.json")) is helpers.Transport.HTTP
 
 
 def test_detect_transport_rejects_mixed_transports():

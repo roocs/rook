@@ -169,9 +169,7 @@ def test_daily_concat_uses_yearly_batches_for_bounded_and_full_requests():
         "2005",
         "2006",
     ]
-    assert [batch.start[:4] for batch in unconstrained] == [
-        batch.start[:4] for batch in bounded
-    ]
+    assert [batch.start[:4] for batch in unconstrained] == [batch.start[:4] for batch in bounded]
     assert all(batch.start[:4] == batch.end[:4] for batch in bounded)
     assert all(batch.start[:4] == batch.end[:4] for batch in unconstrained)
 
@@ -212,9 +210,7 @@ def test_concat_request_shorter_than_one_year_stays_in_one_batch():
         max_batch_years=1,
     )
 
-    assert planner.plan(time) == [
-        TimeBatch("2000-03-01T00:00:00", "2000-08-31T00:00:00")
-    ]
+    assert planner.plan(time) == [TimeBatch("2000-03-01T00:00:00", "2000-08-31T00:00:00")]
 
 
 def test_concat_year_ceiling_does_not_change_subset_batching():
@@ -311,10 +307,7 @@ def test_concat_batch_is_a_generic_time_batch_callback_processor():
 
 def test_concat_batch_applies_dataset_selector_before_concat(monkeypatch):
     time = xr.date_range("1962-01-01", "1962-12-31", freq="D", use_cftime=True)
-    datasets = [
-        xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time})
-        for _ in range(2)
-    ]
+    datasets = [xr.Dataset({"tas": ("time", range(len(time)))}, coords={"time": time}) for _ in range(2)]
     collection, open_dataset = _concat_batch_inputs(datasets)
     processor = ConcatBatch(
         ConcatBatchPlanner(
@@ -449,9 +442,7 @@ def test_concat_batch_closes_batch_sources_after_write_exception():
             planning_time=time,
             dim="realization",
             open_dataset=open_dataset,
-            operation=lambda *_args: (_ for _ in ()).throw(
-                RuntimeError("write failed")
-            ),
+            operation=lambda *_args: (_ for _ in ()).throw(RuntimeError("write failed")),
         )
 
     assert closed == [True]
@@ -462,9 +453,7 @@ def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
     dataset = xr.Dataset(coords={"time": time})
     checkpoints = []
 
-    monkeypatch.setattr(
-        "rook.batch.concat.free_memory_diagnostic_enabled", lambda: True
-    )
+    monkeypatch.setattr("rook.batch.concat.free_memory_diagnostic_enabled", lambda: True)
     monkeypatch.setattr("rook.batch.concat.gc.collect", lambda: 7)
     monkeypatch.setattr("rook.batch.concat.malloc_trim", lambda: True)
     monkeypatch.setattr(
@@ -486,11 +475,5 @@ def test_concat_batch_can_run_opt_in_memory_cleanup(monkeypatch):
         operation=lambda *_args: ["batch.nc"],
     )
 
-    assert any(
-        label == "after gc.collect()" and "collected=7" in details
-        for label, details in checkpoints
-    )
-    assert any(
-        label == "after malloc_trim(0)" and "released=True" in details
-        for label, details in checkpoints
-    )
+    assert any(label == "after gc.collect()" and "collected=7" in details for label, details in checkpoints)
+    assert any(label == "after malloc_trim(0)" and "released=True" in details for label, details in checkpoints)
