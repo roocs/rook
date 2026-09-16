@@ -228,7 +228,7 @@ imply that a proxy has already been selected. -->
 
 ---
 
-## 8 AAI for the ESGF2 Compute Node with EGI
+## 8. AAI for the ESGF2 Compute Node with EGI
 
 * Users sign in through **EGI Check-in** using institutional accounts, **ORCID, GitHub, Google**, or other identity providers.
 * MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
@@ -247,3 +247,86 @@ flowchart TD
 ```
 
 **EGI provides identity and entitlements; the proxy protects WPS.**
+
+---
+
+## 9. Option 1 — icclim as a Rook plugin
+
+* `rook-icclim` is maintained in a separate repository.
+* Python entry points register one generic `climate_indices` process.
+* Sites choose either **core** or **core + icclim** requirements.
+* All processes run in the same conda environment.
+
+```mermaid
+flowchart LR
+    Client["Client"] --> WPS["Rook/WPS"]
+
+    subgraph Service["One service and environment"]
+        WPS --> Core["Core processes"]
+        WPS --> Plugin["icclim plugin"]
+    end
+
+    Core --> Slurm["Slurm"]
+    Plugin --> Slurm
+    Slurm --> Data[("Local data")]
+```
+
+**Simple integration, provided the dependencies remain compatible.**
+
+<!-- Toulouse maintains the plugin and its scientific implementation. Compute
+sites decide whether to install it. A locked combined environment must be
+tested against existing Rook/CDS workflows. -->
+
+---
+
+## 9. Option 2 — Separate icclim WPS
+
+* Rook and icclim use independent conda environments.
+* Both services run next to the data and use the local Slurm cluster.
+* Existing Ansible support for multiple WPS instances can be reused.
+* Dependencies and release cycles remain isolated.
+
+```mermaid
+flowchart TD
+    Client["Client"] --> Proxy["Auth proxy"]
+
+    Proxy --> Rook["Rook/WPS"]
+    Proxy --> ICCLIM["icclim WPS"]
+
+    Rook --> Slurm["Slurm"]
+    ICCLIM --> Slurm
+    Slurm --> Data[("Local data")]
+```
+
+**More deployment work, but stronger isolation and independent ownership.**
+
+<!-- Toulouse can maintain the complete icclim WPS. The service is deployed at
+CEDA, DKRZ or another data site; calculations do not need to run in Toulouse. -->
+
+---
+
+## 9. Option 2 — Chaining both services
+
+* Rook first creates the required spatial and temporal subset.
+* Its output URL becomes the input of the icclim process.
+* At the same site, trusted output URLs can map directly to local files.
+* The client coordinates both jobs initially.
+* Server-side workflow orchestration can be added later.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Rook as Rook/WPS
+    participant ICCLIM as icclim WPS
+
+    Client->>Rook: Submit subset
+    Rook-->>Client: Result URL
+    Client->>ICCLIM: Result URL + index
+    ICCLIM-->>Client: Climate-index result
+```
+
+**Separate services, but the intermediate data remains at the Compute Node.**
+
+<!-- URL-to-path translation must accept only configured local output prefixes.
+A later workflow/orchestrate process could coordinate both asynchronous jobs
+and expose one composite job to the client. -->
