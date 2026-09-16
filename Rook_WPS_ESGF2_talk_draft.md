@@ -250,7 +250,7 @@ flowchart TD
 
 ---
 
-## 9. Option 1 — icclim as a Rook plugin
+## 9-1. Option 1 — icclim as a Rook plugin
 
 * `rook-icclim` is maintained in a separate repository.
 * Python entry points register one generic `climate_indices` process.
@@ -279,54 +279,62 @@ tested against existing Rook/CDS workflows. -->
 
 ---
 
-## 9. Option 2 — Separate icclim WPS
+## 9-2-1 Option 2 — Separate icclim WPS
 
 * Rook and icclim use independent conda environments.
 * Both services run next to the data and use the local Slurm cluster.
+* The **Rook broker** selects the service providing the requested process.
+* Its inventory contains dataset locations and available processing capabilities.
 * Existing Ansible support for multiple WPS instances can be reused.
-* Dependencies and release cycles remain isolated.
 
 ```mermaid
 flowchart TD
     Client["Client"] --> Proxy["Auth proxy"]
+    Proxy --> Broker["Rook broker"]
 
-    Proxy --> Rook["Rook/WPS"]
-    Proxy --> ICCLIM["icclim WPS"]
+    Broker -->|"subset, average, regrid"| Rook["Rook/WPS"]
+    Broker -->|"climate_indices"| ICCLIM["icclim WPS"]
 
     Rook --> Slurm["Slurm"]
     ICCLIM --> Slurm
     Slurm --> Data[("Local data")]
 ```
 
-**More deployment work, but stronger isolation and independent ownership.**
+**The broker provides one access route to independently deployed services.**
 
-<!-- Toulouse can maintain the complete icclim WPS. The service is deployed at
-CEDA, DKRZ or another data site; calculations do not need to run in Toulouse. -->
+<!-- The broker must know both where datasets are available and which processes
+each service provides. It delegates the request and returns the selected
+service's job-status URL directly. It does not mirror the delegated job. -->
 
 ---
 
-## 9. Option 2 — Chaining both services
+## 9-2-2 Option 2 — Chaining through the broker
 
-* Rook first creates the required spatial and temporal subset.
-* Its output URL becomes the input of the icclim process.
-* At the same site, trusted output URLs can map directly to local files.
+* Submit `subset` to the broker; it delegates the job to Rook.
+* Use the subset output URL as input for `climate_indices`.
+* Submit the second request to the broker; it delegates to the icclim WPS.
+* Trusted local output URLs can be translated to shared filesystem paths.
 * The client coordinates both jobs initially.
-* Server-side workflow orchestration can be added later.
 
 ```mermaid
 sequenceDiagram
     participant Client
+    participant Broker as Rook broker
     participant Rook as Rook/WPS
     participant ICCLIM as icclim WPS
 
-    Client->>Rook: Submit subset
+    Client->>Broker: subset
+    Broker->>Rook: Delegate
     Rook-->>Client: Result URL
-    Client->>ICCLIM: Result URL + index
+
+    Client->>Broker: climate_indices + result URL
+    Broker->>ICCLIM: Delegate
     ICCLIM-->>Client: Climate-index result
 ```
 
-**Separate services, but the intermediate data remains at the Compute Node.**
+**The broker selects each service; the intermediate data remains at the Compute Node.**
 
-<!-- URL-to-path translation must accept only configured local output prefixes.
-A later workflow/orchestrate process could coordinate both asynchronous jobs
-and expose one composite job to the client. -->
+<!-- Initially, the client follows each delegated job URL and submits the next
+step. Later, a workflow coordinator or an extended orchestrate process could
+manage both jobs and expose one composite status URL. The simple broker remains
+a delegation layer. -->
