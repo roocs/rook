@@ -225,3 +225,25 @@ imply that a proxy has already been selected. -->
 - Woodpecker configuration: docs/source/configuration.rst
 - Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
 -->
+
+---
+
+## 8 AAI for the ESGF2 Compute Node with EGI
+
+* Users sign in through **EGI Check-in** using institutional accounts, **ORCID, GitHub, Google**, or other identity providers.
+* MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
+* **Twitcher/auth-proxy** validates the token, authorizes access and handles delegation.
+* The **WPS endpoint remains independent of the AAI implementation**.
+
+```mermaid
+flowchart TD
+    IdP["Institution / ORCID / GitHub / Google"] --> EGI["EGI Check-in"]
+
+    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["Twitcher / auth-proxy"]
+    Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
+
+    EGI <-->|"OAuth2 / OIDC"| Proxy
+    Proxy -->|"Authorized request"| WPS["WPS endpoint"]
+```
+
+**EGI provides identity and entitlements; the proxy protects WPS.**
