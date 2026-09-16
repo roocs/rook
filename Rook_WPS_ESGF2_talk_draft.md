@@ -10,7 +10,7 @@ Processing climate data close to the archive
 | 2 | Processing capabilities | 1:00 |
 | 3 | Rook in the Copernicus CDS today | 1:15 |
 | 4 | Planned ESGF2 broker | 2:00 |
-| 5 | One workflow: notebook demonstration | 2:00 |
+| 5 | Notebook: today and proposed broker | 2:00 |
 | 6 | Deployment today | 1:00 |
 | 7 | Discovery, AAI and next steps | 1:45 |
 
@@ -113,30 +113,54 @@ does not mirror remote job state and must not create broker-to-broker loops. -->
 
 ---
 
-## 5. One workflow: notebook demonstration
+## 5. Notebook: today and proposed broker
 
-**Regional mean temperature over a selected period**
+**Current implementation — executable with Rooki**
 
-- Select a dataset, region and time range.
-- Build a **subset → average** workflow with Rooki.
-- Submit and follow the job.
-- Retrieve and plot the regional time series.
+```python
+from rooki.client import Rooki
 
-```mermaid
-flowchart LR
-    Notebook["Rooki notebook"] --> Workflow["Workflow document"]
-    Workflow -->|"Today"| Direct["orchestrate"]
-    Workflow -.->|"Planned"| Broker["broker"]
-    Direct --> Result["Time series"]
-    Broker -.-> Result
+rook = Rooki("https://rook.dkrz.de/wps", mode="async")
+
+response = rook.subset(
+    collection=(
+        "c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical."
+        "r1i1p1f1.Amon.rlds.gr.v20180803"
+    ),
+    time="1985-01-01/2014-12-30",
+    area="-10,35,30,70",
+)
+
+response.ok
+response.download_urls()
+dataset = response.datasets()[0]
 ```
 
-**The workflow stays the same; the broker adds site selection.**
+**Proposed ESGF2 broker — same user intent, automatic site selection**
 
-<!-- 2:00. Demonstrate the existing direct orchestrate path with one verified
-dataset. Explain that the planned broker will accept the same workflow document.
-Do not imply that the notebook already runs through the broker. Have a completed
-notebook and plot ready as a fallback. -->
+```python
+workflow = {
+    "process": "subset",
+    "inputs": {
+        "collection": "<same-dataset-id>",
+        "time": "1985-01-01/2014-12-30",
+        "area": "-10,35,30,70",
+    },
+}
+
+job = rook.broker(workflow=workflow)  # proposed API
+job.status_url
+```
+
+**Today the client selects the service. The broker will select the site.**
+
+<!-- 2:00. Run only the first example. It uses the dataset from the documented
+Rooki example; verify the endpoint and dataset before the talk and prepare the
+completed result as a fallback. response.download_urls() and response.datasets() are part
+of the current Rooki interface. The broker call is deliberately labelled as a
+proposed API sketch. Its exact Python signature is not implemented or fixed yet.
+For a multi-step subset/average example, pass an orchestrate-style workflow
+document instead; the architectural point remains the same. -->
 
 ---
 
@@ -166,31 +190,33 @@ production architecture. -->
 ## 7. Discovery, AAI and next steps
 
 - **STAC:** optionally advertise processing with a small flag or service link.
-- **Discovery:** MetaGrid or another portal can find this information in STAC.
-- **AAI:** update earlier OAuth2/Keycloak proxy solutions for ESGF2.
-- **CMIP7:** validate representative datasets and workflows.
-- **Deployment:** prepare Docker/Kubernetes/Helm as an alternative.
+- **Portal:** MetaGrid or another client discovers the endpoint through STAC.
+- **AAI proxy:** protect Rook and delegate identity with OAuth2/Keycloak.
+- **Next:** validate CMIP7 workflows and prepare a container deployment.
 
 ```mermaid
-flowchart LR
-    STAC["STAC catalogue"] -->|"Optional processing tag"| Portal["MetaGrid or client"]
-    Portal -->|"Processing request"| Broker["Rook broker"]
+flowchart TD
+    STAC["STAC catalogue"] -->|"Optional processing link"| Portal["MetaGrid or client"]
+    Portal --> Proxy["AAI proxy"]
+    Keycloak["OAuth2 / Keycloak"] <--> Proxy
+    Proxy --> Broker["Rook broker"]
 ```
 
-**Rook provides processing. STAC makes it discoverable. The portal decides how to expose it.**
+**STAC provides discovery. AAI protects access. Rook provides processing.**
 
 <!-- 1:45. Rook's integration boundary is the processing API and optional STAC
 information. Portal integration belongs to MetaGrid or its successor. A small
 processing indicator or service link is sufficient and can be added later via
 an ESGF2 Kafka update; do not propose an exact STAC schema in this talk.
 
-AAI does not start from scratch. Earlier deployments used an AAI proxy with
-OAuth2 delegation to Keycloak. CEDA developed an Nginx/Python proxy. Twitcher
-offers more OGC-aware functionality, including service registration, OAuth2 and
-certificate support, and is actively used by Ouranos in Canada. For ESGF2, the
-components and the required user-to-service and service-to-service delegation
-patterns need to be reviewed. Do not imply that a proxy has already been
-selected. -->
+AAI is a required layer between clients and the processing services, especially
+when a portal acts on behalf of a user. It does not start from scratch. Earlier
+deployments used an AAI proxy with OAuth2 delegation to Keycloak. CEDA developed
+an Nginx/Python proxy. Twitcher offers more OGC-aware functionality, including
+service registration, OAuth2 and certificate support, and is actively used by
+Ouranos in Canada. ESGF2 still needs to review these components and define the
+required user-to-service and service-to-service delegation patterns. Do not
+imply that a proxy has already been selected. -->
 
 <!-- Preparation references:
 
