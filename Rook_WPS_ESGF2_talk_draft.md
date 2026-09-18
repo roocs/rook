@@ -1,43 +1,60 @@
 # Rook/WPS for ESGF2
 
-Processing climate data close to the archive
+## Smart access to climate data
 
-## Talk outline — 10 minutes
+[![Rook — Corvus frugilegus](https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Rook-Corvus_frugilegus.jpg/960px-Rook-Corvus_frugilegus.jpg)](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg)
 
-| Slide | Topic | Time |
-| --- | --- | ---: |
-| 1 | Why provide a Compute Node? | 1:00 |
-| 2 | Processing capabilities | 1:00 |
-| 3 | Rook in the Copernicus CDS today | 1:15 |
-| 4 | Planned ESGF2 broker | 2:00 |
-| 5 | Notebook: today and proposed broker | 2:00 |
-| 6 | Deployment today | 1:00 |
-| 7 | Discovery, AAI and next steps | 1:45 |
+**Rook — Remote Operations On Klimadaten**
 
-The horizontal rules separate slides. HTML comments contain presenter notes.
-The AAI and icclim slides after the main talk are backup and discussion material.
+*Like the bird: surveys vast archives, finds what matters, and brings it within easy reach.*
+
+*Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
+
+<!-- Main talk: seven slides, about ten minutes. Horizontal rules separate
+slides. HTML comments contain presenter notes. The AAI and icclim slides after
+the main talk are backup and discussion material. -->
 
 ---
 
-# 1. Why provide a Compute Node?
+# 1. What is Rook?
 
-**Example: How does regional mean temperature change over time?**
-
-- Select only the region and period needed.
-- Process the data close to the archive.
-- Retrieve the small, usable result.
-- Integrate processing into scientific workflows and applications.
+- A **remote processing service** from the roocs project.
+- Clients use **logical datasets and workflows**.
+- Processing runs **close to the data** and returns only the **requested result**.
 
 ```mermaid
 flowchart LR
-    User["User or application"] -->|"Processing request"| Rook["Rook/WPS"]
-    Archive[("Climate archive")] --> Rook
-    Rook -->|"Requested result"| User
+    subgraph Clients
+        CDS["Copernicus CDS"]
+        ESGF["ESGF2"]
+        NB["Notebooks"]
+    end
+
+    Rook["Rook/WPS<br/>Remote processing service"]
+
+    subgraph Processing["Processing library"]
+        Clisops["clisops"]
+        Ops["Subset · Average · Regrid · …"]
+        Clisops --- Ops
+    end
+
+    subgraph Data["Data pools"]
+        CMIP6["CMIP6"]
+        CORDEX["CORDEX"]
+        Other["Other collections"]
+    end
+
+    Clients -->|"Request"| Rook
+    Rook -->|"Operation"| Processing
+    Processing -->|"Read data"| Data
 ```
 
-<!-- 1:00. A Compute Node is an additional access route for ESGF users. It
-complements file download: users can still retrieve complete files when that is
-what they need. Avoid implying complete CMIP7 coverage today. -->
+**Move the processing to the data.**
+
+<!-- 1:00. Rook connects climate-data clients with Python processing based on
+xarray and clisops. It complements file download: users can still retrieve
+complete files when that is what they need. Avoid implying complete CMIP7
+coverage today. -->
 
 ---
 
@@ -69,19 +86,22 @@ separate Woodpecker talk. -->
 
 **Operational today**
 
-- CDS submits workflows to Rook.
-- DKRZ and IPSL provide equivalent data and processing.
-- A load balancer distributes requests between the sites.
-- Each site processes its local data.
+- **One access point** for CDS workflows.
+- **Identical Rook installations** at DKRZ and IPSL.
+- **Equivalent data and processing** at both sites.
+- The **load balancer can choose any available Rook**.
+- Rook executes the workflow **close to the data**.
 
 ```mermaid
 flowchart LR
-    CDS["Copernicus CDS"] --> LB["Load balancer"]
-    LB --> DE["Rook at DKRZ"]
-    LB --> FR["Rook at IPSL"]
-    DEData[("Local data")] --> DE
-    FRData[("Local data")] --> FR
+    CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
+    LB --> Rook["Identical Rook sites"]
+    Rook --> Data["Equivalent replicated data"]
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
 ```
+
+**CDS: choose any available Rook.**
 
 <!-- 1:15. This is the existing model for supported CDS datasets. Equivalent
 holdings make both sites interchangeable. ESGF2 needs smarter routing because
@@ -91,86 +111,91 @@ participating sites will not necessarily hold the same datasets. -->
 
 # 4. Planned ESGF2 broker
 
-**Route processing to a site that holds the requested dataset**
+**Route the same workflow to a site that holds the requested dataset**
 
-- Add a `broker` process to Rook.
-- Accept the same workflow document used by `orchestrate`.
-- Resolve dataset placement and available processing services.
-- Submit the concrete processing job asynchronously.
-- Return the selected service's job-status URL directly.
+- **NEW: `broker`** decides where the workflow runs.
+- **NEW: local PostgreSQL index** provides fast dataset-to-site lookup.
+- **REUSE: Kafka** keeps the local index synchronized.
+- **FALLBACK: global STAC** supplies missing or stale placement information.
+- ESGF2 data pools remain **independently managed and different**.
 
 ```mermaid
 flowchart TD
-    Kafka["ESGF2 Kafka events"] --> Piddi["Piddiplatsch"]
-    Piddi --> Index[("Local inventory")]
-    STAC["Global STAC catalogue"] --> Broker["Rook broker"]
-    Client["Client"] -->|"Dataset + workflow"| Broker["Rook broker"]
-    Broker --> Index
-    Broker -->|"Submit concrete process"| Site["Selected processing service"]
-    Site -->|"Accepted job + status URL"| Broker
-    Broker -->|"Return selected job URL"| Client
+    Client["ESGF2 client"] -->|"Same workflow"| LB["Load balancer"]
+    LB --> Rook["Identical Rook sites"]
+    Rook --> Broker["NEW: broker"]
+    Kafka["Kafka"] --> Index[("Local PostgreSQL index")]
+    Index --> Broker
+    Broker -.->|"Fallback"| STAC["Global STAC"]
+    Broker -->|"Choose site"| Orchestrate["orchestrate at selected site"]
+    Orchestrate --> Data["Independent ESGF2 data pools"]
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+    style Index fill:#fff3bf,stroke:#d69e00,color:#000
+    style Kafka fill:#fff3bf,stroke:#d69e00,color:#000
 ```
 
-**The client describes the workflow. The broker selects the data and service.**
+**ESGF2: choose the Rook that has the data.**
 
 <!-- 2:00. Planned architecture. Kafka publication, update and deletion events
-keep a local PostgreSQL inventory current through a Piddiplatsch plugin. The
-global STAC catalogue describes cross-site dataset availability. Kafka is not
-part of the synchronous request path. The selected service may run a single
-process or an orchestrated workflow. The broker passes the accepted-job
-response and status URL back to the client. It does not mirror remote job state
-and must not create broker-to-broker loops. -->
+keep the local PostgreSQL index current through a Piddiplatsch plugin. The index
+contains global dataset placement and detailed local assets. Global STAC is the
+authoritative fallback when local information is missing or stale. Kafka and
+STAC are not part of the normal synchronous request path.
+
+The broker does not change or execute the workflow. It forwards the same
+workflow to the selected Rook site's `orchestrate` process and passes the
+accepted-job response and status URL back to the client. It does not mirror
+remote job state and must not create broker-to-broker loops. -->
 
 ---
 
 # 5. Notebook: today and proposed broker
 
-**Current implementation — executable with Rooki**
+**Define the workflow once with Rooki**
 
 ```python
-from rooki.client import Rooki
+from rooki import operators as ops
 
-rook = Rooki("https://rook.dkrz.de/wps", mode="async")
-
-response = rook.subset(
-    collection=(
-        "c3s-cmip6.CMIP.IPSL.IPSL-CM6A-LR.historical."
-        "r1i1p1f1.Amon.rlds.gr.v20180803"
+wf = ops.Subset(
+    ops.Input(
+        "tas",
+        [
+            "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245."
+            "r1i1p1f1.day.tas.gr1.v20190619"
+        ],
     ),
-    time="1985-01-01/2014-12-30",
-    area="-10,35,30,70",
+    time="2016/2020",
+    time_components="month:jan,feb,mar|day:01",
 )
-
-response.ok
-response.download_urls()
-dataset = response.datasets()[0]
 ```
 
-**Proposed ESGF2 broker — same user intent, automatic site selection**
+**Today — send the workflow to `orchestrate` at a chosen Rook service**
 
 ```python
-workflow = {
-    "process": "subset",
-    "inputs": {
-        "collection": "<same-dataset-id>",
-        "time": "1985-01-01/2014-12-30",
-        "area": "-10,35,30,70",
-    },
-}
-
-job = rook.broker(workflow=workflow)  # proposed API
-job.status_url
+resp = wf.orchestrate()
+resp.ok
 ```
 
-**Today the client selects the service. The broker will select the site.**
+**Proposed — send the same workflow to `broker`**
 
-<!-- 2:00. Run only the first example. It uses the dataset from the documented
-Rooki example; verify the endpoint and dataset before the talk and prepare the
-completed result as a fallback. response.download_urls() and response.datasets() are part
-of the current Rooki interface. The broker call is deliberately labelled as a
-proposed API sketch. Its exact Python signature is not implemented or fixed yet.
-For a multi-step subset/average example, pass an orchestrate-style workflow
-document instead; the architectural point remains the same. -->
+```python
+resp = wf.broker()  # proposed API
+resp.ok
+```
+
+**Same workflow: `broker` decides WHERE — `orchestrate` decides HOW.**
+
+<!-- 2:00. The workflow construction and wf.orchestrate() call come from the
+existing notebook. Verify the endpoint and dataset before the talk and prepare
+the completed result as a fallback.
+
+wf.broker() is deliberately labelled as a proposed API sketch; its exact
+Python signature is not implemented or fixed yet. Both calls serialize the
+same workflow document. Orchestrate executes it at the service selected by the
+client. Broker inspects it to resolve the dataset location, forwards it
+unchanged to the selected Rook site, and returns that site's job-status URL. -->
 
 ---
 
@@ -180,8 +205,8 @@ document instead; the architectural point remains the same. -->
 
 - **Ansible** provisions Rook/WPS on **VMs**.
 - **Slurm** schedules processing jobs.
-- Jobs access data available at the site.
-- The same model can be deployed at further ESGF2 sites.
+- Jobs access **data available at the site**.
+- The same model can be deployed at **further ESGF2 sites**.
 
 ```mermaid
 flowchart LR
@@ -199,18 +224,19 @@ production architecture. -->
 
 # 7. Discovery, AAI and next steps
 
-- **STAC:** optionally advertise processing with a small flag or service link.
-- **Portal:** MetaGrid or another client discovers the endpoint through STAC.
-- **AAI proxy:** protect Rook and support OAuth2 identity delegation.
-- **Demo:** use the existing and maintained Twitcher security proxy.
-- **Later:** review or rewrite the proxy for the final ESGF2 architecture.
-- **Next:** validate CMIP7 workflows and prepare a container deployment.
+- **STAC:** advertise processing with a **small flag or service link**.
+- **Portal:** MetaGrid or another client **discovers the endpoint through STAC**.
+- **AAI security proxy:** protect Rook and support **OAuth2 identity delegation**.
+- **Identity:** use **EGI Check-in or Keycloak** with institutional, **GitHub, Google, or ORCID** accounts.
+- **Demo:** use the existing and maintained **Twitcher** security proxy.
+- **Later:** review or rewrite the proxy for the **final ESGF2 architecture**.
+- **Next:** validate **CMIP7 workflows** and prepare a **container deployment**.
 
 ```mermaid
 flowchart TD
     STAC["STAC catalogue"] -->|"Optional processing link"| Portal["MetaGrid or client"]
-    Portal -->|"Bearer token"| Proxy["Twitcher security proxy"]
-    EGI["EGI Check-in"] <-->|"OAuth2 / OIDC"| Proxy
+    Portal -->|"Bearer token"| Proxy["AAI security proxy"]
+    Identity["EGI Check-in or Keycloak"] <-->|"OAuth2 / OIDC"| Proxy
     Proxy --> Broker["Rook broker"]
 ```
 
@@ -229,7 +255,7 @@ the selected proxy implementation. -->
 
 <!-- Preparation references:
 
-- Local broker/CDS design: ARCH_ESGF2.md
+- Detailed broker architecture: https://github.com/roocs/rook/blob/add-milan-presentation/ARCH_ESGF2.md
 - Process catalogue: docs/source/processes.rst
 - Woodpecker configuration: docs/source/configuration.rst
 - Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
@@ -241,19 +267,20 @@ the selected proxy implementation. -->
 
 ## Existing components support an immediate demonstration
 
-- Users sign in through **EGI Check-in**.
+- Users sign in through **EGI Check-in or Keycloak**.
+- Supported identities can include institutional accounts, **GitHub, Google, and ORCID**.
 - MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
 - **Twitcher** validates the token, authorizes access, and protects the WPS endpoint.
 - Twitcher is maintained and currently used by **Ouranos in Canada**.
-- ESGF2 can use Twitcher for a demonstration while designing a future security proxy.
-- The processing API remains independent of the proxy implementation.
+- ESGF2 can use **Twitcher for a demonstration** while designing a future security proxy.
+- The **processing API remains independent** of the proxy implementation.
 
 ```mermaid
 flowchart TD
-    IdP["Identity provider"] --> EGI["EGI Check-in"]
-    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["Twitcher"]
+    IdP["Institution / GitHub / Google / ORCID"] --> Identity["EGI Check-in or Keycloak"]
+    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["AAI security proxy"]
     Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
-    EGI <-->|"OAuth2 / OIDC"| Proxy
+    Identity <-->|"OAuth2 / OIDC"| Proxy
     Proxy -->|"Authorized request"| WPS["WPS endpoint"]
 ```
 
@@ -263,10 +290,10 @@ flowchart TD
 
 # B1. Option 1 — icclim as a Rook plugin
 
-- `rook-icclim` is maintained in a separate repository.
-- Python entry points register one generic `climate_indices` process.
+- **`rook-icclim`** is maintained in a **separate repository**.
+- **Python entry points** register one generic `climate_indices` process.
 - Sites choose either **core** or **core + icclim** requirements.
-- All processes run in the same conda environment.
+- All processes run in the **same conda environment**.
 
 ```mermaid
 flowchart LR
@@ -284,11 +311,11 @@ flowchart LR
 
 # B2. Option 2 — Separate icclim WPS
 
-- Rook and icclim use independent conda environments.
-- Both services run next to the data and use the local Slurm cluster.
+- Rook and icclim use **independent conda environments**.
+- Both services run **next to the data** and use the **local Slurm cluster**.
 - The **Rook broker** selects the service providing the requested process.
-- Its inventory contains dataset locations and available processing capabilities.
-- Existing Ansible support for multiple WPS instances can be reused.
+- Its inventory contains **dataset locations** and **available processing capabilities**.
+- Existing Ansible support for **multiple WPS instances** can be reused.
 
 ```mermaid
 flowchart TD
@@ -312,10 +339,10 @@ URL. It does not mirror the delegated job. -->
 
 - Submit `subset` to the broker; it delegates the job to Rook.
 - Use the subset output URL as input for `climate_indices`.
-- The broker prefers an icclim service at the site holding the intermediate result.
-- At the same site, a trusted URL can resolve to a shared filesystem path.
-- Otherwise, the icclim service consumes the result through HTTP.
-- The client coordinates both jobs initially.
+- The broker prefers an icclim service at the site holding the **intermediate result**.
+- At the same site, a trusted URL can resolve to a **shared filesystem path**.
+- Otherwise, the icclim service consumes the result through **HTTP**.
+- The **client coordinates both jobs** initially.
 
 ```mermaid
 sequenceDiagram
