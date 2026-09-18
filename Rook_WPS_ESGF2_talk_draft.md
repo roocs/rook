@@ -18,7 +18,7 @@ the main talk are backup and discussion material. -->
 
 # 1. What is Rook?
 
-- A **remote processing service** from the roocs project.
+- [**Rook**](https://github.com/roocs/rook) is a remote processing service from the roocs project.
 - Clients use **logical datasets and workflows**.
 - Processing runs **close to the data** and returns only the **requested result**.
 
@@ -64,7 +64,9 @@ coverage today. -->
 - **Average:** reduce data for an analysis.
 - **Regrid:** transform data to a target grid.
 - **Orchestrate:** combine operations in one workflow.
-- **Woodpecker:** apply known fixes through a common plugin interface.
+- [**Woodpecker**](https://github.com/roocs/woodpecker): apply known fixes through a common plugin interface.
+
+[**clisops**](https://github.com/roocs/clisops) provides the core data operations.
 
 ```mermaid
 flowchart LR
@@ -115,7 +117,7 @@ participating sites will not necessarily hold the same datasets. -->
 
 - **NEW: `broker`** decides where the workflow runs.
 - **NEW: local PostgreSQL index** provides fast dataset-to-site lookup.
-- **REUSE: Kafka** keeps the local index synchronized.
+- **REUSE:** Kafka and [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) keep the local index synchronized.
 - **FALLBACK: global STAC** supplies missing or stale placement information.
 - ESGF2 data pools remain **independently managed and different**.
 
@@ -137,6 +139,8 @@ flowchart TD
 ```
 
 **ESGF2: choose the Rook that has the data.**
+
+**Details:** [ESGF2 broker architecture](https://github.com/roocs/rook/blob/add-milan-presentation/ARCH_ESGF2.md)
 
 <!-- 2:00. Planned architecture. Kafka publication, update and deletion events
 keep the local PostgreSQL index current through a Piddiplatsch plugin. The index
@@ -228,7 +232,7 @@ production architecture. -->
 - **Portal:** MetaGrid or another client **discovers the endpoint through STAC**.
 - **AAI security proxy:** protect Rook and support **OAuth2 identity delegation**.
 - **Identity:** use **EGI Check-in or Keycloak** with institutional, **GitHub, Google, or ORCID** accounts.
-- **Demo:** use the existing and maintained **Twitcher** security proxy.
+- **Demo:** use the existing and maintained [**Twitcher**](https://github.com/bird-house/twitcher) security proxy.
 - **Later:** review or rewrite the proxy for the **final ESGF2 architecture**.
 - **Next:** validate **CMIP7 workflows** and prepare a **container deployment**.
 
@@ -323,7 +327,7 @@ flowchart TD
 
 # B1. Option 1 — icclim as a Rook plugin
 
-- **`rook-icclim`** is maintained in a **separate repository**.
+- A separate Rook plugin exposes [**icclim**](https://github.com/cerfacs-globc/icclim).
 - **Python entry points** register one generic `climate_indices` process.
 - Sites choose either **core** or **core + icclim** requirements.
 - All processes run in the **same conda environment**.
