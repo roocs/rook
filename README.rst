@@ -46,6 +46,10 @@ It runs operations close to the data and returns only the requested result.
 
 The diagram is maintained as `Mermaid source`_.
 
+The `Milano 2026 presentation build <docs/talks/milano-2026/README.md>`_
+generates Reveal.js HTML and PDF from the canonical talk Markdown with
+``make -C docs/talks slides``, independently of the Sphinx documentation.
+
 Rook in a Minute
 ----------------
 

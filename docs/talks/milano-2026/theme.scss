@@ -1,0 +1,57 @@
+/*-- scss:defaults --*/
+$body-bg: #fff;
+$body-color: #222;
+$link-color: #457b9d;
+$font-family-sans-serif: Arial, Helvetica, sans-serif;
+$presentation-font-size-root: 32px;
+$presentation-heading-color: #457b9d;
+$presentation-heading-font: $font-family-sans-serif;
+$presentation-heading-line-height: 1.15;
+$presentation-h1-font-size: 1.65em;
+$presentation-h2-font-size: 1.2em;
+$code-block-font-size: 0.75em;
+$code-block-bg: #dceef8;
+
+/*-- scss:rules --*/
+.reveal {
+  a { text-decoration: underline; }
+  p, ul { margin-bottom: 0.5em; }
+  pre { box-shadow: none; }
+  pre code { max-height: none; }
+  .mermaid svg { max-width: 100%; max-height: 360px; }
+  img { max-height: 330px; object-fit: contain; }
+}
+
+// Leave room for the title, subtitle and the original photo attribution.
+.reveal #rookwps-for-esgf2 {
+  img { max-height: 220px; }
+  p { margin: 0.3em 0; }
+  > p:last-of-type { font-size: 0.7em; }
+}
+
+// Give the tall broker diagram its own column without shrinking the deck.
+.reveal #planned-esgf2-broker {
+  > :not(h1):not(.cell) { max-width: 52%; }
+  .cell:has(.mermaid) {
+    position: absolute;
+    right: 0;
+    top: 100px;
+    width: 46%;
+    svg { max-height: 650px; }
+  }
+}
+
+// Compact spacing only on the notebook example and the dense final backup.
+.reveal #notebook-today-and-proposed-broker {
+  p { margin: 0.3em 0; }
+  pre { margin: 0.35em 0; }
+  pre code { line-height: 1.15; }
+}
+.reveal section[id="b3.-chaining-independent-services"] { font-size: 0.9em; }
+.reveal section[id^="a1"], .reveal section[id^="b"] {
+  h1 { border-bottom: 3px solid #d69e00; background: #fff3bf; }
+}
+
+@media print {
+  * { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
+}
