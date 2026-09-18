@@ -10,7 +10,7 @@
 
 *Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
 
-<!-- Main talk: seven slides, about ten minutes. Horizontal rules separate
+<!-- Main talk: eight slides, about ten minutes. Horizontal rules separate
 slides. HTML comments contain presenter notes. The AAI and icclim slides after
 the main talk are backup and discussion material. -->
 
@@ -260,6 +260,39 @@ the selected proxy implementation. -->
 - Woodpecker configuration: docs/source/configuration.rst
 - Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
 -->
+
+---
+
+# 8. Summary: today and tomorrow
+
+```mermaid
+flowchart LR
+    Client["Rooki / service"] --> Workflow["Same workflow"]
+
+    subgraph CDS["Today: Copernicus CDS"]
+        OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
+    end
+
+    subgraph ESGF["Tomorrow: ESGF2"]
+        Broker["broker"] --> OrchestrateESGF["orchestrate<br/>at selected site"]
+        OrchestrateESGF --> ProcessingESGF["Processing"]
+    end
+
+    Workflow --> OrchestrateCDS
+    Workflow --> Broker
+
+    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+```
+
+- **Same Rook**, processing operations, and workflow model.
+- **CDS:** choose any equivalent Rook.
+- **ESGF2:** choose the Rook that has the data.
+- Processing remains **close to the archive**.
+
+**`broker` decides WHERE — `orchestrate` decides HOW.**
+
+<!-- 0:30. This is the closing picture. The ESGF2 extension adds data-aware
+site selection without changing the workflow or the processing operations. -->
 
 ---
 
