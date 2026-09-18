@@ -14,7 +14,7 @@ Milano, 2026
 
 <!-- EDITORIAL NOTE FOR SLIDE PREPARATION
 
-- Proposed main talk: title slide plus slides 1–8, about ten minutes.
+- Proposed main talk: title slide plus slides 1–10; rehearse for the allotted time.
 - Optional backup material: A1 and B1–B3.
 - `wf.broker()` is a proposed API sketch, not an implemented interface.
 - Docker, Kubernetes and Helm are future deployment options, not operational today.
@@ -25,22 +25,21 @@ Milano, 2026
 
 # 1. What is Rook?
 
-- [**Rook**](https://github.com/roocs/rook) is a remote processing service from the roocs project.
-- Clients use **logical datasets and workflows**.
-- Processing runs **close to the data** and returns only the **requested result**.
+- [**Rook**](https://github.com/roocs/rook) is the roocs remote processing service.
+- A typical **subset request** specifies a **dataset, time range and bounding box**.
+- Rook processes **close to the data** and returns the **requested subset**.
 
 ```mermaid
-flowchart TD
-    Clients["Clients<br/>CDS · ESGF2 · notebooks"]
-    Rook["Rook/WPS<br/>Remote processing service"]
-    Ops["clisops<br/>Subset · Average · Regrid · …"]
-    Data[("Data pools<br/>CMIP · CORDEX · …")]
-
-    Clients <-->|"Workflow / result"| Rook
-    Rook -->|"Operation"| Ops
-    Ops -->|"Read close to archive"| Data
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+flowchart LR
+    Client["Client"] <-->|"Subset request / result"| Rook["Rook/WPS"]
+    Rook -->|"Process near archive"| Data[("Climate data")]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Rook rook
 ```
+
+[**clisops**](https://github.com/roocs/clisops) provides the data operations; [**Woodpecker**](https://github.com/roocs/woodpecker) applies known dataset fixes.
 
 **Move the processing to the data.**
 
@@ -53,13 +52,20 @@ coverage today. -->
 
 # 2. Processing capabilities
 
-- **Subset:** select space, time and levels.
-- **Average:** reduce data for an analysis.
-- **Regrid:** transform data to a target grid.
-- **Orchestrate:** combine operations in one workflow.
-- [**Woodpecker**](https://github.com/roocs/woodpecker): apply known fixes through a common plugin interface.
+## Data operations
 
-[**clisops**](https://github.com/roocs/clisops) provides the core data operations.
+- **Subset** — select space, time and levels.
+- **Average** — reduce data for analysis.
+- **Regrid** — transform to a target grid.
+
+## Workflow orchestration
+
+- **`orchestrate`** — combine operators in a **workflow**.
+
+## Supporting processes
+
+- **`health`** — check site health; useful for the planned broker.
+- **`status`** — report operational status.
 
 ```mermaid
 flowchart TD
@@ -72,77 +78,94 @@ flowchart TD
     Orchestrate -.->|"combines"| Average
     Orchestrate -.->|"combines"| Regrid
 
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
-**Woodpecker prepares the data. Rook operates on it.**
+**Easy to extend with new data or supporting processes.**
 
-<!-- 1:00. Rook exposes the processing API; clisops provides the main data
-operations. Woodpecker discovers and applies maintained dataset fixes through
-its core and independent plugins. Keep its internal architecture for the
-separate Woodpecker talk. -->
+<!-- 1:30. Rook exposes a separate process for each data operator. The additional
+orchestrate process combines one or more operators into a workflow. The same
+process mechanism supports health and status, and the planned broker.
+Health is a lightweight synchronous check that also verifies configured data
+files are readable. Status reports service, process, server and storage status,
+not individual job status.
+
+clisops provides the main data operations. Woodpecker prepares data by applying
+maintained fixes through its core and independent plugins; keep its internal
+architecture for the separate Woodpecker talk. -->
 
 ---
 
 # 3. Rook in the Copernicus CDS today
 
-**Operational today**
-
-- **One access point** for CDS workflows.
-- **Identical Rook installations** at DKRZ and IPSL.
-- **Equivalent processing and replicated CMIP6, CORDEX, and other supported data** at both sites.
-- The **load balancer can choose any available Rook**.
-- Rook executes the workflow **close to the data**.
+- CDS sends a **workflow** to Rook's **`orchestrate` process**.
+- A workflow uses **one or more operators** — for example, to **subset a dataset by time and area**.
+- **DKRZ and IPSL:** identical Rook services and equivalent processing.
+- **Replicated holdings:** CMIP6, CORDEX and other supported datasets.
 
 ```mermaid
 flowchart LR
     CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
-    LB --> Rook["Identical Rook sites"]
-    Rook --> Data["Equivalent replicated data<br/>CMIP6 · CORDEX · …"]
-
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    LB --> DKRZ["Rook at DKRZ — orchestrate"]
+    LB --> IPSL["Rook at IPSL — orchestrate"]
+    subgraph Replicated["Replicated data"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL rook
 ```
 
 **CDS: choose any available Rook.**
 
-<!-- 1:15. This is the existing model for supported CDS datasets. Equivalent
+<!-- 1:15. CDS submits a workflow through the load balancer. The selected Rook
+site's orchestrate process executes its operations against that site's data.
+This is the existing model for supported CDS datasets. Equivalent
 holdings make both sites interchangeable. ESGF2 needs smarter routing because
 participating sites will not necessarily hold the same datasets. -->
 
 ---
 
-# 4. Planned ESGF2 broker
+# 4. Broker: one more Rook process
 
-**Route the same workflow to a site that holds the requested dataset**
-
-- **NEW: `broker`** decides where the workflow runs.
-- **NEW: local PostgreSQL index** provides fast dataset-to-site lookup.
-- **REUSE:** Kafka and [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) keep the local index synchronized.
-- **FALLBACK: global STAC** supplies missing or stale placement information.
-- ESGF2 data pools remain **independently managed and different**.
+- Add a **`broker` process** to the existing Rook service.
+- Use **STAC and a local PostgreSQL index** to find sites holding the dataset.
+- Forward the **unchanged workflow** to the selected site's **`orchestrate` process**.
 
 ```mermaid
-flowchart TD
-    Client["ESGF2 client"] -->|"Same workflow"| LB["Load balancer"]
-    LB --> Rook["Identical Rook sites"]
-    Rook --> Broker["NEW: broker"]
-    Kafka["Kafka"] --> Index[("Local PostgreSQL index")]
-    Index --> Broker
-    Broker -.->|"Fallback"| STAC["Global STAC"]
-    Broker -->|"Choose site"| Orchestrate["orchestrate at selected site"]
-    Orchestrate --> Data["Independent ESGF2 data pools"]
-
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
-    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
-    style Index fill:#fff3bf,stroke:#d69e00,color:#000
-    style Kafka fill:#fff3bf,stroke:#d69e00,color:#000
+flowchart LR
+    Client["ESGF2 client"] -->|"Via load balancer"| Broker
+    subgraph Rook["Rook service"]
+        Broker["NEW process: broker"]
+    end
+    subgraph Selected["Selected Rook"]
+        Orchestrate["orchestrate"]
+    end
+    Broker -->|"Same workflow"| Orchestrate
+    Orchestrate --> Data[("Site data")]
+    Broker -.->|"Dataset locations"| Lookup["STAC / local PostgreSQL index"]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Orchestrate rook
+    class Broker new
 ```
 
-**ESGF2: choose the Rook that has the data.**
+**One more Rook process, no separate broker service.**
 
-**Details:** [ESGF2 broker architecture](https://github.com/roocs/rook/blob/add-milan-presentation/ARCH_ESGF2.md)
+[Broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
 
-<!-- 2:00. Planned architecture. Kafka publication, update and deletion events
+<!-- 2:00. Planned architecture. ESGF2 sites hold different, independently
+managed datasets. The broker is a small additional process within the existing
+Rook service, not a separately deployed routing component. It uses the local
+PostgreSQL index for fast lookup and STAC for missing or stale information.
+Kafka publication, update and deletion events
 keep the local PostgreSQL index current through a Piddiplatsch plugin. The index
 contains global dataset placement and detailed local assets. Global STAC is the
 authoritative fallback when local information is missing or stale. Kafka and
@@ -155,9 +178,40 @@ remote job state and must not create broker-to-broker loops. -->
 
 ---
 
-# 5. Notebook: today and proposed broker
+# 5. How the broker finds the data
 
-**Define the workflow once with Rooki**
+- **Local Rook STAC index (PostgreSQL):** fast dataset-to-site lookup.
+- [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) reads **STAC items from the ESGF2 Kafka queue**; built for **PID publication**.
+- **Mapping plugins** transform items into a target schema.
+- A **new Rook plugin** can populate and update the local index.
+- **Global STAC:** fallback for missing or stale information.
+
+```mermaid
+flowchart LR
+    Kafka["ESGF2 Kafka"] -->|"STAC items"| Piddi["Piddiplatsch"]
+    Piddi -->|"NEW: Rook plugin"| Index[("Local Rook STAC index — PostgreSQL")]
+    Broker["Rook: broker process"] -->|"Lookup"| Index
+    Broker -.->|"Fallback"| STAC["Global STAC"]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker,Index new
+```
+
+**Index updates happen independently of workflow requests.**
+
+<!-- The local index contains global dataset placement and detailed local
+assets. Piddiplatsch was built for PID publication. It consumes STAC items from
+the ESGF2 Kafka queue and uses plugins to map them to target schemas. A new
+Rook plugin can use publication, update and deletion events to maintain the
+local PostgreSQL-backed STAC index. STAC is the authoritative fallback; it is queried only
+when local placement information is insufficient. -->
+
+---
+
+# 6. A workflow with Rooki
+
+**Subset a logical dataset by time.**
 
 ```python
 from rooki import operators as ops
@@ -175,21 +229,31 @@ wf = ops.Subset(
 )
 ```
 
-**Today — send the workflow to `orchestrate` at a chosen Rook service**
+The workflow describes **what to compute**.
+
+<!-- This example comes from the existing notebook. The dataset identifier is
+logical; clients do not need to specify archive file paths. Verify availability
+and the endpoint before presenting, and prepare a completed result. -->
+
+---
+
+# 7. Same workflow, different submission
+
+## Today: choose a Rook service
 
 ```python
 resp = wf.orchestrate()
 resp.ok
 ```
 
-**Proposed — send the same workflow to `broker`**
+## Proposed: let the broker choose the site
 
 ```python
-resp = wf.broker()  # proposed API
+resp = wf.broker()  # proposed API, not implemented
 resp.ok
 ```
 
-**Same workflow: `broker` decides WHERE — `orchestrate` decides HOW.**
+**The broker chooses WHERE; orchestrate handles HOW.**
 
 <!-- 2:00. The workflow construction and wf.orchestrate() call come from the
 existing notebook. Verify the endpoint and dataset before the talk and prepare
@@ -203,38 +267,15 @@ unchanged to the selected Rook site, and returns that site's job-status URL. -->
 
 ---
 
-# 6. Deployment today and tomorrow
+# 8. Deployment today and tomorrow
 
-- **Today:** Ansible provisions Rook/WPS on **VMs**.
-- **Today:** Slurm schedules processing jobs close to site data.
-- **Next:** build one **portable Rook container image**.
-- **Future:** deploy with **Docker or Kubernetes**, depending on the site.
-- The **Rook API and processing model stay the same**.
+| Operational today | Planned |
+| --- | --- |
+| Ansible-managed VMs | Portable Rook container image |
+| Slurm processing jobs | Docker / Compose or Kubernetes / Helm |
+| Processing near site data | Site chooses its deployment and scheduler |
 
-```mermaid
-flowchart TD
-    Rook["Same Rook service and API"]
-
-    subgraph Current["Operational today"]
-        VM["Ansible-managed VM"] --> Slurm["Slurm jobs"]
-    end
-
-    subgraph Future["Planned deployment options"]
-        Image["Portable container image"] --> Docker["Docker / Compose"]
-        Image --> K8s["Kubernetes / Helm"]
-    end
-
-    Rook --> VM
-    Rook --> Image
-    Slurm --> Data[("Site data")]
-    Docker --> Data
-    K8s --> Data
-
-    style VM fill:#dceef8,stroke:#457b9d,color:#000
-    style Image fill:#fff3bf,stroke:#d69e00,color:#000
-```
-
-**One service, multiple deployment models.**
+**The Rook API and processing model stay the same.**
 
 <!-- 1:00. The Ansible/VM/Slurm path is operational today. The container image,
 Docker, Kubernetes and a possible Helm chart are future ESGF2 work. They should
@@ -243,23 +284,25 @@ keep Slurm or choose a container-native scheduler. -->
 
 ---
 
-# 7. Discovery, AAI and next steps
+# 9. Discovery and access
 
-- **STAC:** advertise processing with a **small flag or service link**.
-- **Portal:** MetaGrid or another client **discovers the endpoint through STAC**.
-- **AAI:** use an **OAuth2 security proxy** with **EGI Check-in or Keycloak**, supporting institutional, **GitHub, Google, and ORCID** identities.
-- **Demo:** use the maintained [**Twitcher**](https://github.com/bird-house/twitcher); later review or rewrite the proxy for ESGF2.
-- **Next:** validate **CMIP7 workflows**.
+- **STAC** advertises a processing endpoint.
+- **MetaGrid or another client** discovers it and sends a bearer token.
+- An **OAuth2 proxy** protects access; use [**Twitcher**](https://github.com/bird-house/twitcher) for the demo.
 
 ```mermaid
 flowchart TD
-    STAC["STAC catalogue"] -->|"Optional processing link"| Portal["MetaGrid or client"]
+    STAC["STAC catalogue"] -->|"Processing link"| Portal["MetaGrid or client"]
     Portal -->|"Bearer token"| Proxy["AAI security proxy"]
     Identity["EGI Check-in or Keycloak"] <-->|"OAuth2 / OIDC"| Proxy
     Proxy --> Broker["Rook broker"]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
 ```
 
-**STAC provides discovery. AAI protects access. Rook provides processing.**
+**Next: demonstrate the integration and validate CMIP7 workflows.**
 
 <!-- 1:45. Rook's integration boundary is the processing API and optional STAC
 information. Portal integration belongs to MetaGrid or its successor. A small
@@ -274,7 +317,7 @@ the selected proxy implementation. -->
 
 <!-- Preparation references:
 
-- Detailed broker architecture: https://github.com/roocs/rook/blob/add-milan-presentation/ARCH_ESGF2.md
+- Detailed broker architecture: https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md
 - Process catalogue: docs/source/processes.rst
 - Woodpecker configuration: docs/source/configuration.rst
 - Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
@@ -282,31 +325,31 @@ the selected proxy implementation. -->
 
 ---
 
-# 8. Summary: today and tomorrow
+# 10. Summary: today and tomorrow
 
 ```mermaid
 flowchart LR
     Client["Rooki / service"] --> Workflow["Same workflow"]
 
-    subgraph CDS["Today: Copernicus CDS"]
+    subgraph CDS["Today: CDS"]
         OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
     end
 
     subgraph ESGF["Tomorrow: ESGF2"]
-        Broker["broker"] --> OrchestrateESGF["orchestrate<br/>at selected site"]
+        Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
         OrchestrateESGF --> ProcessingESGF["Processing"]
     end
 
     Workflow --> OrchestrateCDS
     Workflow --> Broker
 
-    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
 ```
 
-- **Same Rook**, processing operations, and workflow model.
 - **CDS:** choose any equivalent Rook.
 - **ESGF2:** choose the Rook that has the data.
-- Processing remains **close to the archive**.
 
 **`broker` decides WHERE — `orchestrate` decides HOW.**
 
@@ -334,6 +377,10 @@ flowchart TD
     Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
     Identity <-->|"OAuth2 / OIDC"| Proxy
     Proxy -->|"Authorized request"| WPS["WPS endpoint"]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
 ```
 
 **Use Twitcher now; keep the proxy replaceable for the final ESGF2 architecture.**
@@ -355,6 +402,10 @@ flowchart LR
     Core --> Slurm["Slurm"]
     Plugin --> Slurm
     Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
 ```
 
 **Simple integration, provided the dependencies remain compatible.**
@@ -378,6 +429,12 @@ flowchart TD
     Rook --> Slurm["Slurm"]
     ICCLIM --> Slurm
     Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
 **One broker provides access to independently deployed services.**
