@@ -1,5 +1,6 @@
 """Generate the Milano Quarto input without changing the canonical Markdown."""
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -16,6 +17,10 @@ REMOTE_IMAGES = (
 )
 FRONT_MATTER = """---
 pagetitle: "Rook/WPS for ESGF2 — Milano 2026"
+fig-responsive: true
+keep-md: true
+filters:
+  - ../../../talks/milano-2026/svg.lua
 format:
   revealjs:
     theme:
@@ -24,23 +29,66 @@ format:
     slide-level: 1
     transition: none
     slide-number: true
-    show-slide-number: print
+    show-slide-number: all
     embed-resources: true
     width: 1600
     height: 900
     margin: 0.06
     center: false
     pdf-max-pages-per-slide: 1
-    mermaid-format: js
+    mermaid-format: svg
     code-overflow: wrap
     auto-stretch: false
 ---
 
 """
+# One render configuration for all diagrams; no HTML foreignObject labels.
+MERMAID_CONFIG = (
+    "%%{init: "
+    + json.dumps(
+        {
+            "theme": "base",
+            "fontFamily": "Arial",
+            "fontSize": 24,
+            "htmlLabels": False,
+            "flowchart": {
+                "htmlLabels": False,
+                "subGraphTitleMargin": {"top": 8, "bottom": 28},
+            },
+            "sequence": {
+                "fontSize": 24,
+                "actorFontSize": 24,
+                "messageFontSize": 24,
+                "noteFontSize": 24,
+                "mirrorActors": False,
+            },
+            "themeVariables": {
+                "fontFamily": "Arial",
+                "fontSize": "24px",
+                "primaryColor": "#f3f4f6",
+                "primaryTextColor": "#111827",
+                "primaryBorderColor": "#6b7280",
+                "lineColor": "#6b7280",
+                "secondaryColor": "#dceef8",
+                "tertiaryColor": "#fff3bf",
+                "clusterBkg": "#f3f4f6",
+                "clusterBorder": "#6b7280",
+                "edgeLabelBackground": "#ffffff",
+                "actorBkg": "#f3f4f6",
+                "actorBorder": "#6b7280",
+                "actorTextColor": "#111827",
+                "signalTextColor": "#111827",
+                "signalColor": "#6b7280",
+            },
+        },
+        sort_keys=True,
+    )
+    + "}%%\n"
+)
 FENCE = re.compile(r"^( {0,3})(`{3,}|~{3,})([^\r\n]*)")
 
 
-def mermaid_fences(markdown: str, *, convert: bool) -> str:
+def mermaid_fences(markdown: str, *, convert: bool, configure: bool = False) -> str:
     """Convert only opening Mermaid fences and reject unclosed code blocks."""
     opened = None
     lines = []
@@ -61,6 +109,8 @@ def mermaid_fences(markdown: str, *, convert: bool) -> str:
                         + info.replace("mermaid", "{mermaid}")
                         + line[match.end() :]
                     )
+                    if configure:
+                        line += MERMAID_CONFIG
             elif (
                 fence[0] == opened[0][0]
                 and len(fence) >= len(opened[0])
@@ -73,9 +123,52 @@ def mermaid_fences(markdown: str, *, convert: bool) -> str:
     return "".join(lines)
 
 
+def add_layout(markdown: str) -> str:
+    """Annotate slide headings by diagram orientation, without editing content."""
+    lines = markdown.splitlines(keepends=True)
+    layouts = {}
+    heading = None
+    opened = None
+    in_comment = False
+    mermaid = False
+    for index, line in enumerate(lines):
+        if in_comment:
+            in_comment = "-->" not in line
+            continue
+        if opened is None and "<!--" in line:
+            in_comment = "-->" not in line
+            continue
+        match = FENCE.match(line)
+        if match:
+            _, fence, info = match.groups()
+            if opened is None:
+                opened = fence
+                # Literal Quarto cell syntax.
+                mermaid = info.strip() == "{mermaid}"  # noqa: RUF027
+                if mermaid and heading is not None:
+                    layouts.setdefault(heading, "diagram-small")
+            elif (
+                fence[0] == opened[0] and len(fence) >= len(opened) and not info.strip()
+            ):
+                opened = None
+                mermaid = False
+        elif opened is None and line.startswith("# "):
+            heading = index
+        elif (
+            mermaid
+            and heading is not None
+            and line.strip() in {"flowchart TD", "flowchart TB", "sequenceDiagram"}
+        ):
+            layouts[heading] = "diagram-side"
+    for index, layout in layouts.items():
+        lines[index] = lines[index].rstrip("\r\n") + " {." + layout + "}\n"
+    return "".join(lines)
+
+
 def transform(markdown: str) -> str:
     """Add Reveal.js metadata, convert Mermaid cells and localize the photo."""
-    body = mermaid_fences(markdown, convert=True)
+    body = mermaid_fences(markdown, convert=True, configure=True)
+    body = add_layout(body)
     for remote in REMOTE_IMAGES:
         body = body.replace(f"]({remote})", f"]({LOCAL_IMAGE})")
     result = FRONT_MATTER + body

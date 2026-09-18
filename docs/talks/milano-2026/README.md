@@ -23,6 +23,17 @@ Outputs: `slides.qmd`, `slides.html`, and `slides.pdf` in
 It preserves the source, diagram definitions, image link, attribution and
 hidden presenter comments. The generated `.qmd` is not a second content source.
 
+Diagrams are prerendered SVG with plain SVG text. `svg.lua` embeds them as
+images, avoiding Quarto/Pandoc sequence-CSS parsing and PDF font scaling bugs.
+The ignored `slides.revealjs.md` is its intermediate input. No Mermaid runtime
+is needed to draw the final slides.
+
+Layout is inferred from Mermaid orientation: TD/TB and sequence diagrams use
+`.diagram-side`; wide diagrams use `.diagram-small`. These classes and shared
+font settings are added only during conversion. Source `classDef` colors use
+blue for existing Rook components, amber for proposed components and grey for
+supporting infrastructure. Label words and connections stay unchanged; HTML line breaks are replaced by plain separators.
+
 ## Preview
 
 ```bash

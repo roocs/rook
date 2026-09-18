@@ -31,15 +31,18 @@ Milano, 2026
 
 ```mermaid
 flowchart TD
-    Clients["Clients<br/>CDS · ESGF2 · notebooks"]
-    Rook["Rook/WPS<br/>Remote processing service"]
-    Ops["clisops<br/>Subset · Average · Regrid · …"]
-    Data[("Data pools<br/>CMIP · CORDEX · …")]
+    Clients["Clients — CDS · ESGF2 · notebooks"]
+    Rook["Rook/WPS — Remote processing service"]
+    Ops["clisops — Subset · Average · Regrid · …"]
+    Data[("Data pools — CMIP · CORDEX · …")]
 
     Clients <-->|"Workflow / result"| Rook
     Rook -->|"Operation"| Ops
     Ops -->|"Read close to archive"| Data
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
 **Move the processing to the data.**
@@ -72,7 +75,9 @@ flowchart TD
     Orchestrate -.->|"combines"| Average
     Orchestrate -.->|"combines"| Regrid
 
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
 **Woodpecker prepares the data. Rook operates on it.**
@@ -98,9 +103,11 @@ separate Woodpecker talk. -->
 flowchart LR
     CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
     LB --> Rook["Identical Rook sites"]
-    Rook --> Data["Equivalent replicated data<br/>CMIP6 · CORDEX · …"]
+    Rook --> Data["Equivalent replicated data — CMIP6 · CORDEX · …"]
 
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
 **CDS: choose any available Rook.**
@@ -132,10 +139,11 @@ flowchart TD
     Broker -->|"Choose site"| Orchestrate["orchestrate at selected site"]
     Orchestrate --> Data["Independent ESGF2 data pools"]
 
-    style Rook fill:#dceef8,stroke:#457b9d,color:#000
-    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
-    style Index fill:#fff3bf,stroke:#d69e00,color:#000
-    style Kafka fill:#fff3bf,stroke:#d69e00,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker,Index new
 ```
 
 **ESGF2: choose the Rook that has the data.**
@@ -230,8 +238,12 @@ flowchart TD
     Docker --> Data
     K8s --> Data
 
-    style VM fill:#dceef8,stroke:#457b9d,color:#000
-    style Image fill:#fff3bf,stroke:#d69e00,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class VM rook
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Image new
+    class Rook rook
 ```
 
 **One service, multiple deployment models.**
@@ -257,6 +269,10 @@ flowchart TD
     Portal -->|"Bearer token"| Proxy["AAI security proxy"]
     Identity["EGI Check-in or Keycloak"] <-->|"OAuth2 / OIDC"| Proxy
     Proxy --> Broker["Rook broker"]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
 ```
 
 **STAC provides discovery. AAI protects access. Rook provides processing.**
@@ -293,14 +309,16 @@ flowchart LR
     end
 
     subgraph ESGF["Tomorrow: ESGF2"]
-        Broker["broker"] --> OrchestrateESGF["orchestrate<br/>at selected site"]
+        Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
         OrchestrateESGF --> ProcessingESGF["Processing"]
     end
 
     Workflow --> OrchestrateCDS
     Workflow --> Broker
 
-    style Broker fill:#fff3bf,stroke:#d69e00,color:#000
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
 ```
 
 - **Same Rook**, processing operations, and workflow model.
@@ -334,6 +352,10 @@ flowchart TD
     Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
     Identity <-->|"OAuth2 / OIDC"| Proxy
     Proxy -->|"Authorized request"| WPS["WPS endpoint"]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
 ```
 
 **Use Twitcher now; keep the proxy replaceable for the final ESGF2 architecture.**
@@ -355,6 +377,10 @@ flowchart LR
     Core --> Slurm["Slurm"]
     Plugin --> Slurm
     Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
 ```
 
 **Simple integration, provided the dependencies remain compatible.**
@@ -378,6 +404,12 @@ flowchart TD
     Rook --> Slurm["Slurm"]
     ICCLIM --> Slurm
     Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
 ```
 
 **One broker provides access to independently deployed services.**

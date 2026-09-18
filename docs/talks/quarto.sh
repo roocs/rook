@@ -24,4 +24,17 @@ if [ -n "${CONDA_PREFIX:-}" ] && [ "$(command -v quarto)" = "$CONDA_PREFIX/bin/q
     fi
 fi
 
+# Prefer DeckTape's already-installed headless browser for SVG rendering.
+# Respect an explicit browser override; never download a browser during builds.
+if [ -z "${QUARTO_CHROMIUM:-}" ] && command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    quarto_browser=$(node -e '
+        const {createRequire} = require("node:module");
+        const load = createRequire(process.argv[1] + "/decktape/package.json");
+        console.log(load("puppeteer").executablePath({headless: "shell"}));
+    ' "$(npm root --global)" 2>/dev/null) || quarto_browser=""
+    if [ -x "$quarto_browser" ]; then
+        export QUARTO_CHROMIUM="$quarto_browser"
+    fi
+fi
+
 exec quarto "$@"

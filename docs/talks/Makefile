@@ -38,10 +38,10 @@ slides-html: ## generate the Milano Reveal.js presentation
 
 slides-pdf: slides-html ## export the Milano slides with DeckTape
 	@if command -v decktape >/dev/null 2>&1; then \
-		decktape reveal --size 1600x900 --load-pause 2000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
+		decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
 	elif command -v npx >/dev/null 2>&1; then \
 		npx --offline --no-install decktape version >/dev/null 2>&1 || { echo "Slides: npx cannot run an existing DeckTape. Install DeckTape explicitly first; the build never downloads packages." >&2; exit 1; }; \
-		npx --offline --no-install decktape reveal --size 1600x900 --load-pause 2000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
+		npx --offline --no-install decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
 	else \
 		echo "Slides: DeckTape is missing. Install decktape, or Node/npm with an existing DeckTape available to npx." >&2; exit 1; \
 	fi

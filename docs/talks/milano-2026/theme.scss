@@ -18,39 +18,58 @@ $code-block-bg: #dceef8;
   p, ul { margin-bottom: 0.5em; }
   pre { box-shadow: none; }
   pre code { max-height: none; }
-  .mermaid svg { max-width: 100%; max-height: 360px; }
-  img { max-height: 330px; object-fit: contain; }
+  .cell-output-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .cell-output-display > div, .cell-output-display figure, .cell-output-display figure > div { width: 100%; margin: 0; }
+  .cell-output-display p:empty { display: none; }
+  // Static SVG images keep their viewBox ratio and isolated diagram typography.
+  .cell-output-display .mermaid-svg {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: 440px;
+  }
+  img { object-fit: contain; }
 }
 
-// Leave room for the title, subtitle and the original photo attribution.
-.reveal #rookwps-for-esgf2 {
-  img { max-height: 220px; }
-  p { margin: 0.3em 0; }
-  > p:last-of-type { font-size: 0.7em; }
-}
-
-// Give the tall broker diagram its own column without shrinking the deck.
-.reveal #planned-esgf2-broker {
-  > :not(h1):not(.cell) { max-width: 52%; }
-  .cell:has(.mermaid) {
+// Tall diagrams occupy a dedicated column; text keeps its original order.
+.reveal .diagram-side {
+  > :not(h1):not(.cell) { max-width: 49%; }
+  > .cell {
     position: absolute;
     right: 0;
-    top: 100px;
-    width: 46%;
-    svg { max-height: 650px; }
+    top: 115px;
+    width: 48%;
+    .cell-output-display { height: 710px; }
+    .mermaid-svg { max-height: 710px; }
   }
 }
+.reveal .diagram-small .cell-output-display .mermaid-svg { max-height: 330px; }
+.reveal .diagram-side:has(> h2) {
+  > h2 { font-size: 1.05em; }
+  > ul { font-size: 0.92em; }
+}
 
-// Compact spacing only on the notebook example and the dense final backup.
+.reveal #rookwps-for-esgf2 {
+  img { max-height: 280px; }
+  p { margin: 0.3em 0; }
+  > p:last-of-type { font-size: 0.7em; }
+  figcaption { display: none; }
+}
 .reveal #notebook-today-and-proposed-broker {
   p { margin: 0.3em 0; }
   pre { margin: 0.35em 0; }
   pre code { line-height: 1.15; }
 }
-.reveal section[id="b3.-chaining-independent-services"] { font-size: 0.9em; }
 .reveal section[id^="a1"], .reveal section[id^="b"] {
   h1 { border-bottom: 3px solid #d69e00; background: #fff3bf; }
 }
+.reveal .slide-number { font-size: 20px; color: #444; background: transparent; }
 
 @media print {
   * { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
