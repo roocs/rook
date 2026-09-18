@@ -23,30 +23,16 @@ the main talk are backup and discussion material. -->
 - Processing runs **close to the data** and returns only the **requested result**.
 
 ```mermaid
-flowchart LR
-    subgraph Clients
-        CDS["Copernicus CDS"]
-        ESGF["ESGF2"]
-        NB["Notebooks"]
-    end
-
+flowchart TD
+    Clients["Clients<br/>CDS · ESGF2 · notebooks"]
     Rook["Rook/WPS<br/>Remote processing service"]
+    Ops["clisops<br/>Subset · Average · Regrid · …"]
+    Data[("Data pools<br/>CMIP · CORDEX · …")]
 
-    subgraph Processing["Processing library"]
-        Clisops["clisops"]
-        Ops["Subset · Average · Regrid · …"]
-        Clisops --- Ops
-    end
-
-    subgraph Data["Data pools"]
-        CMIP6["CMIP6"]
-        CORDEX["CORDEX"]
-        Other["Other collections"]
-    end
-
-    Clients -->|"Request"| Rook
-    Rook -->|"Operation"| Processing
-    Processing -->|"Read data"| Data
+    Clients <-->|"Workflow / result"| Rook
+    Rook -->|"Operation"| Ops
+    Ops -->|"Read close to archive"| Data
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
 ```
 
 **Move the processing to the data.**
@@ -69,10 +55,17 @@ coverage today. -->
 [**clisops**](https://github.com/roocs/clisops) provides the core data operations.
 
 ```mermaid
-flowchart LR
-    Request["Workflow request"] --> Subset["Subset"]
-    Subset --> Average["Average"]
-    Average --> Result["Regional time series"]
+flowchart TD
+    Rook["Rook/WPS"] --> Subset["subset"]
+    Rook --> Average["average"]
+    Rook --> Regrid["regrid"]
+    Rook --> Orchestrate["orchestrate"]
+
+    Orchestrate -.->|"combines"| Subset
+    Orchestrate -.->|"combines"| Average
+    Orchestrate -.->|"combines"| Regrid
+
+    style Rook fill:#dceef8,stroke:#457b9d,color:#000
 ```
 
 **Woodpecker prepares the data. Rook operates on it.**
@@ -203,26 +196,43 @@ unchanged to the selected Rook site, and returns that site's job-status URL. -->
 
 ---
 
-# 6. Deployment today
+# 6. Deployment today and tomorrow
 
-**Current operational deployment**
-
-- **Ansible** provisions Rook/WPS on **VMs**.
-- **Slurm** schedules processing jobs.
-- Jobs access **data available at the site**.
-- The same model can be deployed at **further ESGF2 sites**.
+- **Today:** Ansible provisions Rook/WPS on **VMs**.
+- **Today:** Slurm schedules processing jobs close to site data.
+- **Next:** build one **portable Rook container image**.
+- **Future:** deploy with **Docker or Kubernetes**, depending on the site.
+- The **Rook API and processing model stay the same**.
 
 ```mermaid
-flowchart LR
-    Client["Client"] --> VM["Rook/WPS VM"]
-    VM --> Slurm["Slurm"]
-    Slurm --> Job["Processing job"]
-    Data[("Site data")] --> Job
+flowchart TD
+    Rook["Same Rook service and API"]
+
+    subgraph Current["Operational today"]
+        VM["Ansible-managed VM"] --> Slurm["Slurm jobs"]
+    end
+
+    subgraph Future["Planned deployment options"]
+        Image["Portable container image"] --> Docker["Docker / Compose"]
+        Image --> K8s["Kubernetes / Helm"]
+    end
+
+    Rook --> VM
+    Rook --> Image
+    Slurm --> Data[("Site data")]
+    Docker --> Data
+    K8s --> Data
+
+    style VM fill:#dceef8,stroke:#457b9d,color:#000
+    style Image fill:#fff3bf,stroke:#d69e00,color:#000
 ```
 
-<!-- 1:00. Describe only the current deployment. Docker, Kubernetes and Helm
-are an alternative deployment path to prepare during ESGF2, not the present
-production architecture. -->
+**One service, multiple deployment models.**
+
+<!-- 1:00. The Ansible/VM/Slurm path is operational today. The container image,
+Docker, Kubernetes and a possible Helm chart are future ESGF2 work. They should
+not require a different client API or processing implementation. A site may
+keep Slurm or choose a container-native scheduler. -->
 
 ---
 
