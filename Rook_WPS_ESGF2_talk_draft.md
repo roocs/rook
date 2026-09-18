@@ -12,9 +12,14 @@ Milano, 2026
 
 *Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
 
-<!-- Main talk: eight slides, about ten minutes. Horizontal rules separate
-slides. HTML comments contain presenter notes. The AAI and icclim slides after
-the main talk are backup and discussion material. -->
+<!-- EDITORIAL NOTE FOR SLIDE PREPARATION
+
+- Proposed main talk: title slide plus slides 1–8, about ten minutes.
+- Optional backup material: A1 and B1–B3.
+- `wf.broker()` is a proposed API sketch, not an implemented interface.
+- Docker, Kubernetes and Helm are future deployment options, not operational today.
+- Horizontal rules separate slides; other HTML comments are presenter notes.
+-->
 
 ---
 
@@ -242,11 +247,9 @@ keep Slurm or choose a container-native scheduler. -->
 
 - **STAC:** advertise processing with a **small flag or service link**.
 - **Portal:** MetaGrid or another client **discovers the endpoint through STAC**.
-- **AAI security proxy:** protect Rook and support **OAuth2 identity delegation**.
-- **Identity:** use **EGI Check-in or Keycloak** with institutional, **GitHub, Google, or ORCID** accounts.
-- **Demo:** use the existing and maintained [**Twitcher**](https://github.com/bird-house/twitcher) security proxy.
-- **Later:** review or rewrite the proxy for the **final ESGF2 architecture**.
-- **Next:** validate **CMIP7 workflows** and prepare a **container deployment**.
+- **AAI:** use an **OAuth2 security proxy** with **EGI Check-in or Keycloak**, supporting institutional, **GitHub, Google, and ORCID** identities.
+- **Demo:** use the maintained [**Twitcher**](https://github.com/bird-house/twitcher); later review or rewrite the proxy for ESGF2.
+- **Next:** validate **CMIP7 workflows**.
 
 ```mermaid
 flowchart TD
