@@ -15,10 +15,11 @@ Processing climate data close to the archive
 | 7 | Discovery, AAI and next steps | 1:45 |
 
 The horizontal rules separate slides. HTML comments contain presenter notes.
+The AAI and icclim slides after the main talk are backup and discussion material.
 
 ---
 
-## 1. Why provide a Compute Node?
+# 1. Why provide a Compute Node?
 
 **Example: How does regional mean temperature change over time?**
 
@@ -40,13 +41,13 @@ what they need. Avoid implying complete CMIP7 coverage today. -->
 
 ---
 
-## 2. Processing capabilities
+# 2. Processing capabilities
 
 - **Subset:** select space, time and levels.
 - **Average:** reduce data for an analysis.
 - **Regrid:** transform data to a target grid.
 - **Orchestrate:** combine operations in one workflow.
-- **Woodpecker:** apply known fixes to datasets with compliance issues.
+- **Woodpecker:** apply known fixes through a common plugin interface.
 
 ```mermaid
 flowchart LR
@@ -55,13 +56,16 @@ flowchart LR
     Average --> Result["Regional time series"]
 ```
 
+**Woodpecker prepares the data. Rook operates on it.**
+
 <!-- 1:00. Rook exposes the processing API; clisops provides the main data
-operations. Mention Woodpecker by name and purpose so that people recognize it.
-Do not explain its internal architecture. -->
+operations. Woodpecker discovers and applies maintained dataset fixes through
+its core and independent plugins. Keep its internal architecture for the
+separate Woodpecker talk. -->
 
 ---
 
-## 3. Rook in the Copernicus CDS today
+# 3. Rook in the Copernicus CDS today
 
 **Operational today**
 
@@ -85,35 +89,41 @@ participating sites will not necessarily hold the same datasets. -->
 
 ---
 
-## 4. Planned ESGF2 broker
+# 4. Planned ESGF2 broker
 
 **Route processing to a site that holds the requested dataset**
 
 - Add a `broker` process to Rook.
 - Accept the same workflow document used by `orchestrate`.
-- Select a site using dataset placement and service availability.
-- Submit the processing job asynchronously.
-- Return the selected site's job-status URL directly.
+- Resolve dataset placement and available processing services.
+- Submit the concrete processing job asynchronously.
+- Return the selected service's job-status URL directly.
 
 ```mermaid
-flowchart LR
+flowchart TD
     Kafka["ESGF2 Kafka events"] --> Piddi["Piddiplatsch"]
     Piddi --> Index[("Local inventory")]
+    STAC["Global STAC catalogue"] --> Broker["Rook broker"]
     Client["Client"] -->|"Dataset + workflow"| Broker["Rook broker"]
     Broker --> Index
-    Broker -->|"Delegate"| Site["Selected Rook site"]
-    Site -->|"Job URL"| Client
+    Broker -->|"Submit concrete process"| Site["Selected processing service"]
+    Site -->|"Accepted job + status URL"| Broker
+    Broker -->|"Return selected job URL"| Client
 ```
 
+**The client describes the workflow. The broker selects the data and service.**
+
 <!-- 2:00. Planned architecture. Kafka publication, update and deletion events
-keep a local PostgreSQL inventory current through a Piddiplatsch plugin. Kafka
-is not part of the synchronous request path. The selected site may run a single
-process or an orchestrated workflow. The broker is only a delegation layer: it
-does not mirror remote job state and must not create broker-to-broker loops. -->
+keep a local PostgreSQL inventory current through a Piddiplatsch plugin. The
+global STAC catalogue describes cross-site dataset availability. Kafka is not
+part of the synchronous request path. The selected service may run a single
+process or an orchestrated workflow. The broker passes the accepted-job
+response and status URL back to the client. It does not mirror remote job state
+and must not create broker-to-broker loops. -->
 
 ---
 
-## 5. Notebook: today and proposed broker
+# 5. Notebook: today and proposed broker
 
 **Current implementation — executable with Rooki**
 
@@ -164,7 +174,7 @@ document instead; the architectural point remains the same. -->
 
 ---
 
-## 6. Deployment today
+# 6. Deployment today
 
 **Current operational deployment**
 
@@ -187,18 +197,20 @@ production architecture. -->
 
 ---
 
-## 7. Discovery, AAI and next steps
+# 7. Discovery, AAI and next steps
 
 - **STAC:** optionally advertise processing with a small flag or service link.
 - **Portal:** MetaGrid or another client discovers the endpoint through STAC.
-- **AAI proxy:** protect Rook and delegate identity with OAuth2/Keycloak.
+- **AAI proxy:** protect Rook and support OAuth2 identity delegation.
+- **Demo:** use the existing and maintained Twitcher security proxy.
+- **Later:** review or rewrite the proxy for the final ESGF2 architecture.
 - **Next:** validate CMIP7 workflows and prepare a container deployment.
 
 ```mermaid
 flowchart TD
     STAC["STAC catalogue"] -->|"Optional processing link"| Portal["MetaGrid or client"]
-    Portal --> Proxy["AAI proxy"]
-    Keycloak["OAuth2 / Keycloak"] <--> Proxy
+    Portal -->|"Bearer token"| Proxy["Twitcher security proxy"]
+    EGI["EGI Check-in"] <-->|"OAuth2 / OIDC"| Proxy
     Proxy --> Broker["Rook broker"]
 ```
 
@@ -209,14 +221,11 @@ information. Portal integration belongs to MetaGrid or its successor. A small
 processing indicator or service link is sufficient and can be added later via
 an ESGF2 Kafka update; do not propose an exact STAC schema in this talk.
 
-AAI is a required layer between clients and the processing services, especially
-when a portal acts on behalf of a user. It does not start from scratch. Earlier
-deployments used an AAI proxy with OAuth2 delegation to Keycloak. CEDA developed
-an Nginx/Python proxy. Twitcher offers more OGC-aware functionality, including
-service registration, OAuth2 and certificate support, and is actively used by
-Ouranos in Canada. ESGF2 still needs to review these components and define the
-required user-to-service and service-to-service delegation patterns. Do not
-imply that a proxy has already been selected. -->
+Twitcher is an existing, maintained component and is used by Ouranos in Canada.
+It supports an immediate ESGF2 demonstration. ESGF2 may later rewrite or
+replace the security proxy according to its final user-to-service and
+service-to-service delegation requirements. Keep the WPS API independent of
+the selected proxy implementation. -->
 
 <!-- Preparation references:
 
@@ -228,44 +237,42 @@ imply that a proxy has already been selected. -->
 
 ---
 
-## 8. AAI for the ESGF2 Compute Node with EGI
+# A1. AAI for the ESGF2 Compute Node
 
-* Users sign in through **EGI Check-in** using institutional accounts, **ORCID, GitHub, Google**, or other identity providers.
-* MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
-* **Twitcher/auth-proxy** validates the token, authorizes access and handles delegation.
-* The **WPS endpoint remains independent of the AAI implementation**.
+## Existing components support an immediate demonstration
+
+- Users sign in through **EGI Check-in**.
+- MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
+- **Twitcher** validates the token, authorizes access, and protects the WPS endpoint.
+- Twitcher is maintained and currently used by **Ouranos in Canada**.
+- ESGF2 can use Twitcher for a demonstration while designing a future security proxy.
+- The processing API remains independent of the proxy implementation.
 
 ```mermaid
 flowchart TD
-    IdP["Institution / ORCID / GitHub / Google"] --> EGI["EGI Check-in"]
-
-    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["Twitcher / auth-proxy"]
+    IdP["Identity provider"] --> EGI["EGI Check-in"]
+    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["Twitcher"]
     Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
-
     EGI <-->|"OAuth2 / OIDC"| Proxy
     Proxy -->|"Authorized request"| WPS["WPS endpoint"]
 ```
 
-**EGI provides identity and entitlements; the proxy protects WPS.**
+**Use Twitcher now; keep the proxy replaceable for the final ESGF2 architecture.**
 
 ---
 
-## 9-1. Option 1 — icclim as a Rook plugin
+# B1. Option 1 — icclim as a Rook plugin
 
-* `rook-icclim` is maintained in a separate repository.
-* Python entry points register one generic `climate_indices` process.
-* Sites choose either **core** or **core + icclim** requirements.
-* All processes run in the same conda environment.
+- `rook-icclim` is maintained in a separate repository.
+- Python entry points register one generic `climate_indices` process.
+- Sites choose either **core** or **core + icclim** requirements.
+- All processes run in the same conda environment.
 
 ```mermaid
 flowchart LR
     Client["Client"] --> WPS["Rook/WPS"]
-
-    subgraph Service["One service and environment"]
-        WPS --> Core["Core processes"]
-        WPS --> Plugin["icclim plugin"]
-    end
-
+    WPS --> Core["Core processes"]
+    WPS --> Plugin["icclim plugin"]
     Core --> Slurm["Slurm"]
     Plugin --> Slurm
     Slurm --> Data[("Local data")]
@@ -273,48 +280,42 @@ flowchart LR
 
 **Simple integration, provided the dependencies remain compatible.**
 
-<!-- Toulouse maintains the plugin and its scientific implementation. Compute
-sites decide whether to install it. A locked combined environment must be
-tested against existing Rook/CDS workflows. -->
-
 ---
 
-## 9-2-1 Option 2 — Separate icclim WPS
+# B2. Option 2 — Separate icclim WPS
 
-* Rook and icclim use independent conda environments.
-* Both services run next to the data and use the local Slurm cluster.
-* The **Rook broker** selects the service providing the requested process.
-* Its inventory contains dataset locations and available processing capabilities.
-* Existing Ansible support for multiple WPS instances can be reused.
+- Rook and icclim use independent conda environments.
+- Both services run next to the data and use the local Slurm cluster.
+- The **Rook broker** selects the service providing the requested process.
+- Its inventory contains dataset locations and available processing capabilities.
+- Existing Ansible support for multiple WPS instances can be reused.
 
 ```mermaid
 flowchart TD
-    Client["Client"] --> Proxy["Auth proxy"]
+    Client["Client"] --> Proxy["Security proxy"]
     Proxy --> Broker["Rook broker"]
-
     Broker -->|"subset, average, regrid"| Rook["Rook/WPS"]
     Broker -->|"climate_indices"| ICCLIM["icclim WPS"]
-
     Rook --> Slurm["Slurm"]
     ICCLIM --> Slurm
     Slurm --> Data[("Local data")]
 ```
 
-**The broker provides one access route to independently deployed services.**
+**One broker provides access to independently deployed services.**
 
-<!-- The broker must know both where datasets are available and which processes
-each service provides. It delegates the request and returns the selected
-service's job-status URL directly. It does not mirror the delegated job. -->
+<!-- The broker returns the selected service's accepted-job response and status
+URL. It does not mirror the delegated job. -->
 
 ---
 
-## 9-2-2 Option 2 — Chaining through the broker
+# B3. Chaining independent services
 
-* Submit `subset` to the broker; it delegates the job to Rook.
-* Use the subset output URL as input for `climate_indices`.
-* Submit the second request to the broker; it delegates to the icclim WPS.
-* Trusted local output URLs can be translated to shared filesystem paths.
-* The client coordinates both jobs initially.
+- Submit `subset` to the broker; it delegates the job to Rook.
+- Use the subset output URL as input for `climate_indices`.
+- The broker prefers an icclim service at the site holding the intermediate result.
+- At the same site, a trusted URL can resolve to a shared filesystem path.
+- Otherwise, the icclim service consumes the result through HTTP.
+- The client coordinates both jobs initially.
 
 ```mermaid
 sequenceDiagram
@@ -322,19 +323,18 @@ sequenceDiagram
     participant Broker as Rook broker
     participant Rook as Rook/WPS
     participant ICCLIM as icclim WPS
-
     Client->>Broker: subset
-    Broker->>Rook: Delegate
-    Rook-->>Client: Result URL
-
+    Broker->>Rook: Submit subset
+    Rook-->>Broker: Accepted job + status URL
+    Broker-->>Client: Rook job URL
     Client->>Broker: climate_indices + result URL
-    Broker->>ICCLIM: Delegate
-    ICCLIM-->>Client: Climate-index result
+    Broker->>ICCLIM: Submit at preferred site
+    ICCLIM-->>Broker: Accepted job + status URL
+    Broker-->>Client: icclim job URL
 ```
 
-**The broker selects each service; the intermediate data remains at the Compute Node.**
+**The broker selects each service and preserves data locality when possible.**
 
-<!-- Initially, the client follows each delegated job URL and submits the next
-step. Later, a workflow coordinator or an extended orchestrate process could
+<!-- Later, a workflow coordinator or an extended orchestrate process could
 manage both jobs and expose one composite status URL. The simple broker remains
 a delegation layer. -->
