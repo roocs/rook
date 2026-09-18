@@ -27,7 +27,7 @@ hidden presenter comments. The generated `.qmd` is not a second content source.
 
 ```bash
 python milano-2026/build_slides.py
-quarto preview ../_build/talks/milano-2026/slides.qmd
+sh ./quarto.sh preview ../_build/talks/milano-2026/slides.qmd
 ```
 
 Rerun the script after editing the source. Press **S** in the preview for
