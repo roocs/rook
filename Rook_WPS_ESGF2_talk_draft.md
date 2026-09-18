@@ -39,6 +39,8 @@ flowchart LR
     class Rook rook
 ```
 
+[**clisops**](https://github.com/roocs/clisops) provides the data operations; [**Woodpecker**](https://github.com/roocs/woodpecker) applies known dataset fixes.
+
 **Move the processing to the data.**
 
 <!-- 1:00. Rook connects climate-data clients with Python processing based on
@@ -48,34 +50,51 @@ coverage today. -->
 
 ---
 
-# 2. Rook processes
+# 2. Processing capabilities
 
 ## Data operations
 
-**Subset, average, regrid** — a separate process for each operator.
+- **Subset** — select space, time and levels.
+- **Average** — reduce data for analysis.
+- **Regrid** — transform to a target grid.
 
 ## Workflow orchestration
 
-- **`orchestrate`** — combine multiple data operators in a **workflow**.
+- **`orchestrate`** — combine operators in a **workflow**.
 
 ## Supporting processes
 
-- **`health`** — check site health; the planned broker can use it when selecting a site.
-- **`status`** — report service, process, server and storage status.
+- **`health`** — check site health; useful for the planned broker.
+- **`status`** — report operational status.
 
-**Easy to extend: add a process for data operations or service support.**
+```mermaid
+flowchart TD
+    Rook["Rook/WPS"] --> Subset["subset"]
+    Rook --> Average["average"]
+    Rook --> Regrid["regrid"]
+    Rook --> Orchestrate["orchestrate"]
 
-<!-- 1:00. Rook exposes a process for each data operator: subset selects space,
-time and levels; average reduces data; regrid transforms to a target grid.
-The additional orchestrate process combines operators into a workflow.
-This same process mechanism supports health and status, and the planned broker.
+    Orchestrate -.->|"combines"| Subset
+    Orchestrate -.->|"combines"| Average
+    Orchestrate -.->|"combines"| Regrid
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
+```
+
+**Easy to extend with new data or supporting processes.**
+
+<!-- 1:30. Rook exposes a separate process for each data operator. The additional
+orchestrate process combines one or more operators into a workflow. The same
+process mechanism supports health and status, and the planned broker.
 Health is a lightweight synchronous check that also verifies configured data
-files are readable. Status provides a detailed operational report, not job status.
+files are readable. Status reports service, process, server and storage status,
+not individual job status.
 
-clisops (https://github.com/roocs/clisops) provides the main data operations.
-Woodpecker (https://github.com/roocs/woodpecker) prepares the data by discovering
-and applying maintained dataset fixes through its core and independent plugins.
-Keep its internal architecture for the separate Woodpecker talk. -->
+clisops provides the main data operations. Woodpecker prepares data by applying
+maintained fixes through its core and independent plugins; keep its internal
+architecture for the separate Woodpecker talk. -->
 
 ---
 
