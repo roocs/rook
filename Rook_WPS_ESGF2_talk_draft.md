@@ -8,6 +8,8 @@
 
 *Like the bird: surveys vast archives, finds what matters, and brings it within easy reach.*
 
+Milano, 2026
+
 *Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
 
 <!-- Main talk: eight slides, about ten minutes. Horizontal rules separate
@@ -83,7 +85,7 @@ separate Woodpecker talk. -->
 
 - **One access point** for CDS workflows.
 - **Identical Rook installations** at DKRZ and IPSL.
-- **Equivalent data and processing** at both sites.
+- **Equivalent processing and replicated CMIP6, CORDEX, and other supported data** at both sites.
 - The **load balancer can choose any available Rook**.
 - Rook executes the workflow **close to the data**.
 
@@ -91,7 +93,7 @@ separate Woodpecker talk. -->
 flowchart LR
     CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
     LB --> Rook["Identical Rook sites"]
-    Rook --> Data["Equivalent replicated data"]
+    Rook --> Data["Equivalent replicated data<br/>CMIP6 · CORDEX · …"]
 
     style Rook fill:#dceef8,stroke:#457b9d,color:#000
 ```
