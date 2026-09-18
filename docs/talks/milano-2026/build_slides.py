@@ -53,7 +53,9 @@ MERMAID_CONFIG = (
             "htmlLabels": False,
             "flowchart": {
                 "htmlLabels": False,
-                "subGraphTitleMargin": {"top": 8, "bottom": 28},
+                # Mermaid adds title margins after layout; keep their sum below
+                # its 20px cluster gap so adjacent subgraphs cannot overlap.
+                "subGraphTitleMargin": {"top": 0, "bottom": 8},
             },
             "sequence": {
                 "fontSize": 24,
