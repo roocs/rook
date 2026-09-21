@@ -8,7 +8,11 @@
 
 *Like the bird: surveys vast archives, finds what matters, and brings it within easy reach.*
 
-Milano, 2026
+**Presented by Ag Stephens (CEDA/STFC)**
+
+Contributors: Carsten Ehbrecht and Martin Schupfner (DKRZ), Guillaume Levavasseur (IPSL), and colleagues at Ouranos (Canada) and across the community.
+
+Milano, September 2026
 
 *Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
 
