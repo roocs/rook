@@ -138,35 +138,47 @@ participating sites will not necessarily hold the same datasets. -->
 
 # 4. Broker: one more Rook process
 
-- Add a **`broker` process** to the existing Rook service.
-- Use **STAC and a local PostgreSQL index** to find sites holding the dataset.
-- Forward the **unchanged workflow** to the selected site's **`orchestrate` process**.
+- **Independent pools with partial overlap:** DKRZ, IPSL and CEDA hold different dataset combinations.
+- The new **`broker` process delegates the workflow to the site with the data**.
+- **Local PostgreSQL index:** STAC items arrive via **Kafka**; **global STAC** provides a fallback.
 
 ```mermaid
+%%{init: {"flowchart": {"subGraphTitleMargin": {"top": 0, "bottom": 64}}}}%%
 flowchart LR
-    Client["ESGF-NG client"] -->|"Via load balancer"| Broker
-    subgraph Rook["Rook service"]
-        Broker["NEW process: broker"]
+    Client["ESGF-NG client"] -->|"Workflow"| LB["Load balancer"]
+    LB --> Routing
+    subgraph Routing["Rook service"]
+        direction TB
+        Broker["NEW broker process"]
+        Broker -.->|"Dataset locations"| Index["Local PostgreSQL index — Kafka updates / STAC fallback"]
     end
-    subgraph Selected["Selected Rook"]
-        Orchestrate["orchestrate"]
+    Routing -->|"Same workflow"| DKRZ["Rook at DKRZ — orchestrate"]
+    Routing -->|"Same workflow"| IPSL["Rook at IPSL — orchestrate"]
+    Routing -->|"Same workflow"| CEDA["Rook at CEDA — orchestrate"]
+    subgraph Independent["Independent data pools with overlap"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+        DataCEDA[("CEDA data pool")]
     end
-    Broker -->|"Same workflow"| Orchestrate
-    Orchestrate --> Data[("Site data")]
-    Broker -.->|"Dataset locations"| Lookup["STAC / local PostgreSQL index"]
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    CEDA --> DataCEDA
     classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
     classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
     classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
-    class Orchestrate rook
-    class Broker new
+    class DKRZ,IPSL,CEDA rook
+    class Broker,Index new
 ```
 
-**One more Rook process, no separate broker service.**
+**Broker: delegate the unchanged workflow to the site with the data.**
 
 [Broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
 
 <!-- 2:00. Planned architecture. ESGF-NG sites hold different, independently
-managed datasets. The broker is a small additional process within the existing
+managed datasets, with partial overlap. The broker delegates the workflow to
+a site holding the requested data. The load balancer reaches the broker process
+on an existing Rook instance; the broker selects one eligible orchestrate endpoint,
+not all three. The broker is a small additional process within the existing
 Rook service, not a separately deployed routing component. It uses the local
 PostgreSQL index for fast lookup and STAC for missing or stale information.
 Kafka publication, update and deletion events

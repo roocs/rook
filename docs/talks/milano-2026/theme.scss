@@ -50,6 +50,7 @@ $code-block-bg: #dceef8;
   }
 }
 .reveal .diagram-small .cell-output-display .mermaid-svg { max-height: 330px; }
+.reveal #broker-one-more-rook-process .cell-output-display .mermaid-svg { max-height: 440px; }
 .reveal .diagram-side:has(> h2) {
   > h2 { font-size: 1.05em; }
   > ul { font-size: 0.92em; }
