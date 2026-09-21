@@ -6,7 +6,7 @@
 
 **Rook — Remote Operations On Klimadaten**
 
-*Like the clever rook (bird), it finds the data that matters and brings it within reach.*
+*Processing close to climate data*
 
 **Presented by Ag Stephens (CEDA/STFC)**
 
@@ -30,8 +30,10 @@ Milano, September 2026
 
 <!-- EDITORIAL NOTE FOR SLIDE PREPARATION
 
-- Proposed main talk: title slide plus slides 1–10; rehearse for the allotted time.
-- Optional backup material: A1 and B1–B3.
+- Main talk: title, three Rook slides, then summary (5 slides, about 6 minutes).
+- Timing: title 0:30, What is Rook? 1:00, CDS 1:15, broker 2:00, summary 0:45.
+- Appendix: A processing and workflows, B broker architecture, C deployment,
+  D discovery and access, E climate indices. Use only for questions.
 - `wf.broker()` is a proposed API sketch, not an implemented interface.
 - Docker, Kubernetes and Helm are future deployment options, not operational today.
 - Horizontal rules separate slides; other HTML comments are presenter notes.
@@ -42,7 +44,7 @@ Milano, September 2026
 # 1. What is Rook?
 
 - [**Rook**](https://github.com/roocs/rook) is the roocs remote processing service.
-- A typical **subset request** specifies a **dataset, time range and bounding box**.
+- A **subset request** specifies a dataset, time range and area.
 - Rook processes **close to the data** and returns the **requested subset**.
 
 ```mermaid
@@ -55,8 +57,6 @@ flowchart LR
     class Rook rook
 ```
 
-[**clisops**](https://github.com/roocs/clisops) provides the data operations; [**Woodpecker**](https://github.com/roocs/woodpecker) applies known dataset fixes.
-
 **Move the processing to the data.**
 
 <!-- 1:00. Rook connects climate-data clients with Python processing based on
@@ -66,13 +66,144 @@ coverage today. -->
 
 ---
 
-# 2. Processing capabilities
+# 2. Rook in CDS today
+
+- The Copernicus Climate Data Store (CDS) sends workflows to **`orchestrate`**.
+- **DKRZ and IPSL** run identical Rook services with replicated datasets.
+- Load balancing across both sites supports the **99% availability target** that neither site can meet alone.
+
+```mermaid
+flowchart LR
+    CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
+    LB --> DKRZ["Rook at DKRZ — orchestrate"]
+    LB --> IPSL["Rook at IPSL — orchestrate"]
+    subgraph Replicated["Replicated data"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL rook
+```
+
+**CDS: choose any available Rook.**
+
+<!-- 1:15. CDS submits a workflow through the load balancer. The selected Rook
+site's orchestrate process executes its operations against that site's data.
+This is the existing model for supported CDS datasets. Equivalent
+holdings make both sites interchangeable. The architecture combines identical
+sites behind a load balancer to meet the CDS 99% availability target. Neither
+site can provide that availability alone. ESGF-NG needs smarter routing because
+participating sites will not necessarily hold the same datasets. -->
+
+---
+
+# 3. Rook Broker for ESGF-NG
+
+- ESGF-NG sites hold **different datasets**, with partial overlap.
+- **Planned:** a `broker` process in each Rook routes requests to a site holding the data.
+- The selected site runs the **unchanged workflow** through `orchestrate`.
+
+```mermaid
+%%{init: {"flowchart": {"subGraphTitleMargin": {"top": 0, "bottom": 64}}}}%%
+flowchart LR
+    Client["ESGF-NG client"] -->|"Workflow"| LB["Load balancer"]
+    LB --> Routing
+    subgraph Routing["`**Rook at any site**`"]
+        direction TB
+        Broker["NEW broker process"]
+        Broker -.->|"Dataset-to-site lookup"| Index["Local index — Kafka updates / STAC fallback"]
+    end
+    Routing -->|"Same workflow"| DKRZ["Rook at DKRZ — orchestrate"]
+    Routing -->|"Same workflow"| IPSL["Rook at IPSL — orchestrate"]
+    Routing -->|"Same workflow"| CEDA["Rook at CEDA — orchestrate"]
+    subgraph Independent["Independent data pools with overlap"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+        DataCEDA[("CEDA data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    CEDA --> DataCEDA
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL,CEDA rook
+    class Broker,Index new
+```
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+[Detailed broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
+
+<!-- 2:00. Planned architecture. Each participating Rook gains a broker
+process. For each request it selects one eligible site, forwards the unchanged
+workflow to orchestrate and returns that site's accepted-job response and status
+URL. It does not execute the workflow or mirror remote job state. The broker
+looks up dataset locations in the local PostgreSQL-backed STAC index. Kafka
+publication, update and deletion events maintain the index through a
+Piddiplatsch plugin, independently of workflow requests. Global STAC provides
+the fallback when local placement information is missing or stale. Further
+indexing details are in appendix B. -->
+
+---
+
+# Summary
+
+```mermaid
+%%{init: {"themeCSS": ".cluster-label { font-size: 20px; }"}}%%
+flowchart LR
+    Client["Rooki / service"] --> Workflow["Same workflow"]
+
+    subgraph CDS["Today: CDS"]
+        OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
+    end
+
+    subgraph ESGF["Planned: ESGF-NG"]
+        Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
+        OrchestrateESGF --> ProcessingESGF["Processing"]
+    end
+
+    Workflow --> OrchestrateCDS
+    Workflow --> Broker
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+```
+
+- **CDS:** choose any equivalent Rook.
+- **Planned for ESGF-NG:** the broker selects a Rook that has the data.
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+<!-- 0:45. This is the closing picture. The ESGF-NG extension adds data-aware
+site selection without changing the workflow or the processing operations. -->
+
+---
+
+# Appendix
+
+- **A. Processing and workflows:** operations, Rooki example and submission
+- **B. Broker architecture:** routing, dataset index and Kafka updates
+- **C. Deployment:** current infrastructure and planned options
+- **D. Discovery and access:** STAC, AAI and security proxy
+- **E. Climate indices:** icclim integration and service chaining
+
+---
+
+# A1. Processing capabilities
 
 ## Data operations
 
 - **Subset** — select space, time and levels.
 - **Average** — reduce data for analysis.
 - **Regrid** — transform to a target grid.
+
+[**clisops**](https://github.com/roocs/clisops) provides the data operations; [**Woodpecker**](https://github.com/roocs/woodpecker) applies known dataset fixes.
 
 ## Workflow orchestration
 
@@ -114,41 +245,65 @@ architecture for the separate Woodpecker talk. -->
 
 ---
 
-# 3. Rook in the Copernicus CDS today
+# A2. A workflow with Rooki
 
-- CDS sends a **workflow** to Rook's **`orchestrate` process**.
-- A workflow uses **one or more operators** — for example, to **subset a dataset by time and area**.
-- **DKRZ and IPSL:** identical Rook services and equivalent processing.
-- **Replicated holdings:** CMIP6, CORDEX and other supported datasets.
+**Subset a logical dataset by time.**
 
-```mermaid
-flowchart LR
-    CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
-    LB --> DKRZ["Rook at DKRZ — orchestrate"]
-    LB --> IPSL["Rook at IPSL — orchestrate"]
-    subgraph Replicated["Replicated data"]
-        DataDKRZ[("DKRZ data pool")]
-        DataIPSL[("IPSL data pool")]
-    end
-    DKRZ --> DataDKRZ
-    IPSL --> DataIPSL
-    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
-    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
-    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
-    class DKRZ,IPSL rook
+```python
+from rooki import operators as ops
+
+wf = ops.Subset(
+    ops.Input(
+        "tas",
+        [
+            "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245."
+            "r1i1p1f1.day.tas.gr1.v20190619"
+        ],
+    ),
+    time="2016/2020",
+    time_components="month:jan,feb,mar|day:01",
+)
 ```
 
-**CDS: choose any available Rook.**
+The workflow describes **what to compute**.
 
-<!-- 1:15. CDS submits a workflow through the load balancer. The selected Rook
-site's orchestrate process executes its operations against that site's data.
-This is the existing model for supported CDS datasets. Equivalent
-holdings make both sites interchangeable. ESGF-NG needs smarter routing because
-participating sites will not necessarily hold the same datasets. -->
+<!-- This example comes from the existing notebook. The dataset identifier is
+logical; clients do not need to specify archive file paths. Verify availability
+and the endpoint before presenting, and prepare a completed result. -->
 
 ---
 
-# 4. Broker: one more Rook process for ESGF-NG
+# A3. Workflow submission
+
+## Today: choose a Rook service
+
+```python
+resp = wf.orchestrate()
+resp.ok
+```
+
+## Proposed: let the broker choose the site
+
+```python
+resp = wf.broker()  # proposed API, not implemented
+resp.ok
+```
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+<!-- 2:00. The workflow construction and wf.orchestrate() call come from the
+existing notebook. Verify the endpoint and dataset before the talk and prepare
+the completed result as a fallback.
+
+wf.broker() is deliberately labelled as a proposed API sketch; its exact
+Python signature is not implemented or fixed yet. Both calls serialize the
+same workflow document. Orchestrate executes it at the service selected by the
+client. Broker inspects it to resolve the dataset location, forwards it
+unchanged to the selected Rook site, and returns that site's job-status URL. -->
+
+---
+
+# B1. Broker architecture (planned)
 
 - **Independent pools with partial overlap:** DKRZ, IPSL and CEDA hold different dataset combinations.
 - **Each Rook site has the new `broker` process** to delegate workflows to the site with the data.
@@ -208,7 +363,7 @@ remote job state and must not create broker-to-broker loops. -->
 
 ---
 
-# 5. How the broker finds the data
+# B2. Dataset index and updates
 
 - **Local Rook STAC index (PostgreSQL):** fast dataset-to-site lookup.
 - [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) reads **STAC items from the ESGF-NG Kafka queue**; built for **PID publication**.
@@ -239,65 +394,7 @@ when local placement information is insufficient. -->
 
 ---
 
-# 6. A workflow with Rooki
-
-**Subset a logical dataset by time.**
-
-```python
-from rooki import operators as ops
-
-wf = ops.Subset(
-    ops.Input(
-        "tas",
-        [
-            "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245."
-            "r1i1p1f1.day.tas.gr1.v20190619"
-        ],
-    ),
-    time="2016/2020",
-    time_components="month:jan,feb,mar|day:01",
-)
-```
-
-The workflow describes **what to compute**.
-
-<!-- This example comes from the existing notebook. The dataset identifier is
-logical; clients do not need to specify archive file paths. Verify availability
-and the endpoint before presenting, and prepare a completed result. -->
-
----
-
-# 7. Same workflow, different submission
-
-## Today: choose a Rook service
-
-```python
-resp = wf.orchestrate()
-resp.ok
-```
-
-## Proposed: let the broker choose the site
-
-```python
-resp = wf.broker()  # proposed API, not implemented
-resp.ok
-```
-
-**The broker chooses WHERE; orchestrate handles HOW.**
-
-<!-- 2:00. The workflow construction and wf.orchestrate() call come from the
-existing notebook. Verify the endpoint and dataset before the talk and prepare
-the completed result as a fallback.
-
-wf.broker() is deliberately labelled as a proposed API sketch; its exact
-Python signature is not implemented or fixed yet. Both calls serialize the
-same workflow document. Orchestrate executes it at the service selected by the
-client. Broker inspects it to resolve the dataset location, forwards it
-unchanged to the selected Rook site, and returns that site's job-status URL. -->
-
----
-
-# 8. Deployment today and tomorrow
+# C1. Deployment today and tomorrow
 
 | Operational today | Planned |
 | --- | --- |
@@ -314,7 +411,7 @@ keep Slurm or choose a container-native scheduler. -->
 
 ---
 
-# 9. Discovery and access
+# D1. Discovery and access
 
 - **STAC** advertises a processing endpoint.
 - **MetaGrid or another client** discovers it and sends a bearer token.
@@ -355,41 +452,7 @@ the selected proxy implementation. -->
 
 ---
 
-# 10. Summary: today and tomorrow
-
-```mermaid
-%%{init: {"themeCSS": ".cluster-label { font-size: 20px; }"}}%%
-flowchart LR
-    Client["Rooki / service"] --> Workflow["Same workflow"]
-
-    subgraph CDS["Today: CDS"]
-        OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
-    end
-
-    subgraph ESGF["Tomorrow: ESGF-NG"]
-        Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
-        OrchestrateESGF --> ProcessingESGF["Processing"]
-    end
-
-    Workflow --> OrchestrateCDS
-    Workflow --> Broker
-
-    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
-    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
-    class Broker new
-```
-
-- **CDS:** choose any equivalent Rook.
-- **ESGF-NG:** choose the Rook that has the data.
-
-**The broker chooses WHERE; orchestrate handles HOW.**
-
-<!-- 0:30. This is the closing picture. The ESGF-NG extension adds data-aware
-site selection without changing the workflow or the processing operations. -->
-
----
-
-# A1. AAI for the ESGF-NG Compute Node
+# D2. AAI for the ESGF-NG Compute Node
 
 ## Existing components support an immediate demonstration
 
@@ -418,7 +481,7 @@ flowchart TD
 
 ---
 
-# B1. Option 1 — icclim as a Rook plugin
+# E1. icclim as a Rook plugin
 
 - A separate Rook plugin exposes [**icclim**](https://github.com/cerfacs-globc/icclim).
 - **Python entry points** register one generic `climate_indices` process.
@@ -443,7 +506,7 @@ flowchart LR
 
 ---
 
-# B2. Option 2 — Separate icclim WPS
+# E2. Separate icclim WPS
 
 - Rook and icclim use **independent conda environments**.
 - Both services run **next to the data** and use the **local Slurm cluster**.
@@ -475,7 +538,7 @@ URL. It does not mirror the delegated job. -->
 
 ---
 
-# B3. Chaining independent services
+# E3. Chaining independent services
 
 - Submit `subset` to the broker; it delegates the job to Rook.
 - Use the subset output URL as input for `climate_indices`.
