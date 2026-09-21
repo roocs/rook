@@ -172,3 +172,6 @@ output_*.nc
 
 # PyCharm
 *.idea
+
+# MacOS
+.DS_Store
