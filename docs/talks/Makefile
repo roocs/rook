@@ -2,6 +2,8 @@
 # Invoke with make -C docs/talks, or run make from this directory.
 TALKS_DIR := $(CURDIR)
 SLIDES_DIR := $(TALKS_DIR)/../_build/talks/milano-2026
+PPTX_TEMPLATE ?= $(wildcard $(TALKS_DIR)/templates/futura_black.potx)
+PPTX_TEMPLATE_ARGS = $(if $(PPTX_TEMPLATE),--template "$(PPTX_TEMPLATE)")
 
 .DEFAULT_GOAL := help
 .PHONY: help
@@ -10,6 +12,7 @@ help: ## list presentation build targets
 	@echo "Milano 2026 presentation targets:"
 	@echo "  slides-html   Build Reveal.js HTML"
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
+	@echo "  slides-pptx   Build five main slides as editable PowerPoint"
 	@echo "  slides        Build HTML and PDF"
 	@echo "  slides-clean  Remove only the Milano generated output"
 	@echo "  install       Add HTML tools to the existing rook environment"
@@ -30,11 +33,16 @@ install-pdf: install ## add the PDF exporter and its browser
 	npm install --global --prefix "$$CONDA_PREFIX" decktape@3.16.1
 	"$$CONDA_PREFIX/bin/decktape" version
 
-.PHONY: slides-html slides-pdf slides slides-clean
+.PHONY: slides-html slides-pdf slides-pptx slides slides-clean
 
 slides-html: ## generate the Milano Reveal.js presentation
 	python "$(TALKS_DIR)/milano-2026/build_slides.py"
 	sh "$(TALKS_DIR)/quarto.sh" render "$(SLIDES_DIR)/slides.qmd" --to revealjs
+
+slides-pptx: ## export only the main Milano slides, without the appendix
+	python "$(TALKS_DIR)/milano-2026/build_slides.py" --main-only $(PPTX_TEMPLATE_ARGS)
+	cd "$(SLIDES_DIR)" && sh "$(TALKS_DIR)/quarto.sh" render slides-main.qmd --to pptx --output slides-raw.pptx
+	python "$(TALKS_DIR)/milano-2026/style_pptx.py" "$(SLIDES_DIR)/slides-raw.pptx" "$(SLIDES_DIR)/slides.pptx" $(PPTX_TEMPLATE_ARGS)
 
 slides-pdf: slides-html ## export the Milano slides with DeckTape
 	@if command -v decktape >/dev/null 2>&1; then \

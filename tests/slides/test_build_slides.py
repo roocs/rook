@@ -108,7 +108,7 @@ def test_cli_error(presentation, monkeypatch, capsys):
     source.unlink()
     build = slides.build
     monkeypatch.setattr(slides, "build", lambda: build(source, asset, output))
-    assert slides.main() == 1
+    assert slides.main([]) == 1
     assert "Canonical Markdown source is missing" in capsys.readouterr().err
 
 
@@ -138,7 +138,7 @@ def test_shared_config_disables_html_labels():
 def test_generated_outputs_are_ignored():
     paths = [
         f"docs/_build/talks/milano-2026/slides.{suffix}"
-        for suffix in ("qmd", "html", "pdf", "revealjs.md")
+        for suffix in ("qmd", "html", "pdf", "pptx", "revealjs.md")
     ]
     result = subprocess.run(  # noqa: S603, S607 -- read-only Git ignore check with fixed arguments
         ["git", "check-ignore", "--stdin"],  # noqa: S607 -- fixed Git command
@@ -149,3 +149,44 @@ def test_generated_outputs_are_ignored():
         check=True,
     )
     assert result.stdout.splitlines() == paths
+
+
+def test_main_export_excludes_appendix(presentation):
+    source, asset, output = presentation
+    original = source.read_bytes()
+    slides.build(source, asset, output, main_only=True)
+    result = output.read_text()
+    assert len(re.findall(r"^# ", result, re.MULTILINE)) == 5
+    assert "# Appendix" not in result
+    assert "# A1." not in result
+    assert not result.rstrip().endswith("---")
+    assert result.count("```{mermaid}") == 4
+    assert slides.LOCAL_IMAGE in result
+    assert "Photo: Andreas Trepte" in result
+    assert "title-photo" not in result
+    assert source.read_bytes() == original
+
+
+def test_main_export_requires_appendix_boundary():
+    with pytest.raises(ValueError, match="requires a '# Appendix' heading"):
+        slides.main_slides("# Main slide\n")
+
+
+def test_main_export_ignores_literal_and_commented_headings():
+    main = "# Main\n\n````markdown\n# Appendix\n````\n<!--\n# Appendix\n-->\n"
+    assert slides.main_slides(main + "\n---\n\n# Appendix\nExtra") == main + "\n"
+
+
+def test_template_diagrams_preserve_local_overrides():
+    body = slides.mermaid_fences(slides.main_slides(slides.SOURCE.read_text()), convert=True, configure=True)
+    result = slides.template_diagrams(body, {"background": "222A35", "foreground": "FFFFFF"})
+    configs = [slides.json.loads(value) for value in re.findall(r"%%\{init:\s*(\{[^\n]*\})\}%%", result)]
+    assert len(configs) == 6
+    for config in configs:
+        assert "background: #222A35" in config["themeCSS"]
+        assert config["themeVariables"]["lineColor"] == "#8794a6"
+        assert config["themeVariables"]["edgeLabelBackground"] == "#f3f4f6"
+        assert ".edgeLabel text { fill: #111827" in config["themeCSS"]
+        assert ".marker { fill: #8794a6" in config["themeCSS"]
+    assert any(".cluster-label { font-size: 20px; }" in config["themeCSS"] for config in configs)
+    assert any(config.get("flowchart", {}).get("subGraphTitleMargin", {}).get("bottom") == 64 for config in configs)
