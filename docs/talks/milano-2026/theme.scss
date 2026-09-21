@@ -50,16 +50,43 @@ $code-block-bg: #dceef8;
   }
 }
 .reveal .diagram-small .cell-output-display .mermaid-svg { max-height: 330px; }
+.reveal #broker-one-more-rook-process-for-esgf-ng .cell-output-display .mermaid-svg { max-height: 440px; }
 .reveal .diagram-side:has(> h2) {
   > h2 { font-size: 1.05em; }
   > ul { font-size: 0.92em; }
 }
 
-.reveal #rookwps-for-esgf2 {
-  img { max-height: 280px; }
-  p { margin: 0.3em 0; }
-  > p:last-of-type { font-size: 0.7em; }
-  figcaption { display: none; }
+.reveal #rookwps-for-esgf-ng {
+  .title-copy {
+    position: absolute;
+    top: 220px;
+    left: 0;
+    width: 62%;
+    p { margin: 0 0 28px; }
+    p:nth-of-type(2) { line-height: 1.45; }
+    p:nth-of-type(3) { margin-top: 55px; }
+    p:nth-of-type(4) { font-size: 0.82em; line-height: 1.5; }
+  }
+  .title-photo {
+    position: absolute;
+    top: 200px;
+    right: 0;
+    width: 31%;
+    text-align: center;
+    img { max-height: 370px; margin: 0; }
+    figure { margin: 0; }
+    p { margin: 0; }
+    > p:last-child { margin-top: 18px; font-size: 0.55em; line-height: 1.4; color: #555; }
+    figcaption { display: none; }
+  }
+  .title-date {
+    position: absolute;
+    top: 750px;
+    left: 0;
+    font-size: 0.7em;
+    color: #555;
+    p { margin: 0; }
+  }
 }
 .reveal #notebook-today-and-proposed-broker {
   p { margin: 0.3em 0; }
