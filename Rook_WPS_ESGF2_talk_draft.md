@@ -2,19 +2,31 @@
 
 ## Smart access to climate data
 
-[![Rook — Corvus frugilegus](https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Rook-Corvus_frugilegus.jpg/960px-Rook-Corvus_frugilegus.jpg)](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg)
+::: {.title-copy}
 
 **Rook — Remote Operations On Klimadaten**
 
-*Like the bird: surveys vast archives, finds what matters, and brings it within easy reach.*
+*Like the clever rook (bird), it finds the data that matters and brings it within reach.*
 
 **Presented by Ag Stephens (CEDA/STFC)**
 
 Contributors: Carsten Ehbrecht and Martin Schupfner (DKRZ), Guillaume Levavasseur (IPSL), and colleagues at Ouranos (Canada) and across the community.
 
-Milano, September 2026
+:::
+
+::: {.title-photo}
+
+[![Rook — Corvus frugilegus](https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Rook-Corvus_frugilegus.jpg/960px-Rook-Corvus_frugilegus.jpg)](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg)
 
 *Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
+
+:::
+
+::: {.title-date}
+
+Milano, September 2026
+
+:::
 
 <!-- EDITORIAL NOTE FOR SLIDE PREPARATION
 
@@ -136,10 +148,10 @@ participating sites will not necessarily hold the same datasets. -->
 
 ---
 
-# 4. Broker: one more Rook process
+# 4. Broker: one more Rook process for ESGF-NG
 
 - **Independent pools with partial overlap:** DKRZ, IPSL and CEDA hold different dataset combinations.
-- The new **`broker` process delegates the workflow to the site with the data**.
+- **Each Rook site has the new `broker` process** to delegate workflows to the site with the data.
 - **Local PostgreSQL index:** STAC items arrive via **Kafka**; **global STAC** provides a fallback.
 
 ```mermaid
@@ -147,7 +159,7 @@ participating sites will not necessarily hold the same datasets. -->
 flowchart LR
     Client["ESGF-NG client"] -->|"Workflow"| LB["Load balancer"]
     LB --> Routing
-    subgraph Routing["Rook service"]
+    subgraph Routing["`**Rook at any site**`"]
         direction TB
         Broker["NEW broker process"]
         Broker -.->|"Dataset locations"| Index["Local PostgreSQL index — Kafka updates / STAC fallback"]
@@ -170,15 +182,17 @@ flowchart LR
     class Broker,Index new
 ```
 
-**Broker: delegate the unchanged workflow to the site with the data.**
+**The broker chooses WHERE; orchestrate handles HOW.**
 
 [Broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
 
 <!-- 2:00. Planned architecture. ESGF-NG sites hold different, independently
 managed datasets, with partial overlap. The broker delegates the workflow to
 a site holding the requested data. The load balancer reaches the broker process
-on an existing Rook instance; the broker selects one eligible orchestrate endpoint,
-not all three. The broker is a small additional process within the existing
+on an existing Rook instance at any site. Every participating Rook site has
+the same broker process and can delegate a workflow; the diagram shows one
+request entering one of those instances, not an additional broker service.
+The broker selects one eligible orchestrate endpoint, not all three. The broker is a small additional process within the existing
 Rook service, not a separately deployed routing component. It uses the local
 PostgreSQL index for fast lookup and STAC for missing or stale information.
 Kafka publication, update and deletion events
@@ -344,6 +358,7 @@ the selected proxy implementation. -->
 # 10. Summary: today and tomorrow
 
 ```mermaid
+%%{init: {"themeCSS": ".cluster-label { font-size: 20px; }"}}%%
 flowchart LR
     Client["Rooki / service"] --> Workflow["Same workflow"]
 
@@ -367,7 +382,7 @@ flowchart LR
 - **CDS:** choose any equivalent Rook.
 - **ESGF-NG:** choose the Rook that has the data.
 
-**`broker` decides WHERE — `orchestrate` decides HOW.**
+**The broker chooses WHERE; orchestrate handles HOW.**
 
 <!-- 0:30. This is the closing picture. The ESGF-NG extension adds data-aware
 site selection without changing the workflow or the processing operations. -->
