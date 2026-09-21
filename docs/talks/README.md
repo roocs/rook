@@ -8,6 +8,7 @@ cd docs/talks
 make install       # Quarto and Node.js; enough for HTML
 # make install-pdf # Also install DeckTape and Chrome for PDF
 make slides-html
+make slides-pptx   # PowerPoint: five main slides, without the appendix
 ```
 
 These targets add packages to `rook`; they do not create a new environment.

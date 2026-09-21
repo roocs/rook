@@ -1,5 +1,6 @@
 """Generate the Milano Quarto input without changing the canonical Markdown."""
 
+import argparse
 import json
 import re
 import sys
@@ -19,10 +20,10 @@ FRONT_MATTER = """---
 pagetitle: "Rook/WPS for ESGF-NG — Milano 2026"
 fig-responsive: true
 keep-md: true
-filters:
-  - ../../../talks/milano-2026/svg.lua
 format:
   revealjs:
+    filters:
+      - ../../../talks/milano-2026/svg.lua
     theme:
       - simple
       - ../../../talks/milano-2026/theme.scss
@@ -39,6 +40,9 @@ format:
     mermaid-format: svg
     code-overflow: wrap
     auto-stretch: false
+  pptx:
+    slide-level: 1
+    mermaid-format: png
 ---
 
 """
@@ -167,8 +171,37 @@ def add_layout(markdown: str) -> str:
     return "".join(lines)
 
 
-def transform(markdown: str) -> str:
+def main_slides(markdown: str) -> str:
+    """Stop at the appendix heading, ignoring headings inside code or comments."""
+    opened = None
+    in_comment = False
+    lines = markdown.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        if in_comment:
+            in_comment = "-->" not in line
+            continue
+        if opened is None and "<!--" in line:
+            in_comment = "-->" not in line
+            continue
+        match = FENCE.match(line)
+        if match:
+            _, fence, info = match.groups()
+            if opened is None:
+                opened = fence
+            elif fence[0] == opened[0] and len(fence) >= len(opened) and not info.strip():
+                opened = None
+        elif opened is None and line.strip() == "# Appendix":
+            return re.sub(r"\n---\s*$", "\n", "".join(lines[:index]))
+    raise ValueError("Main-slide export requires a '# Appendix' heading")
+
+
+def transform(markdown: str, *, main_only: bool = False) -> str:
     """Add Reveal.js metadata, convert Mermaid cells and localize the photo."""
+    if main_only:
+        markdown = main_slides(markdown)
+        # Reveal's title positioning divs hide the linked image from Pandoc's
+        # PowerPoint writer. Keep their contents as ordinary slide blocks.
+        markdown = re.sub(r"^::: \{\.title-(?:copy|photo|date)\}\s*$|^:::\s*$", "", markdown, flags=re.MULTILINE)
     body = mermaid_fences(markdown, convert=True, configure=True)
     body = add_layout(body)
     for remote in REMOTE_IMAGES:
@@ -182,7 +215,13 @@ def transform(markdown: str) -> str:
     return result
 
 
-def build(source: Path = SOURCE, asset: Path = ASSET, output: Path = OUTPUT) -> Path:
+def build(
+    source: Path = SOURCE,
+    asset: Path = ASSET,
+    output: Path = OUTPUT,
+    *,
+    main_only: bool = False,
+) -> Path:
     """Write deterministic Quarto input after checking the required source files."""
     for path, description in (
         (source, "Canonical Markdown source"),
@@ -190,16 +229,23 @@ def build(source: Path = SOURCE, asset: Path = ASSET, output: Path = OUTPUT) -> 
     ):
         if not path.is_file():
             raise FileNotFoundError(f"{description} is missing: {path}")
-    result = transform(source.read_text(encoding="utf-8"))
+    result = transform(source.read_text(encoding="utf-8"), main_only=main_only)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(result, encoding="utf-8")
     return output
 
 
-def main() -> int:
+def main(argv=None) -> int:
     """Report actionable build errors without a Python traceback."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--main-only", action="store_true", help="omit the appendix for PowerPoint")
+    args = parser.parse_args(argv)
     try:
-        output = build()
+        output = (
+            build(output=OUTPUT.with_name("slides-main.qmd"), main_only=True)
+            if args.main_only
+            else build()
+        )
     except (OSError, ValueError) as error:
         print(f"Slides: {error}", file=sys.stderr)
         return 1
