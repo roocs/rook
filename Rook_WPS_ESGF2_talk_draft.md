@@ -1,4 +1,4 @@
-# Rook/WPS for ESGF2
+# Rook/WPS for ESGF-NG
 
 ## Smart access to climate data
 
@@ -127,7 +127,7 @@ flowchart LR
 <!-- 1:15. CDS submits a workflow through the load balancer. The selected Rook
 site's orchestrate process executes its operations against that site's data.
 This is the existing model for supported CDS datasets. Equivalent
-holdings make both sites interchangeable. ESGF2 needs smarter routing because
+holdings make both sites interchangeable. ESGF-NG needs smarter routing because
 participating sites will not necessarily hold the same datasets. -->
 
 ---
@@ -140,7 +140,7 @@ participating sites will not necessarily hold the same datasets. -->
 
 ```mermaid
 flowchart LR
-    Client["ESGF2 client"] -->|"Via load balancer"| Broker
+    Client["ESGF-NG client"] -->|"Via load balancer"| Broker
     subgraph Rook["Rook service"]
         Broker["NEW process: broker"]
     end
@@ -161,7 +161,7 @@ flowchart LR
 
 [Broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
 
-<!-- 2:00. Planned architecture. ESGF2 sites hold different, independently
+<!-- 2:00. Planned architecture. ESGF-NG sites hold different, independently
 managed datasets. The broker is a small additional process within the existing
 Rook service, not a separately deployed routing component. It uses the local
 PostgreSQL index for fast lookup and STAC for missing or stale information.
@@ -181,14 +181,14 @@ remote job state and must not create broker-to-broker loops. -->
 # 5. How the broker finds the data
 
 - **Local Rook STAC index (PostgreSQL):** fast dataset-to-site lookup.
-- [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) reads **STAC items from the ESGF2 Kafka queue**; built for **PID publication**.
+- [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) reads **STAC items from the ESGF-NG Kafka queue**; built for **PID publication**.
 - **Mapping plugins** transform items into a target schema.
 - A **new Rook plugin** can populate and update the local index.
 - **Global STAC:** fallback for missing or stale information.
 
 ```mermaid
 flowchart LR
-    Kafka["ESGF2 Kafka"] -->|"STAC items"| Piddi["Piddiplatsch"]
+    Kafka["ESGF-NG Kafka"] -->|"STAC items"| Piddi["Piddiplatsch"]
     Piddi -->|"NEW: Rook plugin"| Index[("Local Rook STAC index — PostgreSQL")]
     Broker["Rook: broker process"] -->|"Lookup"| Index
     Broker -.->|"Fallback"| STAC["Global STAC"]
@@ -202,7 +202,7 @@ flowchart LR
 
 <!-- The local index contains global dataset placement and detailed local
 assets. Piddiplatsch was built for PID publication. It consumes STAC items from
-the ESGF2 Kafka queue and uses plugins to map them to target schemas. A new
+the ESGF-NG Kafka queue and uses plugins to map them to target schemas. A new
 Rook plugin can use publication, update and deletion events to maintain the
 local PostgreSQL-backed STAC index. STAC is the authoritative fallback; it is queried only
 when local placement information is insufficient. -->
@@ -278,7 +278,7 @@ unchanged to the selected Rook site, and returns that site's job-status URL. -->
 **The Rook API and processing model stay the same.**
 
 <!-- 1:00. The Ansible/VM/Slurm path is operational today. The container image,
-Docker, Kubernetes and a possible Helm chart are future ESGF2 work. They should
+Docker, Kubernetes and a possible Helm chart are future ESGF-NG work. They should
 not require a different client API or processing implementation. A site may
 keep Slurm or choose a container-native scheduler. -->
 
@@ -307,10 +307,10 @@ flowchart TD
 <!-- 1:45. Rook's integration boundary is the processing API and optional STAC
 information. Portal integration belongs to MetaGrid or its successor. A small
 processing indicator or service link is sufficient and can be added later via
-an ESGF2 Kafka update; do not propose an exact STAC schema in this talk.
+an ESGF-NG Kafka update; do not propose an exact STAC schema in this talk.
 
 Twitcher is an existing, maintained component and is used by Ouranos in Canada.
-It supports an immediate ESGF2 demonstration. ESGF2 may later rewrite or
+It supports an immediate ESGF-NG demonstration. ESGF-NG may later rewrite or
 replace the security proxy according to its final user-to-service and
 service-to-service delegation requirements. Keep the WPS API independent of
 the selected proxy implementation. -->
@@ -335,7 +335,7 @@ flowchart LR
         OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
     end
 
-    subgraph ESGF["Tomorrow: ESGF2"]
+    subgraph ESGF["Tomorrow: ESGF-NG"]
         Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
         OrchestrateESGF --> ProcessingESGF["Processing"]
     end
@@ -349,16 +349,16 @@ flowchart LR
 ```
 
 - **CDS:** choose any equivalent Rook.
-- **ESGF2:** choose the Rook that has the data.
+- **ESGF-NG:** choose the Rook that has the data.
 
 **`broker` decides WHERE — `orchestrate` decides HOW.**
 
-<!-- 0:30. This is the closing picture. The ESGF2 extension adds data-aware
+<!-- 0:30. This is the closing picture. The ESGF-NG extension adds data-aware
 site selection without changing the workflow or the processing operations. -->
 
 ---
 
-# A1. AAI for the ESGF2 Compute Node
+# A1. AAI for the ESGF-NG Compute Node
 
 ## Existing components support an immediate demonstration
 
@@ -367,7 +367,7 @@ site selection without changing the workflow or the processing operations. -->
 - MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
 - **Twitcher** validates the token, authorizes access, and protects the WPS endpoint.
 - Twitcher is maintained and currently used by **Ouranos in Canada**.
-- ESGF2 can use **Twitcher for a demonstration** while designing a future security proxy.
+- ESGF-NG can use **Twitcher for a demonstration** while designing a future security proxy.
 - The **processing API remains independent** of the proxy implementation.
 
 ```mermaid
@@ -383,7 +383,7 @@ flowchart TD
     class WPS rook
 ```
 
-**Use Twitcher now; keep the proxy replaceable for the final ESGF2 architecture.**
+**Use Twitcher now; keep the proxy replaceable for the final ESGF-NG architecture.**
 
 ---
 

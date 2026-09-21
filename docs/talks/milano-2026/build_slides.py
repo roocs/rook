@@ -16,7 +16,7 @@ REMOTE_IMAGES = (
     "https://upload.wikimedia.org/wikipedia/commons/b/b5/Rook-Corvus_frugilegus.jpg",
 )
 FRONT_MATTER = """---
-pagetitle: "Rook/WPS for ESGF2 — Milano 2026"
+pagetitle: "Rook/WPS for ESGF-NG — Milano 2026"
 fig-responsive: true
 keep-md: true
 filters:
