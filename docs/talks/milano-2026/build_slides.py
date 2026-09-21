@@ -195,7 +195,33 @@ def main_slides(markdown: str) -> str:
     raise ValueError("Main-slide export requires a '# Appendix' heading")
 
 
-def transform(markdown: str, *, main_only: bool = False) -> str:
+def template_diagrams(body: str, profile: dict) -> str:
+    """Match diagram canvases and edge labels, retaining per-diagram overrides."""
+    # Edges cross both the dark canvas and light subgraphs. White disappears
+    # inside subgraphs; this mid-tone stays visible on both backgrounds.
+    edge_color = "#8794a6"
+    label_background = "#f3f4f6"
+    label_color = "#111827"
+    css = (
+        "background: #" + profile["background"] + "; "
+        ".flowchart-link { stroke: " + edge_color + " !important; stroke-width: 2.5px !important; } "
+        ".marker { fill: " + edge_color + " !important; stroke: " + edge_color + " !important; } "
+        ".edgeLabel rect { fill: " + label_background + " !important; opacity: 1 !important; } "
+        ".edgeLabel text { fill: " + label_color + " !important; }"
+    )
+
+    def configure(match):
+        config = json.loads(match.group(1))
+        config["themeCSS"] = config.get("themeCSS", "") + " " + css
+        variables = config.setdefault("themeVariables", {})
+        variables["lineColor"] = edge_color
+        variables["edgeLabelBackground"] = label_background
+        return "%%{init: " + json.dumps(config) + "}%%"
+
+    return re.sub(r"%%\{init:\s*(\{[^\n]*\})\}%%", configure, body)
+
+
+def transform(markdown: str, *, main_only: bool = False, template: Path | None = None) -> str:
     """Add Reveal.js metadata, convert Mermaid cells and localize the photo."""
     if main_only:
         markdown = main_slides(markdown)
@@ -203,6 +229,13 @@ def transform(markdown: str, *, main_only: bool = False) -> str:
         # PowerPoint writer. Keep their contents as ordinary slide blocks.
         markdown = re.sub(r"^::: \{\.title-(?:copy|photo|date)\}\s*$|^:::\s*$", "", markdown, flags=re.MULTILINE)
     body = mermaid_fences(markdown, convert=True, configure=True)
+    if template is not None:
+        from template_pptx import read_template
+
+        if not main_only:
+            raise ValueError("PowerPoint templates apply only to the main-slide export")
+        _, _, profile = read_template(template)
+        body = template_diagrams(body, profile)
     body = add_layout(body)
     for remote in REMOTE_IMAGES:
         body = body.replace(f"]({remote})", f"]({LOCAL_IMAGE})")
@@ -221,6 +254,7 @@ def build(
     output: Path = OUTPUT,
     *,
     main_only: bool = False,
+    template: Path | None = None,
 ) -> Path:
     """Write deterministic Quarto input after checking the required source files."""
     for path, description in (
@@ -229,7 +263,7 @@ def build(
     ):
         if not path.is_file():
             raise FileNotFoundError(f"{description} is missing: {path}")
-    result = transform(source.read_text(encoding="utf-8"), main_only=main_only)
+    result = transform(source.read_text(encoding="utf-8"), main_only=main_only, template=template)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(result, encoding="utf-8")
     return output
@@ -239,12 +273,13 @@ def main(argv=None) -> int:
     """Report actionable build errors without a Python traceback."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--main-only", action="store_true", help="omit the appendix for PowerPoint")
+    parser.add_argument("--template", type=Path, help="match diagram colours to a PowerPoint reference")
     args = parser.parse_args(argv)
     try:
         output = (
-            build(output=OUTPUT.with_name("slides-main.qmd"), main_only=True)
+            build(output=OUTPUT.with_name("slides-main.qmd"), main_only=True, template=args.template)
             if args.main_only
-            else build()
+            else build(template=args.template) if args.template else build()
         )
     except (OSError, ValueError) as error:
         print(f"Slides: {error}", file=sys.stderr)

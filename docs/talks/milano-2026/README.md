@@ -33,6 +33,25 @@ as HTML and does not require DeckTape's PDF export step. HTML and PDF retain
 the appendix. The layout checks fail if the main slide structure changes,
 so update `style_pptx.py` when adding slides or changing their content blocks.
 
+### Futura black PowerPoint template
+
+`slides-pptx` automatically uses `../templates/futura_black.potx` when present.
+The local copy comes from Woodpecker. The template directory is ignored by Git
+and survives `slides-clean`; generated PPTX files contain the template artwork.
+`template_pptx.py` reuses the reference's master, layout, logo, footer and fonts,
+adapts the five content layouts, and matches diagram backgrounds to its dark
+palette. Text remains editable, with explicit text-box geometry for Google Slides.
+The template fonts must be installed for exact typography.
+
+```bash
+make slides-pptx                       # Futura black when installed locally
+make slides-pptx PPTX_TEMPLATE=         # original light styling
+make slides-pptx PPTX_TEMPLATE=/path/to/reference.potx
+```
+
+References must contain one selected slide on a 13⅓ by 7½ inch canvas.
+Template styling applies only to PPTX; HTML and PDF use the Reveal.js theme.
+
 Diagrams are prerendered SVG with plain SVG text. `svg.lua` embeds them as
 images, avoiding Quarto/Pandoc sequence-CSS parsing and PDF font scaling bugs.
 The ignored `slides.revealjs.md` is its intermediate input. No Mermaid runtime

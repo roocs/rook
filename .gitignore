@@ -97,6 +97,8 @@ bootstrap.py
 # Sphinx documentation
 docs/Makefile
 docs/_build
+# Private presentation reference artwork
+docs/talks/templates/
 docs/_html/
 docs/doctrees/
 docs/make.bat

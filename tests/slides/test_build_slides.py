@@ -175,3 +175,18 @@ def test_main_export_requires_appendix_boundary():
 def test_main_export_ignores_literal_and_commented_headings():
     main = "# Main\n\n````markdown\n# Appendix\n````\n<!--\n# Appendix\n-->\n"
     assert slides.main_slides(main + "\n---\n\n# Appendix\nExtra") == main + "\n"
+
+
+def test_template_diagrams_preserve_local_overrides():
+    body = slides.mermaid_fences(slides.main_slides(slides.SOURCE.read_text()), convert=True, configure=True)
+    result = slides.template_diagrams(body, {"background": "222A35", "foreground": "FFFFFF"})
+    configs = [slides.json.loads(value) for value in re.findall(r"%%\{init:\s*(\{[^\n]*\})\}%%", result)]
+    assert len(configs) == 6
+    for config in configs:
+        assert "background: #222A35" in config["themeCSS"]
+        assert config["themeVariables"]["lineColor"] == "#8794a6"
+        assert config["themeVariables"]["edgeLabelBackground"] == "#f3f4f6"
+        assert ".edgeLabel text { fill: #111827" in config["themeCSS"]
+        assert ".marker { fill: #8794a6" in config["themeCSS"]
+    assert any(".cluster-label { font-size: 20px; }" in config["themeCSS"] for config in configs)
+    assert any(config.get("flowchart", {}).get("subGraphTitleMargin", {}).get("bottom") == 64 for config in configs)
