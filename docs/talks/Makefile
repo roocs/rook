@@ -4,6 +4,8 @@ TALKS_DIR := $(CURDIR)
 SLIDES_DIR := $(TALKS_DIR)/../_build/talks/milano-2026
 PPTX_TEMPLATE ?= $(wildcard $(TALKS_DIR)/templates/futura_black.potx)
 PPTX_TEMPLATE_ARGS = $(if $(PPTX_TEMPLATE),--template "$(PPTX_TEMPLATE)")
+DECKTAPE_FLAGS ?=
+PUBLISH_DIR := $(TALKS_DIR)/../_build/published/talks/milano-2026
 
 .DEFAULT_GOAL := help
 .PHONY: help
@@ -14,6 +16,7 @@ help: ## list presentation build targets
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
 	@echo "  slides-pptx   Build five main slides as editable PowerPoint"
 	@echo "  slides        Build HTML and PDF"
+	@echo "  publish       Build and stage HTML/PDF for Sphinx (no deployment)"
 	@echo "  slides-clean  Remove only the Milano generated output"
 	@echo "  install       Add HTML tools to the existing rook environment"
 	@echo "  install-pdf   Add HTML tools, DeckTape and Chrome to rook"
@@ -46,15 +49,22 @@ slides-pptx: ## export only the main Milano slides, without the appendix
 
 slides-pdf: slides-html ## export the Milano slides with DeckTape
 	@if command -v decktape >/dev/null 2>&1; then \
-		decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
+		decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 $(DECKTAPE_FLAGS) "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
 	elif command -v npx >/dev/null 2>&1; then \
 		npx --offline --no-install decktape version >/dev/null 2>&1 || { echo "Slides: npx cannot run an existing DeckTape. Install DeckTape explicitly first; the build never downloads packages." >&2; exit 1; }; \
-		npx --offline --no-install decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
+		npx --offline --no-install decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 $(DECKTAPE_FLAGS) "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
 	else \
 		echo "Slides: DeckTape is missing. Install decktape, or Node/npm with an existing DeckTape available to npx." >&2; exit 1; \
 	fi
 
 slides: slides-pdf ## build both Milano HTML and PDF slides
 
+.PHONY: publish
+publish: slides ## stage only standalone HTML and PDF for Sphinx
+	mkdir -p "$(PUBLISH_DIR)"
+	cp "$(SLIDES_DIR)/slides.html" "$(PUBLISH_DIR)/index.html"
+	cp "$(SLIDES_DIR)/slides.pdf" "$(PUBLISH_DIR)/slides.pdf"
+
 slides-clean: ## remove only generated Milano presentation files
 	rm -rf "$(SLIDES_DIR)/"
+	rm -rf "$(PUBLISH_DIR)/"

@@ -8,3 +8,6 @@ dependencies:
   - sphinxcontrib-mermaid
   - nbsphinx >=0.9.5
   - ipython >=8.5.0
+  # HTML/PDF presentations published with the Sphinx documentation.
+  - quarto >=1.6,<2
+  - nodejs >=22,<23

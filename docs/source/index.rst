@@ -7,6 +7,7 @@
    installation
    configuration
    notebooks
+   talks
    prov
    dataset_processing_flow
    dev_guide

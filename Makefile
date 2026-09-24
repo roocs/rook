@@ -157,8 +157,9 @@ coverage: ## check code coverage quickly with the default Python
 autodoc: install-docs clean-docs ## create sphinx-apidoc files:
 	@bash -c 'sphinx-apidoc --force -o docs/source/apidoc --private --module-first src/rook'
 
-build-docs: autodoc ## generate Sphinx HTML documentation, including API docs
+build-docs: autodoc ## generate Sphinx HTML documentation, API docs and HTML/PDF talks
 	@echo "Generating docs with Sphinx ..."
+	$(MAKE) -C docs/talks publish
 	$(MAKE) -C docs html
 
 docs: build-docs ## generate Sphinx HTML documentation, including API docs
