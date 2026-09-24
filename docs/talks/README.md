@@ -36,10 +36,16 @@ GitHub Actions builds and checks the complete site on pull requests, pushes to
 The `docs-and-slides` workflow artifact contains `docs/build/html/` for review.
 Read the Docs remains the deployment host through its repository integration;
 GitHub Actions does not upload to GitHub Pages or require a deployment token.
-Both services run `check_published.py` to verify the HTML/PDF files and new-tab
-links for every canonical talk, and reject extra files in the published talks.
+Both services run `check_published.py` to verify the selected formats and
+new-tab links for every canonical talk, and reject extra published files.
 
-The Read the Docs pre-build hook runs `make -C docs/talks publish`.
+Read the Docs temporarily runs `make -C docs/talks publish-html` to skip PDF
+export. It publishes only HTML, and the Talks page hides PDF links when PDFs
+have not been staged. DeckTape is still installed because Quarto uses its
+Chrome browser to render Mermaid diagrams for the HTML slides.
+The RTD publication check uses `--html-only`.
+
+Local builds and GitHub Actions continue to run `make -C docs/talks publish`.
 That target builds HTML/PDF and stages only the standalone HTML (`index.html`)
 and PDF under `docs/_build/published/talks/<talk>/`. Sphinx's
 `html_extra_path` copies them into the documentation output. The Talks page
@@ -56,6 +62,10 @@ sphinx-build -b html docs/source docs/_build/html
 
 On hosted Linux builders, `DECKTAPE_FLAGS=--chrome-arg=--no-sandbox` disables
 Chromium's sandbox for PDF export. Normal local builds retain the default.
+
+To restore RTD PDF export, change its pre-build command back to
+`make -C docs/talks publish DECKTAPE_FLAGS=--chrome-arg=--no-sandbox` and remove
+`--html-only` from its post-build publication check.
 
 ## Emergency PowerPoint export
 
