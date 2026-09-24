@@ -51,7 +51,7 @@ Contributors: Ag Stephens (CEDA/STFC), Carsten Ehbrecht and Martin Schupfner (DK
 - Main talk: title, three Rook slides, then summary (5 slides, about 6 minutes).
 - Timing: title 0:30, What is Rook? 1:00, CDS 1:15, broker 2:00, summary 0:45.
 - Appendix: A processing and workflows, B broker architecture, C deployment,
-  D discovery and access, E climate indices. Use only for questions.
+  D discovery and access, E climate indices, F S3 storage. Use only for questions.
 - `wf.broker()` is a proposed API sketch, not an implemented interface.
 - Docker, Kubernetes and Helm are future deployment options, not operational today.
 - Horizontal rules separate slides; other HTML comments are presenter notes.
@@ -214,6 +214,7 @@ site selection without changing the workflow or the processing operations. -->
 - **C. Deployment:** current infrastructure and planned options
 - **D. Discovery and access:** STAC, AAI and security proxy
 - **E. Climate indices:** icclim integration and service chaining
+- **F. S3 storage:** initial support and validation still needed
 
 ---
 
@@ -598,3 +599,23 @@ sequenceDiagram
 <!-- Later, a workflow coordinator or an extended orchestrate process could
 manage both jobs and expose one composite status URL. The simple broker remains
 a delegation layer. -->
+
+
+---
+
+# F1. S3 storage support
+
+## Work in progress
+
+- Initial support accepts **`s3://` inputs** for processing data in object storage.
+- The input layer handles **NetCDF files, Zarr stores and Kerchunk references**.
+- Shared **S3 configuration** provides the endpoint and anonymous or authenticated access.
+- Catalog datasets can use a **global S3 base path** or a **per-project override**.
+
+**Not finished yet: needs end-to-end testing with real S3 storage.**
+
+<!-- The current tests check source detection, catalog path mapping and storage
+option forwarding with mocked openers. They do not demonstrate a successful
+processing workflow against real S3 storage. Validate actual dataset reads,
+authentication and processing results before presenting this as ready for use.
+This slide describes input access, not publication of processing outputs to S3. -->
