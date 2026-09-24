@@ -1,0 +1,16 @@
+site_name: Rook Talks
+site_description: Presentations about Rook and ESGF-NG processing
+site_url: https://roocs.github.io/rook/
+repo_url: https://github.com/roocs/rook
+docs_dir: docs/talks/site_src
+site_dir: site
+theme:
+  name: material
+  palette:
+    primary: teal
+    accent: blue
+nav:
+  - Talks: index.md
+  - Documentation: https://rook-wps.readthedocs.io/en/latest/
+plugins:
+  - search

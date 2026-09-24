@@ -4,7 +4,8 @@ TALKS_DIR := $(CURDIR)
 BUILD_DIR := $(TALKS_DIR)/../_build/talks
 TALKS := $(patsubst %/slides.qmd,%,$(wildcard */slides.qmd))
 DECKTAPE_FLAGS ?=
-PUBLISH_DIR := $(TALKS_DIR)/../_build/published/talks
+SITE_DIR := $(abspath $(TALKS_DIR)/../../site)
+PUBLISH_DIR := $(SITE_DIR)/talks
 
 .DEFAULT_GOAL := help
 .PHONY: help
@@ -14,8 +15,7 @@ help: ## list presentation build targets
 	@echo "  slides-html   Build Reveal.js HTML"
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
 	@echo "  slides        Build HTML and PDF"
-	@echo "  publish       Build and stage HTML/PDF for Sphinx (no deployment)"
-	@echo "  publish-html  Build and stage only HTML for Sphinx"
+	@echo "  publish       Build the MkDocs slides site with HTML/PDF (no deployment)"
 	@echo "  slides-clean  Remove generated talk outputs"
 	@echo "  install       Add HTML tools to the existing rook environment"
 	@echo "  install-pdf   Add HTML tools, DeckTape and Chrome to rook"
@@ -28,6 +28,7 @@ check-rook:
 
 install: check-rook ## add HTML tools to the active rook environment
 	conda env update --name rook --file "$(TALKS_DIR)/environment.yml"
+	python -m pip install -r "$(TALKS_DIR)/requirements.txt"
 	sh "$(TALKS_DIR)/quarto.sh" --version
 	node --version
 
@@ -65,20 +66,15 @@ slides-pdf: slides-html ## export all talks with DeckTape
 
 slides: slides-pdf ## build HTML and PDF for all talks
 
-.PHONY: publish publish-html
-publish-html: slides-html ## stage HTML only, removing previously staged PDFs
-	@set -e; for talk in $(TALKS); do \
-		mkdir -p "$(PUBLISH_DIR)/$$talk"; \
-		cp "$(BUILD_DIR)/$$talk/slides.html" "$(PUBLISH_DIR)/$$talk/index.html"; \
-		rm -f "$(PUBLISH_DIR)/$$talk/slides.pdf"; \
-	done
-
-publish: slides ## stage only standalone HTML and PDF for Sphinx
+.PHONY: publish
+publish: slides ## build the MkDocs landing page and copy only HTML/PDF decks
+	python -m mkdocs build --strict --config-file "$(TALKS_DIR)/../../mkdocs-slides.yml"
 	@set -e; for talk in $(TALKS); do \
 		mkdir -p "$(PUBLISH_DIR)/$$talk"; \
 		cp "$(BUILD_DIR)/$$talk/slides.html" "$(PUBLISH_DIR)/$$talk/index.html"; \
 		cp "$(BUILD_DIR)/$$talk/slides.pdf" "$(PUBLISH_DIR)/$$talk/slides.pdf"; \
 	done
+	python "$(TALKS_DIR)/check_published.py" "$(SITE_DIR)"
 
 slides-clean: ## remove only generated presentation files
-	rm -rf "$(BUILD_DIR)/" "$(PUBLISH_DIR)/"
+	rm -rf "$(BUILD_DIR)/" "$(SITE_DIR)/"

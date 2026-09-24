@@ -1,10 +1,12 @@
-# Additional tools for the existing rook environment, not a standalone service.
+# Slide toolchain: usable independently of the Rook service dependencies.
 # From docs/talks: make install
 # DeckTape is installed with npm afterwards; see README.md.
 name: rook
 channels:
   - conda-forge
 dependencies:
+  - python >=3.11
+  - pip
   - quarto >=1.6,<2
   # Includes npm/npx; use Node 22 LTS for DeckTape and Puppeteer.
   - nodejs >=22,<23

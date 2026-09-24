@@ -19,7 +19,6 @@
 #
 import os
 import sys
-from pathlib import Path
 
 sys.path.insert(0, os.path.abspath("../../"))
 
@@ -184,20 +183,6 @@ html_favicon = "_static/favicon.ico"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-
-# Only the public HTML/PDF deck outputs are staged here by docs/talks.
-# Sphinx copies this tree unchanged, preserving version-relative talk URLs.
-html_extra_path = ["../_build/published"]
-
-# Show PDF links only when the complete PDF set was staged for this build.
-talks_root = Path(__file__).resolve().parents[1]
-talk_sources = list((talks_root / "talks").glob("*/slides.qmd"))
-if talk_sources and all(
-    (talks_root / "_build/published/talks" / source.parent.name / "slides.pdf").is_file()
-    for source in talk_sources
-):
-    tags.add("slides_pdf")
-
 
 # -- Options for HTMLHelp output ---------------------------------------
 
