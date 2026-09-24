@@ -1,0 +1,643 @@
+---
+pagetitle: "Rook/WPS for ESGF-NG — Overview"
+fig-responsive: true
+keep-md: true
+format:
+  revealjs:
+    filters:
+      - svg.lua
+    theme:
+      - simple
+      - theme.scss
+    slide-level: 1
+    transition: none
+    slide-number: true
+    show-slide-number: all
+    embed-resources: true
+    width: 1600
+    height: 900
+    margin: 0.06
+    center: false
+    pdf-max-pages-per-slide: 1
+    mermaid-format: svg
+    code-overflow: wrap
+    auto-stretch: false
+---
+
+# Rook/WPS for ESGF-NG
+
+## Smart access to climate data
+
+::: {.title-copy}
+
+**Rook — Remote Operations On Klimadaten**
+
+*Processing close to climate data*
+
+Contributors: Ag Stephens (CEDA/STFC), Carsten Ehbrecht and Martin Schupfner (DKRZ), Guillaume Levavasseur (IPSL), and colleagues at Ouranos (Canada) and across the community.
+
+:::
+
+::: {.title-photo}
+
+[![Rook — Corvus frugilegus](assets/rook.jpg)](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg)
+
+*Photo: Andreas Trepte, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rook-Corvus_frugilegus.jpg), [CC BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/).*
+
+:::
+
+<!-- EDITORIAL NOTE FOR SLIDE PREPARATION
+
+- Main talk: title, three Rook slides, then summary (5 slides, about 6 minutes).
+- Timing: title 0:30, What is Rook? 1:00, CDS 1:15, broker 2:00, summary 0:45.
+- Appendix: A processing and workflows, B broker architecture, C deployment,
+  D discovery and access, E climate indices, F S3 storage. Use only for questions.
+- `wf.broker()` is a proposed API sketch, not an implemented interface.
+- Docker, Kubernetes and Helm are future deployment options, not operational today.
+- Horizontal rules separate slides; other HTML comments are presenter notes.
+-->
+
+---
+
+# 1. What is Rook? {.diagram-small}
+
+- [**Rook**](https://github.com/roocs/rook) is the roocs remote processing service.
+- A **subset request** specifies a dataset, time range and area.
+- Rook processes **close to the data** and returns the **requested subset**.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    Client["Client"] <-->|"Subset request / result"| Rook["Rook/WPS"]
+    Rook -->|"Process near archive"| Data[("Climate data")]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Rook rook
+```
+
+**Move the processing to the data.**
+
+<!-- 1:00. Rook connects climate-data clients with Python processing based on
+xarray and clisops. It complements file download: users can still retrieve
+complete files when that is what they need. Avoid implying complete CMIP7
+coverage today. -->
+
+---
+
+# 2. Rook in CDS today {.diagram-small}
+
+- The Copernicus Climate Data Store (CDS) sends workflows to **`orchestrate`**.
+- **DKRZ and IPSL** run identical Rook services with replicated datasets.
+- Load balancing across both sites supports the **99% availability target** that neither site can meet alone.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    CDS["Copernicus CDS"] -->|"Workflow"| LB["Load balancer"]
+    LB --> DKRZ["Rook at DKRZ — orchestrate"]
+    LB --> IPSL["Rook at IPSL — orchestrate"]
+    subgraph Replicated["Replicated data"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL rook
+```
+
+**CDS: choose any available Rook.**
+
+<!-- 1:15. CDS submits a workflow through the load balancer. The selected Rook
+site's orchestrate process executes its operations against that site's data.
+This is the existing model for supported CDS datasets. Equivalent
+holdings make both sites interchangeable. The architecture combines identical
+sites behind a load balancer to meet the CDS 99% availability target. Neither
+site can provide that availability alone. ESGF-NG needs smarter routing because
+participating sites will not necessarily hold the same datasets. -->
+
+---
+
+# 3. Rook Broker for ESGF-NG {.diagram-small}
+
+- ESGF-NG sites hold **different datasets**, with partial overlap.
+- **Planned:** a `broker` process in each Rook routes requests to a site holding the data.
+- The selected site runs the **unchanged workflow** through `orchestrate`.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+%%{init: {"flowchart": {"subGraphTitleMargin": {"top": 0, "bottom": 64}}}}%%
+flowchart LR
+    Client["ESGF-NG client"] -->|"Workflow"| LB["Load balancer"]
+    LB --> Routing
+    subgraph Routing["`**Rook at any site**`"]
+        direction TB
+        Broker["NEW broker process"]
+        Broker -.->|"Dataset-to-site lookup"| Index["Local index — Kafka updates / STAC fallback"]
+    end
+    Routing -->|"Same workflow"| DKRZ["Rook at DKRZ — orchestrate"]
+    Routing -->|"Same workflow"| IPSL["Rook at IPSL — orchestrate"]
+    Routing -->|"Same workflow"| CEDA["Rook at CEDA — orchestrate"]
+    subgraph Independent["Independent data pools with overlap"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+        DataCEDA[("CEDA data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    CEDA --> DataCEDA
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL,CEDA rook
+    class Broker,Index new
+```
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+[Detailed broker architecture](https://roocs.github.io/rook/talks/architecture/index.html)
+
+<!-- 2:00. Planned architecture. Each participating Rook gains a broker
+process. For each request it selects one eligible site, forwards the unchanged
+workflow to orchestrate and returns that site's accepted-job response and status
+URL. It does not execute the workflow or mirror remote job state. The broker
+looks up dataset locations in the local PostgreSQL-backed STAC index. Kafka
+publication, update and deletion events maintain the index through a
+Piddiplatsch plugin, independently of workflow requests. Global STAC provides
+the fallback when local placement information is missing or stale. Further
+indexing details are in appendix B. -->
+
+---
+
+# Summary {.diagram-small}
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+%%{init: {"themeCSS": ".cluster-label { font-size: 20px; }"}}%%
+flowchart LR
+    Client["Rooki / service"] --> Workflow["Same workflow"]
+
+    subgraph CDS["Today: CDS"]
+        OrchestrateCDS["orchestrate"] --> ProcessingCDS["Processing"]
+    end
+
+    subgraph ESGF["Planned: ESGF-NG"]
+        Broker["broker"] --> OrchestrateESGF["orchestrate at selected site"]
+        OrchestrateESGF --> ProcessingESGF["Processing"]
+    end
+
+    Workflow --> OrchestrateCDS
+    Workflow --> Broker
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+```
+
+- **CDS:** choose any equivalent Rook.
+- **Planned for ESGF-NG:** the broker selects a Rook that has the data.
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+<!-- 0:45. This is the closing picture. The ESGF-NG extension adds data-aware
+site selection without changing the workflow or the processing operations. -->
+
+---
+
+# Appendix
+
+- **A. Processing and workflows:** operations, Rooki example and submission
+- **B. Broker architecture:** routing, dataset index and Kafka updates
+- **C. Deployment:** current infrastructure and planned options
+- **D. Discovery and access:** STAC, AAI and security proxy
+- **E. Climate indices:** icclim integration and service chaining
+- **F. Data pools:** S3 and on-disk support, with S3 validation still needed
+
+---
+
+# A1. Processing capabilities {.diagram-side}
+
+## Data operations
+
+- **Subset** — select space, time and levels.
+- **Average** — reduce data for analysis.
+- **Regrid** — transform to a target grid.
+
+[**clisops**](https://github.com/roocs/clisops) provides the data operations; [**Woodpecker**](https://github.com/roocs/woodpecker) applies known dataset fixes.
+
+## Workflow orchestration
+
+- **`orchestrate`** — combine operators in a **workflow**.
+
+## Supporting processes
+
+- **`health`** — check site health; useful for the planned broker.
+- **`status`** — report operational status.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart TD
+    Rook["Rook/WPS"] --> Subset["subset"]
+    Rook --> Average["average"]
+    Rook --> Regrid["regrid"]
+    Rook --> Orchestrate["orchestrate"]
+
+    Orchestrate -.->|"combines"| Subset
+    Orchestrate -.->|"combines"| Average
+    Orchestrate -.->|"combines"| Regrid
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
+```
+
+**Easy to extend with new data or supporting processes.**
+
+<!-- 1:30. Rook exposes a separate process for each data operator. The additional
+orchestrate process combines one or more operators into a workflow. The same
+process mechanism supports health and status, and the planned broker.
+Health is a lightweight synchronous check that also verifies configured data
+files are readable. Status reports service, process, server and storage status,
+not individual job status.
+
+clisops provides the main data operations. Woodpecker prepares data by applying
+maintained fixes through its core and independent plugins; keep its internal
+architecture for the separate Woodpecker talk. -->
+
+---
+
+# A2. A workflow with Rooki
+
+**Subset a logical dataset by time.**
+
+```python
+from rooki import operators as ops
+
+wf = ops.Subset(
+    ops.Input(
+        "tas",
+        [
+            "c3s-cmip6.ScenarioMIP.INM.INM-CM5-0.ssp245."
+            "r1i1p1f1.day.tas.gr1.v20190619"
+        ],
+    ),
+    time="2016/2020",
+    time_components="month:jan,feb,mar|day:01",
+)
+```
+
+The workflow describes **what to compute**.
+
+<!-- This example comes from the existing notebook. The dataset identifier is
+logical; clients do not need to specify archive file paths. Verify availability
+and the endpoint before presenting, and prepare a completed result. -->
+
+---
+
+# A3. Workflow submission
+
+## Today: choose a Rook service
+
+```python
+resp = wf.orchestrate()
+resp.ok
+```
+
+## Proposed: let the broker choose the site
+
+```python
+resp = wf.broker()  # proposed API, not implemented
+resp.ok
+```
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+<!-- 2:00. The workflow construction and wf.orchestrate() call come from the
+existing notebook. Verify the endpoint and dataset before the talk and prepare
+the completed result as a fallback.
+
+wf.broker() is deliberately labelled as a proposed API sketch; its exact
+Python signature is not implemented or fixed yet. Both calls serialize the
+same workflow document. Orchestrate executes it at the service selected by the
+client. Broker inspects it to resolve the dataset location, forwards it
+unchanged to the selected Rook site, and returns that site's job-status URL. -->
+
+---
+
+# B1. Broker architecture (planned) {.diagram-small}
+
+- **Independent pools with partial overlap:** DKRZ, IPSL and CEDA hold different dataset combinations.
+- **Each Rook site has the new `broker` process** to delegate workflows to the site with the data.
+- **Local PostgreSQL index:** STAC items arrive via **Kafka**; **global STAC** provides a fallback.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+%%{init: {"flowchart": {"subGraphTitleMargin": {"top": 0, "bottom": 64}}}}%%
+flowchart LR
+    Client["ESGF-NG client"] -->|"Workflow"| LB["Load balancer"]
+    LB --> Routing
+    subgraph Routing["`**Rook at any site**`"]
+        direction TB
+        Broker["NEW broker process"]
+        Broker -.->|"Dataset locations"| Index["Local PostgreSQL index — Kafka updates / STAC fallback"]
+    end
+    Routing -->|"Same workflow"| DKRZ["Rook at DKRZ — orchestrate"]
+    Routing -->|"Same workflow"| IPSL["Rook at IPSL — orchestrate"]
+    Routing -->|"Same workflow"| CEDA["Rook at CEDA — orchestrate"]
+    subgraph Independent["Independent data pools with overlap"]
+        DataDKRZ[("DKRZ data pool")]
+        DataIPSL[("IPSL data pool")]
+        DataCEDA[("CEDA data pool")]
+    end
+    DKRZ --> DataDKRZ
+    IPSL --> DataIPSL
+    CEDA --> DataCEDA
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class DKRZ,IPSL,CEDA rook
+    class Broker,Index new
+```
+
+**The broker chooses WHERE; orchestrate handles HOW.**
+
+[Broker architecture](https://roocs.github.io/rook/talks/architecture/index.html)
+
+<!-- 2:00. Planned architecture. ESGF-NG sites hold different, independently
+managed datasets, with partial overlap. The broker delegates the workflow to
+a site holding the requested data. The load balancer reaches the broker process
+on an existing Rook instance at any site. Every participating Rook site has
+the same broker process and can delegate a workflow; the diagram shows one
+request entering one of those instances, not an additional broker service.
+The broker selects one eligible orchestrate endpoint, not all three. The broker is a small additional process within the existing
+Rook service, not a separately deployed routing component. It uses the local
+PostgreSQL index for fast lookup and STAC for missing or stale information.
+Kafka publication, update and deletion events
+keep the local PostgreSQL index current through a Piddiplatsch plugin. The index
+contains global dataset placement and detailed local assets. Global STAC is the
+authoritative fallback when local information is missing or stale. Kafka and
+STAC are not part of the normal synchronous request path.
+
+The broker does not change or execute the workflow. It forwards the same
+workflow to the selected Rook site's `orchestrate` process and passes the
+accepted-job response and status URL back to the client. It does not mirror
+remote job state and must not create broker-to-broker loops. -->
+
+---
+
+# B2. Dataset index and updates {.diagram-small}
+
+- **Local Rook STAC index (PostgreSQL):** fast dataset-to-site lookup.
+- [**Piddiplatsch**](https://github.com/ESGF/piddiplatsch) reads **STAC items from the ESGF-NG Kafka queue**; built for **PID publication**.
+- **Mapping plugins** transform items into a target schema.
+- A **new Rook plugin** can populate and update the local index.
+- **Global STAC:** fallback for missing or stale information.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    Kafka["ESGF-NG Kafka"] -->|"STAC items"| Piddi["Piddiplatsch"]
+    Piddi -->|"NEW: Rook plugin"| Index[("Local Rook STAC index — PostgreSQL")]
+    Broker["Rook: broker process"] -->|"Lookup"| Index
+    Broker -.->|"Fallback"| STAC["Global STAC"]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker,Index new
+```
+
+**Index updates happen independently of workflow requests.**
+
+<!-- The local index contains global dataset placement and detailed local
+assets. Piddiplatsch was built for PID publication. It consumes STAC items from
+the ESGF-NG Kafka queue and uses plugins to map them to target schemas. A new
+Rook plugin can use publication, update and deletion events to maintain the
+local PostgreSQL-backed STAC index. STAC is the authoritative fallback; it is queried only
+when local placement information is insufficient. -->
+
+---
+
+# C1. Deployment today and tomorrow
+
+| Operational today | Planned |
+| --- | --- |
+| Ansible-managed VMs | Portable Rook container image |
+| Slurm processing jobs | Docker / Compose or Kubernetes / Helm |
+| Processing near site data | Site chooses its deployment and scheduler |
+
+**The Rook API and processing model stay the same.**
+
+<!-- 1:00. The Ansible/VM/Slurm path is operational today. The container image,
+Docker, Kubernetes and a possible Helm chart are future ESGF-NG work. They should
+not require a different client API or processing implementation. A site may
+keep Slurm or choose a container-native scheduler. -->
+
+---
+
+# D1. Discovery and access {.diagram-side}
+
+- **STAC** advertises a processing endpoint.
+- **MetaGrid or another client** discovers it and sends a bearer token.
+- An **OAuth2 proxy** protects access; use [**Twitcher**](https://github.com/bird-house/twitcher) for the demo.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart TD
+    STAC["STAC catalogue"] -->|"Processing link"| Portal["MetaGrid or client"]
+    Portal -->|"Bearer token"| Proxy["AAI security proxy"]
+    Identity["EGI Check-in or Keycloak"] <-->|"OAuth2 / OIDC"| Proxy
+    Proxy --> Broker["Rook broker"]
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+```
+
+**Next: demonstrate the integration and validate CMIP7 workflows.**
+
+<!-- 1:45. Rook's integration boundary is the processing API and optional STAC
+information. Portal integration belongs to MetaGrid or its successor. A small
+processing indicator or service link is sufficient and can be added later via
+an ESGF-NG Kafka update; do not propose an exact STAC schema in this talk.
+
+Twitcher is an existing, maintained component and is used by Ouranos in Canada.
+It supports an immediate ESGF-NG demonstration. ESGF-NG may later rewrite or
+replace the security proxy according to its final user-to-service and
+service-to-service delegation requirements. Keep the WPS API independent of
+the selected proxy implementation. -->
+
+<!-- Preparation references:
+
+- Detailed broker architecture: https://roocs.github.io/rook/talks/architecture/index.html
+- Process catalogue: docs/source/processes.rst
+- Woodpecker configuration: docs/source/configuration.rst
+- Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
+-->
+
+---
+
+# D2. AAI for the ESGF-NG Compute Node {.diagram-side}
+
+## Existing components support an immediate demonstration
+
+- Users sign in through **EGI Check-in or Keycloak**.
+- Supported identities can include institutional accounts, **GitHub, Google, and ORCID**.
+- MetaGrid and Rooki send an OAuth2 **bearer token** with each request.
+- **Twitcher** validates the token, authorizes access, and protects the WPS endpoint.
+- Twitcher is maintained and currently used by **Ouranos in Canada**.
+- ESGF-NG can use **Twitcher for a demonstration** while designing a future security proxy.
+- The **processing API remains independent** of the proxy implementation.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart TD
+    IdP["Institution / GitHub / Google / ORCID"] --> Identity["EGI Check-in or Keycloak"]
+    Portal["MetaGrid / portal"] -->|"Bearer token"| Proxy["AAI security proxy"]
+    Notebook["Rooki / notebook"] -->|"Bearer token"| Proxy
+    Identity <-->|"OAuth2 / OIDC"| Proxy
+    Proxy -->|"Authorized request"| WPS["WPS endpoint"]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
+```
+
+**Use Twitcher now; keep the proxy replaceable for the final ESGF-NG architecture.**
+
+---
+
+# E1. icclim as a Rook plugin {.diagram-small}
+
+- A separate Rook plugin exposes [**icclim**](https://github.com/cerfacs-globc/icclim).
+- **Python entry points** register one generic `climate_indices` process.
+- Sites choose either **core** or **core + icclim** requirements.
+- All processes run in the **same conda environment**.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    Client["Client"] --> WPS["Rook/WPS"]
+    WPS --> Core["Core processes"]
+    WPS --> Plugin["icclim plugin"]
+    Core --> Slurm["Slurm"]
+    Plugin --> Slurm
+    Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class WPS rook
+```
+
+**Simple integration, provided the dependencies remain compatible.**
+
+---
+
+# E2. Separate icclim WPS {.diagram-side}
+
+- Rook and icclim use **independent conda environments**.
+- Both services run **next to the data** and use the **local Slurm cluster**.
+- The **Rook broker** selects the service providing the requested process.
+- Its inventory contains **dataset locations** and **available processing capabilities**.
+- Existing Ansible support for **multiple WPS instances** can be reused.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart TD
+    Client["Client"] --> Proxy["Security proxy"]
+    Proxy --> Broker["Rook broker"]
+    Broker -->|"subset, average, regrid"| Rook["Rook/WPS"]
+    Broker -->|"climate_indices"| ICCLIM["icclim WPS"]
+    Rook --> Slurm["Slurm"]
+    ICCLIM --> Slurm
+    Slurm --> Data[("Local data")]
+
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef new fill:#fef3c7,stroke:#b45309,color:#451a03
+    class Broker new
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    class Rook rook
+```
+
+**One broker provides access to independently deployed services.**
+
+<!-- The broker returns the selected service's accepted-job response and status
+URL. It does not mirror the delegated job. -->
+
+---
+
+# E3. Chaining independent services {.diagram-side}
+
+- Submit `subset` to the broker; it delegates the job to Rook.
+- Use the subset output URL as input for `climate_indices`.
+- The broker prefers an icclim service at the site holding the **intermediate result**.
+- At the same site, a trusted URL can resolve to a **shared filesystem path**.
+- Otherwise, the icclim service consumes the result through **HTTP**.
+- The **client coordinates both jobs** initially.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+sequenceDiagram
+    participant Client
+    participant Broker as Rook broker
+    participant Rook as Rook/WPS
+    participant ICCLIM as icclim WPS
+    Client->>Broker: subset
+    Broker->>Rook: Submit subset
+    Rook-->>Broker: Accepted job + status URL
+    Broker-->>Client: Rook job URL
+    Client->>Broker: climate_indices + result URL
+    Broker->>ICCLIM: Submit at preferred site
+    ICCLIM-->>Broker: Accepted job + status URL
+    Broker-->>Client: icclim job URL
+```
+
+**The broker selects each service and preserves data locality when possible.**
+
+<!-- Later, a workflow coordinator or an extended orchestrate process could
+manage both jobs and expose one composite status URL. The simple broker remains
+a delegation layer. -->
+
+
+---
+
+# F1. Support for S3 {#s3-and-disk-data-pools .diagram-small}
+
+## S3 support: work in progress
+
+- Clients request a **dataset subset by time and area**.
+- Rook supports **both S3 and on-disk data pools**, processed with **clisops (xarray)**.
+
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    Client["Client / Rooki"] -->|"Subset: time + area"| WPS["WPS endpoint"]
+    WPS -->|"Subset result"| Client
+    subgraph Rook["Rook/WPS"]
+        WPS --> Library["clisops Python library (xarray)"]
+    end
+    Library --> NetCDF["NetCDF files"]
+    Library --> Zarr["Zarr stores"]
+    Library --> Kerchunk["Kerchunk references"]
+    Library --> Disk[("On-disk data pool")]
+    subgraph S3["Data pool on S3"]
+        NetCDF
+        Zarr
+        Kerchunk
+    end
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef wip fill:#fef3c7,stroke:#b45309,color:#451a03
+    class WPS,Library rook
+    class NetCDF,Zarr,Kerchunk wip
+```
+
+**S3 support is not finished yet: needs end-to-end testing with real S3 storage.**
+
+<!-- The current tests check source detection, catalog path mapping and storage
+option forwarding with mocked openers. They do not demonstrate a successful
+processing workflow against real S3 storage. Validate actual dataset reads,
+authentication and processing results before presenting this as ready for use.
+This slide describes input access, not publication of processing outputs to S3. -->
