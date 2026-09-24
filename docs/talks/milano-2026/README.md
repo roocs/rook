@@ -1,6 +1,6 @@
 # Milano 2026 slides
 
-Edit only [`Rook_WPS_ESGF2_talk_draft.md`](../../../Rook_WPS_ESGF2_talk_draft.md).
+Edit [`slides.qmd`](slides.qmd), the only source for this deck.
 Complete the [environment setup](../README.md), then run from `docs/talks/`:
 
 ```bash
@@ -14,19 +14,16 @@ make slides
 | `slides-pdf` | HTML, then PDF via DeckTape. |
 | `slides-pptx` | Five main slides as PowerPoint, without the appendix. |
 | `slides` | Both HTML and PDF. |
-| `slides-clean` | Delete only this talk's generated output. |
+| `slides-clean` | Delete generated output for all talks. |
 
-Outputs: `slides.qmd`, `slides.html`, `slides.pdf`, and `slides.pptx` in
-`docs/_build/talks/milano-2026/`. These generated files are ignored, not committed.
+Outputs: `slides.html`, `slides.pdf`, and optional `slides.pptx` in
+`docs/_build/talks/milano-2026/`. Generated files are ignored, not committed.
+The build copies the canonical `.qmd` and its assets into that directory before
+rendering. Edit the source copy in this directory, never the build copy.
 
-`build_slides.py` adds Quarto metadata, converts ` ```mermaid ` to
-` ```{mermaid} `, and uses the [local rook photo](assets/README.md).
-It preserves the source, diagram definitions, image link, attribution and
-hidden presenter comments. The generated `.qmd` is not a second content source.
-
-Run `make slides-pptx` for PowerPoint. It generates `slides-main.qmd` from
-everything before `# Appendix`, renders `slides-raw.pptx` with Quarto, then
-`style_pptx.py` combines continuation slides and lays out the five main slides.
+Run `make slides-pptx` for PowerPoint. `prepare_pptx.py` extracts everything
+before `# Appendix` from the same `.qmd`. Quarto renders `slides-raw.pptx`,
+then `style_pptx.py` lays out the five main slides.
 Text and links remain editable; diagrams are embedded PNGs and the rook photo
 is included with its attribution. This uses the same Quarto and Chrome setup
 as HTML and does not require DeckTape's PDF export step. HTML and PDF retain
@@ -57,20 +54,20 @@ images, avoiding Quarto/Pandoc sequence-CSS parsing and PDF font scaling bugs.
 The ignored `slides.revealjs.md` is its intermediate input. No Mermaid runtime
 is needed to draw the final slides.
 
-Layout is inferred from Mermaid orientation: TD/TB and sequence diagrams use
-`.diagram-side`; wide diagrams use `.diagram-small`. These classes and shared
-font settings are added only during conversion. Source `classDef` colors use
+Layout is explicit in the `.qmd`: TD/TB and sequence diagrams use
+`.diagram-side`; wide diagrams use `.diagram-small`. These classes and per-diagram
+Mermaid settings are edited directly in the source. Source `classDef` colors use
 blue for existing Rook components, amber for proposed components and grey for
-supporting infrastructure. Label words and connections stay unchanged; HTML line breaks are replaced by plain separators.
+supporting infrastructure.
 
 ## Preview
 
 ```bash
-python milano-2026/build_slides.py
+make prepare
 sh ./quarto.sh preview ../_build/talks/milano-2026/slides.qmd
 ```
 
-Rerun the script after editing the source. Press **S** in the preview for
+Rerun `make prepare` after editing the source. Press **S** in the preview for
 speaker view. Check slide fit, diagrams and links before presenting.
 
 ## Tests

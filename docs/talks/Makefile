@@ -1,23 +1,25 @@
 # Presentation builds are independent of the root development Makefile.
 # Invoke with make -C docs/talks, or run make from this directory.
 TALKS_DIR := $(CURDIR)
-SLIDES_DIR := $(TALKS_DIR)/../_build/talks/milano-2026
+BUILD_DIR := $(TALKS_DIR)/../_build/talks
+SLIDES_DIR := $(BUILD_DIR)/milano-2026
+TALKS := $(patsubst %/slides.qmd,%,$(wildcard */slides.qmd))
 PPTX_TEMPLATE ?= $(wildcard $(TALKS_DIR)/templates/futura_black.potx)
 PPTX_TEMPLATE_ARGS = $(if $(PPTX_TEMPLATE),--template "$(PPTX_TEMPLATE)")
 DECKTAPE_FLAGS ?=
-PUBLISH_DIR := $(TALKS_DIR)/../_build/published/talks/milano-2026
+PUBLISH_DIR := $(TALKS_DIR)/../_build/published/talks
 
 .DEFAULT_GOAL := help
 .PHONY: help
 
 help: ## list presentation build targets
-	@echo "Milano 2026 presentation targets:"
+	@echo "Presentation targets:"
 	@echo "  slides-html   Build Reveal.js HTML"
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
 	@echo "  slides-pptx   Build five main slides as editable PowerPoint"
 	@echo "  slides        Build HTML and PDF"
 	@echo "  publish       Build and stage HTML/PDF for Sphinx (no deployment)"
-	@echo "  slides-clean  Remove only the Milano generated output"
+	@echo "  slides-clean  Remove generated talk outputs"
 	@echo "  install       Add HTML tools to the existing rook environment"
 	@echo "  install-pdf   Add HTML tools, DeckTape and Chrome to rook"
 
@@ -38,33 +40,46 @@ install-pdf: install ## add the PDF exporter and its browser
 
 .PHONY: slides-html slides-pdf slides-pptx slides slides-clean
 
-slides-html: ## generate the Milano Reveal.js presentation
-	python "$(TALKS_DIR)/milano-2026/build_slides.py"
-	sh "$(TALKS_DIR)/quarto.sh" render "$(SLIDES_DIR)/slides.qmd" --to revealjs
+# Copy canonical sources and their assets into the ignored build tree.
+# Relative paths work unchanged both in source previews and rendered copies.
+.PHONY: prepare
+prepare:
+	@set -e; for talk in $(TALKS); do \
+		mkdir -p "$(BUILD_DIR)/$$talk"; \
+		cp -R "$(TALKS_DIR)/$$talk/." "$(BUILD_DIR)/$$talk/"; \
+	done
 
-slides-pptx: ## export only the main Milano slides, without the appendix
-	python "$(TALKS_DIR)/milano-2026/build_slides.py" --main-only $(PPTX_TEMPLATE_ARGS)
+slides-html: prepare ## render all canonical Quarto presentations
+	@set -e; for talk in $(TALKS); do \
+		sh "$(TALKS_DIR)/quarto.sh" render "$(BUILD_DIR)/$$talk/slides.qmd" --to revealjs; \
+	done
+
+slides-pptx: prepare ## export only the main Milano slides, without the appendix
+	python "$(TALKS_DIR)/milano-2026/prepare_pptx.py" "$(SLIDES_DIR)/slides.qmd" "$(SLIDES_DIR)/slides-main.qmd" $(PPTX_TEMPLATE_ARGS)
 	cd "$(SLIDES_DIR)" && sh "$(TALKS_DIR)/quarto.sh" render slides-main.qmd --to pptx --output slides-raw.pptx
 	python "$(TALKS_DIR)/milano-2026/style_pptx.py" "$(SLIDES_DIR)/slides-raw.pptx" "$(SLIDES_DIR)/slides.pptx" $(PPTX_TEMPLATE_ARGS)
 
-slides-pdf: slides-html ## export the Milano slides with DeckTape
-	@if command -v decktape >/dev/null 2>&1; then \
-		decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 $(DECKTAPE_FLAGS) "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
-	elif command -v npx >/dev/null 2>&1; then \
-		npx --offline --no-install decktape version >/dev/null 2>&1 || { echo "Slides: npx cannot run an existing DeckTape. Install DeckTape explicitly first; the build never downloads packages." >&2; exit 1; }; \
-		npx --offline --no-install decktape reveal --size 1600x900 --load-pause 2000 --pause 1000 $(DECKTAPE_FLAGS) "$(SLIDES_DIR)/slides.html" "$(SLIDES_DIR)/slides.pdf"; \
+slides-pdf: slides-html ## export all talks with DeckTape
+	@set -e; if command -v decktape >/dev/null 2>&1; then \
+		exporter=decktape; \
+	elif command -v npx >/dev/null 2>&1 && npx --offline --no-install decktape version >/dev/null 2>&1; then \
+		exporter="npx --offline --no-install decktape"; \
 	else \
-		echo "Slides: DeckTape is missing. Install decktape, or Node/npm with an existing DeckTape available to npx." >&2; exit 1; \
-	fi
+		echo "Slides: install DeckTape explicitly first; builds never download packages." >&2; exit 1; \
+	fi; \
+	for talk in $(TALKS); do \
+		$$exporter reveal --size 1600x900 --load-pause 2000 --pause 1000 $(DECKTAPE_FLAGS) "$(BUILD_DIR)/$$talk/slides.html" "$(BUILD_DIR)/$$talk/slides.pdf"; \
+	done
 
-slides: slides-pdf ## build both Milano HTML and PDF slides
+slides: slides-pdf ## build HTML and PDF for all talks
 
 .PHONY: publish
 publish: slides ## stage only standalone HTML and PDF for Sphinx
-	mkdir -p "$(PUBLISH_DIR)"
-	cp "$(SLIDES_DIR)/slides.html" "$(PUBLISH_DIR)/index.html"
-	cp "$(SLIDES_DIR)/slides.pdf" "$(PUBLISH_DIR)/slides.pdf"
+	@set -e; for talk in $(TALKS); do \
+		mkdir -p "$(PUBLISH_DIR)/$$talk"; \
+		cp "$(BUILD_DIR)/$$talk/slides.html" "$(PUBLISH_DIR)/$$talk/index.html"; \
+		cp "$(BUILD_DIR)/$$talk/slides.pdf" "$(PUBLISH_DIR)/$$talk/slides.pdf"; \
+	done
 
-slides-clean: ## remove only generated Milano presentation files
-	rm -rf "$(SLIDES_DIR)/"
-	rm -rf "$(PUBLISH_DIR)/"
+slides-clean: ## remove only generated presentation files
+	rm -rf "$(BUILD_DIR)/" "$(PUBLISH_DIR)/"
