@@ -22,7 +22,7 @@ build:
     python: "miniforge3-25.11"
   jobs:
     post_install:
-      - npm install --global --prefix "$(python -c 'import sys; print(sys.prefix)')" decktape@3.16.1
+      - python docs/talks/install_pdf.py
       - sh docs/talks/quarto.sh --help > /dev/null
     pre_build:
       - sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook

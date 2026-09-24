@@ -31,7 +31,7 @@ install: check-rook ## add HTML tools to the active rook environment
 	node --version
 
 install-pdf: install ## add the PDF exporter and its browser
-	npm install --global --prefix "$$CONDA_PREFIX" decktape@3.16.1
+	python "$(TALKS_DIR)/install_pdf.py"
 	"$$CONDA_PREFIX/bin/decktape" version
 
 .PHONY: slides-html slides-pdf slides slides-clean
