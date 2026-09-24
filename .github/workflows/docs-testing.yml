@@ -47,12 +47,12 @@ jobs:
 
       - name: Install PDF toolchain
         run: |
-          npm install --global --prefix "$CONDA_PREFIX" decktape@3.16.1
+          python docs/talks/install_pdf.py
           sh docs/talks/quarto.sh --version
           decktape version
 
-      - name: Check Quarto without Conda activation
-        run: python -m unittest discover -s tests/slides -p 'test_quarto.py'
+      - name: Check slide toolchain helpers
+        run: python -m unittest discover -s tests/slides
 
       - name: Check Chromium
         run: |
