@@ -166,7 +166,7 @@ flowchart LR
 
 **The broker chooses WHERE; orchestrate handles HOW.**
 
-[Detailed broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
+[Detailed broker architecture](https://rook-wps.readthedocs.io/en/latest/talks/architecture/index.html)
 
 <!-- 2:00. Planned architecture. Each participating Rook gains a broker
 process. For each request it selects one eligible site, forwards the unchanged
@@ -371,7 +371,7 @@ flowchart LR
 
 **The broker chooses WHERE; orchestrate handles HOW.**
 
-[Broker architecture](https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md)
+[Broker architecture](https://rook-wps.readthedocs.io/en/latest/talks/architecture/index.html)
 
 <!-- 2:00. Planned architecture. ESGF-NG sites hold different, independently
 managed datasets, with partial overlap. The broker delegates the workflow to
@@ -478,7 +478,7 @@ the selected proxy implementation. -->
 
 <!-- Preparation references:
 
-- Detailed broker architecture: https://github.com/roocs/rook/blob/main/ARCH_ESGF2.md
+- Detailed broker architecture: https://rook-wps.readthedocs.io/en/latest/talks/architecture/index.html
 - Process catalogue: docs/source/processes.rst
 - Woodpecker configuration: docs/source/configuration.rst
 - Twitcher: https://github.com/bird-house/twitcher/blob/master/README.rst
