@@ -102,3 +102,6 @@ $code-block-bg: #dceef8;
 @media print {
   * { print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
 }
+
+// Keep the S3 access branches readable within the appendix slide.
+.reveal #s3-and-disk-data-pools .cell-output-display .mermaid-svg { max-height: 480px; }

@@ -214,7 +214,7 @@ site selection without changing the workflow or the processing operations. -->
 - **C. Deployment:** current infrastructure and planned options
 - **D. Discovery and access:** STAC, AAI and security proxy
 - **E. Climate indices:** icclim integration and service chaining
-- **F. S3 storage:** initial support and validation still needed
+- **F. Data pools:** S3 and on-disk support, with S3 validation still needed
 
 ---
 
@@ -603,16 +603,38 @@ a delegation layer. -->
 
 ---
 
-# F1. S3 storage support
+# F1. Support for S3 {#s3-and-disk-data-pools .diagram-small}
 
-## Work in progress
+## S3 support: work in progress
 
-- Initial support accepts **`s3://` inputs** for processing data in object storage.
-- The input layer handles **NetCDF files, Zarr stores and Kerchunk references**.
-- Shared **S3 configuration** provides the endpoint and anonymous or authenticated access.
-- Catalog datasets can use a **global S3 base path** or a **per-project override**.
+- Clients request a **dataset subset by time and area**.
+- Rook supports **both S3 and on-disk data pools**, processed with **clisops (xarray)**.
 
-**Not finished yet: needs end-to-end testing with real S3 storage.**
+```{mermaid}
+%%{init: {"flowchart": {"htmlLabels": false, "subGraphTitleMargin": {"bottom": 8, "top": 0}}, "fontFamily": "Arial", "fontSize": 24, "htmlLabels": false, "sequence": {"actorFontSize": 24, "fontSize": 24, "messageFontSize": 24, "mirrorActors": false, "noteFontSize": 24}, "theme": "base", "themeVariables": {"actorBkg": "#f3f4f6", "actorBorder": "#6b7280", "actorTextColor": "#111827", "clusterBkg": "#f3f4f6", "clusterBorder": "#6b7280", "edgeLabelBackground": "#ffffff", "fontFamily": "Arial", "fontSize": "24px", "lineColor": "#6b7280", "primaryBorderColor": "#6b7280", "primaryColor": "#f3f4f6", "primaryTextColor": "#111827", "secondaryColor": "#dceef8", "signalColor": "#6b7280", "signalTextColor": "#111827", "tertiaryColor": "#fff3bf"}}}%%
+flowchart LR
+    Client["Client / Rooki"] -->|"Subset: time + area"| WPS["WPS endpoint"]
+    WPS -->|"Subset result"| Client
+    subgraph Rook["Rook/WPS"]
+        WPS --> Library["clisops Python library (xarray)"]
+    end
+    Library --> NetCDF["NetCDF files"]
+    Library --> Zarr["Zarr stores"]
+    Library --> Kerchunk["Kerchunk references"]
+    Library --> Disk[("On-disk data pool")]
+    subgraph S3["Data pool on S3"]
+        NetCDF
+        Zarr
+        Kerchunk
+    end
+    classDef default fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef rook fill:#dbeafe,stroke:#2563eb,color:#172554
+    classDef wip fill:#fef3c7,stroke:#b45309,color:#451a03
+    class WPS,Library rook
+    class NetCDF,Zarr,Kerchunk wip
+```
+
+**S3 support is not finished yet: needs end-to-end testing with real S3 storage.**
 
 <!-- The current tests check source detection, catalog path mapping and storage
 option forwarding with mocked openers. They do not demonstrate a successful
