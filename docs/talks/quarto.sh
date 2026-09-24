@@ -8,19 +8,24 @@ if ! command -v quarto >/dev/null 2>&1; then
     exit 1
 fi
 
-if [ -n "${CONDA_PREFIX:-}" ] && [ "$(command -v quarto)" = "$CONDA_PREFIX/bin/quarto" ]; then
-    export QUARTO_DENO="$CONDA_PREFIX/bin/deno"
-    export QUARTO_PANDOC="$CONDA_PREFIX/bin/pandoc"
-    export QUARTO_ESBUILD="$CONDA_PREFIX/bin/esbuild"
-    export QUARTO_TYPST="$CONDA_PREFIX/bin/typst"
-    export QUARTO_DART_SASS="$CONDA_PREFIX/bin/sass"
-    export QUARTO_SHARE_PATH="$CONDA_PREFIX/share/quarto"
-    export QUARTO_CONDA_PREFIX="$CONDA_PREFIX"
+# RTD can add the environment's bin directory to PATH without activating it.
+# Locate the installation actually selected on PATH, not a missing/stale
+# CONDA_PREFIX inherited from the build runner.
+quarto_executable=$(command -v quarto)
+quarto_prefix=$(CDPATH= cd -- "$(dirname -- "$quarto_executable")/.." && pwd -P)
+if [ -d "$quarto_prefix/conda-meta" ] && [ -d "$quarto_prefix/share/quarto" ]; then
+    export QUARTO_DENO="$quarto_prefix/bin/deno"
+    export QUARTO_PANDOC="$quarto_prefix/bin/pandoc"
+    export QUARTO_ESBUILD="$quarto_prefix/bin/esbuild"
+    export QUARTO_TYPST="$quarto_prefix/bin/typst"
+    export QUARTO_DART_SASS="$quarto_prefix/bin/sass"
+    export QUARTO_SHARE_PATH="$quarto_prefix/share/quarto"
+    export QUARTO_CONDA_PREFIX="$quarto_prefix"
     # Some conda-forge activation hooks retain the package builder's path.
     if [ "$(uname)" = Darwin ]; then
-        export QUARTO_DENO_DOM="$CONDA_PREFIX/lib/deno_dom.dylib"
+        export QUARTO_DENO_DOM="$quarto_prefix/lib/deno_dom.dylib"
     else
-        export QUARTO_DENO_DOM="$CONDA_PREFIX/lib/deno_dom.so"
+        export QUARTO_DENO_DOM="$quarto_prefix/lib/deno_dom.so"
     fi
 fi
 
@@ -37,4 +42,4 @@ if [ -z "${QUARTO_CHROMIUM:-}" ] && command -v node >/dev/null 2>&1 && command -
     fi
 fi
 
-exec quarto "$@"
+exec "$quarto_executable" "$@"

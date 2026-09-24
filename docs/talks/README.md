@@ -14,6 +14,8 @@ These targets add packages to `rook`; they do not create a new environment.
 Conda packages are listed in [environment.yml](environment.yml); DeckTape uses npm.
 Build targets do not install packages.
 `quarto.sh` supplies Conda tool paths and reuses DeckTape's headless browser.
+It finds the Conda prefix from the Quarto executable on `PATH`, so Read the Docs
+does not need to run shell activation hooks or set `CONDA_PREFIX`.
 SVG rendering needs Chrome/Chromium even for HTML. If neither it nor DeckTape
 is installed, run `sh ./quarto.sh install chrome-headless-shell` once.
 

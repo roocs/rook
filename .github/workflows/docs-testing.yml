@@ -51,6 +51,9 @@ jobs:
           sh docs/talks/quarto.sh --version
           decktape version
 
+      - name: Check Quarto without Conda activation
+        run: python -m unittest discover -s tests/slides -p 'test_quarto.py'
+
       - name: Check Chromium
         run: |
           node - "$(npm root --global)" <<'JS'
