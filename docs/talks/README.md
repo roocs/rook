@@ -5,7 +5,7 @@ Add slide tools to the existing `rook` Conda environment. From the repository ro
 ```bash
 conda activate rook
 cd docs/talks
-make install       # Quarto and Node.js; enough for HTML
+make install       # Quarto, Node.js and MkDocs
 # make install-pdf # Also install DeckTape and Chrome for PDF
 make slides-html
 ```
@@ -14,8 +14,8 @@ These targets add packages to `rook`; they do not create a new environment.
 Conda packages are listed in [environment.yml](environment.yml); DeckTape uses npm.
 Build targets do not install packages.
 `quarto.sh` supplies Conda tool paths and reuses DeckTape's headless browser.
-It finds the Conda prefix from the Quarto executable on `PATH`, so Read the Docs
-does not need to run shell activation hooks or set `CONDA_PREFIX`.
+It finds the Conda prefix from the Quarto executable on `PATH`, without depending on
+shell activation hooks or `CONDA_PREFIX`.
 SVG rendering needs Chrome/Chromium even for HTML. If neither it nor DeckTape
 is installed, run `sh ./quarto.sh install chrome-headless-shell` once.
 
@@ -25,47 +25,48 @@ canonical presentation sources; there is no Markdown conversion step.
 `make slides` renders both decks as HTML and PDF. See
 [Milano 2026](milano-2026/README.md) for preview instructions.
 
-## Documentation publishing
+## Separate documentation and slides sites
 
-`make build-docs` from the repository root builds the Sphinx documentation and
-both HTML/PDF presentations. Install the PDF toolchain above first.
-Read the Docs and the docs testing workflow install it automatically.
+The service documentation stays on Sphinx and Read the Docs:
+<https://rook-wps.readthedocs.io/en/latest/>. `make build-docs` and the
+`Build Sphinx docs` workflow build only those docs. They do not install or run
+Quarto, Node, Chrome, DeckTape or MkDocs.
 
-GitHub Actions builds and checks the complete site on pull requests, pushes to
-`main`, and manual runs. Build or publication-check failures fail the job.
-The `docs-and-slides` workflow artifact contains `docs/build/html/` for review.
-Read the Docs remains the deployment host through its repository integration;
-GitHub Actions does not upload to GitHub Pages or require a deployment token.
-Both services run `check_published.py` to verify the selected formats and
-new-tab links for every canonical talk, and reject extra published files.
+The slides site uses MkDocs Material and GitHub Pages:
+<https://roocs.github.io/rook/>. It links back to the RTD docs; the Sphinx Talks
+page links to the HTML decks and PDFs here. Milano's architecture references
+also point to this site.
 
-Read the Docs temporarily runs `make -C docs/talks publish-html` to skip PDF
-export. It publishes only HTML, and the Talks page hides PDF links when PDFs
-have not been staged. DeckTape is still installed because Quarto uses its
-Chrome browser to render Mermaid diagrams for the HTML slides.
-The RTD publication check uses `--html-only`.
-
-Local builds and GitHub Actions continue to run `make -C docs/talks publish`.
-That target builds HTML/PDF and stages only the standalone HTML (`index.html`)
-and PDF under `docs/_build/published/talks/<talk>/`. Sphinx's
-`html_extra_path` copies them into the documentation output. The Talks page
-links to `talks/<talk>/index.html` and `talks/<talk>/slides.pdf`,
-relative to the current documentation version. PowerPoint, source files,
-templates and QA images are not staged or published.
-
-The same staging target works before a direct Sphinx build:
+After installing the slide/PDF tools above, run from the repository root:
 
 ```bash
 make -C docs/talks publish
-sphinx-build -b html docs/source docs/_build/html
+python -m http.server 8000 --directory site
 ```
+
+Open <http://localhost:8000/>. The `publish` target renders both decks as HTML
+and PDF, builds `mkdocs-slides.yml`, then copies only `index.html` and
+`slides.pdf` into `site/talks/<talk>/`. The landing page is maintained in
+`docs/talks/site_src/index.md`. Sources, templates, PowerPoint and QA images
+are never copied into the site. `check_published.py` verifies the files and
+new-tab links after every build.
+
+The separate `Build and deploy slides` workflow uses only the slide environment
+and `requirements.txt`, without installing the Rook service. Pull requests,
+pushes to `main`, and manual runs build the site and upload a `slides-site`
+preview artifact. Successful `main` builds deploy to GitHub Pages using the
+`github-pages` environment. Pull requests never deploy.
+
+For the first deployment, set repository **Settings → Pages → Build and
+deployment → Source** to **GitHub Actions**. No extra deployment token is
+needed. The published URLs are:
+
+- Milano: `https://roocs.github.io/rook/talks/milano-2026/index.html`
+- Architecture: `https://roocs.github.io/rook/talks/architecture/index.html`
+- Each PDF: replace `index.html` with `slides.pdf`.
 
 On hosted Linux builders, `DECKTAPE_FLAGS=--chrome-arg=--no-sandbox` disables
 Chromium's sandbox for PDF export. Normal local builds retain the default.
-
-To restore RTD PDF export, change its pre-build command back to
-`make -C docs/talks publish DECKTAPE_FLAGS=--chrome-arg=--no-sandbox` and remove
-`--html-only` from its post-build publication check.
 
 ## Emergency PowerPoint export
 
@@ -125,5 +126,5 @@ canvas; install its fonts for matching typography. Omitting the template uses
 the original light styling.
 
 The emergency output stays in `docs/_build/talks/milano-2026/slides.pptx`.
-Share it separately if needed. Keep the `publish` target and Read the Docs
-configuration unchanged so deployments continue to contain only HTML and PDF.
+Share it separately if needed. Keep the `publish` target limited to HTML/PDF and the Read the Docs
+configuration limited to Sphinx documentation.

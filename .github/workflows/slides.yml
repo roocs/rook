@@ -1,0 +1,121 @@
+name: Build and deploy slides
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/talks/**"
+      - "tests/slides/**"
+      - "mkdocs-slides.yml"
+      - ".github/workflows/slides.yml"
+  pull_request:
+    paths:
+      - "docs/talks/**"
+      - "tests/slides/**"
+      - "mkdocs-slides.yml"
+      - ".github/workflows/slides.yml"
+  workflow_dispatch:
+
+concurrency:
+  # For a given workflow, if we push to the same branch, cancel previous runs on that branch except on main.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  slides-build:
+    name: Build and verify slides
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DECKTAPE_FLAGS: --chrome-arg=--no-sandbox
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Conda (Micromamba) for slides
+        uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476 # v3.0.0
+        with:
+          cache-downloads: true
+          cache-environment: true
+          post-cleanup: none
+          environment-file: docs/talks/environment.yml
+          create-args: python=3.11
+
+      - name: Install MkDocs
+        run: python -m pip install -r docs/talks/requirements.txt
+
+      - name: Install PDF toolchain
+        run: |
+          python docs/talks/install_pdf.py
+          sh docs/talks/quarto.sh --version
+          decktape version
+
+      - name: Check slide toolchain helpers
+        run: python -m unittest discover -s tests/slides
+
+      - name: Check Chromium
+        run: |
+          node - "$(npm root --global)" <<'JS'
+          const {createRequire} = require('node:module');
+          const load = createRequire(process.argv[2] + '/decktape/package.json');
+          (async () => {
+            const browser = await load('puppeteer').launch({
+              headless: 'shell', args: ['--no-sandbox']
+            });
+            console.log(await browser.version());
+            await browser.close();
+          })().catch(error => { console.error(error); process.exit(1); });
+          JS
+
+      - name: Build MkDocs site and HTML/PDF slides
+        run: make -C docs/talks publish
+
+      - name: Upload slides preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: slides-site
+          path: site/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: site/
+
+  slides-deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: slides-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: slides-pages-deploy
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

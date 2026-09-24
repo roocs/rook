@@ -6,5 +6,5 @@ and explanations fit on slides. The Markdown document remains a design reference
 it is not a presentation build input.
 
 From the repository root, `make -C docs/talks slides` builds both talks as
-standalone HTML and PDF. `make build-docs` also includes them in Sphinx.
-The architecture deck is published under `talks/architecture/`.
+standalone HTML and PDF. `make -C docs/talks publish` includes them in the MkDocs slides site.
+The architecture deck is published at <https://roocs.github.io/rook/talks/architecture/>.
