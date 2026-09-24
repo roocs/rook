@@ -6,6 +6,13 @@ ESGF-NG federation. Slides and PDFs open in a new tab.
 For installation, configuration and API details, visit the
 [Rook documentation](https://rook-wps.readthedocs.io/en/latest/).
 
+## Overview
+
+An overview of Rook/WPS for ESGF-NG, including the technical appendix.
+
+<a class="md-button md-button--primary" href="talks/overview-slides/index.html" target="_blank" rel="noopener noreferrer">View overview slides ↗</a>
+<a class="md-button" href="talks/overview-slides/slides.pdf" target="_blank" rel="noopener noreferrer">Open overview PDF ↗</a>
+
 ## Milano 2026
 
 Rook/WPS for ESGF-NG, including the technical appendix.

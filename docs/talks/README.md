@@ -19,10 +19,11 @@ shell activation hooks or `CONDA_PREFIX`.
 SVG rendering needs Chrome/Chromium even for HTML. If neither it nor DeckTape
 is installed, run `sh ./quarto.sh install chrome-headless-shell` once.
 
-Edit [Milano 2026](milano-2026/slides.qmd) or
+Edit [Overview](overview-slides/slides.qmd),
+[Milano 2026](milano-2026/slides.qmd) or
 [Architecture](architecture/slides.qmd) directly. These `.qmd` files are the
 canonical presentation sources; there is no Markdown conversion step.
-`make slides` renders both decks as HTML and PDF. See
+`make slides` renders all decks as HTML and PDF. See
 [Milano 2026](milano-2026/README.md) for preview instructions.
 
 ## Separate documentation and slides sites
@@ -44,7 +45,7 @@ make -C docs/talks publish
 python -m http.server 8000 --directory site
 ```
 
-Open <http://localhost:8000/>. The `publish` target renders both decks as HTML
+Open <http://localhost:8000/>. The `publish` target renders all decks as HTML
 and PDF, builds `mkdocs-slides.yml`, then copies only `index.html` and
 `slides.pdf` into `site/talks/<talk>/`. The landing page is maintained in
 `docs/talks/site_src/index.md`. Sources, templates, PowerPoint and QA images
@@ -61,6 +62,7 @@ For the first deployment, set repository **Settings → Pages → Build and
 deployment → Source** to **GitHub Actions**. No extra deployment token is
 needed. The published URLs are:
 
+- Overview: `https://roocs.github.io/rook/talks/overview-slides/index.html`
 - Milano: `https://roocs.github.io/rook/talks/milano-2026/index.html`
 - Architecture: `https://roocs.github.io/rook/talks/architecture/index.html`
 - Each PDF: replace `index.html` with `slides.pdf`.
