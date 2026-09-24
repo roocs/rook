@@ -2,10 +2,7 @@
 # Invoke with make -C docs/talks, or run make from this directory.
 TALKS_DIR := $(CURDIR)
 BUILD_DIR := $(TALKS_DIR)/../_build/talks
-SLIDES_DIR := $(BUILD_DIR)/milano-2026
 TALKS := $(patsubst %/slides.qmd,%,$(wildcard */slides.qmd))
-PPTX_TEMPLATE ?= $(wildcard $(TALKS_DIR)/templates/futura_black.potx)
-PPTX_TEMPLATE_ARGS = $(if $(PPTX_TEMPLATE),--template "$(PPTX_TEMPLATE)")
 DECKTAPE_FLAGS ?=
 PUBLISH_DIR := $(TALKS_DIR)/../_build/published/talks
 
@@ -16,7 +13,6 @@ help: ## list presentation build targets
 	@echo "Presentation targets:"
 	@echo "  slides-html   Build Reveal.js HTML"
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
-	@echo "  slides-pptx   Build five main slides as editable PowerPoint"
 	@echo "  slides        Build HTML and PDF"
 	@echo "  publish       Build and stage HTML/PDF for Sphinx (no deployment)"
 	@echo "  slides-clean  Remove generated talk outputs"
@@ -38,7 +34,7 @@ install-pdf: install ## add the PDF exporter and its browser
 	npm install --global --prefix "$$CONDA_PREFIX" decktape@3.16.1
 	"$$CONDA_PREFIX/bin/decktape" version
 
-.PHONY: slides-html slides-pdf slides-pptx slides slides-clean
+.PHONY: slides-html slides-pdf slides slides-clean
 
 # Copy canonical sources and their assets into the ignored build tree.
 # Relative paths work unchanged both in source previews and rendered copies.
@@ -53,11 +49,6 @@ slides-html: prepare ## render all canonical Quarto presentations
 	@set -e; for talk in $(TALKS); do \
 		sh "$(TALKS_DIR)/quarto.sh" render "$(BUILD_DIR)/$$talk/slides.qmd" --to revealjs; \
 	done
-
-slides-pptx: prepare ## export only the main Milano slides, without the appendix
-	python "$(TALKS_DIR)/milano-2026/prepare_pptx.py" "$(SLIDES_DIR)/slides.qmd" "$(SLIDES_DIR)/slides-main.qmd" $(PPTX_TEMPLATE_ARGS)
-	cd "$(SLIDES_DIR)" && sh "$(TALKS_DIR)/quarto.sh" render slides-main.qmd --to pptx --output slides-raw.pptx
-	python "$(TALKS_DIR)/milano-2026/style_pptx.py" "$(SLIDES_DIR)/slides-raw.pptx" "$(SLIDES_DIR)/slides.pptx" $(PPTX_TEMPLATE_ARGS)
 
 slides-pdf: slides-html ## export all talks with DeckTape
 	@set -e; if command -v decktape >/dev/null 2>&1; then \

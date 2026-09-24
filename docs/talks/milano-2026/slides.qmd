@@ -22,9 +22,6 @@ format:
     mermaid-format: svg
     code-overflow: wrap
     auto-stretch: false
-  pptx:
-    slide-level: 1
-    mermaid-format: png
 ---
 
 # Rook/WPS for ESGF-NG
