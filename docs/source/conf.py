@@ -184,6 +184,10 @@ html_favicon = "_static/favicon.ico"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
+# Only the public HTML/PDF deck outputs are staged here by docs/talks.
+# Sphinx copies this tree unchanged, preserving version-relative talk URLs.
+html_extra_path = ["../_build/published"]
+
 
 # -- Options for HTMLHelp output ---------------------------------------
 

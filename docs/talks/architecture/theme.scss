@@ -1,0 +1,8 @@
+/*-- scss:rules --*/
+.reveal .architecture-diagram .cell-output-display .mermaid-svg {
+  max-height: 650px;
+}
+
+.reveal pre.sourceCode, .reveal pre.sourceCode code {
+  max-height: none !important;
+}
