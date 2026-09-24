@@ -29,6 +29,14 @@ canonical presentation sources; there is no Markdown conversion step.
 both HTML/PDF presentations. Install the PDF toolchain above first.
 Read the Docs and the docs testing workflow install it automatically.
 
+GitHub Actions builds and checks the complete site on pull requests, pushes to
+`main`, and manual runs. Build or publication-check failures fail the job.
+The `docs-and-slides` workflow artifact contains `docs/build/html/` for review.
+Read the Docs remains the deployment host through its repository integration;
+GitHub Actions does not upload to GitHub Pages or require a deployment token.
+Both services run `check_published.py` to verify the HTML/PDF files and new-tab
+links for every canonical talk, and reject extra files in the published talks.
+
 The Read the Docs pre-build hook runs `make -C docs/talks publish`.
 That target builds HTML/PDF and stages only the standalone HTML (`index.html`)
 and PDF under `docs/_build/published/talks/<talk>/`. Sphinx's

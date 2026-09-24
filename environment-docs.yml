@@ -2,7 +2,8 @@ name: rook
 channels:
   - conda-forge
 dependencies:
-  - python >=3.9,<3.12
+  - python >=3.11,<3.12
+  - pip
   - pywps >=4.6
   - sphinx >=7.0.0
   - sphinxcontrib-mermaid

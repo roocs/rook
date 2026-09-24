@@ -26,6 +26,8 @@ build:
     pre_build:
       - sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook
       - make -C docs/talks publish DECKTAPE_FLAGS=--chrome-arg=--no-sandbox
+    post_build:
+      - python docs/talks/check_published.py "$READTHEDOCS_OUTPUT/html"
 
 conda:
   environment: environment-docs.yml

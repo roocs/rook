@@ -1,10 +1,11 @@
-name: Docs Testing Suite
+name: Build docs and slides
 
 on:
   push:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   # For a given workflow, if we push to the same branch, cancel previous runs on that branch except on main.
@@ -16,9 +17,11 @@ permissions:
 
 jobs:
   docs:
-    name: Build docs
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    name: Build and verify docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DECKTAPE_FLAGS: --chrome-arg=--no-sandbox
     defaults:
       run:
         shell: bash -l {0}
@@ -43,10 +46,38 @@ jobs:
           environment-file: environment-docs.yml
 
       - name: Install PDF toolchain
-        run: npm install --global --prefix "$CONDA_PREFIX" decktape@3.16.1
+        run: |
+          npm install --global --prefix "$CONDA_PREFIX" decktape@3.16.1
+          sh docs/talks/quarto.sh --version
+          decktape version
+
+      - name: Check Chromium
+        run: |
+          node - "$(npm root --global)" <<'JS'
+          const {createRequire} = require('node:module');
+          const load = createRequire(process.argv[2] + '/decktape/package.json');
+          (async () => {
+            const browser = await load('puppeteer').launch({
+              headless: 'shell', args: ['--no-sandbox']
+            });
+            console.log(await browser.version());
+            await browser.close();
+          })().catch(error => { console.error(error); process.exit(1); });
+          JS
 
       - name: Build docs and HTML/PDF talks
-        env:
-          DECKTAPE_FLAGS: --chrome-arg=--no-sandbox
         run: |
           make build-docs
+
+      - name: Verify published talks
+        run: python docs/talks/check_published.py docs/build/html
+
+      # Read the Docs deploys through its repository integration. This artifact
+      # makes the complete, tested site available for review on pushes and PRs.
+      - name: Upload docs preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-and-slides
+          path: docs/build/html/
+          if-no-files-found: error
+          retention-days: 7
