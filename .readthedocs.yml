@@ -22,7 +22,8 @@ build:
     python: "miniforge3-25.11"
   jobs:
     post_install:
-      - npm install --global --prefix "$CONDA_PREFIX" decktape@3.16.1
+      - npm install --global --prefix "$(python -c 'import sys; print(sys.prefix)')" decktape@3.16.1
+      - sh docs/talks/quarto.sh --help > /dev/null
     pre_build:
       - sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook
       - make -C docs/talks publish DECKTAPE_FLAGS=--chrome-arg=--no-sandbox
