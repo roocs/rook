@@ -22,13 +22,14 @@ build:
     python: "miniforge3-25.11"
   jobs:
     post_install:
+      # Quarto still needs DeckTape's Chrome to render Mermaid SVGs for HTML.
       - python docs/talks/install_pdf.py
       - sh docs/talks/quarto.sh --help > /dev/null
     pre_build:
       - sphinx-apidoc -o docs/source/apidoc --private --module-first src/rook
-      - make -C docs/talks publish DECKTAPE_FLAGS=--chrome-arg=--no-sandbox
+      - make -C docs/talks publish-html
     post_build:
-      - python docs/talks/check_published.py "$READTHEDOCS_OUTPUT/html"
+      - python docs/talks/check_published.py "$READTHEDOCS_OUTPUT/html" --html-only
 
 conda:
   environment: environment-docs.yml

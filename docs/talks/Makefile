@@ -15,6 +15,7 @@ help: ## list presentation build targets
 	@echo "  slides-pdf    Build HTML and export PDF with DeckTape"
 	@echo "  slides        Build HTML and PDF"
 	@echo "  publish       Build and stage HTML/PDF for Sphinx (no deployment)"
+	@echo "  publish-html  Build and stage only HTML for Sphinx"
 	@echo "  slides-clean  Remove generated talk outputs"
 	@echo "  install       Add HTML tools to the existing rook environment"
 	@echo "  install-pdf   Add HTML tools, DeckTape and Chrome to rook"
@@ -64,7 +65,14 @@ slides-pdf: slides-html ## export all talks with DeckTape
 
 slides: slides-pdf ## build HTML and PDF for all talks
 
-.PHONY: publish
+.PHONY: publish publish-html
+publish-html: slides-html ## stage HTML only, removing previously staged PDFs
+	@set -e; for talk in $(TALKS); do \
+		mkdir -p "$(PUBLISH_DIR)/$$talk"; \
+		cp "$(BUILD_DIR)/$$talk/slides.html" "$(PUBLISH_DIR)/$$talk/index.html"; \
+		rm -f "$(PUBLISH_DIR)/$$talk/slides.pdf"; \
+	done
+
 publish: slides ## stage only standalone HTML and PDF for Sphinx
 	@set -e; for talk in $(TALKS); do \
 		mkdir -p "$(PUBLISH_DIR)/$$talk"; \

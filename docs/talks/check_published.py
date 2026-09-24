@@ -19,7 +19,7 @@ class TalkLinks(HTMLParser):
             self.links[attributes["href"]] = attributes
 
 
-def verify(site: Path) -> None:
+def verify(site: Path, *, html_only: bool = False) -> None:
     """Reject missing decks, broken links and unintended published files."""
     sources = sorted(Path(__file__).parent.glob("*/slides.qmd"))
     if not sources:
@@ -28,7 +28,7 @@ def verify(site: Path) -> None:
     links.feed((site / "talks.html").read_text(encoding="utf-8"))
     expected = set()
     for source in sources:
-        for filename in ("index.html", "slides.pdf"):
+        for filename in (("index.html",) if html_only else ("index.html", "slides.pdf")):
             relative = f"talks/{source.parent.name}/{filename}"
             expected.add(relative)
             path = site / relative
@@ -42,10 +42,15 @@ def verify(site: Path) -> None:
     actual = {p.relative_to(site).as_posix() for p in (site / "talks").rglob("*") if p.is_file()}
     if actual != expected:
         raise ValueError(f"Unexpected talk publication contents: {sorted(actual ^ expected)}")
-    print(f"Verified HTML/PDF files and links for {len(sources)} talks in {site}")
+    if set(links.links) != expected:
+        raise ValueError(f"Unexpected talk links: {sorted(set(links.links) ^ expected)}")
+    formats = "HTML" if html_only else "HTML/PDF"
+    print(f"Verified {formats} files and links for {len(sources)} talks in {site}")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("site", type=Path, help="Sphinx HTML output directory")
-    verify(parser.parse_args().site)
+    parser.add_argument("--html-only", action="store_true", help="require HTML only, without PDF files or links")
+    args = parser.parse_args()
+    verify(args.site, html_only=args.html_only)
