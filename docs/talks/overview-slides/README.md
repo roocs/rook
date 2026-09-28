@@ -34,8 +34,10 @@ supporting infrastructure.
 ## Talk length and running order
 
 The main talk has **10 slides**, including the title and summary, with a
-**17-minute** target pace for a 15–20 minute slot. The source comments contain
-per-slide timing and a shorter 15-minute route.
+**17-minute** target pace for a 15–20 minute slot. An **optional two-minute demo**
+follows the summary, bringing the total to 19 minutes if time allows.
+The source comments contain per-slide timing and a shorter 15-minute route
+that skips the demo.
 
 1. Title
 2. What is Rook?
@@ -47,6 +49,7 @@ per-slide timing and a shorter 15-minute route.
 8. Deployment today and tomorrow (formerly C1)
 9. Support for S3 (formerly F1)
 10. Summary
+11. Optional demo (Rooki on Binder and nbviewer, plus the CDS website)
 
 The remaining appendix keeps its B, D and E labels for reference during
 questions. The broker API and container deployment remain proposals, and S3

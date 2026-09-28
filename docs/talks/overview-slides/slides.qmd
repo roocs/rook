@@ -49,10 +49,12 @@ Contributors: Ag Stephens (CEDA/STFC), Carsten Ehbrecht and Martin Schupfner (DK
 <!-- EDITORIAL NOTE FOR SLIDE PREPARATION
 
 - Main talk: title, eight topic slides, then summary (10 slides, about 17 minutes).
+- Optional demo: 2:00 after the summary, before the appendix (19 minutes total).
 - Timing: title 0:30, What is Rook? 1:30, capabilities 2:00, CDS 2:00,
   broker 2:30, Rooki example 2:00, submission 2:00, deployment 1:30,
-  S3 2:00, summary 1:00. Allow up to 3 minutes for questions in a 20-minute slot.
-- For 15 minutes: keep the example and S3 to 1:30 each, and CDS to 1:00.
+  S3 2:00, summary 1:00. Allow 3 minutes for questions, or 1 minute with the demo.
+- For 15 minutes: skip the optional demo, keep the example and S3 to 1:30 each,
+  and CDS to 1:00.
 - Appendix: B broker architecture, D discovery and access, E climate indices.
   Original appendix labels remain stable for questions.
 - `wf.broker()` is a proposed API sketch, not an implemented interface.
@@ -376,6 +378,35 @@ flowchart LR
 
 <!-- 1:00. This is the closing picture. The ESGF-NG extension adds data-aware
 site selection without changing the workflow or the processing operations. -->
+
+---
+
+# Demo (optional) {#demo}
+
+## Rooki on Binder
+
+[Run the Rooki notebooks](https://mybinder.org/v2/gh/roocs/rooki.git/master?filepath=notebooks){target="_blank"}
+
+Try the Python client in an interactive notebook.
+
+## Rooki on nbviewer
+
+[View the Rooki notebooks](https://nbviewer.org/github/roocs/rooki/tree/master/notebooks/){target="_blank"}
+
+Browse the examples and saved outputs without running a session.
+
+## Copernicus Climate Data Store
+
+[Open the CDS website](https://cds.climate.copernicus.eu/){target="_blank"}
+
+Browse climate datasets through the web interface.
+
+<!-- Optional, 2:00 after the summary if time allows. Open Binder before the talk so the environment is ready. Use one
+prepared Rooki example, with nbviewer as a fallback for saved notebook output.
+Briefly show the CDS catalogue as the web entry point. Skip the demo for the 15-minute route. For a quick walkthrough, use nbviewer
+without waiting for a live job.
+Rooki notebook links: https://github.com/roocs/rooki (README, Online Demo).
+CDS: https://cds.climate.copernicus.eu/ -->
 
 ---
 
