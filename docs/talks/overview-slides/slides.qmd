@@ -383,30 +383,47 @@ site selection without changing the workflow or the processing operations. -->
 
 # Demo (optional) {#demo}
 
-## Rooki on Binder
+:::: {.columns}
 
-[Run the Rooki notebooks](https://mybinder.org/v2/gh/roocs/rooki.git/master?filepath=notebooks){target="_blank"}
+::: {.column width="34%"}
 
-Try the Python client in an interactive notebook.
+## Rooki notebooks
 
-## Rooki on nbviewer
+[Run on Binder](https://mybinder.org/v2/gh/roocs/rooki.git/master?filepath=notebooks){target="_blank"}
 
-[View the Rooki notebooks](https://nbviewer.org/github/roocs/rooki/tree/master/notebooks/){target="_blank"}
+Interactive Python examples.
 
-Browse the examples and saved outputs without running a session.
+[View on nbviewer](https://nbviewer.org/github/roocs/rooki/tree/master/notebooks/){target="_blank"}
+
+Saved notebooks and outputs, without starting a session.
+
+:::
+
+::: {.column width="63%"}
 
 ## Copernicus Climate Data Store
 
+[![Public Copernicus Climate Data Store homepage, showing the dataset search and navigation](assets/cds-homepage.png)](https://cds.climate.copernicus.eu/){target="_blank"}
+
 [Open the CDS website](https://cds.climate.copernicus.eu/){target="_blank"}
 
-Browse climate datasets through the web interface.
+::: {.demo-caption}
+Public homepage screenshot, 28 September 2026.
+:::
 
-<!-- Optional, 2:00 after the summary if time allows. Open Binder before the talk so the environment is ready. Use one
-prepared Rooki example, with nbviewer as a fallback for saved notebook output.
-Briefly show the CDS catalogue as the web entry point. Skip the demo for the 15-minute route. For a quick walkthrough, use nbviewer
-without waiting for a live job.
+:::
+
+::::
+
+<!-- Optional, 2:00 after the summary if time allows. Binder worked in the
+presenter's test but may be unavailable during the talk. Open it beforehand;
+use nbviewer for saved notebook output if the live session fails.
+The embedded CDS screenshot is the offline fallback, including when presenting
+from another laptop without a CDS login. A live CDS session is optional.
+Skip the demo for the 15-minute route.
 Rooki notebook links: https://github.com/roocs/rooki (README, Online Demo).
-CDS: https://cds.climate.copernicus.eu/ -->
+Screenshot source: https://cds.climate.copernicus.eu/ (public homepage, captured
+28 September 2026 without signing in). -->
 
 ---
 

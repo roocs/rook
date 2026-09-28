@@ -105,3 +105,14 @@ $code-block-bg: #dceef8;
 
 // Keep the S3 access branches readable within the appendix slide.
 .reveal #s3-and-disk-data-pools .cell-output-display .mermaid-svg { max-height: 480px; }
+
+// Embedded CDS screenshot keeps the optional demo usable without a live login.
+.reveal #demo {
+  .columns { justify-content: space-between; }
+  .column > h2 { font-size: 1.05em; }
+  .column > p { margin-bottom: 0.7em; }
+  .column img { width: 100%; height: auto; max-height: 590px; margin: 0; }
+  .column figure { margin: 0; }
+  .column figcaption { display: none; }
+  .demo-caption { font-size: 0.62em; color: #555; }
+}

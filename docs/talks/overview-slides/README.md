@@ -49,7 +49,10 @@ that skips the demo.
 8. Deployment today and tomorrow (formerly C1)
 9. Support for S3 (formerly F1)
 10. Summary
-11. Optional demo (Rooki on Binder and nbviewer, plus the CDS website)
+11. Optional demo (Rooki on Binder and nbviewer, plus a CDS screenshot and website link)
+
+The demo embeds the public CDS homepage screenshot, so it can be shown offline
+or from another laptop without a CDS login. Use nbviewer if Binder is unavailable.
 
 The remaining appendix keeps its B, D and E labels for reference during
 questions. The broker API and container deployment remain proposals, and S3
