@@ -12,9 +12,7 @@ class DurationPlot(PlotView):
         pdf = pd.DataFrame()
         pdf["duration"] = self.df["time_end"] - self.df["time_start"]
         pdf.duration = pdf.duration.dt.seconds
-        pdf.duration = pdf.duration.apply(
-            lambda x: MAX_DURATION if x > MAX_DURATION else x
-        )
+        pdf.duration = pdf.duration.clip(upper=MAX_DURATION)
         return pdf
 
     def plot(self):

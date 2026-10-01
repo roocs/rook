@@ -1,4 +1,3 @@
-import pandas as pd
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
@@ -10,14 +9,10 @@ DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 class DayPlot(PlotView):
     def data(self):
-        pdf = pd.DataFrame()
-
-        # Convert the 'time_start' column to day of the week and map it to the DAYS constant
-        pdf["day"] = self.df["time_start"].dt.dayofweek
-        pdf["day"] = pdf["day"].apply(lambda x: DAYS[x])
-
-        # Create a dictionary with the sorted day names and their corresponding counts
-        day_counts = pdf["day"].value_counts().sort_index()
+        # Count first so only up to seven weekday numbers need conversion.
+        day_counts = self.df["time_start"].dt.dayofweek.value_counts()
+        day_counts.index = day_counts.index.map(lambda day: DAYS[day])
+        day_counts = day_counts.sort_index()
         data_ = dict(days=day_counts.index, counts=day_counts.values)
         return data_
 

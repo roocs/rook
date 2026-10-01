@@ -2,20 +2,22 @@ import pandas as pd
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
-from ..models import concurrent_requests
+from ..models import daily_concurrency
 from .base import PlotView
 
 MILLISECS_PER_DAY = 60 * 60 * 24 * 1000
 
 
 class ConcurrencyPlot(PlotView):
+    def __init__(self, df, running=None):
+        super().__init__(df)
+        self.running = running
+
     def data(self):
-        cdf = concurrent_requests(self.df)
-        # max concurrent per day
-        gdf = cdf.groupby(pd.Grouper(key="time", freq="1D")).max()
+        running = daily_concurrency(self.df) if self.running is None else self.running
         pdf = pd.DataFrame()
-        pdf["time"] = gdf.index.values
-        pdf["running"] = gdf.running.values
+        pdf["time"] = running.index.values
+        pdf["running"] = running.values
         return pdf
 
     def plot(self):

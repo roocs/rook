@@ -4,6 +4,28 @@ Changes
 Unreleased
 ==========
 
+* Speed up usage collection on a single CPU with bounded caches for repeated
+  nginx timestamps and IPv4 addresses. Vectorize dashboard activity and duration
+  calculations, and count weekday numbers before converting them to labels.
+
+* Discard unused successful-request messages from dashboard memory and compute
+  daily concurrency with compact arrays instead of full event DataFrames,
+  preserving the existing timestamp ordering and daily peak values.
+
+* Aggregate dashboard downloads in chunks into daily counts and byte totals,
+  retaining days with no downloads for unchanged overview statistics. Filter
+  request CSVs in chunks, retain only columns used by the views, and share
+  daily concurrency results between the plot and overview table.
+
+* Reduce usage/dashboard memory peaks by filtering PyWPS requests in SQL and
+  exporting them in chunks, streaming site CSV downloads to temporary files,
+  and combining CSVs in chunks. Dashboard download views load only the three
+  columns they use, and transfer totals sum only sizes rather than also
+  concatenating text columns.
+
+* Stream nginx download logs directly to CSV during usage collection, applying
+  date filters per record to keep memory use independent of log history size.
+
 * Added the synchronous ``status`` WPS process with a versioned ``json`` output
   for monitoring and an ``html`` output for its human-readable overview. Status
   signals are implemented as independent, failure-isolated ``StatusCheck``

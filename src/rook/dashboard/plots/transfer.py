@@ -1,19 +1,15 @@
-import pandas as pd
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
 from .base import PlotView
+from ..models import daily_downloads
 
 MILLISECS_PER_DAY = 60 * 60 * 24 * 1000
 
 
 class TransferPlot(PlotView):
     def data(self):
-        pdf = pd.DataFrame()
-        pdf["time"] = self.df.datetime
-        pdf["size"] = self.df["size"]
-        pdf["size"] = pdf["size"].apply(lambda x: x / 1024**3)
-        pdf = pdf.groupby(pd.Grouper(key="time", freq="1D")).sum()
+        pdf = daily_downloads(self.df)[["size"]].rename_axis("time") / 1024**3
         pdf = pdf.sort_values(by=["time"], ascending=False)
         return pdf
 

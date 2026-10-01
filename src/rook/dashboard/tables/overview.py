@@ -1,14 +1,15 @@
 import pandas as pd
 from bokeh.models import ColumnDataSource, DataTable, TableColumn
 
-from ..models import concurrent_requests
+from ..models import daily_concurrency, daily_downloads
 from .base import TableView
 
 
 class OverviewTable(TableView):
-    def __init__(self, df, df_downloads):
+    def __init__(self, df, df_downloads, running=None):
         super().__init__(df)
         self.df_downloads = df_downloads
+        self.running = running
 
     def data(self):
         # requests
@@ -21,16 +22,12 @@ class OverviewTable(TableView):
         duration = duration.dt.seconds
         duration = duration[lambda x: x > 0]
         # concurrency
-        cdf = concurrent_requests(self.df)
-        running = cdf.groupby(pd.Grouper(key="time", freq="1D")).running.max()
+        running = daily_concurrency(self.df) if self.running is None else self.running
         # downloads
-        downloads = self.df_downloads.groupby(
-            pd.Grouper(key="datetime", freq="1D")
-        ).request_type.count()
+        daily = daily_downloads(self.df_downloads)
+        downloads = daily["download_count"]
         # data transfer
-        tdf = self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D")).sum()
-        tdf["size"] = tdf["size"].apply(lambda x: x / 1024**3)
-        transfer = tdf["size"]
+        transfer = daily["size"] / 1024**3
         data_ = dict(
             property=[
                 "Total Requests",

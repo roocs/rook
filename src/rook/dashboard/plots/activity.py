@@ -11,8 +11,8 @@ class ActivityPlot(PlotView):
     def data(self):
         edf = pd.DataFrame()
         edf["time"] = self.df.time_start
-        edf["success"] = self.df.status.apply(lambda x: 0 if x == 5 else 1)
-        edf["failed"] = self.df.status.apply(lambda x: 1 if x == 5 else 0)
+        edf["success"] = self.df.status.ne(5)
+        edf["failed"] = self.df.status.eq(5)
         gdf = edf.groupby(pd.Grouper(key="time", freq="1D"))
         pdf = gdf.agg(success=("success", "sum"), failed=("failed", "sum"))
         pdf = pdf.sort_values(by=["time"], ascending=False)
