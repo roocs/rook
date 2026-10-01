@@ -4,7 +4,7 @@ import pytest
 from rook.dashboard import Dashboard
 from rook.dashboard.models import daily_downloads
 from rook.dashboard.plots import ConcurrencyPlot, DownloadsPlot, TransferPlot
-from rook.dashboard.tables import OverviewTable
+from rook.dashboard.tables import MessageTable, OverviewTable
 
 
 @pytest.mark.parametrize("chunk_size", [1, 2, 100])
@@ -114,6 +114,7 @@ def test_request_loading_filters_chunks(tmp_path, monkeypatch, filter_name):
     expected = expected.sort_values("time_start")[
         ["uuid", "time_start", "time_end", "status", "message"]
     ]
+    expected.loc[expected["status"] != 5, "message"] = None
     dashboard = Dashboard(output_dir=tmp_path)
     dashboard.load(path, filter=filter_name)
     pd.testing.assert_frame_equal(
@@ -123,5 +124,45 @@ def test_request_loading_filters_chunks(tmp_path, monkeypatch, filter_name):
     )
     if len(expected):
         pd.testing.assert_frame_equal(
+            MessageTable(dashboard.df).data(),
+            MessageTable(requests[requests.uuid.isin(dashboard.df.uuid)]).data(),
+        )
+        pd.testing.assert_frame_equal(
             ConcurrencyPlot(dashboard.df).data(), ConcurrencyPlot(expected).data()
         )
+
+
+@pytest.mark.parametrize("timezone", [None, "UTC", "Europe/Berlin"])
+@pytest.mark.parametrize("case", ["empty", "overlaps", "ties", "missing", "random"])
+def test_compact_concurrency_matches_existing_metric(timezone, case):
+    import numpy as np
+
+    from rook.dashboard.models import concurrent_requests, daily_concurrency
+
+    starts, ends = {
+        "empty": ([], []),
+        "overlaps": ([0, 1, 2, 4 * 86400], [10, 3, 6, 4 * 86400 + 30]),
+        "ties": ([0, 0, 10, 10, 10], [10, 10, 10, 20, 30]),
+        "missing": ([0, 1, 2, None], [10, None, 20, None]),
+        "random": ([], []),
+    }[case]
+    if case == "random":
+        rng = np.random.default_rng(123)
+        starts = rng.integers(0, 5 * 86400, size=2000)
+        ends = starts + rng.integers(0, 2 * 86400, size=2000)
+    frame = pd.DataFrame(
+        {
+            "time_start": pd.Timestamp("2021-06-01")
+            + pd.to_timedelta(starts, unit="s"),
+            "time_end": pd.Timestamp("2021-06-01") + pd.to_timedelta(ends, unit="s"),
+        }
+    )
+    if timezone:
+        for column in frame:
+            frame[column] = frame[column].dt.tz_localize(timezone)
+    expected = (
+        concurrent_requests(frame)
+        .groupby(pd.Grouper(key="time", freq="1D"))
+        .running.max()
+    )
+    pd.testing.assert_series_equal(daily_concurrency(frame), expected)

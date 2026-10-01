@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -19,10 +20,23 @@ def daily_downloads(df):
 
 
 def daily_concurrency(df):
-    """Return the existing concurrency metric once per day."""
-    return (
-        concurrent_requests(df).groupby(pd.Grouper(key="time", freq="1D")).running.max()
+    """Compute daily peaks without building the full event DataFrame."""
+    times = pd.concat([df["time_start"], df["time_end"]], ignore_index=True).array
+    # Match sort_values' ordering, including ties and missing timestamps.
+    order = times.argsort(kind="quicksort", na_position="last")
+    times = times.take(order)
+    running = np.empty(len(order), dtype=np.int64)
+    # Starts occupied the first half of the unsorted events; ends the second.
+    np.less(order, len(df), out=running)
+    del order
+    running *= 2
+    running -= 1
+    np.cumsum(running, out=running)
+    counts = pd.Series(
+        running, index=pd.DatetimeIndex(times, name="time"), name="running"
     )
+    # Preserve the existing positive-event-only metric and empty-day handling.
+    return counts[counts > 0].groupby(pd.Grouper(freq="1D")).max()
 
 
 def concurrent_requests(df):

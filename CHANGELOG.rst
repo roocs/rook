@@ -4,6 +4,10 @@ Changes
 Unreleased
 ==========
 
+* Discard unused successful-request messages from dashboard memory and compute
+  daily concurrency with compact arrays instead of full event DataFrames,
+  preserving the existing timestamp ordering and daily peak values.
+
 * Aggregate dashboard downloads in chunks into daily counts and byte totals,
   retaining days with no downloads for unchanged overview statistics. Filter
   request CSVs in chunks, retain only columns used by the views, and share

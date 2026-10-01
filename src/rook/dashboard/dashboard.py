@@ -54,7 +54,10 @@ class Dashboard:
                     )
                 selected = chunk.loc[keep, columns]
                 if not selected.empty or not retained:
-                    retained.append(selected.copy())
+                    selected = selected.copy()
+                    # Only failed-request messages appear in the dashboard.
+                    selected.loc[selected["status"] != 5, "message"] = None
+                    retained.append(selected)
         self.df = pd.concat(retained, ignore_index=True).sort_values("time_start")
 
     def load_downloads(self, url):
