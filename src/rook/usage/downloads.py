@@ -1,7 +1,8 @@
+import csv
 import ipaddress
 import logging
+import re
 import subprocess  # noqa: S404
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -96,51 +97,62 @@ class Downloads(Usage):
         return self.parse(log_files, time_start, time_end, outdir)
 
     def parse(self, log_files, time_start=None, time_end=None, outdir=None):
-        def process_file(log_file):
-            records = []
-            try:
-                # FIXME: This is very insecure, as it allows for command injection
-                # Use zgrep to pre-filter logs based on the output path
-                p = subprocess.run(  # noqa: S603
+        search_pattern = rf"GET {self.output_path}/.*/.*\.nc"
+        request_pattern = re.compile(rf"{self.output_path}/.*/.*\.nc")
+        time_start = pd.Timestamp(time_start) if time_start else None
+        time_end = pd.Timestamp(time_end) if time_end else None
+        fname = Path(outdir).joinpath("downloads.csv").as_posix()
+        writer = None
+
+        # Stream one file at a time: neither grep output nor parsed records
+        # should accumulate in memory as the log history grows.
+        with Path(fname).open("w", newline="") as output:
+            for log_file in log_files:
+                checkpoint = output.tell()
+                previous_writer = writer
+                with subprocess.Popen(  # noqa: S603
                     ["zgrep", search_pattern, log_file],  # noqa: S607
                     stdout=subprocess.PIPE,
                     text=True,
-                    check=True,
-                )
-                lines = p.stdout.splitlines()
-                for line in lines:
+                ) as process:
                     try:
-                        record = parse_record(line)
-                        records.append(record)
-                    except NotFoundError:
-                        continue
-            except subprocess.CalledProcessError as e:
-                LOGGER.error(f"Failed to process log file {log_file}: {e}")
-            return records
+                        for line in process.stdout:
+                            try:
+                                record = parse_record(line)
+                            except NotFoundError:
+                                continue
+                            if writer is None:
+                                writer = csv.DictWriter(
+                                    output,
+                                    fieldnames=record.keys(),
+                                    lineterminator="\n",
+                                )
+                                writer.writeheader()
+                            if not request_pattern.search(record["request"]):
+                                continue
+                            if (
+                                time_start is not None
+                                and record["datetime"] < time_start
+                            ):
+                                continue
+                            if time_end is not None and record["datetime"] > time_end:
+                                continue
+                            writer.writerow(record)
+                    except BaseException:
+                        process.kill()
+                        raise
+                # Exit 1 means no matches. Discard partial output on errors,
+                # as subprocess.run(check=True) did before streaming.
+                if process.returncode not in (0, 1):
+                    output.seek(checkpoint)
+                    output.truncate()
+                    writer = previous_writer
+                    LOGGER.error(
+                        "Failed to process log file %s: zgrep exited with %s",
+                        log_file,
+                        process.returncode,
+                    )
 
-        search_pattern = rf"GET {self.output_path}/.*/.*\.nc"
-        all_records = []
-
-        with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(process_file, log_file) for log_file in log_files
-            ]
-            for future in futures:
-                all_records.extend(future.result())
-
-        if not all_records:
+        if writer is None:
             raise NotFoundError("Could not find any records")
-
-        df = pd.DataFrame(all_records)
-        df = df[
-            df["request"].str.contains(rf"{self.output_path}/.*/.*\.nc", regex=True)
-        ]
-
-        if time_start:
-            df = df[df["datetime"] >= time_start]
-        if time_end:
-            df = df[df["datetime"] <= time_end]
-
-        fname = Path(outdir).joinpath("downloads.csv").as_posix()
-        df.to_csv(fname, index=False)
         return fname

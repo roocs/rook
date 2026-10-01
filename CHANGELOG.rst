@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Stream nginx download logs directly to CSV during usage collection, applying
+  date filters per record to keep memory use independent of log history size.
+
 * Added the synchronous ``status`` WPS process with a versioned ``json`` output
   for monitoring and an ``html`` output for its human-readable overview. Status
   signals are implemented as independent, failure-isolated ``StatusCheck``
