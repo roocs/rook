@@ -156,14 +156,17 @@ def test_usage_to_dashboard(tmp_path, monkeypatch, usage_database, resource_file
     dash.load(combined_usage, filter="orchestrate")
     dash.load_downloads(combined_downloads)
     assert len(dash.df) == 2 * multiplier
-    assert len(dash.df_downloads) == 4 * multiplier
-    assert set(dash.df_downloads.columns) == {"datetime", "request_type", "size"}
+    assert len(dash.df_downloads) == 1
+    assert dash.df_downloads.download_count.sum() == 4 * multiplier
+    assert set(dash.df_downloads.columns) == {"datetime", "download_count", "size"}
     full_downloads = pd.read_csv(combined_downloads, parse_dates=["datetime"])
     expected_counts = full_downloads.groupby(
         pd.Grouper(key="datetime", freq="1D")
     ).request_type.count()
     pd.testing.assert_series_equal(
-        DownloadsPlot(dash.df_downloads).data().request_type, expected_counts
+        DownloadsPlot(dash.df_downloads).data().request_type,
+        expected_counts,
+        check_freq=False,
     )
     expected_transfer = full_downloads["size"].sum() / 1024**3
     assert TransferPlot(dash.df_downloads).data()["size"].sum() == pytest.approx(

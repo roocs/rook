@@ -5,6 +5,7 @@ import humanize
 import pandas as pd
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from .models import daily_concurrency, daily_downloads
 from .plots import (
     ActivityPlot,
     ConcurrencyPlot,
@@ -19,6 +20,7 @@ from .tables import MessageTable, OverviewTable
 env = Environment(
     loader=PackageLoader("rook.dashboard"), autoescape=select_autoescape()
 )
+CHUNK_SIZE = 10_000
 
 
 class Dashboard:
@@ -34,30 +36,55 @@ class Dashboard:
         self.output_dir = output_dir or Path().cwd().as_posix()
 
     def load(self, url, filter=None):
-        # read csv, parse start/end time
-        df = pd.read_csv(
-            url, parse_dates=["time_start", "time_end"], date_format="mixed"
-        )
-        # finished jobs
-        df = df[df["status"].isin([4, 5])]
-        # filter
-        if filter:
-            df = df.loc[df["operation"] == "execute"].loc[df["identifier"] == filter]
-        # order by time
-        df = df.sort_values(by=["time_start"], ascending=True)
-        # done
-        self.df = df
+        columns = ["uuid", "time_start", "time_end", "status", "message"]
+        usecols = [*columns, "operation", "identifier"] if filter else columns
+        retained = []
+        with pd.read_csv(
+            url,
+            usecols=usecols,
+            parse_dates=["time_start", "time_end"],
+            date_format="mixed",
+            chunksize=CHUNK_SIZE,
+        ) as chunks:
+            for chunk in chunks:
+                keep = chunk["status"].isin([4, 5])
+                if filter:
+                    keep &= (chunk["operation"] == "execute") & (
+                        chunk["identifier"] == filter
+                    )
+                selected = chunk.loc[keep, columns]
+                if not selected.empty or not retained:
+                    retained.append(selected.copy())
+        self.df = pd.concat(retained, ignore_index=True).sort_values("time_start")
 
     def load_downloads(self, url):
-        # read csv, parse datetime
-        df = pd.read_csv(
+        """Retain daily download totals rather than individual log records."""
+        daily = None
+        with pd.read_csv(
             url,
             usecols=["datetime", "request_type", "size"],
             parse_dates=["datetime"],
             date_format="mixed",
-        )
-        # done
-        self.df_downloads = df
+            chunksize=CHUNK_SIZE,
+        ) as chunks:
+            for chunk in chunks:
+                chunk["datetime"] = pd.to_datetime(chunk["datetime"], format="mixed")
+                summary = daily_downloads(chunk)
+                daily = (
+                    summary
+                    if daily is None
+                    else pd.concat([daily, summary]).groupby(level=0).sum()
+                )
+        # Include days with no downloads, as the previous full-frame grouping
+        # did. They matter for the overview's minimum and median values.
+        if not daily.empty:
+            daily = daily.reindex(
+                pd.date_range(
+                    daily.index.min(), daily.index.max(), freq="D", name="datetime"
+                ),
+                fill_value=0,
+            )
+        self.df_downloads = daily.reset_index()
 
     def write(self):
         out = Path(self.output_dir).joinpath("dashboard.html").as_posix()
@@ -67,14 +94,17 @@ class Dashboard:
 
     def render(self):
         template = env.get_template("dashboard.html")
+        running = daily_concurrency(self.df)
         script_p1, plot_1 = ActivityPlot(self.df).components()
-        script_p2, plot_2 = ConcurrencyPlot(self.df).components()
+        script_p2, plot_2 = ConcurrencyPlot(self.df, running=running).components()
         script_p3, plot_3 = DurationPlot(self.df).components()
         script_p4, plot_4 = DayPlot(self.df).components()
         script_p41, plot_41 = HourPlot(self.df).components()
         script_p5, plot_5 = DownloadsPlot(self.df_downloads).components()
         script_p6, plot_6 = TransferPlot(self.df_downloads).components()
-        script_t1, table_1 = OverviewTable(self.df, self.df_downloads).components()
+        script_t1, table_1 = OverviewTable(
+            self.df, self.df_downloads, running=running
+        ).components()
         script_t2, table_2 = MessageTable(self.df).components()
         return template.render(
             bokeh_version=bokeh.__version__,

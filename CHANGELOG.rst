@@ -4,6 +4,11 @@ Changes
 Unreleased
 ==========
 
+* Aggregate dashboard downloads in chunks into daily counts and byte totals,
+  retaining days with no downloads for unchanged overview statistics. Filter
+  request CSVs in chunks, retain only columns used by the views, and share
+  daily concurrency results between the plot and overview table.
+
 * Reduce usage/dashboard memory peaks by filtering PyWPS requests in SQL and
   exporting them in chunks, streaming site CSV downloads to temporary files,
   and combining CSVs in chunks. Dashboard download views load only the three

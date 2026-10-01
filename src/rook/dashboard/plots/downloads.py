@@ -1,15 +1,17 @@
-import pandas as pd
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
 from .base import PlotView
+from ..models import daily_downloads
 
 MILLISECS_PER_DAY = 60 * 60 * 24 * 1000
 
 
 class DownloadsPlot(PlotView):
     def data(self):
-        pdf = self.df.groupby(pd.Grouper(key="datetime", freq="1D")).count()
+        pdf = daily_downloads(self.df).rename(
+            columns={"download_count": "request_type"}
+        )
         pdf = pdf.sort_values(by=["datetime"], ascending=False)
         return pdf
 
