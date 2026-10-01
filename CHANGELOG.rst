@@ -4,6 +4,10 @@ Changes
 Unreleased
 ==========
 
+* Speed up usage collection on a single CPU with bounded caches for repeated
+  nginx timestamps and IPv4 addresses. Vectorize dashboard activity and duration
+  calculations, and count weekday numbers before converting them to labels.
+
 * Discard unused successful-request messages from dashboard memory and compute
   daily concurrency with compact arrays instead of full event DataFrames,
   preserving the existing timestamp ordering and daily peak values.

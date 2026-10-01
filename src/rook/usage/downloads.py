@@ -4,6 +4,7 @@ import logging
 import re
 import subprocess  # noqa: S404
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -27,6 +28,7 @@ class AddressValueError(ValueError):
     pass
 
 
+@lru_cache(maxsize=4096)
 def dot2longip(ip):
     """Convert an IPv4 address to an IP number."""
     try:
@@ -34,6 +36,12 @@ def dot2longip(ip):
     except ipaddress.AddressValueError:
         LOGGER.debug(f"Could not convert IP address to an IP number: {ip}. Skipping...")
         return 0
+
+
+@lru_cache(maxsize=4096)
+def parse_record_time(value):
+    """Reuse repeated log timestamps with a bounded cache."""
+    return datetime.strptime(value, "%d/%b/%Y:%H:%M:%S")
 
 
 def parse_record(line):
@@ -50,7 +58,7 @@ def parse_record(line):
         raise NotFoundError("Invalid IP address")
 
     try:
-        record_time = datetime.strptime(tokens[3].lstrip("["), "%d/%b/%Y:%H:%M:%S")
+        record_time = parse_record_time(tokens[3].lstrip("["))
     except ValueError:
         LOGGER.warning(f"Invalid datetime format: {tokens[3].lstrip('[')}")
         raise NotFoundError("Invalid datetime format")
