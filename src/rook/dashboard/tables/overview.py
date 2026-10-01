@@ -28,9 +28,12 @@ class OverviewTable(TableView):
             pd.Grouper(key="datetime", freq="1D")
         ).request_type.count()
         # data transfer
-        tdf = self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D")).sum()
-        tdf["size"] = tdf["size"].apply(lambda x: x / 1024**3)
-        transfer = tdf["size"]
+        transfer = (
+            self.df_downloads.groupby(pd.Grouper(key="datetime", freq="1D"))[
+                "size"
+            ].sum()
+            / 1024**3
+        )
         data_ = dict(
             property=[
                 "Total Requests",

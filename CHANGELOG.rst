@@ -4,6 +4,12 @@ Changes
 Unreleased
 ==========
 
+* Reduce usage/dashboard memory peaks by filtering PyWPS requests in SQL and
+  exporting them in chunks, streaming site CSV downloads to temporary files,
+  and combining CSVs in chunks. Dashboard download views load only the three
+  columns they use, and transfer totals sum only sizes rather than also
+  concatenating text columns.
+
 * Stream nginx download logs directly to CSV during usage collection, applying
   date filters per record to keep memory use independent of log history size.
 

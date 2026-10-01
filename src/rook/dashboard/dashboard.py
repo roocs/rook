@@ -35,7 +35,9 @@ class Dashboard:
 
     def load(self, url, filter=None):
         # read csv, parse start/end time
-        df = pd.read_csv(url, parse_dates=[4, 5])
+        df = pd.read_csv(
+            url, parse_dates=["time_start", "time_end"], date_format="mixed"
+        )
         # finished jobs
         df = df[df["status"].isin([4, 5])]
         # filter
@@ -48,7 +50,12 @@ class Dashboard:
 
     def load_downloads(self, url):
         # read csv, parse datetime
-        df = pd.read_csv(url, parse_dates=[2])
+        df = pd.read_csv(
+            url,
+            usecols=["datetime", "request_type", "size"],
+            parse_dates=["datetime"],
+            date_format="mixed",
+        )
         # done
         self.df_downloads = df
 
