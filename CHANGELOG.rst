@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+1.4.1 (2026-10-27)
+==================
+
 * Require updated CA bundles, pip, and development virtualenv for the eMudhra /
   emSign certificate incident. Refresh deployment locks and CI requirements,
   rebuild Docker images without cached layers, and document existing-environment
