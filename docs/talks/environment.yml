@@ -5,8 +5,11 @@ name: rook
 channels:
   - conda-forge
 dependencies:
+  # Updated CA bundles for the eMudhra / emSign incident.
+  - ca-certificates >=2026.10.23
+  - certifi >=2026.10.23
   - python >=3.11
-  - pip
+  - pip >=26.2.2
   - quarto >=1.6,<2
   # Includes npm/npx; use Node 22 LTS for DeckTape and Puppeteer.
   - nodejs >=22,<23

@@ -4,6 +4,11 @@ Changes
 Unreleased
 ==========
 
+* Require updated CA bundles, pip, and development virtualenv for the eMudhra /
+  emSign certificate incident. Refresh deployment locks and CI requirements,
+  rebuild Docker images without cached layers, and document existing-environment
+  updates.
+
 * Speed up usage collection on a single CPU with bounded caches for repeated
   nginx timestamps and IPv4 addresses. Vectorize dashboard activity and duration
   calculations, and count weekday numbers before converting them to labels.

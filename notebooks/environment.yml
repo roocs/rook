@@ -3,7 +3,10 @@ name: rook
 channels:
   - conda-forge
 dependencies:
-  - pip
+  # Updated CA bundles for the eMudhra / emSign incident.
+  - ca-certificates >=2026.10.23
+  - certifi >=2026.10.23
+  - pip >=26.2.2
   - ipython
   - jupyterlab
   - ipywidgets
