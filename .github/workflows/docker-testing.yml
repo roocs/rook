@@ -41,8 +41,8 @@ jobs:
           file: "Dockerfile"
           tags: localrook:latest
           load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          pull: true
+          no-cache: true
           push: false
       - name: Run Docker image
         run: |

@@ -8,6 +8,9 @@ LABEL Description="rook WPS" Vendor="Birdhouse" Version="1.4.0"
 # Set the working directory to /code
 WORKDIR /code
 
+# Update the base trust store and package manager before creating environments.
+RUN conda install -n base --override-channels -c conda-forge --yes "conda>=26.9.4" "certifi>=2026.10.23" "ca-certificates>=2026.10.23" && conda clean --all --yes
+
 # Create conda environment
 COPY environment.yml .
 RUN conda env create -n rook -f environment.yml && conda install -n rook gunicorn && conda clean --all --yes
@@ -26,7 +29,7 @@ EXPOSE 5000
 
 CMD ["gunicorn", "--bind=0.0.0.0:5000", "rook.wsgi:application"]
 
-# docker build -t roocs/rook .
+# docker build --pull --no-cache -t roocs/rook .
 # docker run -p 5000:5000 roocs/rook
 # http://localhost:5000/wps?request=GetCapabilities&service=WPS
 # http://localhost:5000/wps?request=DescribeProcess&service=WPS&identifier=all&version=1.0.0
