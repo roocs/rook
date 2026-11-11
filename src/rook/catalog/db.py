@@ -1,6 +1,5 @@
-import sqlalchemy
 from pywps.dblog import get_session
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 
 from .base import Catalog
 from .intake import IntakeCatalog
@@ -15,12 +14,7 @@ class DBCatalog(Catalog):
 
     def exists(self):
         with get_session() as session:
-            try:
-                engine = session.get_bind()
-                ins = sqlalchemy.inspect(engine)
-                return ins.dialect.has_table(engine.connect(), self.table_name)
-            except Exception:
-                return False
+            return inspect(session.connection()).has_table(self.table_name)
 
     def update(self):
         if not self.exists():
