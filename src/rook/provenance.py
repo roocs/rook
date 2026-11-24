@@ -135,8 +135,8 @@ class Provenance:
         ]:
             if param in parameters:
                 value = parameters[param]
-                if isinstance(value, list):
-                    value = ",".join(value)
+                if isinstance(value, (list, tuple)):
+                    value = ",".join(str(item) for item in value)
                 attributes[ROOCS[param]] = value
         op = self._execution_activity(
             identifier=ROOCS[f"{operator}_{uuid.uuid4()}"],

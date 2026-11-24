@@ -142,9 +142,10 @@ def test_wps_subset_cmip6_prov(get_output, pywps_cfg):
     assert_response_success(resp)
     outputs = get_output(resp.xml)
     doc = prov.read(outputs["prov"][len("file://") :])
-    assert (
-        'roocs:time="1860-01-01/1900-12-30", roocs:area="1,1,300,89"' in doc.get_provn()
-    )
+    [activity] = doc.get_records(prov.model.ProvActivity)
+    attributes = dict(activity.attributes)
+    assert attributes[doc.valid_qualified_name("roocs:time")] == "1860-01-01/1900-12-30"
+    assert attributes[doc.valid_qualified_name("roocs:area")] == "1,1,300,89"
     provn = doc.get_provn()
     dataset = (
         "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.historical." "r1i1p1f1.Amon.rlds.gr.v20180803"

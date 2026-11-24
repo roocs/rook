@@ -4,6 +4,9 @@ Changes
 Unreleased
 ==========
 
+* Serialize numeric custom-grid tuples in provenance so regridding requests
+  can complete with strict PROV attribute validation.
+
 1.4.1 (2026-10-27)
 ==================
 
